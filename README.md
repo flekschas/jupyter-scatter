@@ -12,7 +12,7 @@
 
 <div align="center">
   
-  [![Example](https://img.shields.io/badge/example-📖-7fd4ff.svg?style=flat-square)](https://youtu.be/FlzTdFUVE-M)
+  [![Example](https://img.shields.io/badge/example-📖-7fd4ff.svg?style=flat-square)](https://github.com/flekschas/jupyter-scatterplot/blob/master/notebooks/example.ipynb)
   
 </div>
 
