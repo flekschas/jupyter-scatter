@@ -119,7 +119,8 @@ class Scatterplot(widgets.DOMWidget):
 
             else:
                 self.color_by = change.new
-                self.use_cmap(colormap_widget.value)
+                if colormap_widget.value:
+                    self.use_cmap(colormap_widget.value)
 
                 colormap_widget.disabled = False
                 point_color_widget.disabled = True
