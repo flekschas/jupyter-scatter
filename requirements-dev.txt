@@ -2,5 +2,5 @@
 numpy
 ipython
 jupyter
-jupyterlab>=1.0
+jupyterlab>=3.0
 pytest

@@ -1,15 +1,16 @@
-var jupyterScatterplot = require('./index');
-var base = require('@jupyter-widgets/base');
+const plugin = require('./index');
+const base = require('@jupyter-widgets/base');
+const name = require('./package.json').name;
 
 module.exports = {
-  id: 'jupyter.extensions.jupyter-scatterplot',
+  id: 'jupyter.extensions.' + name,
   requires: [base.IJupyterWidgetRegistry],
   activate: function(app, widgets) {
-      widgets.registerWidget({
-          name: 'jupyter-scatterplot',
-          version: jupyterScatterplot.version,
-          exports: jupyterScatterplot
-      });
+    widgets.registerWidget({
+      name: name,
+      version: plugin.version,
+      exports: plugin
+    });
   },
   autoStart: true
 };
