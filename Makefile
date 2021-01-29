@@ -7,7 +7,7 @@ install:
 	pip install -r requirements-dev.txt
 
 uninstall:
-	pip uninstall jupyter-scatterplot
+	pip uninstall jscatter
 
 postinstall: nbext-deps nbext-install labext-deps labext-install
 

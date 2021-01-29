@@ -23,7 +23,7 @@ module.exports = [
     entry: './extension.js',
     output: {
       filename: 'extension.js',
-      path: path.resolve(__dirname, '..', 'scatterplot', 'static'),
+      path: path.resolve(__dirname, '..', 'jscatter', 'nbextension'),
       libraryTarget: 'amd'
     },
     module: {
@@ -41,7 +41,7 @@ module.exports = [
     entry: './index.js',
     output: {
       filename: 'index.js',
-      path: path.resolve(__dirname, '..', 'scatterplot', 'static'),
+      path: path.resolve(__dirname, '..', 'jscatter', 'nbextension'),
       libraryTarget: 'amd',
     },
     devtool: 'source-map',
@@ -70,8 +70,8 @@ module.exports = [
       filename: 'index.js',
       path: path.resolve(__dirname, 'dist'),
       libraryTarget: 'amd',
-      library: "jupyter-scatterplit",
-      publicPath: 'https://unpkg.com/jupyter-scatterplit@' + version + '/dist/'
+      library: "jscatter",
+      publicPath: 'https://unpkg.com/jscatter@' + version + '/dist/'
     },
     devtool: 'source-map',
     module: {

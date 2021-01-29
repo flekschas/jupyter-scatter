@@ -1,4 +1,12 @@
-recursive-include scatterplot/static *.*
+graft jscatter/nbextension
+graft jscatter/labextension
+
+graft js
+graft tests
+prune **/node_modules
+
+include jscatter.json
+
 include CHANGELOG.md
 include README.md
 include LICENSE

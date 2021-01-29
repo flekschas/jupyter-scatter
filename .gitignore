@@ -23,4 +23,5 @@ js/npm-debug.log
 js/node_modules
 js/dist
 
-scatterplot/static
+jscatter/labextension
+jscatter/nbextension

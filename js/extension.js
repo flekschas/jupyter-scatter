@@ -4,16 +4,16 @@
 
 // Configure requirejs
 if (window.require) {
-    window.require.config({
-        map: {
-            "*" : {
-                "jupyter-scatterplot": "nbextensions/jupyter-scatterplot/index",
-            }
-        }
-    });
+  window.require.config({
+    map: {
+      "*" : {
+        "jscatter": "nbextensions/jscatter/index",
+      }
+    }
+  });
 }
 
 // Export the required load_ipython_extension
 module.exports = {
-    load_ipython_extension: function() {}
+  load_ipython_extension: function() {}
 };

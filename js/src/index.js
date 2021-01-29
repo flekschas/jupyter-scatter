@@ -1,19 +1,20 @@
-var widgets = require('@jupyter-widgets/base');
-var _ = require('lodash');
-var reglScatterplot = require('regl-scatterplot/dist/regl-scatterplot.js');
-var packageJson = require('../package.json');
+/* eslint-env browser */
+const widgets = require('@jupyter-widgets/base');
+const _ = require('lodash');
+const reglScatterplot = require('regl-scatterplot/dist/regl-scatterplot.js');
+const packageJson = require('../package.json');
 
-var createScatterplot = reglScatterplot.default;
+const createScatterplot = reglScatterplot.default;
 
-var ScatterplotModel = widgets.DOMWidgetModel.extend({
+const JScatterModel = widgets.DOMWidgetModel.extend({
   defaults: _.extend(
     _.result(this, 'widgets.DOMWidgetModel.prototype.defaults'),
     {
-      _model_name : 'ScatterplotModel',
-      _model_module : 'jupyter-scatterplot',
+      _model_name : 'JScatterModel',
+      _model_module : packageJson.name,
       _model_module_version : packageJson.version,
-      _view_name : 'ScatterplotView',
-      _view_module : 'jupyter-scatterplot',
+      _view_name : 'JScatterView',
+      _view_module : packageJson.name,
       _view_module_version : packageJson.version
     }
   )
@@ -25,9 +26,9 @@ function camelToSnake(string) {
   }).toLowerCase();
 }
 
-var MIN_WIDTH = 240;
+const MIN_WIDTH = 240;
 
-var properties = [
+const properties = [
   'colorBy',
   'points',
   'selectedPoints',
@@ -50,11 +51,11 @@ var properties = [
   'cameraDistance',
   'cameraRotation',
   'cameraView',
-  'options',
+  'otherOptions',
 ];
 
 // Custom View. Renders the widget model.
-var ScatterplotView = widgets.DOMWidgetView.extend({
+const JScatterView = widgets.DOMWidgetView.extend({
   render: function render() {
     var self = this;
 
@@ -75,7 +76,7 @@ var ScatterplotView = widgets.DOMWidgetView.extend({
     this.container = document.createElement('div');
     this.container.setAttribute('id', randomStr);
     this.container.style.position = 'relative'
-    this.container.style.border = this.options.theme === 'dark'
+    this.container.style.border = this.otherOptions.theme === 'dark'
       ? '#333333' : '#dddddd';
     this.container.style.borderRadius = '2px';
     this.container.style.height = this.height + 'px';
@@ -89,38 +90,37 @@ var ScatterplotView = widgets.DOMWidgetView.extend({
 
     this.container.appendChild(this.canvas);
 
-    window.requestAnimationFrame(() => {
-      this.width = Math.max(MIN_WIDTH, this.el.getBoundingClientRect().width);
+    window.requestAnimationFrame(function init() {
+      self.width = Math.max(MIN_WIDTH, self.el.getBoundingClientRect().width);
 
-      var initialOptions = {
-        canvas: this.canvas,
-        width: this.width,
+      const initialOptions = {
+        canvas: self.canvas,
+        width: self.width,
       }
 
       properties.forEach(function(propertyName) {
         initialOptions[propertyName] = self[propertyName];
       });
 
-      console.log('initialOptions', initialOptions);
+      self.scatterplot = createScatterplot(initialOptions);
 
-      this.scatterplot = createScatterplot(initialOptions);
-
+      // eslint-disable-next-line
       console.log(
-        'jupyter-scatterplot v' + packageJson.version +
-        ' with regl-scatterplot v' + this.scatterplot.get('version')
+        'jscatter v' + packageJson.version +
+        ' with regl-scatterplot v' + self.scatterplot.get('version')
       );
 
-      this.container.api = this.scatterplot;
+      self.container.api = self.scatterplot;
 
       // Listen to events from the JavaScript world
-      this.pointoverHandlerBound = this.pointoverHandler.bind(this);
-      this.pointoutHandlerBound = this.pointoutHandler.bind(this);
-      this.selectHandlerBound = this.selectHandler.bind(this);
-      this.deselectHandlerBound = this.deselectHandler.bind(this);
-      this.scatterplot.subscribe('pointover', this.pointoverHandlerBound);
-      this.scatterplot.subscribe('pointout', this.pointoutHandlerBound);
-      this.scatterplot.subscribe('select', this.selectHandlerBound);
-      this.scatterplot.subscribe('deselect', this.deselectHandlerBound);
+      self.pointoverHandlerBound = self.pointoverHandler.bind(self);
+      self.pointoutHandlerBound = self.pointoutHandler.bind(self);
+      self.selectHandlerBound = self.selectHandler.bind(self);
+      self.deselectHandlerBound = self.deselectHandler.bind(self);
+      self.scatterplot.subscribe('pointover', self.pointoverHandlerBound);
+      self.scatterplot.subscribe('pointout', self.pointoutHandlerBound);
+      self.scatterplot.subscribe('select', self.selectHandlerBound);
+      self.scatterplot.subscribe('deselect', self.deselectHandlerBound);
 
       // Listen to messages from the Python world
       properties.forEach(function(propertyName) {
@@ -134,18 +134,18 @@ var ScatterplotView = widgets.DOMWidgetView.extend({
         );
       });
 
-      window.addEventListener('resize', this.resizeHandler.bind(this));
-      window.addEventListener('deviceorientation', this.resizeHandler.bind(this));
+      window.addEventListener('resize', self.resizeHandler.bind(self));
+      window.addEventListener('deviceorientation', self.resizeHandler.bind(self));
 
-      this.resizeHandler();
-      this.colorCanvas();
+      self.resizeHandler();
+      self.colorCanvas();
 
-      if (this.points.length) {
-        this.scatterplot
-          .draw(this.points)
-          .then(() => {
-            if (this.selectedPoints.length) {
-              this.scatterplot.select(this.selectedPoints);
+      if (self.points.length) {
+        self.scatterplot
+          .draw(self.points)
+          .then(function onInitialDraw() {
+            if (self.selectedPoints.length) {
+              self.scatterplot.select(self.selectedPoints);
             }
           });
       }
@@ -158,7 +158,7 @@ var ScatterplotView = widgets.DOMWidgetView.extend({
   colorCanvas: function colorCanvas() {
     if (Array.isArray(this.backgroundColor)) {
       this.canvas.style.backgroundColor = 'rgb(' +
-        this.backgroundColor.slice(0, 3).map((x) => x * 255).join(',') +
+        this.backgroundColor.slice(0, 3).map(function (x) { return x * 255 }).join(',') +
         ')';
     } else {
       this.canvas.style.backgroundColor = this.backgroundColor;
@@ -171,7 +171,7 @@ var ScatterplotView = widgets.DOMWidgetView.extend({
     this.model.save_changes();
   },
 
-  pointoutHandler: function pointoutHandler(event) {
+  pointoutHandler: function pointoutHandler() {
     this.model.set('hovered_point', null);
     this.model.save_changes();
   },
@@ -186,7 +186,7 @@ var ScatterplotView = widgets.DOMWidgetView.extend({
     this.model.save_changes();
   },
 
-  deselectHandler: function deselectHandler(event) {
+  deselectHandler: function deselectHandler() {
     if (this.selectedPointsChangedPython) {
       this.selectedPointsChangedPython = false;
       return;
@@ -253,7 +253,7 @@ var ScatterplotView = widgets.DOMWidgetView.extend({
   },
 
   pointOpacityHandler: function pointOpacityHandler(newValue) {
-    this.withPropertyChangeHandler('pointOpacity', newValue);
+    this.withPropertyChangeHandler('opacity', newValue);
   },
 
   pointSizeHandler: function pointSizeHandler(newValue) {
@@ -292,7 +292,7 @@ var ScatterplotView = widgets.DOMWidgetView.extend({
     this.withPropertyChangeHandler('cameraView', newValue);
   },
 
-  optionsHandler: function optionsHandler(newOptions) {
+  otherOptionsHandler: function otherOptionsHandler(newOptions) {
     this.scatterplot.draw(newOptions);
   },
 
@@ -313,7 +313,6 @@ var ScatterplotView = widgets.DOMWidgetView.extend({
 
   withModelChangeHandler: function withModelChangeHandler(property, handler) {
     var self = this;
-    var changes = this.model.changedAttributes();
 
     return function modelChangeHandler() {
       var changes = self.model.changedAttributes();
@@ -335,6 +334,6 @@ var ScatterplotView = widgets.DOMWidgetView.extend({
 });
 
 module.exports = {
-  ScatterplotModel: ScatterplotModel,
-  ScatterplotView: ScatterplotView
+  JScatterModel: JScatterModel,
+  JScatterView: JScatterView
 };

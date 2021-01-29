@@ -6,16 +6,16 @@ import numpy as np
 
 from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
 
-from .__version__ import __version__
+from ._version import __version__
 from .utils import to_hex, with_left_label
 
 
 @widgets.register
-class Scatterplot(widgets.DOMWidget):
-    _view_name = Unicode("ScatterplotView").tag(sync=True)
-    _model_name = Unicode("ScatterplotModel").tag(sync=True)
-    _view_module = Unicode("jupyter-scatterplot").tag(sync=True)
-    _model_module = Unicode("jupyter-scatterplot").tag(sync=True)
+class JScatter(widgets.DOMWidget):
+    _view_name = Unicode("JScatterView").tag(sync=True)
+    _model_name = Unicode("JScatterModel").tag(sync=True)
+    _view_module = Unicode("jscatter").tag(sync=True)
+    _model_module = Unicode("jscatter").tag(sync=True)
     _view_module_version = Unicode(__version__).tag(sync=True)
     _model_module_version = Unicode(__version__).tag(sync=True)
     _model_data = List([]).tag(sync=True)
@@ -54,7 +54,7 @@ class Scatterplot(widgets.DOMWidget):
 
     # For any kind of options. Note that whatever is defined in options will
     # be overwritten by the short-hand options
-    options = Dict({}).tag(sync=True)
+    other_options = Dict(dict()).tag(sync=True)
 
     @property
     def selected_points_widget(self):
@@ -351,7 +351,9 @@ class Scatterplot(widgets.DOMWidget):
 
         return with_left_label('Recticle color', widget)
 
-    def display_options(self):
+    def options(self):
+        """Display widgets for all options
+        """
         color_by_widget, colormap_widget, point_color_widget = self.color_widgets
         ipydisplay.display(
             self.height_widget,
@@ -371,20 +373,20 @@ class Scatterplot(widgets.DOMWidget):
             self.background_image_widget,
         )
 
-    def use_cmap(self, cmap_name, reverse=False):
-        """
-        Create a compatible colormap from a matplotlib colormap.
+    def use_cmap(self, cmap_name: str, reverse: bool = False):
+        """Use a Matplotlib colormap for the point color.
+
         Parameters
         ----------
-        cmap_name (string):
-            The name of the color map.
-        reverse (boolean):
-            Reverse the colormap if ``True``.
+        cmap_name : str
+            The name of the Matplotlib color map.
+        reverse : bool, optional
+            Reverse the colormap when set to ``True``.
         """
         self.point_color = plt.get_cmap(cmap_name)(range(256)).tolist()[::(1 + (-2 * reverse))]
 
 
-def display(
+def plot(
     points,
     categories: list = None,
     values: list = None,
@@ -411,6 +413,65 @@ def display(
     camera_view: list = None,
     options: dict = {},
 ):
+    """Display a scatter widget
+
+    Parameters
+    ----------
+    points : 2D array_like
+        List of points
+    categories : 1D array_like, optional
+        Categorical values associated to the ``points``
+    values : 1D array_like, optional
+        Numerical values associated to the ``points``
+    color_by : str, optional
+        Coloring option, which can either be ``None``, category, or value
+    selected_points : 1D array_like, optional
+        List of indices of points to be selected
+    height : int, optional
+        Height in pixel
+    background_color : list, optional
+        Description
+    background_image : str, optional
+        Description
+    lasso_color : list, optional
+        Description
+    lasso_min_delay : int, optional
+        Description
+    lasso_min_dist : float, optional
+        Description
+    point_color : list, optional
+        Description
+    point_color_active : list, optional
+        Description
+    point_color_hover : list, optional
+        Description
+    point_opacity : float, optional
+        Description
+    point_size : int, optional
+        Description
+    point_size_selected : int, optional
+        Description
+    point_outline_width : int, optional
+        Description
+    show_recticle : bool, optional
+        Description
+    recticle_color : list, optional
+        Description
+    camera_target : list, optional
+        Description
+    camera_distance : float, optional
+        Description
+    camera_rotation : float, optional
+        Description
+    camera_view : list, optional
+        Description
+    options : dict, optional
+        Description
+
+    Returns
+    -------
+    scatterplot widget
+    """
     points = np.asarray(points)
     n = points.shape[0]
 
@@ -449,9 +510,9 @@ def display(
 
         data[:,3] = values
 
-    return Scatterplot(
+    return JScatter(
         points=data.tolist(),
-        selected_points=selected_points,
+        selected_points=np.asarray(selected_points).tolist(),
         height=height,
         background_color=background_color,
         background_image=background_image,
@@ -471,5 +532,5 @@ def display(
         camera_distance=camera_distance,
         camera_rotation=camera_rotation,
         camera_view=camera_view,
-        options=options,
+        other_options=options,
     )
