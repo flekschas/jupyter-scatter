@@ -1,10 +1,10 @@
 <h1 align="center">
-  jupyter-scatterplot
+  jscatter
 </h1>
 
 <div align="center">
   
-  **A lightweight but scalable scatterplot extension for Jupyter Lab and Notebook**
+  **A lightweight but scalable scatter plot extension for Jupyter Lab and Notebook**
   
 </div>
 
@@ -12,7 +12,7 @@
 
 <div align="center">
   
-  [![Example](https://img.shields.io/badge/example-📖-7fd4ff.svg?style=flat-square)](https://youtu.be/FlzTdFUVE-M)
+  [![Example](https://img.shields.io/badge/example-📖-7fd4ff.svg?style=flat-square)](https://github.com/flekschas/jscatter/blob/master/notebooks/example.ipynb)
   
 </div>
 
@@ -22,9 +22,11 @@
   
 </div>
 
-**Why?** After embedding data I want to explore the embedding space, which typically involves three things. First, interactive view adjustments like panning & zooming or changing the point size and opacity. Second, selecting instances. And third, coloring the embedded instances by a categorical or numerical value. The goal of jupyter-scatterplot is to easily support all three things and scale to millions of points.
+**Why?** After embedding data we want to explore the embedding space, which typically involves three things besides plotting the data as a 2D scatter. First, we want to interactively adjust the view (e.g., via panning & zooming) and the visual point encoding (e.g., the point color, opacity, or size). Second, we want to be able to select/highlight points. And third, we want to compare multiple embeddings (e.g., via animation, color, or point connections). The goal of jscatter is to support all three requirements and scale to millions of points.
 
-**How?** Internally, jupyter-scatterplot is using [`regl-scatterplot`](https://github.com/flekschas/regl-scatterplot/)
+**How?** Internally, jscatter is using [`regl-scatterplot`](https://github.com/flekschas/regl-scatterplot/)
+
+---
 
 ## Development
 
@@ -32,8 +34,27 @@
 
 - [Conda](https://docs.conda.io/en/latest/) >= 4.8
 
+**Installation:**
+
 ```bash
-git clone https://github.com/flekschas/jupyter-scatterplot/ jupyter-scatterplot && cd jupyter-scatterplot
-conda env create -f environment.yml && conda activate jupyter-scatterplot
-make install
+git clone https://github.com/flekschas/jscatter/ jscatter && cd jscatter
+conda env create -f environment.yml && conda activate jscatter
+pip install -e .
 ```
+
+**Enable the Notebook Extension:**
+
+```bash
+jupyter nbextension install --py --symlink --sys-prefix jscatter
+jupyter nbextension enable --py --sys-prefix jscatter
+```
+
+**Enable the Lab Extension:**
+
+```bash
+jupyter labextension develop jscatter
+```
+
+**After Changing Python code:** simply restart the kernel.
+
+**After Changing JavaScript code:** do `cd js && npm run build` and reload the browser tab.
