@@ -26,14 +26,35 @@
 
 **How?** Internally, jscatter is using [`regl-scatterplot`](https://github.com/flekschas/regl-scatterplot/)
 
+---
+
 ## Development
 
 **Requirements:**
 
 - [Conda](https://docs.conda.io/en/latest/) >= 4.8
 
+**Installation:**
+
 ```bash
 git clone https://github.com/flekschas/jscatter/ jscatter && cd jscatter
 conda env create -f environment.yml && conda activate jscatter
-make install
+pip install -e .
 ```
+
+**Enable the Notebook Extension:**
+
+```bash
+jupyter nbextension install --py --symlink --sys-prefix jscatter
+jupyter nbextension enable --py --sys-prefix jscatter
+```
+
+**Enable the Lab Extension:**
+
+```bash
+jupyter labextension develop jscatter
+```
+
+**After Changing Python code:** simply restart the kernel.
+
+**After Changing JavaScript code:** do `cd js && npm run build` and reload the browser tab.
