@@ -3,7 +3,7 @@
 
 # Build and installation
 install:
-	pip install -v -e .
+	pip install -e .
 	pip install -r requirements-dev.txt
 
 uninstall:
