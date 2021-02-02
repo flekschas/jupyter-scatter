@@ -34,6 +34,10 @@ class JScatter(widgets.DOMWidget):
     camera_rotation = Float().tag(sync=True)
     camera_view = List(None, allow_none=True).tag(sync=True)
 
+    # Interaction properties
+    mouse_mode = Enum(['panZoom', 'lasso', 'rotate'], default_value='panZoom').tag(sync=True)
+    lasso_initiator = Bool().tag(sync=True)
+
     # Options
     color_by = Enum([None, 'category', 'value'], allow_none=True, default_value=None).tag(sync=True)
     height = Int().tag(sync=True)
@@ -55,6 +59,37 @@ class JScatter(widgets.DOMWidget):
     # For any kind of options. Note that whatever is defined in options will
     # be overwritten by the short-hand options
     other_options = Dict(dict()).tag(sync=True)
+
+    # Used for triggering a view reset
+    view_reset = Bool(False).tag(sync=True)
+
+    @property
+    def mouse_mode_widget(self):
+        widget = widgets.RadioButtons(
+            options=[
+                ('Pan & zoom', 'panZoom'),
+                ('Lasso selection', 'lasso'),
+                ('Rotation', 'rotate')
+            ],
+            value='panZoom'
+        )
+
+        def change_handler(change):
+            self.mouse_mode = change.new
+
+        widget.observe(change_handler, names='value')
+
+        return with_left_label('Mouse mode', widget)
+
+    @property
+    def lasso_initiator_widget(self):
+        widget = widgets.Checkbox(
+            icon='check',
+            indent=False,
+            value=self.lasso_initiator
+        )
+        widgets.jslink((self, 'lasso_initiator'), (widget, 'value'))
+        return with_left_label('Enable lasso initiator', widget)
 
     @property
     def selected_points_widget(self):
@@ -94,14 +129,14 @@ class JScatter(widgets.DOMWidget):
                 ('Category (using colormap)', 'category'),
                 ('Value (using colormap)', 'value')
             ],
-            value='none'
+            value='none' if self.color_by is None else self.color_by
         )
 
         colormap_widget = widgets.Combobox(
             placeholder='Choose a Matplotlib colormap',
             options=list(plt.colormaps()),
             ensure_option=True,
-            disabled=True,
+            disabled=self.color_by is None,
         )
 
         point_color_widget = widgets.ColorPicker(
@@ -118,6 +153,19 @@ class JScatter(widgets.DOMWidget):
                 point_color_widget.disabled = False
 
             else:
+                if change.new == 'category':
+                    colormap_widget.options = [
+                        'Pastel1', 'Pastel2', 'Paired', 'Accent', 'Dark2', 'Set1',
+                        'Set2', 'Set3', 'tab10', 'tab20', 'tab20b', 'tab20c'
+                    ]
+                else:
+                    colormap_widget.options = [
+                        'greys', 'viridis',
+                        'plasma', 'inferno',
+                        'magma', 'cividis',
+                        'coolwarm', 'RdGy'
+                    ]
+
                 self.color_by = change.new
                 if colormap_widget.value:
                     self.use_cmap(colormap_widget.value)
@@ -351,11 +399,43 @@ class JScatter(widgets.DOMWidget):
 
         return with_left_label('Recticle color', widget)
 
+    def get_reset_view_widget(self, icon_only=False, width=None):
+        button = widgets.Button(
+            description='' if icon_only else 'Reset View',
+            icon='refresh'
+        )
+
+        if width is not None:
+            button.layout.width = f'{width}px'
+
+        def click_handler(b):
+            self.reset_view()
+
+        button.on_click(click_handler)
+        return button
+
+    @property
+    def reset_view_widget(self):
+        return self.get_reset_view_widget()
+
+    def get_separator(self, color='#efefef', margin_top=10, margin_bottom=10):
+        return widgets.Box(
+            children=[],
+            layout=widgets.Layout(
+                margin=f'{margin_top}px 0 {margin_bottom}px 0',
+                width='100%',
+                height='0',
+                border=f'1px solid {color}'
+            )
+        ),
+
     def options(self):
         """Display widgets for all options
         """
         color_by_widget, colormap_widget, point_color_widget = self.color_widgets
         ipydisplay.display(
+            self.mouse_mode_widget,
+            self.lasso_initiator_widget,
             self.height_widget,
             self.point_size_widget,
             self.point_opacity_widget,
@@ -371,6 +451,16 @@ class JScatter(widgets.DOMWidget):
             self.show_recticle_widget,
             self.background_color_widget,
             self.background_image_widget,
+            widgets.Box(
+                children=[],
+                layout=widgets.Layout(
+                    margin='10px 0',
+                    width='100%',
+                    height='0',
+                    border='1px solid #efefef'
+                )
+            ),
+            self.reset_view_widget
         )
 
     def use_cmap(self, cmap_name: str, reverse: bool = False):
@@ -384,6 +474,113 @@ class JScatter(widgets.DOMWidget):
             Reverse the colormap when set to ``True``.
         """
         self.point_color = plt.get_cmap(cmap_name)(range(256)).tolist()[::(1 + (-2 * reverse))]
+
+    def reset_view(self):
+        self.view_reset = True
+
+    def get_panzoom_mode_widget(self, icon_only=False, width=None):
+        button = widgets.Button(
+            description='' if icon_only else 'Pan & Zoom',
+            icon='arrows',
+            tooltip='Activate pan & zoom',
+            button_style = 'primary' if self.mouse_mode == 'panZoom' else '',
+        )
+
+        if width is not None:
+            button.layout.width = f'{width}px'
+
+        def click_handler(b):
+            button.button_style = 'primary'
+            self.mouse_mode = 'panZoom'
+
+        def change_handler(change):
+            button.button_style = 'primary' if change['new'] == 'panZoom' else ''
+
+        self.observe(change_handler, names=['mouse_mode'])
+
+        button.on_click(click_handler)
+        return button
+
+    def get_lasso_mode_widget(self, icon_only=False, width=None):
+        button = widgets.Button(
+            description='' if icon_only else 'Lasso',
+            icon='crosshairs',
+            tooltip='Activate lasso selection',
+            button_style = 'primary' if self.mouse_mode == 'lasso' else '',
+        )
+
+        if width is not None:
+            button.layout.width = f'{width}px'
+
+        def click_handler(b):
+            button.button_style = 'primary'
+            self.mouse_mode = 'lasso'
+
+        def change_handler(change):
+            button.button_style = 'primary' if change['new'] == 'lasso' else ''
+
+        self.observe(change_handler, names=['mouse_mode'])
+
+        button.on_click(click_handler)
+        return button
+
+    def get_rotate_mode_widget(self, icon_only=False, width=None):
+        button = widgets.Button(
+            description='' if icon_only else 'Rotate',
+            icon='undo',
+            tooltip='Activate rotation',
+            button_style = 'primary' if self.mouse_mode == 'rotate' else '',
+        )
+
+        if width is not None:
+            button.layout.width = f'{width}px'
+
+        def click_handler(b):
+            button.button_style = 'primary'
+            self.mouse_mode = 'rotate'
+
+        def change_handler(change):
+            button.button_style = 'primary' if change['new'] == 'rotate' else ''
+
+        self.observe(change_handler, names=['mouse_mode'])
+
+        button.on_click(click_handler)
+        return button
+
+    def show(self):
+        buttons = widgets.VBox(
+            children=[
+                self.get_panzoom_mode_widget(icon_only=True, width=36),
+                self.get_lasso_mode_widget(icon_only=True, width=36),
+                self.get_rotate_mode_widget(icon_only=True, width=36),
+               widgets.Box(
+                    children=[],
+                    layout=widgets.Layout(
+                        margin='10px 0',
+                        width='100%',
+                        height='0',
+                        border='1px solid #efefef'
+                    )
+                ),
+                self.get_reset_view_widget(icon_only=True, width=36)
+            ],
+            layout=widgets.Layout(
+                display='flex',
+                flex_flow='column',
+                align_items='stretch',
+                width='40px'
+            )
+        )
+
+        plots = widgets.VBox(
+            children=[self],
+            layout=widgets.Layout(
+                flex='1',
+                width='auto'
+            )
+        )
+
+        return widgets.HBox([buttons, plots])
 
 
 def plot(
@@ -405,12 +602,14 @@ def plot(
     point_size: int = 4,
     point_size_selected: int = 2,
     point_outline_width: int = 2,
-    show_recticle: bool = False,
+    show_recticle: bool = True,
     recticle_color: list = [0, 0.55, 1, 0.33],
     camera_target: list = [0, 0],
     camera_distance: float = 1.0,
     camera_rotation: float = 0.0,
     camera_view: list = None,
+    mouse_mode: str = 'panZoom',
+    lasso_initiator: bool = True,
     options: dict = {},
 ):
     """Display a scatter widget
@@ -465,6 +664,10 @@ def plot(
         Description
     camera_view : list, optional
         Description
+    mouse_mode : str, optional
+        Description
+    lasso_initiator : bool, optional
+        Description
     options : dict, optional
         Description
 
@@ -481,6 +684,7 @@ def plot(
     if points.shape[1] != 2:
         raise ValueError('Only 2D point data is supported')
 
+    # Normalize points to [-1,1]
     min_point = points.min(axis=0)
     max_point = points.max(axis=0) - min_point
     points = (points - min_point) / max_point * 2 - 1
@@ -532,5 +736,7 @@ def plot(
         camera_distance=camera_distance,
         camera_rotation=camera_rotation,
         camera_view=camera_view,
+        mouse_mode=mouse_mode,
+        lasso_initiator=lasso_initiator,
         other_options=options,
     )
