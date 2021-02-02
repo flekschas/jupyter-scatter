@@ -34,7 +34,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 #     ]
 # )
 js_dir = os.path.join(here, 'js')
-version = get_version("jscatter/_version.py"))
+version = get_version("jscatter/_version.py")
 
 js_targets = [
     os.path.join(js_dir, 'dist', 'index.js'),
