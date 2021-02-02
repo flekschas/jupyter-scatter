@@ -11,11 +11,11 @@ from .utils import to_hex, with_left_label
 
 
 @widgets.register
-class JScatter(widgets.DOMWidget):
-    _view_name = Unicode("JScatterView").tag(sync=True)
-    _model_name = Unicode("JScatterModel").tag(sync=True)
-    _view_module = Unicode("jscatter").tag(sync=True)
-    _model_module = Unicode("jscatter").tag(sync=True)
+class JupyterScatter(widgets.DOMWidget):
+    _view_name = Unicode("JupyterScatterView").tag(sync=True)
+    _model_name = Unicode("JupyterScatterModel").tag(sync=True)
+    _view_module = Unicode("jupyter-scatter").tag(sync=True)
+    _model_module = Unicode("jupyter-scatter").tag(sync=True)
     _view_module_version = Unicode(__version__).tag(sync=True)
     _model_module_version = Unicode(__version__).tag(sync=True)
     _model_data = List([]).tag(sync=True)
@@ -712,7 +712,7 @@ def plot(
 
         data[:,3] = values
 
-    return JScatter(
+    return JupyterScatter(
         points=data.tolist(),
         selected_points=np.asarray(selected_points).tolist(),
         height=height,
