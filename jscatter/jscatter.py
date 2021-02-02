@@ -160,10 +160,8 @@ class JScatter(widgets.DOMWidget):
                     ]
                 else:
                     colormap_widget.options = [
-                        'greys', 'viridis',
-                        'plasma', 'inferno',
-                        'magma', 'cividis',
-                        'coolwarm', 'RdGy'
+                        'greys', 'viridis', 'plasma', 'inferno', 'magma',
+                        'cividis', 'coolwarm', 'RdGy'
                     ]
 
                 self.color_by = change.new
