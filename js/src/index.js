@@ -52,6 +52,9 @@ const properties = [
   'cameraRotation',
   'cameraView',
   'otherOptions',
+  'lassoInitiator',
+  'mouseMode',
+  'viewReset'
 ];
 
 // Custom View. Renders the widget model.
@@ -292,8 +295,24 @@ const JScatterView = widgets.DOMWidgetView.extend({
     this.withPropertyChangeHandler('cameraView', newValue);
   },
 
+  lassoInitiatorHandler: function lassoInitiatorHandler(newValue) {
+    this.withPropertyChangeHandler('lassoInitiator', newValue);
+  },
+
+  mouseModeHandler: function mouseModeHandler(newValue) {
+    this.withPropertyChangeHandler('mouseMode', newValue);
+  },
+
   otherOptionsHandler: function otherOptionsHandler(newOptions) {
     this.scatterplot.draw(newOptions);
+  },
+
+  viewResetHandler: function viewResetHandler() {
+    this.scatterplot.reset();
+    setTimeout(() => {
+      this.model.set('view_reset', false);
+      this.model.save_changes();
+    }, 0);
   },
 
   resizeHandler: function resizeHandler() {
