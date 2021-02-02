@@ -11,10 +11,10 @@ import io
 # import re
 from distutils import log
 from jupyter_packaging import (
-    create_cmdclass,
-    install_npm,
-    ensure_targets,
-    combine_commands,
+    # create_cmdclass,
+    # install_npm,
+    # ensure_targets,
+    # combine_commands,
     get_version,
 )
 

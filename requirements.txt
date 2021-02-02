@@ -1,1 +1,2 @@
 ipywidgets>=7.6
+jupyterlab_widgets>=1.0.0
