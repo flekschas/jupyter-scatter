@@ -74,7 +74,7 @@ For a complete example, take a look at [notebooks/example.ipynb](notebooks/examp
 **Installation:**
 
 ```bash
-git clone https://github.com/flekschas/jscatter/ jscatter && cd jscatter
+git clone https://github.com/flekschas/jupyter-scatter/ jscatter && cd jscatter
 conda env create -f environment.yml && conda activate jscatter
 pip install -e .
 ```
@@ -89,7 +89,7 @@ jupyter nbextension enable --py --sys-prefix jscatter
 **Enable the Lab Extension:**
 
 ```bash
-jupyter labextension develop jscatter
+jupyter labextension develop --overwrite jscatter
 ```
 
 **After Changing Python code:** simply restart the kernel.

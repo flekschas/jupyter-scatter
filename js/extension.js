@@ -7,7 +7,7 @@ if (window.require) {
   window.require.config({
     map: {
       "*" : {
-        "jscatter": "nbextensions/jscatter/index",
+        "jupyter-scatter": "nbextensions/jupyter-scatter/index",
       }
     }
   });

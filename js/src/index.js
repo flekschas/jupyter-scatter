@@ -6,14 +6,14 @@ const packageJson = require('../package.json');
 
 const createScatterplot = reglScatterplot.default;
 
-const JScatterModel = widgets.DOMWidgetModel.extend({
+const JupyterScatterModel = widgets.DOMWidgetModel.extend({
   defaults: _.extend(
     _.result(this, 'widgets.DOMWidgetModel.prototype.defaults'),
     {
-      _model_name : 'JScatterModel',
+      _model_name : 'JupyterScatterModel',
       _model_module : packageJson.name,
       _model_module_version : packageJson.version,
-      _view_name : 'JScatterView',
+      _view_name : 'JupyterScatterView',
       _view_module : packageJson.name,
       _view_module_version : packageJson.version
     }
@@ -58,7 +58,7 @@ const properties = [
 ];
 
 // Custom View. Renders the widget model.
-const JScatterView = widgets.DOMWidgetView.extend({
+const JupyterScatterView = widgets.DOMWidgetView.extend({
   render: function render() {
     var self = this;
 
@@ -109,7 +109,7 @@ const JScatterView = widgets.DOMWidgetView.extend({
 
       // eslint-disable-next-line
       console.log(
-        'jscatter v' + packageJson.version +
+        'jupyterscatter v' + packageJson.version +
         ' with regl-scatterplot v' + self.scatterplot.get('version')
       );
 
@@ -353,6 +353,6 @@ const JScatterView = widgets.DOMWidgetView.extend({
 });
 
 module.exports = {
-  JScatterModel: JScatterModel,
-  JScatterView: JScatterView
+  JupyterScatterModel: JupyterScatterModel,
+  JupyterScatterView: JupyterScatterView
 };

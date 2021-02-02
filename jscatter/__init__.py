@@ -15,7 +15,7 @@ def _jupyter_labextension_paths():
     """
     return [{
         'src': 'labextension',
-        'dest': 'jscatter',
+        'dest': 'jupyter-scatter',
     }]
 
 
@@ -38,6 +38,6 @@ def _jupyter_nbextension_paths():
     return [{
         'section': 'notebook',
         'src': 'nbextension',
-        'dest': 'jscatter',
-        'require': 'jscatter/extension'
+        'dest': 'jupyter-scatter',
+        'require': 'jupyter-scatter/extension'
     }]
