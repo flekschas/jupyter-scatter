@@ -9,10 +9,10 @@ install:
 uninstall:
 	pip uninstall jscatter
 
-postinstall: nbext-deps nbext-install labext-deps labext-install
+postinstall: nbext-install labext-install
 
 build:
-	python setup.py jsdeps
+	python setup.py
 
 clean-py:
 	rm -rf build/
@@ -20,7 +20,8 @@ clean-py:
 
 clean-js:
 	rm -rf js/dist/
-	rm -rf scatterplot/static/
+	rm -rf jscatter/labextension/
+	rm -rf jscatter/nbextension/
 
 clean-npm:
 	rm -rf js/node_modules/
@@ -29,48 +30,40 @@ clean: clean-py clean-js clean-npm
 
 
 # Jupyter Notebook Extension
-nbext-deps:
-	#pip install jupyter_contrib_nbextensions
-	#jupyter contrib nbextension install --sys-prefix
-	jupyter nbextension enable --py --sys-prefix widgetsnbextension
-
 nbext-install:
-	jupyter nbextension install --py --symlink --sys-prefix higlass
-	jupyter nbextension enable --py --sys-prefix higlass
+	jupyter nbextension install --py --symlink --sys-prefix jscatter
+	jupyter nbextension enable --py --sys-prefix jscatter
 
 nbext-uninstall:
-	jupyter nbextension uninstall --py --sys-prefix higlass
+	jupyter nbextension uninstall --py --sys-prefix jscatter
 
 
 # Jupyter Lab Extension
-labext-deps:
-	jupyter labextension install @jupyter-widgets/jupyterlab-manager
-
 labext-install:
-	cd js && jupyter labextension link .
+	jupyter labextension install jscatter
 
 labext-uninstall:
-	cd js && jupyter labextension unlink .
+	jupyter labextension uninstall jscatter
 
 
 # Publishing tools
 bump-patch:
 	cd js && npm version patch
-	echo "__version__ = \"`node -p "require('./js/package.json').version"`\"" > scatterplot/__version__.py
-	git add ./js/package.json ./scatterplot/__version__.py
-	git commit -m "Bump to v`node -p "require('./js/package.json').version"`"
+	echo "__version__ = \"`node -p "require('./js/get-version-info.js')"`\"" > jscatter/_version.py
+	git add ./js/package.json ./jscatter/_version.py
+	git commit -m "Bump to v`node -p "require('./js/get-version-info.js')"`"
 
 bump-minor:
 	cd js && npm version minor
-	echo "__version__ = \"`node -p "require('./js/package.json').version"`\"" > scatterplot/__version__.py
-	git add ./js/package.json ./scatterplot/__version__.py
-	git commit -m "Bump to v`node -p "require('./js/package.json').version"`"
+	echo "__version__ = \"`node -p "require('./js/get-version-info.js')"`\"" > jscatter/_version.py
+	git add ./js/package.json ./jscatter/_version.py
+	git commit -m "Bump to v`node -p "require('./js/get-version-info.js')"`"
 
 bump-major:
 	cd js && npm version major
-	echo "__version__ = \"`node -p "require('./js/package.json').version"`\"" > scatterplot/__version__.py
-	git add ./js/package.json ./scatterplot/__version__.py
-	git commit -m "Bump to v`node -p "require('./js/package.json').version"`"
+	echo "__version__ = \"`node -p "require('./js/get-version-info.js')"`\"" > jscatter/_version.py
+	git add ./js/package.json ./jscatter/_version.py
+	git commit -m "Bump to v`node -p "require('./js/get-version-info.js')"`"
 
 publish:
 	git tag -a "v`node -p "require('./js/package.json').version"`" -m "Version `node -p "require('./js/package.json').version"`"
