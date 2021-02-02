@@ -12,7 +12,7 @@
 
 <div align="center">
   
-  [![Example](https://img.shields.io/badge/example-📖-7fd4ff.svg?style=flat-square)](https://github.com/flekschas/jscatter/blob/master/notebooks/example.ipynb)
+  ![Feb-01-2021 21-31-44](https://user-images.githubusercontent.com/932103/106544399-7a717680-64d5-11eb-8d04-288b70807bc0.gif)
   
 </div>
 
