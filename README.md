@@ -16,12 +16,6 @@
   
 </div>
 
-<div id="teaser" align="center">
-  
-  ![Teaser](teaser.png)
-  
-</div>
-
 **Why?** After embedding data we want to explore the embedding space, which typically involves three things besides plotting the data as a 2D scatter. First, we want to interactively adjust the view (e.g., via panning & zooming) and the visual point encoding (e.g., the point color, opacity, or size). Second, we want to be able to select/highlight points. And third, we want to compare multiple embeddings (e.g., via animation, color, or point connections). The goal of jscatter is to support all three requirements and scale to millions of points.
 
 **How?** Internally, jscatter is using [`regl-scatterplot`](https://github.com/flekschas/regl-scatterplot/)
