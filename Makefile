@@ -26,7 +26,7 @@ clean-js:
 clean-npm:
 	rm -rf js/node_modules/
 
-clean: clean-py clean-js clean-npm
+clean: clean-py clean-js
 
 
 # Jupyter Notebook Extension
