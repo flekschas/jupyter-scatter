@@ -16,6 +16,7 @@ pids
 logs
 results
 
+build
 dist/*
 dist.zip
 
