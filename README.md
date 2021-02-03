@@ -65,6 +65,14 @@ To adjust the scatter plot interactively let's pull up some options:
 scatterplot.options()
 ```
 
+<details><summary>Click here to see options menu.</summary>
+<p>
+
+![Option UI elements](https://user-images.githubusercontent.com/932103/106693338-3f8a4400-65a4-11eb-9f4f-dd8958375709.png)
+
+</p>
+</details>
+
 Finally, to retrieve the current selection of points (or programmatically select points) you can work with:
 
 ```python
