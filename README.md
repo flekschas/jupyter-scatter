@@ -81,9 +81,25 @@ scatterplot.selected_points
 
 For a complete example, take a look at [notebooks/example.ipynb](notebooks/example.ipynb)
 
+## API
+
+_Coming soon!_
+
+<details><summary>Meaningwhile type <code>jscatter.plot(</code> and hit <kbd>SHIFT</kbd>+<kbd>TAB</kbd></summary>
+<p>
+
+![Show plot options](https://user-images.githubusercontent.com/932103/106694634-f091de00-65a6-11eb-9540-928e0b6834dd.gif)
+
+
+</p>
+</details>
+
 ---
 
-## Development
+### Development
+
+<details><summary>Setting up a development environment</summary>
+<p>
 
 **Requirements:**
 
@@ -113,3 +129,14 @@ jupyter labextension develop --overwrite jscatter
 **After Changing Python code:** simply restart the kernel.
 
 **After Changing JavaScript code:** do `cd js && npm run build` and reload the browser tab.
+
+</p>
+</details>
+
+<details><summary>Setting up a test environment</summary>
+<p>
+
+Go to [test-environment](test-environment) and follow the detailed instructions
+
+</p>
+</details>
