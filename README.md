@@ -30,8 +30,18 @@
 ## Install
 
 ```bash
+# Install extension
 pip install jupyter-scatter
+
+# Activate extension in Jupyter Lab
+jupyter labextension install jupyter-scatter
+
+# Activate extension in Jupyter Notebook
+jupyter nbextension install --py --sys-prefix jscatter
+jupyter nbextension enable --py --sys-prefix jscatter
 ```
+
+For a minimal working example, take a look at [test-environment](test-environment).
 
 ## Getting Started
 
