@@ -4,6 +4,13 @@
 
 <div align="center">
   
+  [![pypi version](https://img.shields.io/pypi/v/jupyter-scatter.svg?color=1a8cff&style=flat-square)](https://pypi.org/project/jupyter-scatter/)
+  [![build status](https://img.shields.io/github/workflow/status/flekschas/jupyter-scatter/Build%20Python%20&%20JavaScript?color=139ce9&style=flat-square)](https://github.com/flekschas/jupyter-scatter/actions?query=workflow%3A%22Build+Python+%26+JavaScript%22)
+  
+</div>
+
+<div align="center">
+  
   **A scalable scatter plot extension for Jupyter Lab and Notebook**
   
 </div>
