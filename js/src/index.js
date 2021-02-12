@@ -157,6 +157,10 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.model.save_changes();
   },
 
+  remove: function destroy() {
+    this.scatterplot.destroy();
+  },
+
   // Helper
   colorCanvas: function colorCanvas() {
     if (Array.isArray(this.backgroundColor)) {
