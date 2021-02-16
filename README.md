@@ -23,9 +23,11 @@
   
 </div>
 
-**Why?** After embedding data we want to explore the embedding space, which typically involves three things besides plotting the data as a 2D scatter. First, we want to interactively adjust the view (e.g., via panning & zooming) and the visual point encoding (e.g., the point color, opacity, or size). Second, we want to be able to select/highlight points. And third, we want to compare multiple embeddings (e.g., via animation, color, or point connections). The goal of jscatter is to support all three requirements and scale to millions of points.
+**IMPORTANT: THIS IS VERY EARLY WORK! THE API WILL LIKELY CHANGE.** However, you're more than welcome to give the extension and a try and let me know what you think :) All feedback is welcome!
 
-**How?** Internally, jupyter-scatter is using [regl-scatterplot](https://github.com/flekschas/regl-scatterplot/) for rendering and [ipywidgets](https://github.com/jupyter-widgets/ipywidgets) for linking the scatter plot to the iPython kernel.
+**Why?** Imagine trying to explore an embedding space of millions of data points. Besides plotting the space as a 2D scatter, the exploration typically involves three things: First, we want to interactively adjust the view (e.g., via panning & zooming) and the visual point encoding (e.g., the point color, opacity, or size). Second, we want to be able to select/highlight points. And third, we want to compare multiple embeddings (e.g., via animation, color, or point connections). The goal of jupyter-scatter is to support all three requirements and scale to millions of points.
+
+**How?** Internally, jupyter-scatter uses [regl-scatterplot](https://github.com/flekschas/regl-scatterplot/) for rendering and [ipywidgets](https://github.com/jupyter-widgets/ipywidgets) for linking the scatter plot to the iPython kernel.
 
 ## Install
 
@@ -65,6 +67,14 @@ To adjust the scatter plot interactively let's pull up some options:
 scatterplot.options()
 ```
 
+<details><summary>Click here to see options menu.</summary>
+<p>
+
+![Option UI elements](https://user-images.githubusercontent.com/932103/106693338-3f8a4400-65a4-11eb-9f4f-dd8958375709.png)
+
+</p>
+</details>
+
 Finally, to retrieve the current selection of points (or programmatically select points) you can work with:
 
 ```python
@@ -73,9 +83,25 @@ scatterplot.selected_points
 
 For a complete example, take a look at [notebooks/example.ipynb](notebooks/example.ipynb)
 
+## API
+
+_Coming soon!_
+
+<details><summary>Meaningwhile type <code>jscatter.plot(</code> and hit <kbd>SHIFT</kbd>+<kbd>TAB</kbd></summary>
+<p>
+
+![Show plot options](https://user-images.githubusercontent.com/932103/106694634-f091de00-65a6-11eb-9540-928e0b6834dd.gif)
+
+
+</p>
+</details>
+
 ---
 
-## Development
+### Development
+
+<details><summary>Setting up a development environment</summary>
+<p>
 
 **Requirements:**
 
@@ -105,3 +131,14 @@ jupyter labextension develop --overwrite jscatter
 **After Changing Python code:** simply restart the kernel.
 
 **After Changing JavaScript code:** do `cd js && npm run build` and reload the browser tab.
+
+</p>
+</details>
+
+<details><summary>Setting up a test environment</summary>
+<p>
+
+Go to [test-environment](test-environment) and follow the detailed instructions
+
+</p>
+</details>
