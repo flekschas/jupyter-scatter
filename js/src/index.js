@@ -26,47 +26,69 @@ function camelToSnake(string) {
   }).toLowerCase();
 }
 
+function flipObj(obj) {
+  return Object.entries(obj).reduce((ret, entry) => {
+    const [ key, value ] = entry;
+    ret[ value ] = key;
+    return ret;
+  }, {});
+}
+
 const MIN_WIDTH = 240;
 
-const properties = [
-  'colorBy',
-  'points',
-  'selectedPoints',
-  'height',
-  'backgroundColor',
-  'backgroundImage',
-  'lassoColor',
-  'lassoMinDelay',
-  'lassoMinDist',
-  'pointColor',
-  'pointColorActive',
-  'pointColorHover',
-  'pointOpacity',
-  'pointSize',
-  'pointSizeSelected',
-  'pointOutlineWidth',
-  'showRecticle',
-  'recticleColor',
-  'cameraTarget',
-  'cameraDistance',
-  'cameraRotation',
-  'cameraView',
-  'otherOptions',
-  'lassoInitiator',
-  'mouseMode',
-  'viewReset'
-];
+const properties = {
+  backgroundColor: 'backgroundColor',
+  backgroundImage: 'backgroundImage',
+  cameraDistance: 'cameraDistance',
+  cameraRotation: 'cameraRotation',
+  cameraTarget: 'cameraTarget',
+  cameraView: 'cameraView',
+  color: 'pointColor',
+  colorActive: 'pointColorActive',
+  colorBy: 'colorBy',
+  colorHover: 'pointColorHover',
+  height: 'height',
+  lassoColor: 'lassoColor',
+  lassoInitiator: 'lassoInitiator',
+  lassoMinDelay: 'lassoMinDelay',
+  lassoMinDist: 'lassoMinDist',
+  mouseMode: 'mouseMode',
+  opacity: 'opacity',
+  opacityBy: 'opacityBy',
+  otherOptions: 'otherOptions',
+  points: 'points',
+  recticle: 'showRecticle',
+  recticleColor: 'recticleColor',
+  selection: 'selectedPoints',
+  selectionOutlineWidth: 'pointOutlineWidth',
+  selectionSizeAddition: 'pointSizeSelected',
+  size: 'pointSize',
+  sizeBy: 'sizeBy',
+  connect: 'showPointConnections',
+  connectionColor: 'pointConnectionColor',
+  connectionColorActive: 'pointConnectionColorActive',
+  connectionColorHover: 'pointConnectionColorHover',
+  connectionColorBy: 'pointConnectionColorBy',
+  connectionOpacity: 'pointConnectionOpacity',
+  connectionOpacityBy: 'pointConnectionOpacityBy',
+  connectionSize: 'pointConnectionSize',
+  connectionSizeBy: 'pointConnectionSizeBy',
+  viewReset: 'viewReset',
+  sortOrder: 'sortOrder'
+};
 
 // Custom View. Renders the widget model.
 const JupyterScatterView = widgets.DOMWidgetView.extend({
   render: function render() {
     var self = this;
 
-    properties.forEach(function(propertyName) {
+    Object.keys(properties).forEach(function(propertyName) {
       self[propertyName] = self.model.get(camelToSnake(propertyName));
     });
 
     this.height = this.model.get('height');
+
+    if (self.sortOrder) this.inverseSortOrder = flipObj(self.sortOrder);
 
     // Create a random 6-letter string
     // From https://gist.github.com/6174/6062387
@@ -101,8 +123,11 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
         width: self.width,
       }
 
-      properties.forEach(function(propertyName) {
-        initialOptions[propertyName] = self[propertyName];
+      Object.entries(properties).forEach(function(property) {
+        const pyName = property[0];
+        const jsName = property[1];
+        if (self[pyName] !== null)
+          initialOptions[jsName] = self[pyName];
       });
 
       self.scatterplot = createScatterplot(initialOptions);
@@ -126,15 +151,19 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       self.scatterplot.subscribe('deselect', self.deselectHandlerBound);
 
       // Listen to messages from the Python world
-      properties.forEach(function(propertyName) {
-        self.model.on(
-          'change:' + camelToSnake(propertyName),
-          self.withModelChangeHandler(
-            propertyName,
-            self[propertyName + 'Handler'].bind(self)
-          ),
-          self
-        );
+      Object.keys(properties).forEach(function(propertyName) {
+        if (self[propertyName + 'Handler']) {
+          self.model.on(
+            'change:' + camelToSnake(propertyName),
+            self.withModelChangeHandler(
+              propertyName,
+              self[propertyName + 'Handler'].bind(self)
+            ),
+            self
+          );
+        } else {
+          console.warn('No handler for ' + propertyName);
+        }
       });
 
       window.addEventListener('resize', self.resizeHandler.bind(self));
@@ -147,8 +176,8 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
         self.scatterplot
           .draw(self.points)
           .then(function onInitialDraw() {
-            if (self.selectedPoints.length) {
-              self.scatterplot.select(self.selectedPoints);
+            if (self.selection.length) {
+              self.scatterplot.select(self.sortedSelection());
             }
           });
       }
@@ -172,34 +201,45 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     }
   },
 
+  sortSelection: function sortSelection() {
+    if (this.sortOrder) {
+      return self.selection.map((s) => this.sortOrder[s]);
+    }
+    return self.selection;
+  },
+
   // Event handlers for JS-triggered events
   pointoverHandler: function pointoverHandler(pointIndex) {
-    this.model.set('hovered_point', pointIndex);
+    this.model.set('hovering', pointIndex);
     this.model.save_changes();
   },
 
   pointoutHandler: function pointoutHandler() {
-    this.model.set('hovered_point', null);
+    this.model.set('hovering', null);
     this.model.save_changes();
   },
 
   selectHandler: function selectHandler(event) {
-    if (this.selectedPointsChangedPython) {
-      this.selectedPointsChangedPython = false;
+    if (this.selectionChangedPython) {
+      this.selectionChangedPython = false;
       return;
     }
-    this.model.set('selected_points', event.points);
-    this.selectedPointsChanged = true;
+    if (this.inverseSortOrder) {
+      this.model.set('selection', event.points.map(point => this.inverseSortOrder[point]));
+    } else {
+      this.model.set('selection', event.points);
+    }
+    this.selectionChanged = true;
     this.model.save_changes();
   },
 
   deselectHandler: function deselectHandler() {
-    if (this.selectedPointsChangedPython) {
-      this.selectedPointsChangedPython = false;
+    if (this.selectionChangedPython) {
+      this.selectionChangedPython = false;
       return;
     }
-    this.model.set('selected_points', []);
-    this.selectedPointsChanged = true;
+    this.model.set('selection', []);
+    this.selectionChanged = true;
     this.model.save_changes();
   },
 
@@ -208,12 +248,12 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.scatterplot.draw(newPoints);
   },
 
-  selectedPointsHandler: function selectedPointsHandler(newSelectedPoints) {
-    this.selectedPointsChangedPython = true;
-    if (!newSelectedPoints || !newSelectedPoints.length) {
+  selectionHandler: function selectionHandler(newselection) {
+    this.selectionChangedPython = true;
+    if (!newselection || !newselection.length) {
       this.scatterplot.deselect({ preventEvent: true });
     } else {
-      this.scatterplot.select(newSelectedPoints, { preventEvent: true });
+      this.scatterplot.select(newselection, { preventEvent: true });
     }
   },
 
@@ -231,10 +271,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.withPropertyChangeHandler('backgroundImage', newValue);
   },
 
-  colorByHandler: function colorByHandler(newValue) {
-    this.withPropertyChangeHandler('colorBy', newValue);
-  },
-
   lassoColorHandler: function lassoColorHandler(newValue) {
     this.withPropertyChangeHandler('lassoColor', newValue);
   },
@@ -247,35 +283,83 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.withPropertyChangeHandler('lassoMinDist', newValue);
   },
 
-  pointColorHandler: function pointColorHandler(newValue) {
+  colorHandler: function colorHandler(newValue) {
     this.withPropertyChangeHandler('pointColor', newValue);
   },
 
-  pointColorActiveHandler: function pointColorActiveHandler(newValue) {
+  colorActiveHandler: function colorActiveHandler(newValue) {
     this.withPropertyChangeHandler('pointColorActive', newValue);
   },
 
-  pointColorHoverHandler: function pointColorHoverHandler(newValue) {
+  colorHoverHandler: function colorHoverHandler(newValue) {
     this.withPropertyChangeHandler('pointColorHover', newValue);
   },
 
-  pointOpacityHandler: function pointOpacityHandler(newValue) {
+  colorByHandler: function colorByHandler(newValue) {
+    this.withPropertyChangeHandler('colorBy', newValue);
+  },
+
+  opacityHandler: function opacityHandler(newValue) {
     this.withPropertyChangeHandler('opacity', newValue);
   },
 
-  pointSizeHandler: function pointSizeHandler(newValue) {
+  opacityByHandler: function opacityByHandler(newValue) {
+    this.withPropertyChangeHandler('opacityBy', newValue);
+  },
+
+  sizeHandler: function sizeHandler(newValue) {
     this.withPropertyChangeHandler('pointSize', newValue);
   },
 
-  pointSizeSelectedHandler: function pointSizeSelectedHandler(newValue) {
+  sizeByHandler: function sizeByHandler(newValue) {
+    this.withPropertyChangeHandler('sizeBy', newValue);
+  },
+
+  selectionSizeAdditionHandler: function selectionSizeAdditionHandler(newValue) {
     this.withPropertyChangeHandler('pointSizeSelected', newValue);
   },
 
-  pointOutlineWidthHandler: function pointOutlineWidthHandler(newValue) {
+  selectionOutlineWidthHandler: function selectionOutlineWidthHandler(newValue) {
     this.withPropertyChangeHandler('pointOutlineWidth', newValue);
   },
 
-  showRecticleHandler: function showRecticleHandler(newValue) {
+  connectHandler: function connectHandler(newValue) {
+    this.withPropertyChangeHandler('showPointConnections', Boolean(newValue));
+  },
+
+  connectionColorHandler: function connectionColorHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionColor', newValue);
+  },
+
+  connectionColorActiveHandler: function connectionColorActiveHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionColorActive', newValue);
+  },
+
+  connectionColorHoverHandler: function connectionColorHoverHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionColorHover', newValue);
+  },
+
+  connectionColorByHandler: function connectionColorByHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionColorBy', newValue);
+  },
+
+  connectionOpacityHandler: function connectionOpacityHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionOpacity', newValue);
+  },
+
+  connectionOpacityByHandler: function connectionOpacityByHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionOpacityBy', newValue);
+  },
+
+  connectionSizeHandler: function connectionSizeHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionSize', newValue);
+  },
+
+  connectionSizeByHandler: function connectionSizeByHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionSizeBy', newValue);
+  },
+
+  recticleHandler: function recticleHandler(newValue) {
     this.withPropertyChangeHandler('showRecticle', newValue);
   },
 
@@ -308,7 +392,16 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   },
 
   otherOptionsHandler: function otherOptionsHandler(newOptions) {
-    this.scatterplot.draw(newOptions);
+    this.scatterplot.set(newOptions);
+  },
+
+  sortOrderHandler: function sortOrderHandler(newSortOrder) {
+    this.sortOrder = newSortOrder;
+    if (self.sortOrder) {
+      this.inverseSortOrder = flipObj(self.sortOrder);
+    } else {
+      this.inverseSortOrder = undefined;
+    }
   },
 
   viewResetHandler: function viewResetHandler() {
@@ -329,9 +422,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   },
 
   withPropertyChangeHandler: function withPropertyChangeHandler(property, changedValue) {
-    var properties = {};
-    properties[property] = changedValue;
-    this.scatterplot.set(properties);
+    var p = {};
+    p[property] = changedValue;
+    this.scatterplot.set(p);
   },
 
   withModelChangeHandler: function withModelChangeHandler(property, handler) {
