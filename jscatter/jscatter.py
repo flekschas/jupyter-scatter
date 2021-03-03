@@ -1289,7 +1289,7 @@ def plot(
 
     return JupyterScatter(
         points=points.tolist(),
-        selected_points=selection.tolist(),
+        selection=selection.tolist(),
         height=height,
         background_color=background_color,
         background_image=background_image,
