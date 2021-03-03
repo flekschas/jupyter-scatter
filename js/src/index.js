@@ -220,26 +220,19 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   },
 
   selectHandler: function selectHandler(event) {
-    if (this.selectionChangedPython) {
-      this.selectionChangedPython = false;
-      return;
-    }
+    this.selectionChangedByJs = true;
     if (this.inverseSortOrder) {
       this.model.set('selection', event.points.map(point => this.inverseSortOrder[point]));
     } else {
-      this.model.set('selection', event.points);
+      this.model.set('selection', [...event.points]);
     }
-    this.selectionChanged = true;
+
     this.model.save_changes();
   },
 
   deselectHandler: function deselectHandler() {
-    if (this.selectionChangedPython) {
-      this.selectionChangedPython = false;
-      return;
-    }
+    this.selectionChangedByJs = true;
     this.model.set('selection', []);
-    this.selectionChanged = true;
     this.model.save_changes();
   },
 
@@ -248,12 +241,18 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.scatterplot.draw(newPoints);
   },
 
-  selectionHandler: function selectionHandler(newselection) {
-    this.selectionChangedPython = true;
-    if (!newselection || !newselection.length) {
+  selectionHandler: function selectionHandler(newSelection) {
+    // Avoid calling `this.scatterplot.select()` twice when the selection was
+    // triggered by the JavaScript (i.e., the user interactively selected points)
+    if (this.selectionChangedByJs) {
+      this.selectionChangedByJs = undefined;
+      return;
+    }
+
+    if (!newSelection || !newSelection.length) {
       this.scatterplot.deselect({ preventEvent: true });
     } else {
-      this.scatterplot.select(newselection, { preventEvent: true });
+      this.scatterplot.select(newSelection, { preventEvent: true });
     }
   },
 
