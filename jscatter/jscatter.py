@@ -511,6 +511,17 @@ class JupyterScatter(widgets.DOMWidget):
     def reset_view(self):
         self.view_reset = True
 
+    def select(self, points):
+        """Select points
+
+        Parameters
+        ----------
+        points : 1D array_like
+            List of point indices to select
+        """
+
+        self.selection = np.asarray(points).tolist()
+
     def get_panzoom_mode_widget(self, icon_only=False, width=None):
         button = widgets.Button(
             description='' if icon_only else 'Pan & Zoom',
