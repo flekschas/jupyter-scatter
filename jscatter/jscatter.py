@@ -699,7 +699,6 @@ class Scatter():
             order = self._connect_order,
         )
 
-<<<<<<< HEAD
     def connection_color(
         self,
         color = Undefined,
@@ -716,41 +715,6 @@ class Scatter():
                 self._connection_color = to_rgba(color)
             except ValueError:
                 pass
-=======
-    def use_cmap(self, cmap_name: str, reverse: bool = False):
-        """Use a Matplotlib colormap for the point color.
-
-        Parameters
-        ----------
-        cmap_name : str
-            The name of the Matplotlib color map.
-        reverse : bool, optional
-            Reverse the colormap when set to ``True``.
-        """
-        self.color = plt.get_cmap(cmap_name)(range(256)).tolist()[::(1 + (-2 * reverse))]
-
-    def reset_view(self):
-        self.view_reset = True
-
-    def select(self, points):
-        """Select points
-
-        Parameters
-        ----------
-        points : 1D array_like
-            List of point indices to select
-        """
-
-        self.selection = np.asarray(points).tolist()
-
-    def get_panzoom_mode_widget(self, icon_only=False, width=None):
-        button = widgets.Button(
-            description='' if icon_only else 'Pan & Zoom',
-            icon='arrows',
-            tooltip='Activate pan & zoom',
-            button_style = 'primary' if self.mouse_mode == 'panZoom' else '',
-        )
->>>>>>> 42278d8 (Add convenience function)
 
         if color_active is not Undefined:
             try:
