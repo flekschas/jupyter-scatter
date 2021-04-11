@@ -57,8 +57,8 @@ const properties = {
   opacityBy: 'opacityBy',
   otherOptions: 'otherOptions',
   points: 'points',
-  recticle: 'showRecticle',
-  recticleColor: 'recticleColor',
+  reticle: 'showReticle',
+  reticleColor: 'reticleColor',
   selection: 'selectedPoints',
   selectionOutlineWidth: 'pointOutlineWidth',
   selectionSizeAddition: 'pointSizeSelected',
@@ -358,12 +358,12 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.withPropertyChangeHandler('pointConnectionSizeBy', newValue);
   },
 
-  recticleHandler: function recticleHandler(newValue) {
-    this.withPropertyChangeHandler('showRecticle', newValue);
+  reticleHandler: function reticleHandler(newValue) {
+    this.withPropertyChangeHandler('showReticle', newValue);
   },
 
-  recticleColorHandler: function recticleColorHandler(newValue) {
-    this.withPropertyChangeHandler('recticleColor', newValue);
+  reticleColorHandler: function reticleColorHandler(newValue) {
+    this.withPropertyChangeHandler('reticleColor', newValue);
   },
 
   cameraTargetHandler: function cameraTargetHandler(newValue) {
