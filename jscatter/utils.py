@@ -20,3 +20,6 @@ def with_left_label(label_text, widget, label_width: int = 128):
     container.children = (label, widget)
 
     return container
+
+def any_not_none(l):
+    return any([x is not None for x in l])

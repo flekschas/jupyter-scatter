@@ -78,8 +78,6 @@ const properties = {
   reticle: 'showReticle',
   reticleColor: 'reticleColor',
   selection: 'selectedPoints',
-  selectionOutlineWidth: 'pointOutlineWidth',
-  selectionSizeAddition: 'pointSizeSelected',
   size: 'pointSize',
   sizeBy: 'sizeBy',
   connect: 'showPointConnections',
@@ -150,8 +148,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       });
 
       self.scatterplot = createScatterplot(initialOptions);
-
-      console.log('initialOptions', initialOptions);
 
       // eslint-disable-next-line
       console.log(
@@ -333,14 +329,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
   sizeByHandler: function sizeByHandler(newValue) {
     this.withPropertyChangeHandler('sizeBy', newValue);
-  },
-
-  selectionSizeAdditionHandler: function selectionSizeAdditionHandler(newValue) {
-    this.withPropertyChangeHandler('pointSizeSelected', newValue);
-  },
-
-  selectionOutlineWidthHandler: function selectionOutlineWidthHandler(newValue) {
-    this.withPropertyChangeHandler('pointOutlineWidth', newValue);
   },
 
   connectHandler: function connectHandler(newValue) {
