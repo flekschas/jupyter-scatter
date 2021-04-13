@@ -34,6 +34,24 @@ function flipObj(obj) {
   }, {});
 }
 
+function downloadBlob(blob, name) {
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = name || 'jscatter.png';
+
+  document.body.appendChild(link);
+
+  link.dispatchEvent(
+    new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+    })
+  );
+
+  document.body.removeChild(link);
+}
+
 const MIN_WIDTH = 240;
 
 const properties = {
@@ -73,6 +91,7 @@ const properties = {
   connectionOpacityBy: 'pointConnectionOpacityBy',
   connectionSize: 'pointConnectionSize',
   connectionSizeBy: 'pointConnectionSizeBy',
+  viewDownload: 'viewDownload',
   viewReset: 'viewReset',
   sortOrder: 'sortOrder'
 };
@@ -132,9 +151,11 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
       self.scatterplot = createScatterplot(initialOptions);
 
+      console.log('initialOptions', initialOptions);
+
       // eslint-disable-next-line
       console.log(
-        'jupyterscatter v' + packageJson.version +
+        'jscatter v' + packageJson.version +
         ' with regl-scatterplot v' + self.scatterplot.get('version')
       );
 
@@ -401,6 +422,45 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     } else {
       this.inverseSortOrder = undefined;
     }
+  },
+
+  viewDownloadHandler: function viewDownloadHandler(target) {
+    if (!target) return;
+
+    const data = this.scatterplot.export();
+
+    if (target === 'property') {
+      this.model.set('view_pixels', Array.from(data.pixels));
+      this.model.set('view_shape', [data.width, data.height]);
+      this.model.set('view_download', null);
+      this.model.save_changes();
+      return;
+    }
+
+    const c = document.createElement('canvas');
+    c.width = data.width;
+    c.height = data.height;
+
+    const ctx = c.getContext('2d');
+    ctx.putImageData(new ImageData(data.pixels, data.width, data.height), 0, 0);
+
+    // The following is only needed to flip the image vertically. Since `ctx.scale`
+    // only affects `draw*()` calls and not `put*()` calls we have to draw the
+    // image twice...
+    const imageObject = new Image();
+    imageObject.onload = () => {
+      ctx.clearRect(0, 0, data.width, data.height);
+      ctx.scale(1, -1);
+      ctx.drawImage(imageObject, 0, -data.height);
+      c.toBlob((blob) => {
+        downloadBlob(blob, 'scatter.png');
+        setTimeout(() => {
+          this.model.set('view_download', null);
+          this.model.save_changes();
+        }, 0);
+      });
+    };
+    imageObject.src = c.toDataURL();
   },
 
   viewResetHandler: function viewResetHandler() {
