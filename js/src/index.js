@@ -148,8 +148,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
       self.scatterplot = createScatterplot(initialOptions);
 
-      console.log('initialOptions', initialOptions);
-
       // eslint-disable-next-line
       console.log(
         'jscatter v' + packageJson.version +

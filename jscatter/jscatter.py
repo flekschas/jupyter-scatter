@@ -29,6 +29,8 @@ def check_encoding_dtype(series):
     if not any([check(series.dtype) for check in VALID_ENCODING_TYPES]):
         raise ValueError(f'{series.name} is of an unsupported data type: {series.dtype}. Must be one of category, float*, or int*.')
 
+from .utils import any_not_none
+
 def component_idx_to_name(idx):
     if idx == 2:
         return 'valueA'
@@ -429,6 +431,7 @@ class Scatter():
             norm = self._color_norm,
             order = self._color_order,
         )
+        self.options(kwargs.get('options'))
 
     def opacity(
         self,
