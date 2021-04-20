@@ -9,7 +9,7 @@ from matplotlib.colors import to_rgba
 from .encodings import Encodings
 from .widget import JupyterScatter
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not_none, tolist
+from .utils import any_not_none, tolist, uri_validator
 
 # To distinguish between None and an undefined optional argument
 Undefined = object()
@@ -102,6 +102,7 @@ class Scatter():
         self._connection_size_norm = default_norm
         self._connection_size_order = None
         self._connection_size_categories = None
+        self._width = 'auto'
         self._height = 240
         self._reticle = True
         self._reticle_color = (0, 0, 0, 0.1)
@@ -115,6 +116,7 @@ class Scatter():
 
         self.x(x)
         self.y(y)
+        self.width(kwargs.get('width', Undefined))
         self.height(kwargs.get('height', Undefined))
         self.selection(
             kwargs.get('selection', Undefined),
@@ -177,6 +179,10 @@ class Scatter():
         self.reticle(
             kwargs.get('reticle', Undefined),
             kwargs.get('reticle_color', Undefined)
+        )
+        self.background(
+            kwargs.get('background_color', Undefined),
+            kwargs.get('background_image', Undefined),
         )
         self.mouse(kwargs.get('mouse_mode', Undefined))
         self.camera(
@@ -1124,18 +1130,23 @@ class Scatter():
             )
 
         if image is not Undefined:
-            try:
-                im = plt.imshow(image, **kwargs)
-
-                x = im.make_image()
-                h, w, d = x.as_rgba_str()
-                self._background_image = np.fromstring(d, dtype=np.uint8).reshape(h, w, 4)
+            if uri_validator(image):
+                self._background_image = image
                 self.update_widget('background_image', self._background_image)
-            except:
-                if image is None:
-                    self._background_image = None
+
+            else:
+                try:
+                    im = plt.imshow(image, **kwargs)
+
+                    x = im.make_image()
+                    h, w, d = x.as_rgba_str()
+                    self._background_image = np.fromstring(d, dtype=np.uint8).reshape(h, w, 4)
                     self.update_widget('background_image', self._background_image)
-                pass
+                except:
+                    if image is None:
+                        self._background_image = None
+                        self.update_widget('background_image', self._background_image)
+                    pass
 
         if any_not_none([color, image]):
             return self
@@ -1230,18 +1241,23 @@ class Scatter():
             min_dist = self._lasso_min_dist,
         )
 
+    def width(self, width = Undefined):
+        if width is not Undefined:
+            try:
+                self._width = int(width)
+                self.update_widget('width', self._width)
+            except:
+                if width == 'auto':
+                    self._width = width
+                    self.update_widget('width', self._width)
+
+                pass
+
+            return self
+
+        return self._width
+
     def height(self, height = Undefined):
-        """Get or set height
-
-        Parameters
-        ----------
-        height : int
-            Height of the scatter plot
-
-        Returns
-        -------
-        scatter plot height or widget
-        """
         if height is not Undefined:
             try:
                 self._height = int(height)
@@ -1378,6 +1394,7 @@ class Scatter():
         self._widget = JupyterScatter(
             points=self._points.tolist(),
             selection=self._selection.tolist(),
+            width=self._width,
             height=self._height,
             background_color=self._background_color,
             background_image=self._background_image,

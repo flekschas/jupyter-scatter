@@ -71,6 +71,7 @@ class JupyterScatter(widgets.DOMWidget):
     connection_opacity_by = Enum([None, 'valueA', 'valueB', 'segment'], allow_none=True, default_value=None).tag(sync=True)
     connection_size = Union([Union([Int(), Float()]), List(Union([Int(), Float()]))]).tag(sync=True)
     connection_size_by = Enum([None, 'valueA', 'valueB', 'segment'], allow_none=True, default_value=None).tag(sync=True)
+    width = Union([Unicode(), Int()], default_value='auto').tag(sync=True)
     height = Int().tag(sync=True)
     background_color = Union([Unicode(), List(minlen=4, maxlen=4)]).tag(sync=True)
     background_image = Unicode(None, allow_none=True).tag(sync=True)

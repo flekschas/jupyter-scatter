@@ -105,8 +105,11 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     });
 
     this.height = this.model.get('height');
+    this.width = Number.isNaN(+this.model.get('width')) && +this.model.get('width') > 0
+      ? 'auto'
+      : +this.model.get('width');
 
-    if (self.sortOrder) this.inverseSortOrder = flipObj(self.sortOrder);
+    if (this.sortOrder) this.inverseSortOrder = flipObj(this.sortOrder);
 
     // Create a random 6-letter string
     // From https://gist.github.com/6174/6062387
@@ -119,9 +122,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.container = document.createElement('div');
     this.container.setAttribute('id', randomStr);
     this.container.style.position = 'relative'
-    this.container.style.border = this.otherOptions.theme === 'dark'
-      ? '#333333' : '#dddddd';
-    this.container.style.borderRadius = '2px';
+    this.container.style.width = this.width === 'auto'
+      ? '100%'
+      : this.width + 'px';
     this.container.style.height = this.height + 'px';
 
     this.el.appendChild(this.container);
@@ -133,11 +136,12 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.container.appendChild(this.canvas);
 
     window.requestAnimationFrame(function init() {
-      self.width = Math.max(MIN_WIDTH, self.el.getBoundingClientRect().width);
-
       const initialOptions = {
         canvas: self.canvas,
-        width: self.width,
+      }
+
+      if (self.width !== 'auto') {
+        initialOptions.width = self.width;
       }
 
       Object.entries(properties).forEach(function(property) {
