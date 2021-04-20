@@ -4,7 +4,7 @@ import ipywidgets as widgets
 import matplotlib.pyplot as plt
 import numpy as np
 
-from traitlets import Bool, Bytes, Dict, Enum, Float, Int, List, Unicode, Union
+from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
 
 from ._version import __version__
 from .utils import to_hex, with_left_label
@@ -40,7 +40,7 @@ class JupyterScatter(widgets.DOMWidget):
     # Data
     points = List().tag(sync=True)
     selection = List().tag(sync=True)
-    hovering = Int(None, allow_none=True, read_only=True).tag(sync=True)
+    hovering = Int(None, allow_none=True).tag(sync=True)
 
     # View properties
     camera_target = List().tag(sync=True)

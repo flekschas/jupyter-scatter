@@ -23,3 +23,9 @@ def with_left_label(label_text, widget, label_width: int = 128):
 
 def any_not_none(l):
     return any([x is not None for x in l])
+
+def tolist(l):
+    try:
+        return l.tolist()
+    except:
+        return l
