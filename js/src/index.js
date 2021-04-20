@@ -91,7 +91,8 @@ const properties = {
   connectionSizeBy: 'pointConnectionSizeBy',
   viewDownload: 'viewDownload',
   viewReset: 'viewReset',
-  sortOrder: 'sortOrder'
+  sortOrder: 'sortOrder',
+  hovering: 'hovering',
 };
 
 // Custom View. Renders the widget model.
@@ -126,7 +127,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.el.appendChild(this.container);
 
     this.canvas = document.createElement('canvas');
-    this.canvas.style.position = 'absolute';
     this.canvas.style.width = '100%';
     this.canvas.style.height = '100%';
 
@@ -227,11 +227,13 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
   // Event handlers for JS-triggered events
   pointoverHandler: function pointoverHandler(pointIndex) {
+    this.hoveringChangedByJs = true;
     this.model.set('hovering', pointIndex);
     this.model.save_changes();
   },
 
   pointoutHandler: function pointoutHandler() {
+    this.hoveringChangedByJs = true;
     this.model.set('hovering', null);
     this.model.save_changes();
   },
@@ -255,7 +257,11 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
   // Event handlers for Python-triggered events
   pointsHandler: function pointsHandler(newPoints) {
-    this.scatterplot.draw(newPoints);
+    this.scatterplot.draw(newPoints, {
+      transition: true,
+      transitionDuration: 3000,
+      transitionEasing: 'quadInOut',
+    });
   },
 
   selectionHandler: function selectionHandler(newSelection) {
@@ -270,6 +276,21 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       this.scatterplot.deselect({ preventEvent: true });
     } else {
       this.scatterplot.select(newSelection, { preventEvent: true });
+    }
+  },
+
+  hoveringHandler: function hoveringHandler(newHovering) {
+    // Avoid calling `this.scatterplot.hover()` twice when the hovering was
+    // triggered by the JavaScript (i.e., the user interactively selected points)
+    if (this.hoveringChangedByJs) {
+      this.hoveringChangedByJs = undefined;
+      return;
+    }
+
+    if (Number.isNaN(+newHovering)) {
+      this.scatterplot.hover({ preventEvent: true });
+    } else {
+      this.scatterplot.hover(+newHovering, { preventEvent: true });
     }
   },
 
