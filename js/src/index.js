@@ -105,9 +105,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     });
 
     this.height = this.model.get('height');
-    this.width = Number.isNaN(+this.model.get('width')) && +this.model.get('width') > 0
-      ? 'auto'
-      : +this.model.get('width');
+    this.width = !Number.isNaN(+this.model.get('width')) && +this.model.get('width') > 0
+      ? +this.model.get('width')
+      : 'auto';
 
     if (this.sortOrder) this.inverseSortOrder = flipObj(this.sortOrder);
 
@@ -140,9 +140,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
         canvas: self.canvas,
       }
 
-      if (self.width !== 'auto') {
-        initialOptions.width = self.width;
-      }
+      if (self.width !== 'auto') initialOptions.width = self.width;
 
       Object.entries(properties).forEach(function(property) {
         const pyName = property[0];
