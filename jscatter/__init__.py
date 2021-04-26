@@ -1,5 +1,5 @@
 from ._version import version_info, __version__
-from .jscatter import Scatter, plot
+from .jscatter import Scatter, plot, compose
 
 def _jupyter_labextension_paths():
     """Called by Jupyter Lab Server to detect if it is a valid labextension and

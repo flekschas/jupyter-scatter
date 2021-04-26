@@ -4,6 +4,7 @@ import matplotlib
 import numpy as np
 import pandas as pd
 
+from ipywidgets.widgets import GridBox, Layout
 from matplotlib.colors import to_rgba
 
 from .encodings import Encodings
@@ -1443,3 +1444,88 @@ class Scatter():
 
 def plot(x, y, data = None, **kwargs):
     return Scatter(x, y, data, **kwargs).show()
+
+def compose(scatters, row_height = 320, select_mappers = None, hover_mappers = None):
+    n_rows = 1
+
+    if all(isinstance(el, list) for el in scatters):
+        # Nested lists
+        n_rows = len(scatters)
+        n_cols = len(scatters[0])
+    else:
+        n_cols = len(scatters)
+
+    try:
+        scatters = [item for sublist in scatters for item in sublist]
+    except TypeError:
+        # Probably not a nested list
+        pass
+
+    try:
+        select_mappers = [item for sublist in select_mappers for item in sublist]
+    except TypeError:
+        # Probably not a nested list
+        pass
+
+    try:
+        hover_mappers = [item for sublist in hover_mappers for item in sublist]
+    except TypeError:
+        # Probably not a nested list
+        pass
+
+    assert len(scatters) == n_rows * n_cols, 'Should equal'
+
+    def base_select_handler(other_scatters, select_mapper = None):
+        def select_handler(change):
+            if change['new'] is None:
+                for other_scatter in other_scatters:
+                    other_scatter.widget.hovering = []
+
+            else:
+                for other_scatter in other_scatters:
+                    if select_mapper is None:
+                        other_scatter.widget.selection = change['new']
+                    else:
+                        other_scatter.widget.selection = select_mapper(change['new'])
+
+        return select_handler
+
+    def base_hover_handler(other_scatters, hover_mapper = None):
+        def hover_handler(change):
+            if change['new'] is None:
+                for other_scatter in other_scatters:
+                    other_scatter.widget.hovering = -1
+
+            else:
+                for other_scatter in other_scatters:
+                    if hover_mapper is None:
+                        other_scatter.widget.hovering = change['new']
+                    else:
+                        other_scatter.widget.hovering = hover_mapper(change['new'])
+
+        return hover_handler
+
+    for index, scatter in enumerate(scatters):
+        other_scatters = [sc for sc in scatters if sc is not scatter]
+        select_mapper = None if select_mappers is None else select_mappers[index]
+        hover_mapper = None if hover_mappers is None else hover_mappers[index]
+
+        scatter.height(row_height)
+        scatter.widget.unobserve_all() # Clear previous observers
+        scatter.widget.observe(
+            base_select_handler(other_scatters, select_mapper),
+            names='selection'
+        )
+        scatter.widget.observe(
+            base_hover_handler(other_scatters, hover_mapper),
+            names='hovering'
+        )
+
+    return GridBox(
+        children=[scatter.widget.show() for scatter in scatters],
+        layout=Layout(
+            grid_template_columns=' '.join(['auto' for x in range(n_cols)]),
+            grid_template_rows=' '.join([f'{row_height}px' for x in range(n_rows)]),
+            grid_gap='2px'
+        )
+    )
