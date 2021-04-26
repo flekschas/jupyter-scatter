@@ -47,54 +47,136 @@ For a minimal working example, take a look at [test-environment](test-environmen
 
 ## Getting Started
 
+#### Simplest example
+
+In the simplest case, you can pass the x/y coordinates to the plot function as follows:
+
 ```python
 import jscatter
 import numpy as np
 
-# Let's generate some dummy data
-points = np.random.rand(500, 2)
-values = np.random.rand(500) # optional
-categories = (np.random.rand(500) * 10).astype(int) # optional
+x = np.random.rand(500)
+y = np.random.rand(500)
 
-# Let's plot the data
-scatterplot = jscatter.plot(points, categories, values)
-scatterplot.show()
+jscatter.plot(x, y)
 ```
 
-To adjust the scatter plot interactively let's pull up some options:
-
-```python
-scatterplot.options()
-```
-
-<details><summary>Click here to see options menu.</summary>
-<p>
-
-![Option UI elements](https://user-images.githubusercontent.com/932103/106693338-3f8a4400-65a4-11eb-9f4f-dd8958375709.png)
-
-</p>
+<details><summary>Show example</summary>
+<img width="448" alt="Simplest scatter plotexample" src="https://user-images.githubusercontent.com/932103/116143120-bc5f2280-a6a8-11eb-8614-51def74d692e.png">
 </details>
 
-Finally, to retrieve the current selection of points (or programmatically select points) you can work with:
+#### Pandas example
+
+If your data is stored in a Pandas dataframe, you can reference columns via their name.
 
 ```python
-scatterplot.selected_points
+import pandas as pd
+
+data = np.random.rand(500, 4)
+data[:,3] = np.round(data[:,3] * 7).astype(int)
+
+df = pd.DataFrame(data, columns=['mass', 'speed', 'pval', 'group'])
+df['group'] = df['group'].astype('int').astype('category').map(lambda c: chr(65 + c), na_action=None)
+
+jscatter.plot(data=df, x='mass', y='speed')
 ```
+
+<details><summary>Show example</summary>
+<img width="448" alt="Pandas scatter plot example" src="https://user-images.githubusercontent.com/932103/116143383-1364f780-a6a9-11eb-974c-4facec249974.png">
+</details>
+
+#### Advanced example
+
+Often you want to customize the visual encoding, such as the point color, size, and opacity.
+
+```python
+jscatter.plot(
+  data=df,
+  x='mass',
+  y='speed',
+  size=8, # static encoding
+  color_by='group', # data-driven encoding
+  opacity_by='density', # view-driven encoding
+)
+```
+
+<details><summary>Show example</summary>
+<img width="448" alt="Advanced scatter plot example" src="https://user-images.githubusercontent.com/932103/116143470-2f689900-a6a9-11eb-861f-fcd8c563fde4.png">
+</details>
+
+In the above example, we chose a static point size of `8`. In contrast, the point color is data-driven and assigned based on the `group` value. The point opacity is view-driven and defined dynamically by the number of points currently visible in the view.
+
+Also notice how jscatter uses an appropriate color map by default based on the data type used for color encoding. In this examples, jscatter uses the color blindness safe color map from [Okabe and Ito](https://jfly.uni-koeln.de/color/#pallet) as the number of categories is less than `9`.
+
+You can of course customize the color map and many other parameters of the visual encoding as shown next
+
+#### Functional API example
+
+The [flat API](#advanced-example), can get overwhelming when you want to customize a lot of properties. Therefore, jscatter provides a functional API that groups properties by type.
+
+```python
+scatter = jscatter.Scatter(data=df, x='mass', y='speed')
+scatter.selection(df.query('mass < 0.5').index)
+scatter.color(by='mass', map='plasma', order='reverse')
+scatter.opacity(by='density')
+scatter.size(by='pval', map=[2, 4, 6, 8, 10])
+scatter.height(480)
+scatter.background('black')
+scatter.show()
+```
+
+<details><summary>Show example</summary>
+<img width="448" alt="Functional API scatter plot example" src="https://user-images.githubusercontent.com/932103/116143504-398a9780-a6a9-11eb-9533-26f25a5ed788.png">
+</details>
+
+You can update properties interactively as well after having called `scatter.show()`. The plot will update automatically.
+
+Finally, all arguments are optional. If you specify an argument, the function will act as a setter and change the property. If you call a function without any arguments it will act as a getter and return the property (or properties). For example, `scatter.selection()` will return the _currently_ selected points.
 
 For a complete example, take a look at [notebooks/example.ipynb](notebooks/example.ipynb)
 
 ## API
 
-_Coming soon!_
+### Constructor
 
-<details><summary>Meaningwhile type <code>jscatter.plot(</code> and hit <kbd>SHIFT</kbd>+<kbd>TAB</kbd></summary>
-<p>
+<a name="Scatter" href="#Scatter">#</a> <b>Scatter</b>(<i>x</i>, <i>y</i>, <i>data = None</i>, <i>\*\*kwargs</i>)
 
-![Show plot options](https://user-images.githubusercontent.com/932103/106694634-f091de00-65a6-11eb-9540-928e0b6834dd.gif)
+**Arguments:**
 
+- `x` is an array of quadruples defining the point data.
+- `y` is an array of quadruples defining the point data.
+- `data` is an array of quadruples defining the point data.
+- `kwargs` is an object with the following properties:
 
-</p>
-</details>
+**Returns:** a new scatter instance.
+
+<a name="plot" href="#plot">#</a> <b>plot</b>(<i>x</i>, <i>y</i>, <i>data = None</i>, <i>\*\*kwargs</i>)
+
+Short-hand function that creates a new scatter instance and immediately returns its widget.
+
+**Arguments:** are the same as of [`Scatter`](#Scatter).
+
+**Returns:** a new scatter widget.
+
+### Methods
+
+<a name="scatter.x" href="#scatter.x">#</a> scatter.<b>x</b>(<i>x = Undefined</i>)
+
+Gets or sets the x coordinate.
+
+**Arguments:**
+
+- `x` is an array of quadruples.
+
+**Returns:** a Promise object that resolves once the points have been drawn or transitioned.
+
+**Examples:**
+
+```python
+scatter = Scatter('speed', 'size', data=cars)
+scatter.show()
+scatter.x('price') # Change x coordinates
+```
 
 ---
 
