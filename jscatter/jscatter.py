@@ -490,8 +490,7 @@ class Scatter():
         if map is not Undefined:
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
-                start, end, num = map
-                self._opacity_map = np.linspace(start, end, num)
+                self._opacity_map = np.linspace(*map)
             else:
                 self._opacity_map = np.asarray(map)
 
@@ -610,8 +609,7 @@ class Scatter():
         if map is not Undefined:
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
-                start, end, num = map
-                self._size_map = np.linspace(start, end, num)
+                self._size_map = np.linspace(*map)
             else:
                 self._size_map = np.asarray(map)
 
@@ -640,7 +638,7 @@ class Scatter():
             assert len(self._size_categories) <= len(self._size_map), 'More categories than sizes'
 
         # Update widget
-        if self._opacity_by is not None and self._opacity_map is not None:
+        if self._size_by is not None and self._size_map is not None:
             self.update_widget('size', self._size_map)
         else:
             self.update_widget('size', self._size)
@@ -942,8 +940,7 @@ class Scatter():
         if map is not Undefined:
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
-                start, end, num = map
-                self._connection_opacity_map = np.linspace(start, end, num)
+                self._connection_opacity_map = np.linspace(*map)
             else:
                 self._connection_opacity_map = np.asarray(map)
 
@@ -1066,8 +1063,7 @@ class Scatter():
         if map is not Undefined:
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
-                start, end, num = map
-                self._connection_size_map = np.linspace(start, end, num)
+                self._connection_size_map = np.linspace(*map)
             else:
                 self._connection_size_map = np.asarray(map)
 
