@@ -43,7 +43,7 @@
     "regl-scatterplot": "^0.18.6"
   },
   "devDependencies": {
-    "@jupyterlab/builder": "^3.0.0",
+    "@jupyterlab/builder": "^3.0.8",
     "css-loader": "^3.5.3",
     "eslint": "^7.4.0",
     "eslint-config-prettier": "^6.11.0",
