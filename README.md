@@ -45,9 +45,9 @@ jupyter nbextension enable --py --sys-prefix jscatter
 
 For a minimal working example, take a look at [test-environment](test-environment).
 
-## Getting Started
+## Get Started
 
-#### Simplest example
+#### Simplest Example
 
 In the simplest case, you can pass the x/y coordinates to the plot function as follows:
 
@@ -61,11 +61,9 @@ y = np.random.rand(500)
 jscatter.plot(x, y)
 ```
 
-<details><summary>Show example</summary>
 <img width="448" alt="Simplest scatter plotexample" src="https://user-images.githubusercontent.com/932103/116143120-bc5f2280-a6a8-11eb-8614-51def74d692e.png">
-</details>
 
-#### Pandas example
+#### Pandas Example
 
 If your data is stored in a Pandas dataframe, you can reference columns via their name.
 
@@ -100,9 +98,7 @@ jscatter.plot(
 )
 ```
 
-<details><summary>Show example</summary>
 <img width="448" alt="Advanced scatter plot example" src="https://user-images.githubusercontent.com/932103/116143470-2f689900-a6a9-11eb-861f-fcd8c563fde4.png">
-</details>
 
 In the above example, we chose a static point size of `8`. In contrast, the point color is data-driven and assigned based on the `group` value. The point opacity is view-driven and defined dynamically by the number of points currently visible in the view.
 
@@ -110,7 +106,7 @@ Also notice how jscatter uses an appropriate color map by default based on the d
 
 You can of course customize the color map and many other parameters of the visual encoding as shown next
 
-#### Functional API example
+#### Functional API Example
 
 The [flat API](#advanced-example), can get overwhelming when you want to customize a lot of properties. Therefore, jscatter provides a functional API that groups properties by type.
 
@@ -125,58 +121,15 @@ scatter.background('black')
 scatter.show()
 ```
 
-<details><summary>Show example</summary>
-<img width="448" alt="Functional API scatter plot example" src="https://user-images.githubusercontent.com/932103/116143504-398a9780-a6a9-11eb-9533-26f25a5ed788.png">
-</details>
+<img width="448" alt="Functional API scatter plot example" src="https://user-images.githubusercontent.com/932103/116155554-3945c880-a6b8-11eb-9033-4d0c07f01590.png">
 
-You can update properties interactively as well after having called `scatter.show()`. The plot will update automatically.
+When you update properties dynamically, i.e., after having called `scatter.show()`, the plot will update automatically. For instance, try calling `scatter.xy('speed', 'mass')`and you will see how the points are mirrored along the diagonal.
 
-Finally, all arguments are optional. If you specify an argument, the function will act as a setter and change the property. If you call a function without any arguments it will act as a getter and return the property (or properties). For example, `scatter.selection()` will return the _currently_ selected points.
+Moreover, all arguments are optional. If you specify arguments, the methods will act as setters and change the properties. If you call a method without any arguments it will act as a getter and return the property (or properties). For example, `scatter.selection()` will return the _currently_ selected points.
 
-For a complete example, take a look at [notebooks/example.ipynb](notebooks/example.ipynb)
+Finally, the scatter plot is interactive and supports two-way communication. Hence, if you select some point with the lasso tool and then call `scatter.selection()` you will get the current selection.
 
-## API
-
-### Constructor
-
-<a name="Scatter" href="#Scatter">#</a> <b>Scatter</b>(<i>x</i>, <i>y</i>, <i>data = None</i>, <i>\*\*kwargs</i>)
-
-**Arguments:**
-
-- `x` is an array of quadruples defining the point data.
-- `y` is an array of quadruples defining the point data.
-- `data` is an array of quadruples defining the point data.
-- `kwargs` is an object with the following properties:
-
-**Returns:** a new scatter instance.
-
-<a name="plot" href="#plot">#</a> <b>plot</b>(<i>x</i>, <i>y</i>, <i>data = None</i>, <i>\*\*kwargs</i>)
-
-Short-hand function that creates a new scatter instance and immediately returns its widget.
-
-**Arguments:** are the same as of [`Scatter`](#Scatter).
-
-**Returns:** a new scatter widget.
-
-### Methods
-
-<a name="scatter.x" href="#scatter.x">#</a> scatter.<b>x</b>(<i>x = Undefined</i>)
-
-Gets or sets the x coordinate.
-
-**Arguments:**
-
-- `x` is an array of quadruples.
-
-**Returns:** a Promise object that resolves once the points have been drawn or transitioned.
-
-**Examples:**
-
-```python
-scatter = Scatter('speed', 'size', data=cars)
-scatter.show()
-scatter.x('price') # Change x coordinates
-```
+For a complete example, take a look at [notebooks/example.ipynb](notebooks/get-started.ipynb)
 
 ---
 
