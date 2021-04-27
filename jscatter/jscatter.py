@@ -106,7 +106,7 @@ class Scatter():
         self._width = 'auto'
         self._height = 240
         self._reticle = True
-        self._reticle_color = (0, 0, 0, 0.1)
+        self._reticle_color = 'auto'
         self._camera_target = [0, 0]
         self._camera_distance = 1.0
         self._camera_rotation = 0.0
@@ -1126,6 +1126,8 @@ class Scatter():
                 + 0.114 * self._background_color[2] ** 2
             )
 
+            self.update_widget('reticle_color', self.get_reticle_color())
+
         if image is not Undefined:
             if uri_validator(image):
                 self._background_image = image
@@ -1266,6 +1268,19 @@ class Scatter():
 
         return self._height
 
+    def get_reticle_color(self):
+        try:
+            return to_rgba(self._reticle_color)
+        except ValueError:
+            if self._background_color_luminance < 0.25:
+                return (1, 1, 1, 0.15)
+            elif self._background_color_luminance < 0.5:
+                return (1, 1, 1, 0.23)
+            elif self._background_color_luminance < 0.75:
+                return (0, 0, 0, 0.2)
+
+            return (0, 0, 0, 0.1) # Defaut
+
     def reticle(self, show = Undefined, color = Undefined):
         if show is not Undefined:
             try:
@@ -1275,11 +1290,15 @@ class Scatter():
                 pass
 
         if color is not Undefined:
-            try:
-                self._reticle_color = to_rgba(color)
-                self.update_widget('reticle_color', self._reticle_color)
-            except:
-                pass
+            if color == 'auto':
+                self._reticle_color = 'auto'
+                self.update_widget('reticle_color', self.get_reticle_color())
+            else:
+                try:
+                    self._reticle_color = to_rgba(color)
+                    self.update_widget('reticle_color', self.get_reticle_color())
+                except:
+                    pass
 
         if any_not_none([show, color]):
             return self
@@ -1417,7 +1436,7 @@ class Scatter():
             connection_size=self._connection_size_map or self._connection_size,
             connection_size_by=self.js_connection_size_by,
             reticle=self._reticle,
-            reticle_color=self._reticle_color,
+            reticle_color=self.get_reticle_color(),
             camera_target=self._camera_target,
             camera_distance=self._camera_distance,
             camera_rotation=self._camera_rotation,
