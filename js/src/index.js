@@ -196,7 +196,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
           .draw(self.points)
           .then(function onInitialDraw() {
             if (self.selection.length) {
-              self.scatterplot.select(self.sortedSelection());
+              self.scatterplot.select(self.sortSelection(), { preventEvent: true });
             }
           });
       }
@@ -220,11 +220,12 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     }
   },
 
-  sortSelection: function sortSelection() {
+  sortSelection: function sortSelection(selection) {
+    const s = selection || this.selection;
     if (this.sortOrder) {
-      return self.selection.map((s) => this.sortOrder[s]);
+      return s.map((s) => this.sortOrder[s]);
     }
-    return self.selection;
+    return s;
   },
 
   // Event handlers for JS-triggered events
@@ -277,7 +278,10 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     if (!newSelection || !newSelection.length) {
       this.scatterplot.deselect({ preventEvent: true });
     } else {
-      this.scatterplot.select(newSelection, { preventEvent: true });
+      this.scatterplot.select(
+        this.sortSelection(newSelection),
+        { preventEvent: true }
+      );
     }
   },
 
