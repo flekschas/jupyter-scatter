@@ -338,7 +338,7 @@ class Scatter():
                     component = self._encodings.data[by].component
                     try:
                         check_encoding_dtype(self._data[by])
-                        if self._data[by].dtype.name == 'category':
+                        if pd.api.types.is_categorical_dtype(self._data[by].dtype):
                             self._color_categories = dict(zip(self._data[by], self._data[by].cat.codes))
                             self._points[:, component] = self._data[by].cat.codes
                         else:
@@ -482,7 +482,7 @@ class Scatter():
                     component = self._encodings.data[by].component
                     try:
                         check_encoding_dtype(self._data[by])
-                        if self._data[by].dtype.name == 'category':
+                        if pd.api.types.is_categorical_dtype(self._data[by].dtype):
                             self._points[:, component] = self._data[by].cat.codes
                             self._opacity_categories = dict(zip(self._data[by], self._data[by].cat.codes))
                         else:
@@ -601,7 +601,7 @@ class Scatter():
                     component = self._encodings.data[by].component
                     try:
                         check_encoding_dtype(self._data[by])
-                        if self._data[by].dtype.name == 'category':
+                        if pd.api.types.is_categorical_dtype(self._data[by].dtype):
                             self._points[:, component] = self._data[by].cat.codes
                             self._size_categories = dict(zip(self._data[by], self._data[by].cat.codes))
                         else:
@@ -680,7 +680,7 @@ class Scatter():
 
             if by is not None:
                 try:
-                    if self._data[by].dtype.name == 'category':
+                    if pd.api.types.is_categorical_dtype(self._data[by].dtype):
                         self._points[:, COMPONENT_CONNECT] = self._data[by].cat.codes
                     elif pd.api.types.is_integer_dtype(self._data[by].dtype):
                         self._points[:, COMPONENT_CONNECT] = self._data[by].values
@@ -782,7 +782,7 @@ class Scatter():
                     component = self._encodings.data[by].component
                     try:
                         check_encoding_dtype(self._data[by])
-                        if self._data[by].dtype.name == 'category':
+                        if pd.api.types.is_categorical_dtype(self._data[by].dtype):
                             self._connection_color_categories = dict(zip(self._data[by], self._data[by].cat.codes))
                             self._points[:, component] = self._data[by].cat.codes
                         else:
@@ -921,7 +921,7 @@ class Scatter():
                     component = self._encodings.data[by].component
                     try:
                         check_encoding_dtype(self._data[by])
-                        if self._data[by].dtype.name == 'category':
+                        if pd.api.types.is_categorical_dtype(self._data[by].dtype):
                             self._points[:, component] = self._data[by].cat.codes
                             self._connection_opacity_categories = dict(zip(self._data[by], self._data[by].cat.codes))
                         else:
@@ -1046,7 +1046,7 @@ class Scatter():
                     component = self._encodings.data[by].component
                     try:
                         check_encoding_dtype(self._data[by])
-                        if self._data[by].dtype.name == 'category':
+                        if pd.api.types.is_categorical_dtype(self._data[by].dtype):
                             self._points[:, component] = self._data[by].cat.codes
                             self._connection_size_categories = dict(zip(self._data[by], self._data[by].cat.codes))
                         else:
