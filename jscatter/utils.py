@@ -22,8 +22,8 @@ def with_left_label(label_text, widget, label_width: int = 128):
 
     return container
 
-def any_not_none(l):
-    return any([x is not None for x in l])
+def any_not(l, value = None):
+    return any([x is not value for x in l])
 
 def tolist(l):
     try:
@@ -37,3 +37,9 @@ def uri_validator(x):
         return all([result.scheme, result.netloc, result.path])
     except:
         return False
+
+def sorting_to_dict(sorting):
+    out = dict()
+    for order_idx, original_idx in enumerate(sorting):
+        out[original_idx] = order_idx
+    return out

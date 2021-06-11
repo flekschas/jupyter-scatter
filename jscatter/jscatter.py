@@ -4,13 +4,16 @@ import matplotlib
 import numpy as np
 import pandas as pd
 
-from ipywidgets.widgets import GridBox, Layout
 from matplotlib.colors import to_rgba
+from sklearn.preprocessing import minmax_scale
 
 from .encodings import Encodings
 from .widget import JupyterScatter
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not_none, tolist, uri_validator
+from .utils import any_not, tolist, uri_validator
+
+COMPONENT_CONNECT = 4
+COMPONENT_CONNECT_ORDER = 5
 
 # To distinguish between None and an undefined optional argument
 Undefined = object()
@@ -27,18 +30,6 @@ def component_idx_to_name(idx):
 
     return None
 
-def sorting_to_dict(sorting):
-    out = dict()
-    for order_idx, original_idx in enumerate(sorting):
-        out[original_idx] = order_idx
-    return out
-
-def get_high_contrast_color(luminance):
-    if luminance < 0.5:
-        return (1, 1, 1, 1)
-
-    return (0, 0, 0, 1)
-
 
 class Scatter():
     def __init__(self, x, y, data = None, **kwargs):
@@ -49,7 +40,7 @@ class Scatter():
         except TypeError:
             self._n = np.asarray(x).size
 
-        self._points = np.zeros((self._n, 5))
+        self._points = np.zeros((self._n, 6))
         self._widget = None
         self._pixels = None
         self._encodings = Encodings()
@@ -112,7 +103,6 @@ class Scatter():
         self._camera_rotation = 0.0
         self._camera_view = None
         self._mouse_mode = 'panZoom'
-        self._sort_order = None
         self._options = {}
 
         self.x(x)
@@ -194,6 +184,20 @@ class Scatter():
         )
         self.options(kwargs.get('options', Undefined))
 
+    def get_point_list(self):
+        connect_by = bool(self._connect_by)
+        connect_order = bool(self._connect_order)
+
+        if not connect_by:
+            # To avoid having to serialize unused data
+            return self._points[:,:4].tolist()
+
+        if not connect_order:
+            # To avoid having to serialize unused data
+            return self._points[:,:5].tolist()
+
+        return self._points.tolist()
+
     def x(self, x = Undefined, **kwargs):
         if x is not Undefined:
             self._x = x
@@ -206,9 +210,9 @@ class Scatter():
             # Normalize x coordinate to [-1,1]
             self._x_min = np.min(self._points[:, 0])
             self._x_max = np.max(self._points[:, 0])
-            self._x_extent = self._x_max - self._x_min
-            self._points[:, 0] = (self._points[:, 0] - self._x_min) / self._x_extent * 2 - 1
             self._x_domain = [self._x_min, self._x_max]
+
+            self._points[:, 0] = minmax_scale(self._points[:, 0], (-1,1))
 
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('points', self._points.tolist())
@@ -229,9 +233,9 @@ class Scatter():
             # Normalize y coordinate to [-1,1]
             self._y_min = np.min(self._points[:, 1])
             self._y_max = np.max(self._points[:, 1])
-            self._y_extent = self._y_max - self._y_min
-            self._points[:, 1] = (self._points[:, 1] - self._y_min) / self._y_extent * 2 - 1
             self._y_domain = [self._y_min, self._y_max]
+
+            self._points[:, 1] = minmax_scale(self._points[:, 1], (-1,1))
 
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('points', self._points.tolist())
@@ -316,10 +320,10 @@ class Scatter():
             self._color_by = by
 
             if by is None:
-                self._encodings.remove('color')
+                self._encodings.delete('color')
 
             else:
-                self._encodings.add('color', by)
+                self._encodings.set('color', by)
 
                 if not self._encodings.data[by].prepared:
                     component = self._encodings.data[by].component
@@ -401,9 +405,9 @@ class Scatter():
             self.update_widget('color', self._color)
 
         if data_updated and 'skip_widget_update' not in kwargs:
-            self.update_widget('points', self._points.tolist())
+            self.update_widget('points', self.get_point_list())
 
-        if any_not_none([color, color_active, color_hover, by, map, norm, order]):
+        if any_not([color, color_active, color_hover, by, map, norm, order]):
             return self
 
         return dict(
@@ -454,13 +458,13 @@ class Scatter():
             self._opacity_by = by
 
             if by is None:
-                self._encodings.remove('opacity')
+                self._encodings.delete('opacity')
 
             elif by == 'density':
                 pass
 
             else:
-                self._encodings.add('opacity', by)
+                self._encodings.set('opacity', by)
 
                 if not self._encodings.data[by].prepared:
                     component = self._encodings.data[by].component
@@ -525,9 +529,9 @@ class Scatter():
             self.update_widget('opacity', self._opacity)
 
         if data_updated and 'skip_widget_update' not in kwargs:
-            self.update_widget('points', self._points.tolist())
+            self.update_widget('points', self.get_point_list())
 
-        if any_not_none([opacity, by, map, norm, order]):
+        if any_not([opacity, by, map, norm, order], Undefined):
             return self
 
         return dict(
@@ -576,10 +580,10 @@ class Scatter():
             self._size_by = by
 
             if by is None:
-                self._encodings.remove('size')
+                self._encodings.delete('size')
 
             else:
-                self._encodings.add('size', by)
+                self._encodings.set('size', by)
 
                 if not self._encodings.data[by].prepared:
                     component = self._encodings.data[by].component
@@ -644,9 +648,9 @@ class Scatter():
             self.update_widget('size', self._size)
 
         if data_updated and 'skip_widget_update' not in kwargs:
-            self.update_widget('points', self._points.tolist())
+            self.update_widget('points', self.get_point_list())
 
-        if any_not_none([size, by, map, norm, order]):
+        if any_not([size, by, map, norm, order], Undefined):
             return self
 
         return dict(
@@ -661,49 +665,40 @@ class Scatter():
         data_updated = False
         if by is not Undefined:
             self._connect_by = by
-            self.update_widget('connect', bool(self._connect_by))
 
             if by is not None:
-                self.update_widget('connect', True)
-                categories = None
-
                 try:
                     if self._data[by].dtype.name == 'category':
-                        self._points[:, 4] = self._data[by].cat.codes
-                        categories = dict(zip(self._data[by], self._points[:, 4]))
+                        self._points[:, COMPONENT_CONNECT] = self._data[by].cat.codes
+                    elif pd.api.types.is_integer_dtype(self._data[by].dtype):
+                        self._points[:, COMPONENT_CONNECT] = self._data[by].values
                     else:
-                        raise TypeError('connect by only works with categorical data')
+                        raise ValueError('connect by only works with categorical data')
                 except TypeError:
                     tmp = pd.Series(by, dtype='category')
-                    self._points[:, 4] = tmp.cat.codes
-                    categories = dict(zip(tmp, tmp.cat.codes))
-
-                assert categories is not None, 'connect by data is broken. everybody: ruuuun!'
+                    self._points[:, COMPONENT_CONNECT] = tmp.cat.codes
 
                 data_updated = True
 
         if order is not Undefined:
-            if order is None:
-                if self._sort_order is not None:
-                    self._data = self._data[np.argsort(list(self._sort_order.keys()))]
-                    self._sort_order = None
-                    data_updated = True
+            self._connect_order = order
 
-            else:
-                # Since regl-scatterplot doesn't support `order` we have to sort the data now
-                try:
-                    # Sort data
-                    sorted_indices = self._data.sort_values([by, order]).index.values
-                    self._data = self._data[sorted_indices]
-                    self._sort_order = sorting_to_dict(sorted_indices)
-                    data_updated = True
-                except TypeError:
-                    raise TypeError('connect order only works with Pandas data for now')
+            try:
+                if pd.api.types.is_integer_dtype(self._data[order].dtype):
+                    self._points[:, COMPONENT_CONNECT_ORDER] = self._data[order]
+                else:
+                    raise ValueError('connection order must be an integer type')
+            except TypeError:
+                self._points[:, COMPONENT_CONNECT_ORDER] = np.asarray(order).astype(int)
+
+            data_updated = True
 
         if data_updated and 'skip_widget_update' not in kwargs:
-            self.update_widget('points', self._points.tolist())
+            self.update_widget('points', self.get_point_list())
 
-        if any_not_none([by, order]):
+        self.update_widget('connect', bool(self._connect_by))
+
+        if any_not([by, order]):
             return self
 
         return dict(
@@ -763,13 +758,13 @@ class Scatter():
             self._connection_color_by = by
 
             if by is None:
-                self._encodings.remove('connection_color')
+                self._encodings.delete('connection_color')
 
             elif by == 'segment':
                 pass
 
             else:
-                self._encodings.add('connection_color', by)
+                self._encodings.set('connection_color', by)
 
                 if not self._encodings.data[by].prepared:
                     component = self._encodings.data[by].component
@@ -854,9 +849,9 @@ class Scatter():
             self.update_widget('connection_color', self._connection_color)
 
         if data_updated and 'skip_widget_update' not in kwargs:
-            self.update_widget('points', self._points.tolist())
+            self.update_widget('points', self.get_point_list())
 
-        if any_not_none([color, by, map, norm, order]):
+        if any_not([color, by, map, norm, order]):
             return self
 
         return dict(
@@ -905,10 +900,10 @@ class Scatter():
             self._connection_opacity_by = by
 
             if by is None:
-                self._encodings.remove('connection_opacity')
+                self._encodings.delete('connection_opacity')
 
             else:
-                self._encodings.add('connection_opacity', by)
+                self._encodings.set('connection_opacity', by)
 
                 if not self._encodings.data[by].prepared:
                     component = self._encodings.data[by].component
@@ -980,9 +975,9 @@ class Scatter():
             self.update_widget('connection_opacity', self._connection_opacity)
 
         if data_updated and 'skip_widget_update' not in kwargs:
-            self.update_widget('points', self._points.tolist())
+            self.update_widget('points', self.get_point_list())
 
-        if any_not_none([opacity, by, map, norm, order]):
+        if any_not([opacity, by, map, norm, order], Undefined):
             return self
 
         return dict(
@@ -1030,10 +1025,10 @@ class Scatter():
             self._connection_size_by = by
 
             if by is None:
-                self._encodings.remove('connection_size')
+                self._encodings.delete('connection_size')
 
             else:
-                self._encodings.add('connection_size', by)
+                self._encodings.set('connection_size', by)
 
                 if not self._encodings.data[by].prepared:
                     component = self._encodings.data[by].component
@@ -1093,12 +1088,12 @@ class Scatter():
             self.update_widget('connection_size', self._connection_size)
 
         if data_updated and 'skip_widget_update' not in kwargs:
-            self.update_widget('points', self._points.tolist())
+            self.update_widget('points', self.get_point_list())
 
         if self._connection_size_categories is not None:
             assert len(self._connection_size_categories) <= len(self._connection_size_map), 'More categories than connection sizes'
 
-        if any_not_none([size, by, map, norm, order]):
+        if any_not([size, by, map, norm, order]):
             return self
 
         return dict(
@@ -1147,7 +1142,7 @@ class Scatter():
                         self.update_widget('background_image', self._background_image)
                     pass
 
-        if any_not_none([color, image]):
+        if any_not([color, image]):
             return self
 
         return dict(
@@ -1185,7 +1180,7 @@ class Scatter():
             self._camera_view = view
             self.update_widget('camera_view', self._camera_view)
 
-        if any_not_none([target, distance, rotation, view]):
+        if any_not([target, distance, rotation, view]):
             return self
 
         return dict(
@@ -1230,7 +1225,7 @@ class Scatter():
             except:
                 pass
 
-        if any_not_none([color, initiator, min_delay, min_dist]):
+        if any_not([color, initiator, min_delay, min_dist]):
             return self
 
         return dict(
@@ -1300,7 +1295,7 @@ class Scatter():
                 except:
                     pass
 
-        if any_not_none([show, color]):
+        if any_not([show, color]):
             return self
 
         return dict(
@@ -1408,7 +1403,7 @@ class Scatter():
             return self._widget
 
         self._widget = JupyterScatter(
-            points=self._points.tolist(),
+            points=self.get_point_list(),
             selection=self._selection.tolist(),
             width=self._width,
             height=self._height,
@@ -1444,8 +1439,7 @@ class Scatter():
             mouse_mode=self._mouse_mode,
             x_domain=self._x_domain,
             y_domain=self._y_domain,
-            other_options=self._options,
-            sort_order=self._sort_order
+            other_options=self._options
         )
 
         return self._widget
@@ -1459,88 +1453,3 @@ class Scatter():
 
 def plot(x, y, data = None, **kwargs):
     return Scatter(x, y, data, **kwargs).show()
-
-def compose(scatters, row_height = 320, select_mappers = None, hover_mappers = None):
-    n_rows = 1
-
-    if all(isinstance(el, list) for el in scatters):
-        # Nested lists
-        n_rows = len(scatters)
-        n_cols = len(scatters[0])
-    else:
-        n_cols = len(scatters)
-
-    try:
-        scatters = [item for sublist in scatters for item in sublist]
-    except TypeError:
-        # Probably not a nested list
-        pass
-
-    try:
-        select_mappers = [item for sublist in select_mappers for item in sublist]
-    except TypeError:
-        # Probably not a nested list
-        pass
-
-    try:
-        hover_mappers = [item for sublist in hover_mappers for item in sublist]
-    except TypeError:
-        # Probably not a nested list
-        pass
-
-    assert len(scatters) == n_rows * n_cols, 'Should equal'
-
-    def base_select_handler(other_scatters, select_mapper = None):
-        def select_handler(change):
-            if change['new'] is None:
-                for other_scatter in other_scatters:
-                    other_scatter.widget.hovering = []
-
-            else:
-                for other_scatter in other_scatters:
-                    if select_mapper is None:
-                        other_scatter.widget.selection = change['new']
-                    else:
-                        other_scatter.widget.selection = select_mapper(change['new'])
-
-        return select_handler
-
-    def base_hover_handler(other_scatters, hover_mapper = None):
-        def hover_handler(change):
-            if change['new'] is None:
-                for other_scatter in other_scatters:
-                    other_scatter.widget.hovering = -1
-
-            else:
-                for other_scatter in other_scatters:
-                    if hover_mapper is None:
-                        other_scatter.widget.hovering = change['new']
-                    else:
-                        other_scatter.widget.hovering = hover_mapper(change['new'])
-
-        return hover_handler
-
-    for index, scatter in enumerate(scatters):
-        other_scatters = [sc for sc in scatters if sc is not scatter]
-        select_mapper = None if select_mappers is None else select_mappers[index]
-        hover_mapper = None if hover_mappers is None else hover_mappers[index]
-
-        scatter.height(row_height)
-        scatter.widget.unobserve_all() # Clear previous observers
-        scatter.widget.observe(
-            base_select_handler(other_scatters, select_mapper),
-            names='selection'
-        )
-        scatter.widget.observe(
-            base_hover_handler(other_scatters, hover_mapper),
-            names='hovering'
-        )
-
-    return GridBox(
-        children=[scatter.widget.show() for scatter in scatters],
-        layout=Layout(
-            grid_template_columns=' '.join(['auto' for x in range(n_cols)]),
-            grid_template_rows=' '.join([f'{row_height}px' for x in range(n_rows)]),
-            grid_gap='2px'
-        )
-    )
