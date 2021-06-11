@@ -14,12 +14,21 @@ from .utils import any_not, tolist, uri_validator
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
+VALID_ENCODING_TYPES = [
+    pd.api.types.is_float_dtype,
+    pd.api.types.is_integer_dtype,
+    pd.api.types.is_categorical_dtype,
+]
 
 # To distinguish between None and an undefined optional argument
 Undefined = object()
 
 default_norm = matplotlib.colors.Normalize(0, 1, clip=True)
 default_background_color = 'white'
+
+def check_encoding_dtype(series):
+    if not any([check(series.dtype) for check in VALID_ENCODING_TYPES]):
+        raise ValueError(f'{series.name} is of an unsupported data type: {series.dtype}. Must be one of category, float*, or int*.')
 
 def component_idx_to_name(idx):
     if idx == 2:
@@ -328,6 +337,7 @@ class Scatter():
                 if not self._encodings.data[by].prepared:
                     component = self._encodings.data[by].component
                     try:
+                        check_encoding_dtype(self._data[by])
                         if self._data[by].dtype.name == 'category':
                             self._color_categories = dict(zip(self._data[by], self._data[by].cat.codes))
                             self._points[:, component] = self._data[by].cat.codes
@@ -469,6 +479,7 @@ class Scatter():
                 if not self._encodings.data[by].prepared:
                     component = self._encodings.data[by].component
                     try:
+                        check_encoding_dtype(self._data[by])
                         if self._data[by].dtype.name == 'category':
                             self._points[:, component] = self._data[by].cat.codes
                             self._opacity_categories = dict(zip(self._data[by], self._data[by].cat.codes))
@@ -588,6 +599,7 @@ class Scatter():
                 if not self._encodings.data[by].prepared:
                     component = self._encodings.data[by].component
                     try:
+                        check_encoding_dtype(self._data[by])
                         if self._data[by].dtype.name == 'category':
                             self._points[:, component] = self._data[by].cat.codes
                             self._size_categories = dict(zip(self._data[by], self._data[by].cat.codes))
@@ -769,6 +781,7 @@ class Scatter():
                 if not self._encodings.data[by].prepared:
                     component = self._encodings.data[by].component
                     try:
+                        check_encoding_dtype(self._data[by])
                         if self._data[by].dtype.name == 'category':
                             self._connection_color_categories = dict(zip(self._data[by], self._data[by].cat.codes))
                             self._points[:, component] = self._data[by].cat.codes
@@ -908,6 +921,7 @@ class Scatter():
                 if not self._encodings.data[by].prepared:
                     component = self._encodings.data[by].component
                     try:
+                        check_encoding_dtype(self._data[by])
                         if self._data[by].dtype.name == 'category':
                             self._points[:, component] = self._data[by].cat.codes
                             self._connection_opacity_categories = dict(zip(self._data[by], self._data[by].cat.codes))
@@ -1033,6 +1047,7 @@ class Scatter():
                 if not self._encodings.data[by].prepared:
                     component = self._encodings.data[by].component
                     try:
+                        check_encoding_dtype(self._data[by])
                         if self._data[by].dtype.name == 'category':
                             self._points[:, component] = self._data[by].cat.codes
                             self._connection_size_categories = dict(zip(self._data[by], self._data[by].cat.codes))
