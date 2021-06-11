@@ -401,9 +401,6 @@ class Scatter():
             else:
                 self._color_map = okabe_ito
 
-        if order is not Undefined:
-            self._color_order = order
-
         if self._color_categories is not None:
             assert len(self._color_categories) <= len(self._color_map), 'More categories than colors'
 
