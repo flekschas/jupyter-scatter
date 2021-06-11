@@ -360,7 +360,7 @@ class Scatter():
                 # Define order of the colors instead of changing `points[:, component_idx]`
                 self._color_order = [self._color_categories[cat] for cat in order]
 
-        if map is not Undefined:
+        if map is not Undefined and map != 'auto':
             if self._color_categories is None:
                 if callable(map):
                     # Assuming `map` is a Matplotlib LinearSegmentedColormap
@@ -389,7 +389,7 @@ class Scatter():
                     except TypeError:
                         pass
 
-        if self._color_map is None and self._color_by is not None:
+        if (self._color_map is None or map == 'auto') and self._color_by is not None:
             # Assign default color maps
             if self._color_categories is None:
                 self._color_map = plt.get_cmap('viridis')(range(256)).tolist()
@@ -401,16 +401,18 @@ class Scatter():
             else:
                 self._color_map = okabe_ito
 
-        if order is not Undefined and self._color_map is not None:
-            # Reverse if needed
-            self._color_map = self._color_map[::(1 + (-2 * (self._color_order == 'reverse')))]
+        if order is not Undefined:
+            self._color_order = order
 
         if self._color_categories is not None:
             assert len(self._color_categories) <= len(self._color_map), 'More categories than colors'
 
         # Update widget
         if self._color_by is not None and self._color_map is not None:
-            self.update_widget('color', self._color_map)
+            self.update_widget(
+                'color',
+                self._color_map[::(1 + (-2 * (self._color_order == 'reverse')))]
+            )
         else:
             self.update_widget('color', self._color)
 
@@ -502,7 +504,7 @@ class Scatter():
                 # Define order of the opacities instead of changing `points[:, component_idx]`
                 self._opacity_order = [self._opacity_categories[cat] for cat in order]
 
-        if map is not Undefined:
+        if map is not Undefined and map != 'auto':
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
                 self._opacity_map = np.linspace(*map)
@@ -517,16 +519,12 @@ class Scatter():
                 except TypeError:
                     pass
 
-        if self._opacity_map is None and self._opacity_by is not None:
+        if (self._opacity_map is None or map == 'auto') and self._opacity_by is not None:
             # The best we can do is provide a linear opacity map
             if self._opacity_categories is not None:
                 self._opacity_map = np.linspace(1/len(self._opacity_categories), 1, len(self._opacity_categories))
             else:
                 self._opacity_map = np.linspace(1/256, 1, 256)
-
-        if order is not Undefined and self._opacity_map is not None:
-            # Reverse if needed
-            self._opacity_map = self._opacity_map[::(1 + (-2 * (self._opacity_order == 'reverse')))]
 
         self._opacity_map = tolist(self._opacity_map)
 
@@ -535,7 +533,10 @@ class Scatter():
 
         # Update widget
         if self._opacity_by is not None and self._opacity_map is not None:
-            self.update_widget('opacity', self._opacity_map)
+            self.update_widget(
+                'opacity',
+                self._opacity_map[::(1 + (-2 * (self._opacity_order == 'reverse')))]
+            )
         else:
             self.update_widget('opacity', self._opacity)
 
@@ -622,7 +623,7 @@ class Scatter():
                 # Define order of the sizes instead of changing `points[:, component_idx]`
                 self._size_order = [self._size_categories[cat] for cat in self._size_order]
 
-        if map is not Undefined:
+        if map is not Undefined and map != 'auto':
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
                 self._size_map = np.linspace(*map)
@@ -637,16 +638,12 @@ class Scatter():
                 except TypeError:
                     pass
 
-        if self._size_map is None and self._size_by is not None:
+        if (self._size_map is None or map == 'auto') and self._size_by is not None:
             # The best we can do is provide a linear size map
             if self._size_categories is None:
                 self._size_map = np.linspace(1, 10, 19)
             else:
                 self._size_map = np.arange(1, len(self._size_categories) + 1)
-
-        if order is not Undefined and self._size_map is not None:
-            # Reverse if needed
-            self._size_map = self._size_map[::(1 + (-2 * (self._size_order == 'reverse')))]
 
         self._size_map = tolist(self._size_map)
 
@@ -655,7 +652,10 @@ class Scatter():
 
         # Update widget
         if self._size_by is not None and self._size_map is not None:
-            self.update_widget('size', self._size_map)
+            self.update_widget(
+                'size',
+                self._size_map[::(1 + (-2 * (self._size_order == 'reverse')))]
+            )
         else:
             self.update_widget('size', self._size)
 
@@ -804,7 +804,7 @@ class Scatter():
                 # Define order of the colors instead of changing `points[:, component_idx]`
                 self._connection_color_order = [self._connection_color_categories[cat] for cat in order]
 
-        if map is not Undefined:
+        if map is not Undefined and map != 'auto':
             if self._connection_color_categories is None:
                 if callable(map):
                     # Assuming `map` is a Matplotlib LinearSegmentedColormap
@@ -834,7 +834,7 @@ class Scatter():
                     except TypeError:
                         pass
 
-        if self._connection_color_map is None and self._connection_color_by is not None:
+        if (self._connection_color_map is None or map == 'auto') and self._connection_color_by is not None:
             # Assign default color maps
             if self._connection_color_categories is None:
                 self._connection_color_map = plt.get_cmap('viridis')(range(256)).tolist()
@@ -846,18 +846,17 @@ class Scatter():
             else:
                 self._connection_color_map = okabe_ito
 
-        if order is not Undefined:
-            # Reverse if needed
-            self._connection_color_map = self._connection_color_map[
-                ::(1 + (-2 * (self._connection_color_order == 'reverse')))
-            ]
-
         if self._connection_color_categories is not None:
             assert len(self._connection_color_categories) <= len(self._connection_color_map), 'More categories than connection colors'
 
         # Update widget
         if self._connection_color_by is not None and self._connection_color_map is not None:
-            self.update_widget('connection_color', self._connection_color_map)
+            self.update_widget(
+                'connection_color',
+                self._connection_color_map[
+                    ::(1 + (-2 * (self._connection_color_order == 'reverse')))
+                ]
+            )
         else:
             self.update_widget('connection_color', self._connection_color)
 
@@ -946,7 +945,7 @@ class Scatter():
                     self._connection_opacity_categories[cat] for cat in order
                 ]
 
-        if map is not Undefined:
+        if map is not Undefined and map != 'auto':
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
                 self._connection_opacity_map = np.linspace(*map)
@@ -962,7 +961,7 @@ class Scatter():
                 except TypeError:
                     pass
 
-        if self._connection_opacity_map is None and self._connection_opacity_by is not None:
+        if (self._connection_opacity_map is None or map == 'auto') and self._connection_opacity_by is not None:
             # The best we can do is provide a linear opacity map
             if self._connection_opacity_categories is not None:
                 self._connection_opacity_map = np.linspace(
@@ -973,10 +972,6 @@ class Scatter():
             else:
                 self._connection_opacity_map = np.linspace(1/256, 1, 256)
 
-        if order is not Undefined:
-            # Reverse if needed
-            self._connection_opacity_map = self._connection_opacity_map[::(1 + (-2 * (self._connection_opacity_order == 'reverse')))]
-
         self._connection_opacity_map = tolist(self._connection_opacity_map)
 
         if self._connection_opacity_categories is not None:
@@ -984,7 +979,10 @@ class Scatter():
 
         # Update widget
         if self._connection_opacity_by is not None and self._connection_opacity_map is not None:
-            self.update_widget('connection_opacity', self._connection_opacity_map)
+            self.update_widget(
+                'connection_opacity',
+                self._connection_opacity_map[::(1 + (-2 * (self._connection_opacity_order == 'reverse')))]
+            )
         else:
             self.update_widget('connection_opacity', self._connection_opacity)
 
@@ -1070,7 +1068,7 @@ class Scatter():
                 # Define order of the sizes instead of changing `points[:, component_idx]`
                 self._connection_size_order = [self._connection_size_categories[cat] for cat in order]
 
-        if map is not Undefined:
+        if map is not Undefined and map != 'auto':
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
                 self._connection_size_map = np.linspace(*map)
@@ -1083,22 +1081,21 @@ class Scatter():
                 except TypeError:
                     pass
 
-        if self._connection_size_map is None and self._connection_size_by is not None:
+        if (self._connection_size_map is None or map == 'auto') and self._connection_size_by is not None:
             # The best we can do is provide a linear size map
             if self._connection_size_categories is None:
                 self._connection_size_map = np.linspace(1, 10, 19)
             else:
                 self._connection_size_map = np.arange(1, len(self._connection_size_categories) + 1)
 
-        if order is not Undefined:
-            # Reverse if needed
-            self._connection_size_map = self._connection_size_map[::(1 + (-2 * (self._connection_size_order == 'reverse')))]
-
         self._connection_size_map = tolist(self._connection_size_map)
 
         # Update widget
         if self._connection_size_by is not None and self._connection_size_map is not None:
-            self.update_widget('connection_size', self._connection_size_map)
+            self.update_widget(
+                'connection_size',
+                self._connection_size_map[::(1 + (-2 * (self._connection_size_order == 'reverse')))]
+            )
         else:
             self.update_widget('connection_size', self._connection_size)
 
