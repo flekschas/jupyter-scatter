@@ -39,6 +39,8 @@ class JupyterScatter(widgets.DOMWidget):
 
     # Data
     points = List().tag(sync=True)
+    x_domain = List(minlen=2, maxlen=2).tag(sync=True)
+    y_domain = List(minlen=2, maxlen=2).tag(sync=True)
     selection = List().tag(sync=True)
     hovering = Int(None, allow_none=True).tag(sync=True)
 
@@ -90,9 +92,6 @@ class JupyterScatter(widgets.DOMWidget):
     view_download = Unicode(None, allow_none=True).tag(sync=True) # Used for triggering a download
     view_pixels = List(None, allow_none=True, read_only=True).tag(sync=True)
     view_shape = List(None, allow_none=True, read_only=True).tag(sync=True)
-
-    # Needed when the user specified `connect_order`
-    sort_order = Dict(None, allow_none=True).tag(sync=True)
 
     @property
     def mouse_mode_widget(self):

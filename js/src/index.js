@@ -91,7 +91,6 @@ const properties = {
   connectionSizeBy: 'pointConnectionSizeBy',
   viewDownload: 'viewDownload',
   viewReset: 'viewReset',
-  sortOrder: 'sortOrder',
   hovering: 'hovering',
 };
 
@@ -108,8 +107,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.width = !Number.isNaN(+this.model.get('width')) && +this.model.get('width') > 0
       ? +this.model.get('width')
       : 'auto';
-
-    if (this.sortOrder) this.inverseSortOrder = flipObj(this.sortOrder);
 
     // Create a random 6-letter string
     // From https://gist.github.com/6174/6062387
@@ -196,7 +193,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
           .draw(self.points)
           .then(function onInitialDraw() {
             if (self.selection.length) {
-              self.scatterplot.select(self.sortSelection(), { preventEvent: true });
+              self.scatterplot.select(self.selection, { preventEvent: true });
             }
           });
       }
@@ -220,14 +217,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     }
   },
 
-  sortSelection: function sortSelection(selection) {
-    const s = selection || this.selection;
-    if (this.sortOrder) {
-      return s.map((s) => this.sortOrder[s]);
-    }
-    return s;
-  },
-
   // Event handlers for JS-triggered events
   pointoverHandler: function pointoverHandler(pointIndex) {
     this.hoveringChangedByJs = true;
@@ -243,12 +232,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
   selectHandler: function selectHandler(event) {
     this.selectionChangedByJs = true;
-    if (this.inverseSortOrder) {
-      this.model.set('selection', event.points.map(point => this.inverseSortOrder[point]));
-    } else {
-      this.model.set('selection', [...event.points]);
-    }
-
+    this.model.set('selection', [...event.points]);
     this.model.save_changes();
   },
 
@@ -278,10 +262,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     if (!newSelection || !newSelection.length) {
       this.scatterplot.deselect({ preventEvent: true });
     } else {
-      this.scatterplot.select(
-        this.sortSelection(newSelection),
-        { preventEvent: true }
-      );
+      this.scatterplot.select(newSelection, { preventEvent: true });
     }
   },
 
@@ -428,15 +409,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
   otherOptionsHandler: function otherOptionsHandler(newOptions) {
     this.scatterplot.set(newOptions);
-  },
-
-  sortOrderHandler: function sortOrderHandler(newSortOrder) {
-    this.sortOrder = newSortOrder;
-    if (self.sortOrder) {
-      this.inverseSortOrder = flipObj(self.sortOrder);
-    } else {
-      this.inverseSortOrder = undefined;
-    }
   },
 
   viewDownloadHandler: function viewDownloadHandler(target) {
