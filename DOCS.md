@@ -124,7 +124,7 @@ Gets or sets the point color.
 - `color_active` is a valid matplotlib color.
 - `color_hover` is a valid matplotlib color.
 - `by` is either an array-like list of values or a string referencing a column in `data`.
-- `map` is either a string referencing a matplotlib color map, a matplotlib color map, or a list of colors.
+- `map` is either a string referencing a matplotlib color map, a matplotlib color map object, a list of matplotlib-compatible colors, or `auto` (to let jscatter choose a default color map).
 - `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/stable/api/colors_api.html#classes).
 - `order` is either a list of values (for categorical coloring) or `reverse` to reverse a color map.
 - `kwargs`:
@@ -156,7 +156,7 @@ Gets or sets the point opacity.
 
 - `opacity` is a valid matplotlib color.
 - `by` is either an array-like list of values, a string referencing a column in `data`, or `density`
-- `map` is either a triple specifying an `np.linspace(*map)` or a list of opacities.
+- `map` is either a triple specifying an `np.linspace(*map)`, a list of opacities, or `auto` (to let jscatter choose a default opacity map).
 - `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/stable/api/colors_api.html#classes).
 - `order` is either a list of values (for categorical opacity encoding) or `reverse` to reverse the opacity map.
 - `kwargs`:
@@ -183,7 +183,7 @@ Gets or sets the point size.
 
 - `size` is a valid matplotlib color.
 - `by` is either an array-like list of values or a string referencing a column in `data`.
-- `map` is either a triple specifying an `np.linspace(*map)` or a list of opacities.
+- `map` is either a triple specifying an `np.linspace(*map)`, a list of sizes, or `auto` (to let jscatter choose a default size map).
 - `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/stable/api/colors_api.html#classes).
 - `order` is either a list of values (for categorical size encoding) or `reverse` to reverse the size map.
 - `kwargs`:
@@ -213,8 +213,20 @@ Gets or sets the point connection
 **Examples:**
 
 ```python
-scatter.size(by='price', map=(1, 0.25, 10))
+scatter.connect(by='category', order='category_order')
 ```
+
+<a name="scatter.connection_color" href="#scatter.connection_color">#</a> scatter.<b>connection_color</b>(<i>color = Undefined</i>, <i>color_active = Undefined</i>, <i>color_hover = Undefined</i>, <i>by = Undefined</i>, <i>map = Undefined</i>, <i>norm = Undefined</i>, <i>order = Undefined</i>, <i>\*\*kwargs</i>)
+
+Gets or sets the point connection color. This function behaves identical to [scatter.color()][scatter.color].
+
+<a name="scatter.connection_opacity" href="#scatter.connection_opacity">#</a> scatter.<b>connection_opacity</b>(<i>opacity = Undefined</i>, <i>by = Undefined</i>, <i>map = Undefined</i>, <i>norm = Undefined</i>, <i>order = Undefined</i>, <i>\*\*kwargs</i>)
+
+Gets or sets the point connection opacity. This function behaves identical to [scatter.opacity()][scatter.color].
+
+<a name="scatter.connection_size" href="#scatter.connection_size">#</a> scatter.<b>connection_size</b>(<i>size = Undefined</i>, <i>by = Undefined</i>, <i>map = Undefined</i>, <i>norm = Undefined</i>, <i>order = Undefined</i>, <i>\*\*kwargs</i>)
+
+Gets or sets the point connection size. This function behaves identical to [scatter.size()][scatter.color].
 
 ## Properties
 
