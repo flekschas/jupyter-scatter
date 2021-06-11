@@ -419,7 +419,7 @@ class Scatter():
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('points', self.get_point_list())
 
-        if any_not([color, color_active, color_hover, by, map, norm, order]):
+        if any_not([color, color_active, color_hover, by, map, norm, order], Undefined):
             return self
 
         return dict(
@@ -699,7 +699,7 @@ class Scatter():
                 if pd.api.types.is_integer_dtype(self._data[order].dtype):
                     self._points[:, COMPONENT_CONNECT_ORDER] = self._data[order]
                 else:
-                    raise ValueError('connection order must be an integer type')
+                    raise ValueError('connect order must be an integer type')
             except TypeError:
                 self._points[:, COMPONENT_CONNECT_ORDER] = np.asarray(order).astype(int)
 
@@ -710,7 +710,7 @@ class Scatter():
 
         self.update_widget('connect', bool(self._connect_by))
 
-        if any_not([by, order]):
+        if any_not([by, order], Undefined):
             return self
 
         return dict(
@@ -863,7 +863,7 @@ class Scatter():
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('points', self.get_point_list())
 
-        if any_not([color, by, map, norm, order]):
+        if any_not([color, by, map, norm, order], Undefined):
             return self
 
         return dict(
@@ -1105,7 +1105,7 @@ class Scatter():
         if self._connection_size_categories is not None:
             assert len(self._connection_size_categories) <= len(self._connection_size_map), 'More categories than connection sizes'
 
-        if any_not([size, by, map, norm, order]):
+        if any_not([size, by, map, norm, order], Undefined):
             return self
 
         return dict(
@@ -1154,7 +1154,7 @@ class Scatter():
                         self.update_widget('background_image', self._background_image)
                     pass
 
-        if any_not([color, image]):
+        if any_not([color, image], Undefined):
             return self
 
         return dict(
@@ -1192,7 +1192,7 @@ class Scatter():
             self._camera_view = view
             self.update_widget('camera_view', self._camera_view)
 
-        if any_not([target, distance, rotation, view]):
+        if any_not([target, distance, rotation, view], Undefined):
             return self
 
         return dict(
@@ -1237,7 +1237,7 @@ class Scatter():
             except:
                 pass
 
-        if any_not([color, initiator, min_delay, min_dist]):
+        if any_not([color, initiator, min_delay, min_dist], Undefined):
             return self
 
         return dict(
@@ -1307,7 +1307,7 @@ class Scatter():
                 except:
                     pass
 
-        if any_not([show, color]):
+        if any_not([show, color], Undefined):
             return self
 
         return dict(
