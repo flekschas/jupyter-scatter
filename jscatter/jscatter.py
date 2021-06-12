@@ -39,6 +39,15 @@ def component_idx_to_name(idx):
 
     return None
 
+def order_map(map, order):
+    ordered_map = map
+    try:
+        ordered_map = [ordered_map[order[i]] for i, _ in enumerate(ordered_map)]
+    except TypeError:
+        pass
+
+    return ordered_map[::(1 + (-2 * (order == 'reverse')))]
+
 
 class Scatter():
     def __init__(self, x, y, data = None, **kwargs):
@@ -382,13 +391,6 @@ class Scatter():
                     # Assuming `map` is a list of colors
                     self._color_map = [to_rgba(c) for c in map]
 
-                if self._color_order is not None:
-                    # Reorder colors in case `self._color_order` is a list
-                    try:
-                        self._color_map = [map[self._color_order[i]] for i, _ in enumerate(self._color_map)]
-                    except TypeError:
-                        pass
-
         if (self._color_map is None or map == 'auto') and self._color_by is not None:
             # Assign default color maps
             if self._color_categories is None:
@@ -408,7 +410,7 @@ class Scatter():
         if self._color_by is not None and self._color_map is not None:
             self.update_widget(
                 'color',
-                self._color_map[::(1 + (-2 * (self._color_order == 'reverse')))]
+                order_map(self._color_map, self._color_order)
             )
         else:
             self.update_widget('color', self._color)
@@ -508,14 +510,6 @@ class Scatter():
             else:
                 self._opacity_map = np.asarray(map)
 
-            if self._opacity_categories is not None and self._opacity_order is not None:
-                try:
-                    self._opacity_map = np.asarray([
-                        self._opacity_map[self._opacity_order[i]] for i, _ in enumerate(self._opacity_map)
-                    ])
-                except TypeError:
-                    pass
-
         if (self._opacity_map is None or map == 'auto') and self._opacity_by is not None:
             # The best we can do is provide a linear opacity map
             if self._opacity_categories is not None:
@@ -532,7 +526,7 @@ class Scatter():
         if self._opacity_by is not None and self._opacity_map is not None:
             self.update_widget(
                 'opacity',
-                self._opacity_map[::(1 + (-2 * (self._opacity_order == 'reverse')))]
+                order_map(self._opacity_map, self._opacity_order)
             )
         else:
             self.update_widget('opacity', self._opacity)
@@ -627,14 +621,6 @@ class Scatter():
             else:
                 self._size_map = np.asarray(map)
 
-            if self._size_categories is not None and self._size_order is not None:
-                try:
-                    self._size_map = np.asarray([
-                        self._size_map[self._size_order[i]] for i, _ in enumerate(self._size_map)
-                    ])
-                except TypeError:
-                    pass
-
         if (self._size_map is None or map == 'auto') and self._size_by is not None:
             # The best we can do is provide a linear size map
             if self._size_categories is None:
@@ -650,8 +636,7 @@ class Scatter():
         # Update widget
         if self._size_by is not None and self._size_map is not None:
             self.update_widget(
-                'size',
-                self._size_map[::(1 + (-2 * (self._size_order == 'reverse')))]
+                'size', order_map(self._size_map, self._size_order)
             )
         else:
             self.update_widget('size', self._size)
@@ -823,14 +808,6 @@ class Scatter():
                     # Assuming `map` is a list of colors
                     self._connection_color_map = [to_rgba(c) for c in map]
 
-                if self._connection_color_order is not None:
-                    try:
-                        self._connection_color_map = [
-                            self._connection_color_map[self._connection_color_order[i]] for i, _ in enumerate(self._connection_color_map)
-                        ]
-                    except TypeError:
-                        pass
-
         if (self._connection_color_map is None or map == 'auto') and self._connection_color_by is not None:
             # Assign default color maps
             if self._connection_color_categories is None:
@@ -850,9 +827,7 @@ class Scatter():
         if self._connection_color_by is not None and self._connection_color_map is not None:
             self.update_widget(
                 'connection_color',
-                self._connection_color_map[
-                    ::(1 + (-2 * (self._connection_color_order == 'reverse')))
-                ]
+                order_map(self._connection_color_map, self._connection_color_order)
             )
         else:
             self.update_widget('connection_color', self._connection_color)
@@ -949,15 +924,6 @@ class Scatter():
             else:
                 self._connection_opacity_map = np.asarray(map)
 
-            if self._connection_opacity_categories is not None and self._connection_opacity_order is not None:
-                try:
-                    self._connection_opacity_map = np.asarray([
-                        self._connection_opacity_map[self._connection_opacity_order[i]]
-                        for i, _ in enumerate(self._connection_opacity_map)
-                    ])
-                except TypeError:
-                    pass
-
         if (self._connection_opacity_map is None or map == 'auto') and self._connection_opacity_by is not None:
             # The best we can do is provide a linear opacity map
             if self._connection_opacity_categories is not None:
@@ -978,7 +944,7 @@ class Scatter():
         if self._connection_opacity_by is not None and self._connection_opacity_map is not None:
             self.update_widget(
                 'connection_opacity',
-                self._connection_opacity_map[::(1 + (-2 * (self._connection_opacity_order == 'reverse')))]
+                order_map(self._connection_opacity_map, self._connection_opacity_order)
             )
         else:
             self.update_widget('connection_opacity', self._connection_opacity)
@@ -1072,12 +1038,6 @@ class Scatter():
             else:
                 self._connection_size_map = np.asarray(map)
 
-            if self._connection_size_categories is not None and self._connection_size_order is not None:
-                try:
-                    self._connection_size_map = np.asarray([self._connection_size_map[self._connection_size_order[i]] for i, _ in enumerate(self._connection_size_map)])
-                except TypeError:
-                    pass
-
         if (self._connection_size_map is None or map == 'auto') and self._connection_size_by is not None:
             # The best we can do is provide a linear size map
             if self._connection_size_categories is None:
@@ -1091,7 +1051,7 @@ class Scatter():
         if self._connection_size_by is not None and self._connection_size_map is not None:
             self.update_widget(
                 'connection_size',
-                self._connection_size_map[::(1 + (-2 * (self._connection_size_order == 'reverse')))]
+                order_map(self._connection_size_map, self._connection_size_order)
             )
         else:
             self.update_widget('connection_size', self._connection_size)
@@ -1422,22 +1382,22 @@ class Scatter():
             lasso_initiator=self._lasso_initiator,
             lasso_min_delay=self._lasso_min_delay,
             lasso_min_dist=self._lasso_min_dist,
-            color=self._color_map or self._color,
+            color=order_map(self._color_map, self._color_order) if self._color_map else self._color,
             color_active=self._color_active,
             color_hover=self._color_hover,
             color_by=self.js_color_by,
-            opacity=self._opacity_map or self._opacity,
+            opacity=order_map(self._opacity_map, self._opacity_order) if self._opacity_map else self._opacity,
             opacity_by=self.js_opacity_by,
-            size=self._size_map or self._size,
+            size=order_map(self._size_map, self._size_order) if self._size_map else self._size,
             size_by=self.js_size_by,
             connect=bool(self._connect_by),
-            connection_color=self._connection_color_map or self._connection_color,
+            connection_color=order_map(self._connection_color_map, self._connection_color_order) if self._connection_color_map else self._connection_color,
             connection_color_active=self._connection_color_active,
             connection_color_hover=self._connection_color_hover,
             connection_color_by=self.js_connection_color_by,
-            connection_opacity=self._connection_opacity_map or self._connection_opacity,
+            connection_opacity=order_map(self._connection_opacity_map, self._connection_opacity_order) if self._connection_opacity_map else self._connection_opacity,
             connection_opacity_by=self.js_connection_opacity_by,
-            connection_size=self._connection_size_map or self._connection_size,
+            connection_size=order_map(self._connection_size_map, self._connection_size_order) if self._connection_size_map else self._connection_size,
             connection_size_by=self.js_connection_size_by,
             reticle=self._reticle,
             reticle_color=self.get_reticle_color(),
