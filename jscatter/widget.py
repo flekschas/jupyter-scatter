@@ -35,8 +35,8 @@ def array_to_binary(arr, obj=None):
         return None
 
 def binary_to_array(value, obj=None):
-    # TODO: Need to deserialize into 2D data
-    return np.frombuffer(value['data'], dtype=np.float32)
+    print(value)
+    return np.frombuffer(value['data'], dtype=np.float32).reshape(value['shape'])
 
 array_binary_serialization = dict(to_json=array_to_binary, from_json=binary_to_array)
 

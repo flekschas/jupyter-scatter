@@ -5,38 +5,55 @@ const packageJson = require('../package.json');
 
 const createScatterplot = reglScatterplot.default;
 
-const numpyCodec = {
+const numpy2D = {
   deserialize(data) {
-    console.log('deserialize', data);
+    console.log('2D - deserialize', data);
     if (data == null) return null;
+    if (data.shape.length !== 2) {
+      console.error('Array must be 2D.')
+    }
+
     // Take full view of data buffer
     const arr = new Float32Array(data.data.buffer);
 
-    // 1-D
-    if (data.shape.length === 1) {
-      return arr;
-    }
-
-    if (data.shape.length !== 2) {
-      console.error('Array must be 1D or 2D.')
-      return [];
-    }
-
-    // 2-D 
     // Chunk single TypedArray into nested Array of points
     const [height, width] = data.shape;
     // Float32Array(width * height) -> [Float32Array(width), Float32Array(width), ...]
-    const points = Array
+    return Array
       .from({ length: height })
       .map((_, i) => arr.subarray(i * width, (i + 1) * width));
-    return points;
   },
 
-  serialize(data, obj) {
-    console.log('serialize', data, obj);
-    const arr = new Float32Array([]);
-    return arr;
+  serialize(data) {
+    console.log('2D - serialize', data);
+    const height = data.length;
+    const width = data[0].length;
+    const arr = new Float32Array(height * width);
+    for (let i = 0; i < data.length; i++) {
+      arr.set(data[i], i * height);
+    }
+    return { data: arr, shape: [height, width] };
   }
+}
+
+const numpy1D = {
+  deserialize(data) {
+    console.log('1D - deserialize', data);
+    if (data == null) return null;
+
+    if (data.shape.length !== 1) {
+      console.error('Array must be 1D.')
+      return [];
+    }
+
+    return new Float32Array(data.data.buffer);
+  },
+
+  serialize(data) {
+    console.log('1D - serialize', data);
+    return { data: new Float32Array(data), shape: [data.length] };
+  }
+
 }
 
 const JupyterScatterModel = widgets.DOMWidgetModel.extend(
@@ -54,8 +71,8 @@ const JupyterScatterModel = widgets.DOMWidgetModel.extend(
   {
     serializers: {
       ...widgets.DOMWidgetModel.serializers,
-      points: numpyCodec,
-      selection: numpyCodec,
+      points: numpy2D,
+      selection: numpy1D,
     }
   },
 );
