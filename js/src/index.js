@@ -5,14 +5,24 @@ const packageJson = require('../package.json');
 
 const createScatterplot = reglScatterplot.default;
 
-const numpy2DCodec = {
+const numpyCodec = {
   deserialize(data) {
+    console.log('deserialize', data);
     if (data == null) return null;
-    if (data.shape.length !== 2) {
-      throw new Error('Array must be 2D.')
-    }
     // Take full view of data buffer
     const arr = new Float32Array(data.data.buffer);
+
+    // 1-D
+    if (data.shape.length === 1) {
+      return arr;
+    }
+
+    if (data.shape.length !== 2) {
+      console.error('Array must be 1D or 2D.')
+      return [];
+    }
+
+    // 2-D 
     // Chunk single TypedArray into nested Array of points
     const [height, width] = data.shape;
     // Float32Array(width * height) -> [Float32Array(width), Float32Array(width), ...]
@@ -21,10 +31,10 @@ const numpy2DCodec = {
       .map((_, i) => arr.subarray(i * width, (i + 1) * width));
     return points;
   },
-  serialize(data) {
-    console.log(data);
-    // TODO: Need to unnest data into single TypedArray.
-    const arr = new Float32Array(data.length + data[0].length);
+
+  serialize(data, obj) {
+    console.log('serialize', data, obj);
+    const arr = new Float32Array([]);
     return arr;
   }
 }
@@ -44,8 +54,8 @@ const JupyterScatterModel = widgets.DOMWidgetModel.extend(
   {
     serializers: {
       ...widgets.DOMWidgetModel.serializers,
-      points: numpy2DCodec,
-      selection: numpy2DCodec,
+      points: numpyCodec,
+      selection: numpyCodec,
     }
   },
 );

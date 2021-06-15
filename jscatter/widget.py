@@ -29,6 +29,7 @@ def array_to_binary(arr, obj=None):
     if arr is not None:
         arr = arr.astype(np.float32)
         mv = memoryview(arr)
+        assert arr.flags["C_CONTIGUOUS"], "must be row-major array."
         return {'data': mv, 'shape': arr.shape}
     else:
         return None

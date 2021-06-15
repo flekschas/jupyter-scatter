@@ -269,7 +269,6 @@ class Scatter():
 
         if 'skip_widget_update' not in kwargs:
             self.update_widget('points', self._points)
-
     def selection(self, selection = Undefined):
         if selection is not Undefined:
             try:
@@ -1374,13 +1373,8 @@ class Scatter():
             return self._widget
 
         self._widget = JupyterScatter(
-<<<<<<< HEAD
             points=self.get_point_list(),
-            selection=self._selection.tolist(),
-=======
-            points=self._points,
             selection=self._selection,
->>>>>>> a8a183d (wip)
             width=self._width,
             height=self._height,
             background_color=self._background_color,
