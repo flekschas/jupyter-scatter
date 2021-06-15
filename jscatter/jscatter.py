@@ -209,13 +209,13 @@ class Scatter():
 
         if not connect_by:
             # To avoid having to serialize unused data
-            return self._points[:,:4].tolist()
+            return self._points[:,:4]
 
         if not connect_order:
             # To avoid having to serialize unused data
-            return self._points[:,:5].tolist()
+            return self._points[:,:5]
 
-        return self._points.tolist()
+        return self._points
 
     def x(self, x = Undefined, **kwargs):
         if x is not Undefined:
@@ -234,7 +234,7 @@ class Scatter():
             self._points[:, 0] = minmax_scale(self._points[:, 0], (-1,1))
 
             if 'skip_widget_update' not in kwargs:
-                self.update_widget('points', self._points.tolist())
+                self.update_widget('points', self._points)
 
             return self
 
@@ -257,7 +257,7 @@ class Scatter():
             self._points[:, 1] = minmax_scale(self._points[:, 1], (-1,1))
 
             if 'skip_widget_update' not in kwargs:
-                self.update_widget('points', self._points.tolist())
+                self.update_widget('points', self._points)
 
             return self
 
@@ -268,13 +268,13 @@ class Scatter():
         self.y(y, skip_widget_update=True)
 
         if 'skip_widget_update' not in kwargs:
-            self.update_widget('points', self._points.tolist())
+            self.update_widget('points', self._points)
 
     def selection(self, selection = Undefined):
         if selection is not Undefined:
             try:
                 self._selection = np.asarray(selection)
-                self.update_widget('selection', self._selection.tolist())
+                self.update_widget('selection', self._selection)
             except:
                 if selection is None:
                     self._selection = np.asarray([])
@@ -1374,8 +1374,13 @@ class Scatter():
             return self._widget
 
         self._widget = JupyterScatter(
+<<<<<<< HEAD
             points=self.get_point_list(),
             selection=self._selection.tolist(),
+=======
+            points=self._points,
+            selection=self._selection,
+>>>>>>> a8a183d (wip)
             width=self._width,
             height=self._height,
             background_color=self._background_color,

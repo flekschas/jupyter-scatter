@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
+from traittypes import Array
 
 from ._version import __version__
 from .utils import to_hex, with_left_label
@@ -24,6 +25,20 @@ def sorting_to_dict(sorting):
         out[original_idx] = order_idx
     return out
 
+def array_to_binary(arr, obj=None):
+    if arr is not None:
+        arr = arr.astype(np.float32)
+        mv = memoryview(arr)
+        return {'data': mv, 'shape': arr.shape}
+    else:
+        return None
+
+def binary_to_array(value, obj=None):
+    # TODO: Need to deserialize into 2D data
+    return np.frombuffer(value['data'], dtype=np.float32)
+
+array_binary_serialization = dict(to_json=array_to_binary, from_json=binary_to_array)
+
 @widgets.register
 class JupyterScatter(widgets.DOMWidget):
     _view_name = Unicode("JupyterScatterView").tag(sync=True)
@@ -38,10 +53,10 @@ class JupyterScatter(widgets.DOMWidget):
     dom_element_id = Unicode(read_only=True).tag(sync=True)
 
     # Data
-    points = List().tag(sync=True)
+    points = Array(default_value=None).tag(sync=True, **array_binary_serialization)
     x_domain = List(minlen=2, maxlen=2).tag(sync=True)
     y_domain = List(minlen=2, maxlen=2).tag(sync=True)
-    selection = List().tag(sync=True)
+    selection = Array(default_value=None, allow_none=True).tag(sync=True, **array_binary_serialization)
     hovering = Int(None, allow_none=True).tag(sync=True)
 
     # View properties
@@ -556,7 +571,7 @@ class JupyterScatter(widgets.DOMWidget):
             List of point indices to select
         """
 
-        self.selection = np.asarray(points).tolist()
+        self.selection = np.asarray(points)
 
     def get_panzoom_mode_widget(self, icon_only=False, width=None):
         button = widgets.Button(

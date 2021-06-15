@@ -1,15 +1,37 @@
 /* eslint-env browser */
 const widgets = require('@jupyter-widgets/base');
-const _ = require('lodash');
 const reglScatterplot = require('regl-scatterplot/dist/regl-scatterplot.js');
 const packageJson = require('../package.json');
 
 const createScatterplot = reglScatterplot.default;
 
-const JupyterScatterModel = widgets.DOMWidgetModel.extend({
-  defaults: _.extend(
-    _.result(this, 'widgets.DOMWidgetModel.prototype.defaults'),
-    {
+const numpy2DCodec = {
+  deserialize(data) {
+    if (data == null) return null;
+    if (data.shape.length !== 2) {
+      throw new Error('Array must be 2D.')
+    }
+    // Take full view of data buffer
+    const arr = new Float32Array(data.data.buffer);
+    // Chunk single TypedArray into nested Array of points
+    const [height, width] = data.shape;
+    // Float32Array(width * height) -> [Float32Array(width), Float32Array(width), ...]
+    const points = Array
+      .from({ length: height })
+      .map((_, i) => arr.subarray(i * width, (i + 1) * width));
+    return points;
+  },
+  serialize(data) {
+    // TODO: Need to unnest data into single TypedArray.
+    const arr = new Float32Array(data.length + data[0].length);
+    return arr;
+  }
+}
+
+const JupyterScatterModel = widgets.DOMWidgetModel.extend(
+  {
+    defaults: {
+      ...widgets.DOMWidgetModel.prototype.defaults(),
       _model_name : 'JupyterScatterModel',
       _model_module : packageJson.name,
       _model_module_version : packageJson.version,
@@ -17,8 +39,15 @@ const JupyterScatterModel = widgets.DOMWidgetModel.extend({
       _view_module : packageJson.name,
       _view_module_version : packageJson.version
     }
-  )
-});
+  },
+  {
+    serializers: {
+      ...widgets.DOMWidgetModel.serializers,
+      points: numpy2DCodec,
+      serialize: numpy2DCodec,
+    }
+  },
+);
 
 function camelToSnake(string) {
   return string.replace(/[\w]([A-Z])/g, function(m) {
