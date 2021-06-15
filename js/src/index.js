@@ -22,6 +22,7 @@ const numpy2DCodec = {
     return points;
   },
   serialize(data) {
+    console.log(data);
     // TODO: Need to unnest data into single TypedArray.
     const arr = new Float32Array(data.length + data[0].length);
     return arr;
@@ -44,7 +45,7 @@ const JupyterScatterModel = widgets.DOMWidgetModel.extend(
     serializers: {
       ...widgets.DOMWidgetModel.serializers,
       points: numpy2DCodec,
-      serialize: numpy2DCodec,
+      selection: numpy2DCodec,
     }
   },
 );
