@@ -5,30 +5,20 @@ const packageJson = require('../package.json');
 
 const createScatterplot = reglScatterplot.default;
 
-const numpy2D = {
-
+const pointsCodec = {
   deserialize(data) {
-    console.log('2D - deserialize', data);
     if (data == null) return null;
-    if (data.shape.length !== 2) {
-      console.error('Array must be 2D.')
-    }
-
     // Take full view of data buffer
     const arr = new Float32Array(data.buffer.buffer);
-
     // Chunk single TypedArray into nested Array of points
     const [height, width] = data.shape;
     // Float32Array(width * height) -> [Float32Array(width), Float32Array(width), ...]
     const points = Array
       .from({ length: height })
       .map((_, i) => arr.subarray(i * width, (i + 1) * width));
-
      return points;
   },
-
   serialize(data) {
-    console.log('2D - serialize', data);
     const height = data.length;
     const width = data[0].length;
     const arr = new Float32Array(height * width);
@@ -39,26 +29,16 @@ const numpy2D = {
   }
 }
 
-const numpy1D = {
-
+const selectionCodec = {
   deserialize(data) {
-    console.log('1D - deserialize', data);
     if (data == null) return null;
-
-    if (data.shape.length !== 1) {
-      console.error('Array must be 1D.')
-      return [];
-    }
-
+    // for some reason can't be a typed array
     return Array.from(new Int32Array(data.buffer.buffer));
   },
-
   serialize(data) {
     data = new Int32Array(data)
-    console.log('1D - serialize', data);
     return { data: data.buffer, dtype: 'int32', shape: [data.length] };
   }
-
 }
 
 const JupyterScatterModel = widgets.DOMWidgetModel.extend(
@@ -76,8 +56,8 @@ const JupyterScatterModel = widgets.DOMWidgetModel.extend(
   {
     serializers: {
       ...widgets.DOMWidgetModel.serializers,
-      points: numpy2D,
-      selection: numpy1D,
+      points: pointsCodec,
+      selection: selectionCodec,
     }
   },
 );
