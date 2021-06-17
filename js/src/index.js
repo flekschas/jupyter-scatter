@@ -6,6 +6,7 @@ const packageJson = require('../package.json');
 const createScatterplot = reglScatterplot.default;
 
 const numpy2D = {
+
   deserialize(data) {
     console.log('2D - deserialize', data);
     if (data == null) return null;
@@ -14,14 +15,16 @@ const numpy2D = {
     }
 
     // Take full view of data buffer
-    const arr = new Float32Array(data.data.buffer);
+    const arr = new Float32Array(data.buffer.buffer);
 
     // Chunk single TypedArray into nested Array of points
     const [height, width] = data.shape;
     // Float32Array(width * height) -> [Float32Array(width), Float32Array(width), ...]
-    return Array
+    const points = Array
       .from({ length: height })
       .map((_, i) => arr.subarray(i * width, (i + 1) * width));
+
+     return points;
   },
 
   serialize(data) {
@@ -32,11 +35,12 @@ const numpy2D = {
     for (let i = 0; i < data.length; i++) {
       arr.set(data[i], i * height);
     }
-    return { data: arr, shape: [height, width] };
+    return { data: arr.buffer, dtype: 'float32', shape: [height, width] };
   }
 }
 
 const numpy1D = {
+
   deserialize(data) {
     console.log('1D - deserialize', data);
     if (data == null) return null;
@@ -46,12 +50,13 @@ const numpy1D = {
       return [];
     }
 
-    return new Float32Array(data.data.buffer);
+    return Array.from(new Int32Array(data.buffer.buffer));
   },
 
   serialize(data) {
+    data = new Int32Array(data)
     console.log('1D - serialize', data);
-    return { data: new Float32Array(data), shape: [data.length] };
+    return { data: data.buffer, dtype: 'int32', shape: [data.length] };
   }
 
 }
