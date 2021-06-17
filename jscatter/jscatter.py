@@ -7,7 +7,7 @@ import pandas as pd
 from matplotlib.colors import to_rgba
 
 from .encodings import Encodings
-from .widget import JupyterScatter
+from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
 from .utils import any_not, minmax_scale, tolist, uri_validator
 
@@ -63,7 +63,7 @@ class Scatter():
         self._widget = None
         self._pixels = None
         self._encodings = Encodings()
-        self._selection = np.asarray([])
+        self._selection = np.asarray([], dtype=SELECTION_DTYPE)
         self._background_color = to_rgba(default_background_color)
         self._background_color_luminance = 1
         self._background_image = None
@@ -269,20 +269,21 @@ class Scatter():
 
         if 'skip_widget_update' not in kwargs:
             self.update_widget('points', self._points)
+
     def selection(self, selection = Undefined):
         if selection is not Undefined:
             try:
-                self._selection = np.asarray(selection)
+                self._selection = np.asarray(selection, dtype=self._selection.dtype)
                 self.update_widget('selection', self._selection)
             except:
                 if selection is None:
-                    self._selection = np.asarray([])
+                    self._selection = np.asarray([], dtype=self._selection.dtype)
                 pass
 
             return self
 
         if self._widget is not None:
-            return np.asarray(self._widget.selection)
+            return self._widget.selection.astype(self._selection.dtype)
 
         return self._selection
 
