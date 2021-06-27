@@ -40,7 +40,8 @@
     "dom-2d-camera": "~1.2.3",
     "gl-matrix": "^3.1.0",
     "lodash": "^4.17.4",
-    "regl-scatterplot": "^0.19.1"
+    "regl": "~2.1.0",
+    "regl-scatterplot": "^0.19.2"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.0.8",
