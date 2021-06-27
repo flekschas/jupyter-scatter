@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import minmax_scale
 
 from .jscatter import Scatter, component_idx_to_name
+from .utils import minmax_scale
 
 def test_component_idx_to_name():
     assert 'valueA' == component_idx_to_name(2)
