@@ -45,5 +45,6 @@ def sorting_to_dict(sorting):
     return out
 
 def minmax_scale(X, feature_range=(0,1)):
+    min, max = feature_range
     X_std = (X - X.min(axis=0)) / (X.max(axis=0) - X.min(axis=0))
     return X_std * (max - min) + min
