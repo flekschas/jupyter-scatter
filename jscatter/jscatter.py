@@ -5,12 +5,11 @@ import numpy as np
 import pandas as pd
 
 from matplotlib.colors import to_rgba
-from sklearn.preprocessing import minmax_scale
 
 from .encodings import Encodings
 from .widget import JupyterScatter
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not, tolist, uri_validator
+from .utils import any_not, minmax_scale, tolist, uri_validator
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
