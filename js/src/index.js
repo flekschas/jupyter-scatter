@@ -1,67 +1,10 @@
 /* eslint-env browser */
 const widgets = require('@jupyter-widgets/base');
 const reglScatterplot = require('regl-scatterplot/dist/regl-scatterplot.js');
+const codecs = require('./codecs');
 const packageJson = require('../package.json');
 
 const createScatterplot = reglScatterplot.default;
-
-const pointsCodec = {
-  /**
-   * @param {{buffer: DataView, dtype: string, shape: number[]}} data
-   * @returns {number[][]}
-   */
-  deserialize(data) {
-    if (data == null) return null;
-    if (data.dtype !== 'float32' || data.shape.length !== 2) {
-      throw Error('Must be 2D Float32 array.');
-    }
-    // Take full view of data buffer
-    const arr = new Float32Array(data.buffer.buffer);
-    // Chunk single TypedArray into nested Array of points
-    const [height, width] = data.shape;
-    // Float32Array(width * height) -> [Array(width), Array(width), ...]
-    const points = Array
-      .from({ length: height })
-      .map((_, i) => Array.from(arr.subarray(i * width, (i + 1) * width)));
-     return points;
-  },
-  /**
-   * @param {number[][]} data
-   * @returns {{data: ArrayBuffer, dtype: 'float32', shape: [number, number]}}
-   */
-  serialize(data) {
-    const height = data.length;
-    const width = data[0].length;
-    const arr = new Float32Array(height * width);
-    for (let i = 0; i < data.length; i++) {
-      arr.set(data[i], i * height);
-    }
-    return { data: arr.buffer, dtype: 'float32', shape: [height, width] };
-  }
-}
-
-const selectionCodec = {
-  /**
-   * @param {{data: DataView, dtype: string, shape: number[]}} data
-   * @returns {number[]}
-   */
-  deserialize(data) {
-    if (data == null) return null;
-    if (data.dtype !== 'int32' || data.shape.length !== 1) {
-      throw Error('Must be 1D Int32 array.');
-    }
-    // for some reason can't be a typed array
-    return Array.from(new Int32Array(data.buffer.buffer));
-  },
-  /**
-   * @param {number[]} data
-   * @returns {{data: ArrayBuffer, dtype: 'int32', shape: [number]}}
-   */
-  serialize(data) {
-    data = new Int32Array(data)
-    return { data: data.buffer, dtype: 'int32', shape: [data.length] };
-  }
-}
 
 const JupyterScatterModel = widgets.DOMWidgetModel.extend(
   {
@@ -78,8 +21,8 @@ const JupyterScatterModel = widgets.DOMWidgetModel.extend(
   {
     serializers: {
       ...widgets.DOMWidgetModel.serializers,
-      points: pointsCodec,
-      selection: selectionCodec,
+      points: new codecs.Numpy2D('float32'),
+      selection: new codecs.Numpy1D('int32'),
     }
   },
 );
