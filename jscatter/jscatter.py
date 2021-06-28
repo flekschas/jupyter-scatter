@@ -207,15 +207,17 @@ class Scatter():
         connect_by = bool(self._connect_by)
         connect_order = bool(self._connect_order)
 
+        view = self._points
+
         if not connect_by:
             # To avoid having to serialize unused data
-            return self._points[:,:4]
+            view = view[:,:4]
 
         if not connect_order:
             # To avoid having to serialize unused data
-            return self._points[:,:5]
+            view = view[:,:5]
 
-        return self._points
+        return view.copy()
 
     def x(self, x = Undefined, **kwargs):
         if x is not Undefined:
