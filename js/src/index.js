@@ -12,10 +12,10 @@ const pointsCodec = {
     const arr = new Float32Array(data.buffer.buffer);
     // Chunk single TypedArray into nested Array of points
     const [height, width] = data.shape;
-    // Float32Array(width * height) -> [Float32Array(width), Float32Array(width), ...]
+    // Float32Array(width * height) -> [Array(width), Array(width), ...]
     const points = Array
       .from({ length: height })
-      .map((_, i) => arr.subarray(i * width, (i + 1) * width));
+      .map((_, i) => Array.from(arr.subarray(i * width, (i + 1) * width)));
      return points;
   },
   serialize(data) {
