@@ -199,21 +199,44 @@ scatter.size(by='price', map=(1, 0.25, 10))
 
 <a name="scatter.connect" href="#scatter.connect">#</a> scatter.<b>connect</b>(<i>by = Undefined</i>, <i>order = Undefined</i>, <i>\*\*kwargs</i>)
 
-Gets or sets the point connection
+Gets or sets the point connection.
+
+**Description:** The `by` argument defines which points are part of a line segment. Points with the same value are considered to be part of a line segment. By default, points are connected in the order in which they appear the dataframe. You can customize that ordering via `order`.
 
 **Arguments:**
 
-- `by` is either an array-like list of values or a string referencing a column in `data`.
-- `order` is either a list of values (for categorical size encoding) or `reverse` to reverse the size map.
+- `by` is either an array-like list of integers or a string referencing a column in the dataframe.
+- `order` is either a list of integers or a string referencing a column in the dataframe.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
 
-**Returns:** either the x and y coordinate when x and y are `Undefined` or `self`.
+**Returns:** either the connect properties when `by` and `order` are `Undefined` or `self`.
 
 **Examples:**
 
+Dataframe:
+
+|   | x    | y    | group | order |
+|---|------|------|-------|-------|
+| 0 | 0.13 | 0.27 | A     | 2     |
+| 1 | 0.87 | 0.93 | A     | 1     |
+| 2 | 0.10 | 0.25 | B     | 2     |
+| 3 | 0.03 | 0.90 | A     | 3     |
+| 4 | 0.19 | 0.78 | B     | 1     |
+
 ```python
-scatter.connect(by='category', order='category_order')
+# The following call will result in two lines, connecting the points:
+# - 0, 1, and 3
+# - 2 and 4
+scatter.connect(by='group')
+# Note that the points will be connected by a line in the order in which they
+# appear in the dataframe.
+
+# To customize the order use the `order` column:
+scatter.connect(by='group', order='order')
+# This results in the following two lines:
+# - [1]--[0]--[3]
+# - [4]--[2]
 ```
 
 <a name="scatter.connection_color" href="#scatter.connection_color">#</a> scatter.<b>connection_color</b>(<i>color = Undefined</i>, <i>color_active = Undefined</i>, <i>color_hover = Undefined</i>, <i>by = Undefined</i>, <i>map = Undefined</i>, <i>norm = Undefined</i>, <i>order = Undefined</i>, <i>\*\*kwargs</i>)
