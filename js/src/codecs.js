@@ -19,7 +19,6 @@ class NumpyCodec {
   }
 }
 
-
 class Numpy2D extends NumpyCodec {
 
   /**
@@ -54,7 +53,6 @@ class Numpy2D extends NumpyCodec {
   }
 }
 
-  
 class Numpy1D extends NumpyCodec {
 
   /**

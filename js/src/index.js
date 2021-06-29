@@ -22,7 +22,7 @@ const JupyterScatterModel = widgets.DOMWidgetModel.extend(
     serializers: {
       ...widgets.DOMWidgetModel.serializers,
       points: new codecs.Numpy2D('float32'),
-      selection: new codecs.Numpy1D('int32'),
+      selection: new codecs.Numpy1D('uint32'),
     }
   },
 );
@@ -416,45 +416,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
   otherOptionsHandler: function otherOptionsHandler(newOptions) {
     this.scatterplot.set(newOptions);
-  },
-
-  viewDownloadHandler: function viewDownloadHandler(target) {
-    if (!target) return;
-
-    const data = this.scatterplot.export();
-
-    if (target === 'property') {
-      this.model.set('view_pixels', Array.from(data.pixels));
-      this.model.set('view_shape', [data.width, data.height]);
-      this.model.set('view_download', null);
-      this.model.save_changes();
-      return;
-    }
-
-    const c = document.createElement('canvas');
-    c.width = data.width;
-    c.height = data.height;
-
-    const ctx = c.getContext('2d');
-    ctx.putImageData(new ImageData(data.pixels, data.width, data.height), 0, 0);
-
-    // The following is only needed to flip the image vertically. Since `ctx.scale`
-    // only affects `draw*()` calls and not `put*()` calls we have to draw the
-    // image twice...
-    const imageObject = new Image();
-    imageObject.onload = () => {
-      ctx.clearRect(0, 0, data.width, data.height);
-      ctx.scale(1, -1);
-      ctx.drawImage(imageObject, 0, -data.height);
-      c.toBlob((blob) => {
-        downloadBlob(blob, 'scatter.png');
-        setTimeout(() => {
-          this.model.set('view_download', null);
-          this.model.save_changes();
-        }, 0);
-      });
-    };
-    imageObject.src = c.toDataURL();
   },
 
   viewDownloadHandler: function viewDownloadHandler(target) {

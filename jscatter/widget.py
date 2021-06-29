@@ -10,7 +10,7 @@ from traittypes import Array
 from ._version import __version__
 from .utils import to_hex, with_left_label
 
-SELECTION_DTYPE = 'int32'
+SELECTION_DTYPE = 'uint32'
 
 def component_idx_to_name(idx):
     if idx == 2:
@@ -578,7 +578,7 @@ class JupyterScatter(widgets.DOMWidget):
             List of point indices to select
         """
 
-        self.selection = np.asarray(points, dtype=SELECTION_DTYPE)
+        self.selection = np.asarray(points).astype(SELECTION_DTYPE)
 
     def get_panzoom_mode_widget(self, icon_only=False, width=None):
         button = widgets.Button(

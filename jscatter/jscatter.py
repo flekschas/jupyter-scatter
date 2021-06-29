@@ -29,8 +29,6 @@ def check_encoding_dtype(series):
     if not any([check(series.dtype) for check in VALID_ENCODING_TYPES]):
         raise ValueError(f'{series.name} is of an unsupported data type: {series.dtype}. Must be one of category, float*, or int*.')
 
-from .utils import any_not_none
-
 def component_idx_to_name(idx):
     if idx == 2:
         return 'valueA'
@@ -275,17 +273,17 @@ class Scatter():
     def selection(self, selection = Undefined):
         if selection is not Undefined:
             try:
-                self._selection = np.asarray(selection, dtype=self._selection.dtype)
+                self._selection = np.asarray(selection).astype(SELECTION_DTYPE)
                 self.update_widget('selection', self._selection)
             except:
                 if selection is None:
-                    self._selection = np.asarray([], dtype=self._selection.dtype)
+                    self._selection = np.asarray([], dtype=SELECTION_DTYPE)
                 pass
 
             return self
 
         if self._widget is not None:
-            return self._widget.selection.astype(self._selection.dtype)
+            return self._widget.selection.astype(SELECTION_DTYPE)
 
         return self._selection
 
@@ -433,7 +431,6 @@ class Scatter():
             norm = self._color_norm,
             order = self._color_order,
         )
-        self.options(kwargs.get('options'))
 
     def opacity(
         self,
@@ -1423,6 +1420,7 @@ class Scatter():
 
     def show(self):
         return self.widget.show()
+
 
 def plot(x, y, data = None, **kwargs):
     return Scatter(x, y, data, **kwargs).show()
