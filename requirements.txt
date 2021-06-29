@@ -1,5 +1,6 @@
 ipywidgets>=7.6
 ipython
 jupyterlab_widgets>=1.0.0
-numpy
 matplotlib
+numpy
+pandas

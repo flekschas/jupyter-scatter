@@ -1,3 +1,7 @@
+## Next
+
+- Complete rewrite of the Python API to match #3
+
 ## v0.1.2
 
 - Properly destroy regl-scatterplot on destroy of a widget instance
