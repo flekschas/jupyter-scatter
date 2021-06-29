@@ -26,47 +26,87 @@ function camelToSnake(string) {
   }).toLowerCase();
 }
 
+function flipObj(obj) {
+  return Object.entries(obj).reduce((ret, entry) => {
+    const [ key, value ] = entry;
+    ret[ value ] = key;
+    return ret;
+  }, {});
+}
+
+function downloadBlob(blob, name) {
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = name || 'jscatter.png';
+
+  document.body.appendChild(link);
+
+  link.dispatchEvent(
+    new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+    })
+  );
+
+  document.body.removeChild(link);
+}
+
 const MIN_WIDTH = 240;
 
-const properties = [
-  'colorBy',
-  'points',
-  'selectedPoints',
-  'height',
-  'backgroundColor',
-  'backgroundImage',
-  'lassoColor',
-  'lassoMinDelay',
-  'lassoMinDist',
-  'pointColor',
-  'pointColorActive',
-  'pointColorHover',
-  'pointOpacity',
-  'pointSize',
-  'pointSizeSelected',
-  'pointOutlineWidth',
-  'showRecticle',
-  'recticleColor',
-  'cameraTarget',
-  'cameraDistance',
-  'cameraRotation',
-  'cameraView',
-  'otherOptions',
-  'lassoInitiator',
-  'mouseMode',
-  'viewReset'
-];
+const properties = {
+  backgroundColor: 'backgroundColor',
+  backgroundImage: 'backgroundImage',
+  cameraDistance: 'cameraDistance',
+  cameraRotation: 'cameraRotation',
+  cameraTarget: 'cameraTarget',
+  cameraView: 'cameraView',
+  color: 'pointColor',
+  colorActive: 'pointColorActive',
+  colorBy: 'colorBy',
+  colorHover: 'pointColorHover',
+  height: 'height',
+  lassoColor: 'lassoColor',
+  lassoInitiator: 'lassoInitiator',
+  lassoMinDelay: 'lassoMinDelay',
+  lassoMinDist: 'lassoMinDist',
+  mouseMode: 'mouseMode',
+  opacity: 'opacity',
+  opacityBy: 'opacityBy',
+  otherOptions: 'otherOptions',
+  points: 'points',
+  reticle: 'showReticle',
+  reticleColor: 'reticleColor',
+  selection: 'selectedPoints',
+  size: 'pointSize',
+  sizeBy: 'sizeBy',
+  connect: 'showPointConnections',
+  connectionColor: 'pointConnectionColor',
+  connectionColorActive: 'pointConnectionColorActive',
+  connectionColorHover: 'pointConnectionColorHover',
+  connectionColorBy: 'pointConnectionColorBy',
+  connectionOpacity: 'pointConnectionOpacity',
+  connectionOpacityBy: 'pointConnectionOpacityBy',
+  connectionSize: 'pointConnectionSize',
+  connectionSizeBy: 'pointConnectionSizeBy',
+  viewDownload: 'viewDownload',
+  viewReset: 'viewReset',
+  hovering: 'hovering',
+};
 
 // Custom View. Renders the widget model.
 const JupyterScatterView = widgets.DOMWidgetView.extend({
   render: function render() {
     var self = this;
 
-    properties.forEach(function(propertyName) {
+    Object.keys(properties).forEach(function(propertyName) {
       self[propertyName] = self.model.get(camelToSnake(propertyName));
     });
 
     this.height = this.model.get('height');
+    this.width = !Number.isNaN(+this.model.get('width')) && +this.model.get('width') > 0
+      ? +this.model.get('width')
+      : 'auto';
 
     // Create a random 6-letter string
     // From https://gist.github.com/6174/6062387
@@ -79,37 +119,38 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.container = document.createElement('div');
     this.container.setAttribute('id', randomStr);
     this.container.style.position = 'relative'
-    this.container.style.border = this.otherOptions.theme === 'dark'
-      ? '#333333' : '#dddddd';
-    this.container.style.borderRadius = '2px';
+    this.container.style.width = this.width === 'auto'
+      ? '100%'
+      : this.width + 'px';
     this.container.style.height = this.height + 'px';
 
     this.el.appendChild(this.container);
 
     this.canvas = document.createElement('canvas');
-    this.canvas.style.position = 'absolute';
     this.canvas.style.width = '100%';
     this.canvas.style.height = '100%';
 
     this.container.appendChild(this.canvas);
 
     window.requestAnimationFrame(function init() {
-      self.width = Math.max(MIN_WIDTH, self.el.getBoundingClientRect().width);
-
       const initialOptions = {
         canvas: self.canvas,
-        width: self.width,
       }
 
-      properties.forEach(function(propertyName) {
-        initialOptions[propertyName] = self[propertyName];
+      if (self.width !== 'auto') initialOptions.width = self.width;
+
+      Object.entries(properties).forEach(function(property) {
+        const pyName = property[0];
+        const jsName = property[1];
+        if (self[pyName] !== null)
+          initialOptions[jsName] = self[pyName];
       });
 
       self.scatterplot = createScatterplot(initialOptions);
 
       // eslint-disable-next-line
       console.log(
-        'jupyterscatter v' + packageJson.version +
+        'jscatter v' + packageJson.version +
         ' with regl-scatterplot v' + self.scatterplot.get('version')
       );
 
@@ -126,15 +167,19 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       self.scatterplot.subscribe('deselect', self.deselectHandlerBound);
 
       // Listen to messages from the Python world
-      properties.forEach(function(propertyName) {
-        self.model.on(
-          'change:' + camelToSnake(propertyName),
-          self.withModelChangeHandler(
-            propertyName,
-            self[propertyName + 'Handler'].bind(self)
-          ),
-          self
-        );
+      Object.keys(properties).forEach(function(propertyName) {
+        if (self[propertyName + 'Handler']) {
+          self.model.on(
+            'change:' + camelToSnake(propertyName),
+            self.withModelChangeHandler(
+              propertyName,
+              self[propertyName + 'Handler'].bind(self)
+            ),
+            self
+          );
+        } else {
+          console.warn('No handler for ' + propertyName);
+        }
       });
 
       window.addEventListener('resize', self.resizeHandler.bind(self));
@@ -147,8 +192,8 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
         self.scatterplot
           .draw(self.points)
           .then(function onInitialDraw() {
-            if (self.selectedPoints.length) {
-              self.scatterplot.select(self.selectedPoints);
+            if (self.selection.length) {
+              self.scatterplot.select(self.selection, { preventEvent: true });
             }
           });
       }
@@ -174,46 +219,65 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
   // Event handlers for JS-triggered events
   pointoverHandler: function pointoverHandler(pointIndex) {
-    this.model.set('hovered_point', pointIndex);
+    this.hoveringChangedByJs = true;
+    this.model.set('hovering', pointIndex);
     this.model.save_changes();
   },
 
   pointoutHandler: function pointoutHandler() {
-    this.model.set('hovered_point', null);
+    this.hoveringChangedByJs = true;
+    this.model.set('hovering', null);
     this.model.save_changes();
   },
 
   selectHandler: function selectHandler(event) {
-    if (this.selectedPointsChangedPython) {
-      this.selectedPointsChangedPython = false;
-      return;
-    }
-    this.model.set('selected_points', event.points);
-    this.selectedPointsChanged = true;
+    this.selectionChangedByJs = true;
+    this.model.set('selection', [...event.points]);
     this.model.save_changes();
   },
 
   deselectHandler: function deselectHandler() {
-    if (this.selectedPointsChangedPython) {
-      this.selectedPointsChangedPython = false;
-      return;
-    }
-    this.model.set('selected_points', []);
-    this.selectedPointsChanged = true;
+    this.selectionChangedByJs = true;
+    this.model.set('selection', []);
     this.model.save_changes();
   },
 
   // Event handlers for Python-triggered events
   pointsHandler: function pointsHandler(newPoints) {
-    this.scatterplot.draw(newPoints);
+    this.scatterplot.draw(newPoints, {
+      transition: true,
+      transitionDuration: 3000,
+      transitionEasing: 'quadInOut',
+    });
   },
 
-  selectedPointsHandler: function selectedPointsHandler(newSelectedPoints) {
-    this.selectedPointsChangedPython = true;
-    if (!newSelectedPoints || !newSelectedPoints.length) {
+  selectionHandler: function selectionHandler(newSelection) {
+    // Avoid calling `this.scatterplot.select()` twice when the selection was
+    // triggered by the JavaScript (i.e., the user interactively selected points)
+    if (this.selectionChangedByJs) {
+      this.selectionChangedByJs = undefined;
+      return;
+    }
+
+    if (!newSelection || !newSelection.length) {
       this.scatterplot.deselect({ preventEvent: true });
     } else {
-      this.scatterplot.select(newSelectedPoints, { preventEvent: true });
+      this.scatterplot.select(newSelection, { preventEvent: true });
+    }
+  },
+
+  hoveringHandler: function hoveringHandler(newHovering) {
+    // Avoid calling `this.scatterplot.hover()` twice when the hovering was
+    // triggered by the JavaScript (i.e., the user interactively selected points)
+    if (this.hoveringChangedByJs) {
+      this.hoveringChangedByJs = undefined;
+      return;
+    }
+
+    if (Number.isNaN(+newHovering)) {
+      this.scatterplot.hover({ preventEvent: true });
+    } else {
+      this.scatterplot.hover(+newHovering, { preventEvent: true });
     }
   },
 
@@ -231,10 +295,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.withPropertyChangeHandler('backgroundImage', newValue);
   },
 
-  colorByHandler: function colorByHandler(newValue) {
-    this.withPropertyChangeHandler('colorBy', newValue);
-  },
-
   lassoColorHandler: function lassoColorHandler(newValue) {
     this.withPropertyChangeHandler('lassoColor', newValue);
   },
@@ -247,40 +307,80 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.withPropertyChangeHandler('lassoMinDist', newValue);
   },
 
-  pointColorHandler: function pointColorHandler(newValue) {
+  colorHandler: function colorHandler(newValue) {
     this.withPropertyChangeHandler('pointColor', newValue);
   },
 
-  pointColorActiveHandler: function pointColorActiveHandler(newValue) {
+  colorActiveHandler: function colorActiveHandler(newValue) {
     this.withPropertyChangeHandler('pointColorActive', newValue);
   },
 
-  pointColorHoverHandler: function pointColorHoverHandler(newValue) {
+  colorHoverHandler: function colorHoverHandler(newValue) {
     this.withPropertyChangeHandler('pointColorHover', newValue);
   },
 
-  pointOpacityHandler: function pointOpacityHandler(newValue) {
+  colorByHandler: function colorByHandler(newValue) {
+    this.withPropertyChangeHandler('colorBy', newValue);
+  },
+
+  opacityHandler: function opacityHandler(newValue) {
     this.withPropertyChangeHandler('opacity', newValue);
   },
 
-  pointSizeHandler: function pointSizeHandler(newValue) {
+  opacityByHandler: function opacityByHandler(newValue) {
+    this.withPropertyChangeHandler('opacityBy', newValue);
+  },
+
+  sizeHandler: function sizeHandler(newValue) {
     this.withPropertyChangeHandler('pointSize', newValue);
   },
 
-  pointSizeSelectedHandler: function pointSizeSelectedHandler(newValue) {
-    this.withPropertyChangeHandler('pointSizeSelected', newValue);
+  sizeByHandler: function sizeByHandler(newValue) {
+    this.withPropertyChangeHandler('sizeBy', newValue);
   },
 
-  pointOutlineWidthHandler: function pointOutlineWidthHandler(newValue) {
-    this.withPropertyChangeHandler('pointOutlineWidth', newValue);
+  connectHandler: function connectHandler(newValue) {
+    this.withPropertyChangeHandler('showPointConnections', Boolean(newValue));
   },
 
-  showRecticleHandler: function showRecticleHandler(newValue) {
-    this.withPropertyChangeHandler('showRecticle', newValue);
+  connectionColorHandler: function connectionColorHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionColor', newValue);
   },
 
-  recticleColorHandler: function recticleColorHandler(newValue) {
-    this.withPropertyChangeHandler('recticleColor', newValue);
+  connectionColorActiveHandler: function connectionColorActiveHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionColorActive', newValue);
+  },
+
+  connectionColorHoverHandler: function connectionColorHoverHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionColorHover', newValue);
+  },
+
+  connectionColorByHandler: function connectionColorByHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionColorBy', newValue);
+  },
+
+  connectionOpacityHandler: function connectionOpacityHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionOpacity', newValue);
+  },
+
+  connectionOpacityByHandler: function connectionOpacityByHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionOpacityBy', newValue);
+  },
+
+  connectionSizeHandler: function connectionSizeHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionSize', newValue);
+  },
+
+  connectionSizeByHandler: function connectionSizeByHandler(newValue) {
+    this.withPropertyChangeHandler('pointConnectionSizeBy', newValue);
+  },
+
+  reticleHandler: function reticleHandler(newValue) {
+    this.withPropertyChangeHandler('showReticle', newValue);
+  },
+
+  reticleColorHandler: function reticleColorHandler(newValue) {
+    this.withPropertyChangeHandler('reticleColor', newValue);
   },
 
   cameraTargetHandler: function cameraTargetHandler(newValue) {
@@ -308,7 +408,46 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   },
 
   otherOptionsHandler: function otherOptionsHandler(newOptions) {
-    this.scatterplot.draw(newOptions);
+    this.scatterplot.set(newOptions);
+  },
+
+  viewDownloadHandler: function viewDownloadHandler(target) {
+    if (!target) return;
+
+    const data = this.scatterplot.export();
+
+    if (target === 'property') {
+      this.model.set('view_pixels', Array.from(data.pixels));
+      this.model.set('view_shape', [data.width, data.height]);
+      this.model.set('view_download', null);
+      this.model.save_changes();
+      return;
+    }
+
+    const c = document.createElement('canvas');
+    c.width = data.width;
+    c.height = data.height;
+
+    const ctx = c.getContext('2d');
+    ctx.putImageData(new ImageData(data.pixels, data.width, data.height), 0, 0);
+
+    // The following is only needed to flip the image vertically. Since `ctx.scale`
+    // only affects `draw*()` calls and not `put*()` calls we have to draw the
+    // image twice...
+    const imageObject = new Image();
+    imageObject.onload = () => {
+      ctx.clearRect(0, 0, data.width, data.height);
+      ctx.scale(1, -1);
+      ctx.drawImage(imageObject, 0, -data.height);
+      c.toBlob((blob) => {
+        downloadBlob(blob, 'scatter.png');
+        setTimeout(() => {
+          this.model.set('view_download', null);
+          this.model.save_changes();
+        }, 0);
+      });
+    };
+    imageObject.src = c.toDataURL();
   },
 
   viewResetHandler: function viewResetHandler() {
@@ -329,9 +468,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   },
 
   withPropertyChangeHandler: function withPropertyChangeHandler(property, changedValue) {
-    var properties = {};
-    properties[property] = changedValue;
-    this.scatterplot.set(properties);
+    var p = {};
+    p[property] = changedValue;
+    this.scatterplot.set(p);
   },
 
   withModelChangeHandler: function withModelChangeHandler(property, handler) {
