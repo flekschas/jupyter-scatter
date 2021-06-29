@@ -234,7 +234,7 @@ class Scatter():
             self._points[:, 0] = minmax_scale(self._points[:, 0], (-1,1))
 
             if 'skip_widget_update' not in kwargs:
-                self.update_widget('points', self._points)
+                self.update_widget('points', self.get_point_list())
 
             return self
 
@@ -257,7 +257,7 @@ class Scatter():
             self._points[:, 1] = minmax_scale(self._points[:, 1], (-1,1))
 
             if 'skip_widget_update' not in kwargs:
-                self.update_widget('points', self._points)
+                self.update_widget('points', self.get_point_list())
 
             return self
 
@@ -268,7 +268,7 @@ class Scatter():
         self.y(y, skip_widget_update=True)
 
         if 'skip_widget_update' not in kwargs:
-            self.update_widget('points', self._points)
+            self.update_widget('points', self.get_point_list())
 
     def selection(self, selection = Undefined):
         if selection is not Undefined:
