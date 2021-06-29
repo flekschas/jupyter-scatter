@@ -36,14 +36,15 @@
   },
   "dependencies": {
     "@jupyter-widgets/base": "^1.1.10 || ^2 || ^3 || ^4",
-    "camera-2d-simple": "^2.2.1",
-    "dom-2d-camera": "^1.2.1",
+    "camera-2d-simple": "~2.2.1",
+    "dom-2d-camera": "~1.2.3",
     "gl-matrix": "^3.1.0",
     "lodash": "^4.17.4",
-    "regl-scatterplot": "^0.15.1"
+    "regl": "~2.1.0",
+    "regl-scatterplot": "^0.19.2"
   },
   "devDependencies": {
-    "@jupyterlab/builder": "^3.0.0",
+    "@jupyterlab/builder": "^3.0.8",
     "css-loader": "^3.5.3",
     "eslint": "^7.4.0",
     "eslint-config-prettier": "^6.11.0",

@@ -9,6 +9,7 @@ dependencies:
   - nodejs>=12.*
   - matplotlib
   - numpy
+  - pandas
   - pip
   - pip:
     - jupyterlab>=3.0.6
