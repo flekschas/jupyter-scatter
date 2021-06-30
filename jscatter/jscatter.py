@@ -7,7 +7,7 @@ import pandas as pd
 from matplotlib.colors import to_rgba
 
 from .encodings import Encodings
-from .widget import JupyterScatter
+from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
 from .utils import any_not, minmax_scale, tolist, uri_validator
 
@@ -61,7 +61,7 @@ class Scatter():
         self._widget = None
         self._pixels = None
         self._encodings = Encodings()
-        self._selection = np.asarray([])
+        self._selection = np.asarray([], dtype=SELECTION_DTYPE)
         self._background_color = to_rgba(default_background_color)
         self._background_color_luminance = 1
         self._background_image = None
@@ -205,15 +205,17 @@ class Scatter():
         connect_by = bool(self._connect_by)
         connect_order = bool(self._connect_order)
 
+        view = self._points
+
         if not connect_by:
             # To avoid having to serialize unused data
-            return self._points[:,:4].tolist()
+            view = view[:,:4]
 
         if not connect_order:
             # To avoid having to serialize unused data
-            return self._points[:,:5].tolist()
+            view = view[:,:5]
 
-        return self._points.tolist()
+        return view.copy()
 
     def x(self, x = Undefined, **kwargs):
         if x is not Undefined:
@@ -232,7 +234,7 @@ class Scatter():
             self._points[:, 0] = minmax_scale(self._points[:, 0], (-1,1))
 
             if 'skip_widget_update' not in kwargs:
-                self.update_widget('points', self._points.tolist())
+                self.update_widget('points', self.get_point_list())
 
             return self
 
@@ -255,7 +257,7 @@ class Scatter():
             self._points[:, 1] = minmax_scale(self._points[:, 1], (-1,1))
 
             if 'skip_widget_update' not in kwargs:
-                self.update_widget('points', self._points.tolist())
+                self.update_widget('points', self.get_point_list())
 
             return self
 
@@ -266,22 +268,22 @@ class Scatter():
         self.y(y, skip_widget_update=True)
 
         if 'skip_widget_update' not in kwargs:
-            self.update_widget('points', self._points.tolist())
+            self.update_widget('points', self.get_point_list())
 
     def selection(self, selection = Undefined):
         if selection is not Undefined:
             try:
-                self._selection = np.asarray(selection)
-                self.update_widget('selection', self._selection.tolist())
+                self._selection = np.asarray(selection).astype(SELECTION_DTYPE)
+                self.update_widget('selection', self._selection)
             except:
                 if selection is None:
-                    self._selection = np.asarray([])
+                    self._selection = np.asarray([], dtype=SELECTION_DTYPE)
                 pass
 
             return self
 
         if self._widget is not None:
-            return np.asarray(self._widget.selection)
+            return self._widget.selection.astype(SELECTION_DTYPE)
 
         return self._selection
 
@@ -1372,7 +1374,7 @@ class Scatter():
 
         self._widget = JupyterScatter(
             points=self.get_point_list(),
-            selection=self._selection.tolist(),
+            selection=self._selection,
             width=self._width,
             height=self._height,
             background_color=self._background_color,
@@ -1418,6 +1420,7 @@ class Scatter():
 
     def show(self):
         return self.widget.show()
+
 
 def plot(x, y, data = None, **kwargs):
     return Scatter(x, y, data, **kwargs).show()
