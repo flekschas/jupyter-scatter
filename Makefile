@@ -51,19 +51,19 @@ bump-patch:
 	cd js && npm version patch
 	sed -i "s/version_info = .*/version_info = `node -p "require('./js/get-version-info.js')"`/g" jscatter/_version.py
 	git add ./js/package.json ./js/package-lock.json ./jscatter/_version.py
-	git commit -m "Bump to v`node -p "require('./js/get-version-info.js')"`"
+	git commit -m "Bump to v`node -p "require('./js/package.json').version"`"
 
 bump-minor:
 	cd js && npm version minor
 	sed -i "s/version_info = .*/version_info = `node -p "require('./js/get-version-info.js')"`/g" jscatter/_version.py
 	git add ./js/package.json ./js/package-lock.json ./jscatter/_version.py
-	git commit -m "Bump to v`node -p "require('./js/get-version-info.js')"`"
+	git commit -m "Bump to v`node -p "require('./js/package.json').version"`"
 
 bump-major:
 	cd js && npm version major
 	sed -i "s/version_info = .*/version_info = `node -p "require('./js/get-version-info.js')"`/g" jscatter/_version.py
 	git add ./js/package.json ./js/package-lock.json ./jscatter/_version.py
-	git commit -m "Bump to v`node -p "require('./js/get-version-info.js')"`"
+	git commit -m "Bump to v`node -p "require('./js/package.json').version"`"
 
 publish:
 	git tag -a "v`node -p "require('./js/package.json').version"`" -m "Version `node -p "require('./js/package.json').version"`"
