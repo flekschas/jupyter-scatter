@@ -12,7 +12,7 @@ uninstall:
 postinstall: nbext-install labext-install
 
 build:
-	python setup.py
+	python setup.py build
 
 clean-py:
 	rm -rf build/
