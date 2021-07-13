@@ -1,15 +1,15 @@
 /* eslint-env browser */
 const widgets = require('@jupyter-widgets/base');
-const _ = require('lodash');
 const reglScatterplot = require('regl-scatterplot/dist/regl-scatterplot.js');
+const codecs = require('./codecs');
 const packageJson = require('../package.json');
 
 const createScatterplot = reglScatterplot.default;
 
-const JupyterScatterModel = widgets.DOMWidgetModel.extend({
-  defaults: _.extend(
-    _.result(this, 'widgets.DOMWidgetModel.prototype.defaults'),
-    {
+const JupyterScatterModel = widgets.DOMWidgetModel.extend(
+  {
+    defaults: {
+      ...widgets.DOMWidgetModel.prototype.defaults(),
       _model_name : 'JupyterScatterModel',
       _model_module : packageJson.name,
       _model_module_version : packageJson.version,
@@ -17,8 +17,15 @@ const JupyterScatterModel = widgets.DOMWidgetModel.extend({
       _view_module : packageJson.name,
       _view_module_version : packageJson.version
     }
-  )
-});
+  },
+  {
+    serializers: {
+      ...widgets.DOMWidgetModel.serializers,
+      points: new codecs.Numpy2D('float32'),
+      selection: new codecs.Numpy1D('uint32'),
+    }
+  },
+);
 
 function camelToSnake(string) {
   return string.replace(/[\w]([A-Z])/g, function(m) {
