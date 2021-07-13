@@ -5,9 +5,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
+from traittypes import Array
 
 from ._version import __version__
 from .utils import to_hex, with_left_label
+
+SELECTION_DTYPE = 'uint32'
 
 def component_idx_to_name(idx):
     if idx == 2:
@@ -24,6 +27,25 @@ def sorting_to_dict(sorting):
         out[original_idx] = order_idx
     return out
 
+# Code extracted from maartenbreddels ipyvolume
+def array_to_binary(ar, obj=None, force_contiguous=True):
+    if ar is None:
+        return None
+    if ar.dtype.kind not in ['u', 'i', 'f']:  # ints and floats
+        raise ValueError("unsupported dtype: %s" % (ar.dtype))
+    if ar.dtype == np.float64:  # WebGL does not support float64, case it here
+        ar = ar.astype(np.float32)
+    if ar.dtype == np.int64:  # JS does not support int64
+        ar = ar.astype(np.int32)
+    if force_contiguous and not ar.flags["C_CONTIGUOUS"]:  # make sure it's contiguous
+        ar = np.ascontiguousarray(ar)
+    return {'buffer': memoryview(ar), 'dtype': str(ar.dtype), 'shape': ar.shape}
+
+def binary_to_array(value, obj=None):
+    return np.frombuffer(value['data'], dtype=value['dtype']).reshape(value['shape'])
+
+ndarray_serialization = dict(to_json=array_to_binary, from_json=binary_to_array)
+
 @widgets.register
 class JupyterScatter(widgets.DOMWidget):
     _view_name = Unicode("JupyterScatterView").tag(sync=True)
@@ -38,10 +60,10 @@ class JupyterScatter(widgets.DOMWidget):
     dom_element_id = Unicode(read_only=True).tag(sync=True)
 
     # Data
-    points = List().tag(sync=True)
+    points = Array(default_value=None).tag(sync=True, **ndarray_serialization)
     x_domain = List(minlen=2, maxlen=2).tag(sync=True)
     y_domain = List(minlen=2, maxlen=2).tag(sync=True)
-    selection = List().tag(sync=True)
+    selection = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
     hovering = Int(None, allow_none=True).tag(sync=True)
 
     # View properties
@@ -556,7 +578,7 @@ class JupyterScatter(widgets.DOMWidget):
             List of point indices to select
         """
 
-        self.selection = np.asarray(points).tolist()
+        self.selection = np.asarray(points).astype(SELECTION_DTYPE)
 
     def get_panzoom_mode_widget(self, icon_only=False, width=None):
         button = widgets.Button(

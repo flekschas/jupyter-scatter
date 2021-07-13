@@ -4,3 +4,4 @@ jupyterlab_widgets>=1.0.0
 matplotlib
 numpy
 pandas
+traittypes>=0.2.1
