@@ -23,12 +23,12 @@ cmdclass = wrap_installers(
 
 data_files = get_data_files([
     (
-        "share/jupyter/nbextensions/jscatter/",
+        "share/jupyter/nbextensions/jupyter-scatter/",
         "jscatter/nbextension/",
         "*",
     ),
     (
-        "share/jupyter/labextensions/jscatter/",
+        "share/jupyter/labextensions/jupyter-scatter/",
         "jscatter/labextension/",
         "**",
     ),
