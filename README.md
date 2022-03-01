@@ -41,15 +41,13 @@
 ## Install
 
 ```bash
-# Install extension
 pip install jupyter-scatter
+```
 
-# Activate extension in Jupyter Lab
-jupyter labextension install jupyter-scatter
+If you are using JupyterLab <=2:
 
-# Activate extension in Jupyter Notebook
-jupyter nbextension install --py --sys-prefix jscatter
-jupyter nbextension enable --py --sys-prefix jscatter
+```bash
+jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-scatter
 ```
 
 For a minimal working example, take a look at [test-environment](test-environment).
@@ -183,10 +181,13 @@ jupyter nbextension install --py --symlink --sys-prefix jscatter
 jupyter nbextension enable --py --sys-prefix jscatter
 ```
 
+Note for developers: the `--symlink` argument on Linux or OS X allows one to modify
+the JavaScript code in-place. This feature is not available with Windows.
+
 **Enable the Lab Extension:**
 
 ```bash
-jupyter labextension develop --overwrite jscatter
+jupyter labextension develop . --overwrite
 ```
 
 **After Changing Python code:** simply restart the kernel.
