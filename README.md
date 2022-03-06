@@ -79,13 +79,13 @@ Say your data is stored in a Pandas dataframe like the following:
 ```python
 import pandas as pd
 
-// Just some random float and int values
+# Just some random float and int values
 data = np.random.rand(500, 4)
 data[:,3] = np.round(data[:,3] * 7).astype(int)
 
 df = pd.DataFrame(data, columns=['mass', 'speed', 'pval', 'group'])
 
-// We'll convert the group column to categorical data for later use
+# We'll convert the group column to categorical data for later use
 df['group'] = df['group'].astype('int').astype('category').map(lambda c: chr(65 + c), na_action=None)
 ```
 
