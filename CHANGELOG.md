@@ -1,6 +1,10 @@
-## Next
+## v0.2.1
 
-- Complete rewrite of the Python API to match #3
+- Simplify installation ([#16](https://github.com/flekschas/jupyter-scatter/pull/16))
+
+## v0.2.0
+
+- Complete rewrite of the Python API to match ([#3](https://github.com/flekschas/jupyter-scatter/issues/3))
 
 ## v0.1.2
 
