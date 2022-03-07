@@ -181,7 +181,7 @@ jupyter nbextension install --py --symlink --sys-prefix jscatter
 jupyter nbextension enable --py --sys-prefix jscatter
 ```
 
-Note for developers: the `--symlink` argument on Linux or OS X allows one to modify
+Note for developers: the `--symlink` argument on Linux or macOS allows one to modify
 the JavaScript code in-place. This feature is not available with Windows.
 
 **Enable the Lab Extension:**
