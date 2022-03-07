@@ -2,7 +2,6 @@ graft jscatter/nbextension
 graft jscatter/labextension
 
 graft js
-graft tests
 prune **/node_modules
 
 include jscatter.json
