@@ -364,7 +364,7 @@ class Scatter():
             self.update_widget('color_by', self.js_color_by)
 
         if order is not Undefined:
-            if order in [None, 'reverse']:
+            if order is None or order == 'reverse':
                 self._color_order = order
             elif self._color_categories is not None:
                 # Define order of the colors instead of changing `points[:, component_idx]`
@@ -498,7 +498,7 @@ class Scatter():
             self.update_widget('opacity_by', self.js_opacity_by)
 
         if order is not Undefined:
-            if order in [None, 'reverse']:
+            if order is None or order == 'reverse':
                 self._opacity_order = order
             elif self._opacity_categories is not None:
                 # Define order of the opacities instead of changing `points[:, component_idx]`
@@ -609,7 +609,7 @@ class Scatter():
             self.update_widget('size_by', self.js_size_by)
 
         if order is not Undefined:
-            if order in [None, 'reverse']:
+            if order is None or order == 'reverse':
                 self._size_order = order
             elif self._size_categories is not None:
                 # Define order of the sizes instead of changing `points[:, component_idx]`
@@ -781,7 +781,7 @@ class Scatter():
             self.update_widget('connection_color_by', self.js_connection_color_by)
 
         if order is not Undefined:
-            if order in [None, 'reverse']:
+            if order is None or order == 'reverse':
                 self._connection_color_order = order
             elif self._connection_color_categories is not None:
                 # Define order of the colors instead of changing `points[:, component_idx]`
@@ -910,7 +910,7 @@ class Scatter():
             self.update_widget('connection_opacity_by', self.js_connection_opacity_by)
 
         if order is not Undefined:
-            if order in [None, 'reverse']:
+            if order is None or order == 'reverse':
                 self._connection_opacity_order = order
             elif self._connection_opacity_categories is not None:
                 # Define order of the opacities instead of changing `points[:, component_idx]`
@@ -1026,7 +1026,7 @@ class Scatter():
             self.update_widget('connection_size_by', self.js_connection_size_by)
 
         if order is not Undefined:
-            if order in [None, 'reverse']:
+            if order is None or order == 'reverse':
                 self._connection_size_order = order
             elif self._connection_size_categories is not None:
                 # Define order of the sizes instead of changing `points[:, component_idx]`
