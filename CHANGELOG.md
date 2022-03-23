@@ -1,3 +1,7 @@
+## v0.2.2
+
+- Fix an issue that prevented passing a list of values as `order` in methods `color()`, `opacity()`, `size()`, `connection_color()`, `connection_opacity()`, and `connection_size()`
+
 ## v0.2.1
 
 - Simplify installation ([#16](https://github.com/flekschas/jupyter-scatter/pull/16))
