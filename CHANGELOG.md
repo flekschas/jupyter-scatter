@@ -2,6 +2,7 @@
 
 - Fix two issues with the `order` argument in methods `color()`, `opacity()`, `size()`, `connection_color()`, `connection_opacity()`, and `connection_size()` that prevented it's propper use.
 - Improve the ordering of the default Okabe Ito color map
+- Expose default Okabe Ito (`okabe_ito`) and Glasbey (`glasbey_light` and `glasbey_dark`) categorical color maps for convenience
 
 ## v0.2.1
 
