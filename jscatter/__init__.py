@@ -1,6 +1,7 @@
 from ._version import version_info, __version__
 from .jscatter import Scatter, plot
 from .compose import compose
+from .color_maps import okabe_ito, glasbey_light, glasbey_dark
 
 def _jupyter_labextension_paths():
     """Called by Jupyter Lab Server to detect if it is a valid labextension and
