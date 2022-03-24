@@ -40,8 +40,10 @@ def component_idx_to_name(idx):
 
 def order_map(map, order):
     ordered_map = map
+
     try:
-        ordered_map = [ordered_map[order[i]] for i, _ in enumerate(ordered_map)]
+        full_order = order + list(range(len(order), len(map)))
+        ordered_map = [ordered_map[full_order[i]] for i, _ in enumerate(ordered_map)]
     except TypeError:
         pass
 
@@ -409,10 +411,21 @@ class Scatter():
 
         # Update widget
         if self._color_by is not None and self._color_map is not None:
-            self.update_widget(
-                'color',
-                order_map(self._color_map, self._color_order)
-            )
+            final_color_map = order_map(self._color_map, self._color_order)
+
+            # tl/dr: Regl-scatterplot uses linear and continuous colormaps the
+            # same way. It create a texture and based on the point value
+            # accesses a color. The point values are first normalized to [0, 1]
+            # given the value range and then mapped to the range of colors.
+            # E.g., if you have data values in [0, 10] and 5 colors the a value
+            # of 6.7 maps to color with index floor(5 * 6.7/10) = 3. The same
+            # principle is applied to categorical data! This means we need to
+            # ensure that the number of colors is the same as the number of
+            # categories otherwise weird mapping glitches can appear.
+            if self._color_categories is not None:
+                final_color_map = final_color_map[:len(self._color_categories)]
+
+            self.update_widget('color', final_color_map)
         else:
             self.update_widget('color', self._color)
 
@@ -525,10 +538,12 @@ class Scatter():
 
         # Update widget
         if self._opacity_by is not None and self._opacity_map is not None:
-            self.update_widget(
-                'opacity',
-                order_map(self._opacity_map, self._opacity_order)
-            )
+            final_opacity_map = order_map(self._opacity_map, self._opacity_order)
+
+            if self._opacity_categories is not None:
+                final_opacity_map = final_opacity_map[:len(self._opacity_categories)]
+
+            self.update_widget('opacity', final_opacity_map)
         else:
             self.update_widget('opacity', self._opacity)
 
@@ -636,9 +651,12 @@ class Scatter():
 
         # Update widget
         if self._size_by is not None and self._size_map is not None:
-            self.update_widget(
-                'size', order_map(self._size_map, self._size_order)
-            )
+            final_size_map = order_map(self._size_map, self._size_order)
+
+            if self._size_categories is not None:
+                final_size_map = final_size_map[:len(self._size_categories)]
+
+            self.update_widget('size', final_size_map)
         else:
             self.update_widget('size', self._size)
 
@@ -826,10 +844,14 @@ class Scatter():
 
         # Update widget
         if self._connection_color_by is not None and self._connection_color_map is not None:
-            self.update_widget(
-                'connection_color',
-                order_map(self._connection_color_map, self._connection_color_order)
+            final_connection_color_map = order_map(
+                self._connection_color_map, self._connection_color_order
             )
+
+            if self._connection_color_categories is not None:
+                final_connection_color_map = final_connection_color_map[:len(self._connection_color_categories)]
+
+            self.update_widget('connection_color', final_connection_color_map)
         else:
             self.update_widget('connection_color', self._connection_color)
 
@@ -943,10 +965,14 @@ class Scatter():
 
         # Update widget
         if self._connection_opacity_by is not None and self._connection_opacity_map is not None:
-            self.update_widget(
-                'connection_opacity',
-                order_map(self._connection_opacity_map, self._connection_opacity_order)
+            final_connection_opacity_map = order_map(
+                self._connection_opacity_map, self._connection_opacity_order
             )
+
+            if self._connection_opacity_categories is not None:
+                final_connection_opacity_map = final_connection_opacity_map[:len(self._connection_opacity_categories)]
+
+            self.update_widget('connection_opacity', final_connection_opacity_map)
         else:
             self.update_widget('connection_opacity', self._connection_opacity)
 
@@ -1050,10 +1076,14 @@ class Scatter():
 
         # Update widget
         if self._connection_size_by is not None and self._connection_size_map is not None:
-            self.update_widget(
-                'connection_size',
-                order_map(self._connection_size_map, self._connection_size_order)
+            final_connection_size_map = order_map(
+                self._connection_size_map, self._connection_size_order
             )
+
+            if self._connection_size_categories is not None:
+                final_connection_size_map = final_connection_size_map[:len(self._connection_size_categories)]
+
+            self.update_widget('connection_size', final_connection_size_map)
         else:
             self.update_widget('connection_size', self._connection_size)
 
