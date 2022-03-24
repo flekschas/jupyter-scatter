@@ -1,6 +1,7 @@
 ## v0.2.2
 
 - Fix two issues with the `order` argument in methods `color()`, `opacity()`, `size()`, `connection_color()`, `connection_opacity()`, and `connection_size()` that prevented it's propper use.
+- Improve the ordering of the default Okabe Ito color map
 
 ## v0.2.1
 
