@@ -1,3 +1,7 @@
+## v0.2.2
+
+- Fix broken installation of [v0.2.1](v0.2.1) (#23)
+
 ## v0.2.1
 
 - Simplify installation ([#16](https://github.com/flekschas/jupyter-scatter/pull/16))
