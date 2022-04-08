@@ -25,8 +25,6 @@
   
 </div>
 
-**IMPORTANT: THIS IS VERY EARLY WORK! THE API WILL LIKELY CHANGE.** Anyway, you're more than welcome to give the extension a try and let me know what you think :) All feedback is welcome!
-
 **Why?** Imagine trying to explore an embedding space of millions of data points. Besides plotting the space as a 2D scatter, the exploration typically involves three things: First, we want to interactively adjust the view (e.g., via panning & zooming) and the visual point encoding (e.g., the point color, opacity, or size). Second, we want to be able to select/highlight points. And third, we want to compare multiple embeddings (e.g., via animation, color, or point connections). The goal of jupyter-scatter is to support all three requirements and scale to millions of points.
 
 **How?** Internally, jupyter-scatter uses [regl-scatterplot](https://github.com/flekschas/regl-scatterplot/) for rendering and [ipywidgets](https://github.com/jupyter-widgets/ipywidgets) for linking the scatter plot to the iPython kernel.
