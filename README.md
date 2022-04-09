@@ -13,7 +13,7 @@
 
 <div align="center">
   
-  **A scalable scatter plot extension for Jupyter Lab and Notebook**
+  <strong>An interactive scatter plot widget for Jupyter Lab and Notebook</strong><br/>that can handle [millions of points](#visualize-millions-of-data-points) and supports [view linking](#linking-scatter-plots).
   
 </div>
 
@@ -36,7 +36,8 @@
 1. [Install](#install)
 2. [Get Started](#get-started)
 3. [API docs](DOCS.md)
-4. [Development](#development)
+4. [Examples](notebooks/examples.ipynb)
+5. [Development](#development)
 
 ## Install
 
@@ -53,6 +54,8 @@ jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-scatter
 For a minimal working example, take a look at [test-environment](test-environment).
 
 ## Get Started
+
+To play with the following examples yourself, open [notebooks/get-started.ipynb](notebooks/get-started.ipynb).
 
 #### Simplest Example
 
@@ -128,11 +131,11 @@ Also notice how jscatter uses an appropriate color map by default based on the d
 
 **Important:** in order for jscatter to recognize categorical data, the `dtype` of the corresponding column needs to be `category`!
 
-You can of course customize the color map and many other parameters of the visual encoding as shown next.
+You can, of course, customize the color map and many other parameters of the visual encoding as shown next.
 
 #### Functional API Example
 
-The [flat API](#advanced-example), can get overwhelming when you want to customize a lot of properties. Therefore, jscatter provides a functional API that groups properties by type.
+The [flat API](#advanced-example) can get overwhelming when you want to customize a lot of properties. Therefore, jscatter provides a functional API that groups properties by type and exposes them via meaningfully-named methods.
 
 ```python
 scatter = jscatter.Scatter(data=df, x='mass', y='speed')
@@ -153,7 +156,37 @@ Moreover, all arguments are optional. If you specify arguments, the methods will
 
 Finally, the scatter plot is interactive and supports two-way communication. Hence, if you select some point with the lasso tool and then call `scatter.selection()` you will get the current selection.
 
-For a complete example, take a look at [notebooks/example.ipynb](notebooks/get-started.ipynb)
+#### Linking Scatter Plots
+
+To explore multiple scatter plots and have their view, selection, and hover interactions link, use `jscatter.link()`.
+
+```python
+jscatter.link([
+  jscatter.Scatter(data=embeddings, x='pcaX', y='pcaY', **config),
+  jscatter.Scatter(data=embeddings, x='tsneX', y='tsneY', **config),
+  jscatter.Scatter(data=embeddings, x='umapX', y='umapY', **config),
+  jscatter.Scatter(data=embeddings, x='caeX', y='caeY', **config)
+], rows=2)
+```
+
+https://user-images.githubusercontent.com/932103/162584133-85789d40-04f5-428d-b12c-7718f324fb39.mp4
+
+See [notebooks/linking.ipynb](notebooks/linking.ipynb) for more details.
+
+#### Visualize Millions of Data Points
+
+With `jupyter-scatter` you can easily visualize and interactively explore datasets with millions of points.
+
+In the following we're visualizing 5 million points generated with the [Rössler attractor](https://en.wikipedia.org/wiki/R%C3%B6ssler_attractor).
+
+```python
+points = np.asarray(roesslerAttractor(5000000))
+jscatter.plot(points[:,0], points[:,1], height=640)
+```
+
+https://user-images.githubusercontent.com/932103/162586987-0b5313b0-befd-4bd1-8ef5-13332d8b15d1.mp4
+
+See [notebooks/examples.ipynb](notebooks/examples.ipynb) for more details.
 
 ---
 
