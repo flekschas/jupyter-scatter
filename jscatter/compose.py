@@ -1,16 +1,16 @@
 from uuid import uuid4
 from ipywidgets.widgets import GridBox, Layout
 from itertools import zip_longest
-from typing import Optional
+from typing import List, Optional, Union
 
 from .jscatter import Scatter
 
 def compose(
-    scatters: list[Scatter],
+    scatters: List[Scatter],
     sync_view: bool = False,
     sync_selection: bool = False,
     sync_hover: bool = False,
-    match_by: str | list[str] = 'index',
+    match_by: Union[str, List[str]] = 'index',
     rows: Optional[int] = 1,
     row_height: int = 320,
     cols: Optional[int] = None,
@@ -171,8 +171,8 @@ def compose(
     )
 
 def link(
-    scatters: list[Scatter],
-    match_by: str | list[str] = 'index',
+    scatters: List[Scatter],
+    match_by: Union[str, List[str]] = 'index',
     rows: Optional[int] = 1,
     row_height: int = 320,
     cols: Optional[int] = None

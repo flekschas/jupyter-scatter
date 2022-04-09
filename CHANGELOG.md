@@ -1,3 +1,7 @@
+## v0.3.2
+
+- Fix more type hints...
+
 ## v0.3.1
 
 - Make type hints backward compatible to Python 3.7
