@@ -1,12 +1,14 @@
 ## v0.3.0
 
 - **Breaking change:** Change the signature of `compose()` to simplify correspondence mapping of data points.
+- **Breaking change:** Rename `view_pixels` to `view_data` and add faster synchronization from the JS to Python kernel
 - Add ability to link the view of multiple scatter plots via `compose(sync_view=True)`
 - Add `link()` as a shorthand for `compose(sync_view=True, sync_selection=True, sync_hover=True)`
-- Rename `view_pixels` to `view_data` and add faster synchronization from the JS to Python kernel
+- Add ability to defined categorical colors using a dictionary. E.g., `scatter.color(by='coolness', map=dict(cool='blue', hot='orange'))`
 - Fix two issues with the `order` argument in methods `color()`, `opacity()`, `size()`, `connection_color()`, `connection_opacity()`, and `connection_size()` that prevented it's propper use.
 - Improve the ordering of the default Okabe Ito color map
 - Expose default the Okabe Ito (`okabe_ito`) and Glasbey (`glasbey_light` and `glasbey_dark`) color maps for convenience
+- Automatiecally handle string as categorical data
 
 ## v0.2.2
 
