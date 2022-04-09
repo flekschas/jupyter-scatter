@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from matplotlib.colors import to_rgba
+from typing import Optional
 
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
@@ -49,9 +50,32 @@ def order_map(map, order):
 
     return ordered_map[::(1 + (-2 * (order == 'reverse')))]
 
+def order_limit_color_map(map, order, categories):
+    final_color_map = order_map(map, order)
+
+    # tl/dr: Regl-scatterplot uses linear and continuous colormaps the
+    # same way. It create a texture and based on the point value
+    # accesses a color. The point values are first normalized to [0, 1]
+    # given the value range and then mapped to the range of colors.
+    # E.g., if you have data values in [0, 10] and 5 colors,
+    # 6.7 maps to the color with index floor(5 * 6.7/10) = 3. The same
+    # principle is applied to categorical data! This means we need to
+    # ensure that the number of colors is the same as the number of
+    # categories otherwise weird mapping glitches can appear.
+    if categories is not None:
+        return final_color_map[:len(categories)]
+
+    return final_color_map
+
 
 class Scatter():
-    def __init__(self, x, y, data = None, **kwargs):
+    def __init__(
+        self,
+        x: str | list[float] | np.ndarray,
+        y: str | list[float] | np.ndarray,
+        data: Optional[pd.DataFrame] = None,
+        **kwargs
+    ):
         self._data = data
 
         try:
@@ -411,21 +435,14 @@ class Scatter():
 
         # Update widget
         if self._color_by is not None and self._color_map is not None:
-            final_color_map = order_map(self._color_map, self._color_order)
-
-            # tl/dr: Regl-scatterplot uses linear and continuous colormaps the
-            # same way. It create a texture and based on the point value
-            # accesses a color. The point values are first normalized to [0, 1]
-            # given the value range and then mapped to the range of colors.
-            # E.g., if you have data values in [0, 10] and 5 colors the a value
-            # of 6.7 maps to color with index floor(5 * 6.7/10) = 3. The same
-            # principle is applied to categorical data! This means we need to
-            # ensure that the number of colors is the same as the number of
-            # categories otherwise weird mapping glitches can appear.
-            if self._color_categories is not None:
-                final_color_map = final_color_map[:len(self._color_categories)]
-
-            self.update_widget('color', final_color_map)
+            self.update_widget(
+                'color',
+                order_limit_color_map(
+                    self._color_map,
+                    self._color_order,
+                    self._color_categories
+                )
+            )
         else:
             self.update_widget('color', self._color)
 
@@ -965,14 +982,14 @@ class Scatter():
 
         # Update widget
         if self._connection_opacity_by is not None and self._connection_opacity_map is not None:
-            final_connection_opacity_map = order_map(
-                self._connection_opacity_map, self._connection_opacity_order
+            self.update_widget(
+                'connection_opacity',
+                order_limit_color_map(
+                    self._connection_opacity_map,
+                    self._connection_opacity_order,
+                    self._connection_opacity_categories
+                )
             )
-
-            if self._connection_opacity_categories is not None:
-                final_connection_opacity_map = final_connection_opacity_map[:len(self._connection_opacity_categories)]
-
-            self.update_widget('connection_opacity', final_connection_opacity_map)
         else:
             self.update_widget('connection_opacity', self._connection_opacity)
 
@@ -1413,7 +1430,7 @@ class Scatter():
             lasso_initiator=self._lasso_initiator,
             lasso_min_delay=self._lasso_min_delay,
             lasso_min_dist=self._lasso_min_dist,
-            color=order_map(self._color_map, self._color_order) if self._color_map else self._color,
+            color=order_limit_color_map(self._color_map, self._color_order, self._color_categories) if self._color_map else self._color,
             color_active=self._color_active,
             color_hover=self._color_hover,
             color_by=self.js_color_by,
@@ -1422,7 +1439,7 @@ class Scatter():
             size=order_map(self._size_map, self._size_order) if self._size_map else self._size,
             size_by=self.js_size_by,
             connect=bool(self._connect_by),
-            connection_color=order_map(self._connection_color_map, self._connection_color_order) if self._connection_color_map else self._connection_color,
+            connection_color=order_limit_color_map(self._connection_color_map, self._connection_color_order, self._connection_color_categories) if self._connection_color_map else self._connection_color,
             connection_color_active=self._connection_color_active,
             connection_color_hover=self._connection_color_hover,
             connection_color_by=self.js_connection_color_by,

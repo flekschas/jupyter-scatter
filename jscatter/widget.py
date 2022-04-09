@@ -1,9 +1,12 @@
+import io
 import base64
+import uuid
 import IPython.display as ipydisplay
 import ipywidgets as widgets
 import matplotlib.pyplot as plt
 import numpy as np
 
+from IPython.display import display, update_display
 from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
 from traittypes import Array
 
@@ -112,8 +115,11 @@ class JupyterScatter(widgets.DOMWidget):
 
     view_reset = Bool(False).tag(sync=True) # Used for triggering a view reset
     view_download = Unicode(None, allow_none=True).tag(sync=True) # Used for triggering a download
-    view_pixels = List(None, allow_none=True, read_only=True).tag(sync=True)
+    view_data = Array(default_value=None, allow_none=True, read_only=True).tag(sync=True, **ndarray_serialization)
     view_shape = List(None, allow_none=True, read_only=True).tag(sync=True)
+
+    # For synchronyzing view changes across scatter plot instances
+    view_sync = Unicode(None, allow_none=True).tag(sync=True)
 
     @property
     def mouse_mode_widget(self):
@@ -515,7 +521,7 @@ class JupyterScatter(widgets.DOMWidget):
                 height='0',
                 border=f'1px solid {color}'
             )
-        ),
+        )
 
     def options(self):
         """Display widgets for all options
@@ -661,7 +667,7 @@ class JupyterScatter(widgets.DOMWidget):
                         margin='10px 0',
                         width='100%',
                         height='0',
-                        border='1px solid #efefef'
+                        border='1px solid var(--jp-layout-color2)'
                     )
                 ),
                 self.get_save_view_widget(icon_only=True, width=36),
