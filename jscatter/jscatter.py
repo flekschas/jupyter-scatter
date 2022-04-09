@@ -18,6 +18,7 @@ VALID_ENCODING_TYPES = [
     pd.api.types.is_float_dtype,
     pd.api.types.is_integer_dtype,
     pd.api.types.is_categorical_dtype,
+    pd.api.types.is_string_dtype,
 ]
 
 # To distinguish between None and an undefined optional argument
@@ -28,7 +29,17 @@ default_background_color = 'white'
 
 def check_encoding_dtype(series):
     if not any([check(series.dtype) for check in VALID_ENCODING_TYPES]):
-        raise ValueError(f'{series.name} is of an unsupported data type: {series.dtype}. Must be one of category, float*, or int*.')
+        raise ValueError(f'{series.name} is of an unsupported data type: {series.dtype}. Must be one of float*, int*, category, or string.')
+
+def get_categorical_data(data):
+    categorical_data = None
+
+    if pd.api.types.is_categorical_dtype(data):
+        categorical_data = data
+    elif pd.api.types.is_string_dtype(data):
+        categorical_data = data.copy().astype('category')
+
+    return categorical_data
 
 def component_idx_to_name(idx):
     if idx == 2:
@@ -374,9 +385,11 @@ class Scatter():
                     component = self._encodings.data[by].component
                     try:
                         check_encoding_dtype(self._data[by])
-                        if pd.api.types.is_categorical_dtype(self._data[by].dtype):
-                            self._color_categories = dict(zip(self._data[by], self._data[by].cat.codes))
-                            self._points[:, component] = self._data[by].cat.codes
+                        categorical_data = get_categorical_data(self._data[by])
+
+                        if categorical_data is not None:
+                            self._color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                            self._points[:, component] = categorical_data.cat.codes
                         else:
                             self._points[:, component] = self._color_norm(self._data[by].values)
                     except TypeError:
@@ -414,6 +427,10 @@ class Scatter():
                 elif isinstance(map, str):
                     # Assiming `map` is the name of a Matplotlib ListedColormap
                     self._color_map = [to_rgba(c) for c in plt.get_cmap(map).colors]
+                elif isinstance(map, dict):
+                    # Assiming `map` is a dictionary of colors
+                    self._color_map = [to_rgba(c) for c in list(map.values())]
+                    self._color_order = list(map.keys())
                 else:
                     # Assuming `map` is a list of colors
                     self._color_map = [to_rgba(c) for c in map]
@@ -512,9 +529,11 @@ class Scatter():
                     component = self._encodings.data[by].component
                     try:
                         check_encoding_dtype(self._data[by])
-                        if pd.api.types.is_categorical_dtype(self._data[by].dtype):
-                            self._points[:, component] = self._data[by].cat.codes
-                            self._opacity_categories = dict(zip(self._data[by], self._data[by].cat.codes))
+                        categorical_data = get_categorical_data(self._data[by])
+
+                        if categorical_data is not None:
+                            self._points[:, component] = categorical_data.cat.codes
+                            self._opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                         else:
                             self._points[:, component] = self._opacity_norm(self._data[by].values)
                     except TypeError:
@@ -535,9 +554,13 @@ class Scatter():
                 self._opacity_order = [self._opacity_categories[cat] for cat in order]
 
         if map is not Undefined and map != 'auto':
-            if type(map) == tuple:
+            if isinstance(map, tuple):
                 # Assuming `map` is a triple specifying a linear space
                 self._opacity_map = np.linspace(*map)
+            elif isinstance(map, dict):
+                # Assiming `map` is a dictionary of opacities
+                self._opacity_map = list(map.values())
+                self._opacity_order = list(map.keys())
             else:
                 self._opacity_map = np.asarray(map)
 
@@ -625,9 +648,11 @@ class Scatter():
                     component = self._encodings.data[by].component
                     try:
                         check_encoding_dtype(self._data[by])
-                        if pd.api.types.is_categorical_dtype(self._data[by].dtype):
-                            self._points[:, component] = self._data[by].cat.codes
-                            self._size_categories = dict(zip(self._data[by], self._data[by].cat.codes))
+                        categorical_data = get_categorical_data(self._data[by])
+
+                        if categorical_data is not None:
+                            self._points[:, component] = categorical_data.cat.codes
+                            self._size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                         else:
                             self._points[:, component] = self._size_norm(self._data[by].values)
                     except TypeError:
@@ -648,9 +673,13 @@ class Scatter():
                 self._size_order = [self._size_categories[cat] for cat in self._size_order]
 
         if map is not Undefined and map != 'auto':
-            if type(map) == tuple:
+            if isinstance(map, tuple):
                 # Assuming `map` is a triple specifying a linear space
                 self._size_map = np.linspace(*map)
+            elif isinstance(map, dict):
+                # Assiming `map` is a dictionary of sizes
+                self._size_map = list(map.values())
+                self._size_order = list(map.keys())
             else:
                 self._size_map = np.asarray(map)
 
@@ -800,9 +829,11 @@ class Scatter():
                     component = self._encodings.data[by].component
                     try:
                         check_encoding_dtype(self._data[by])
-                        if pd.api.types.is_categorical_dtype(self._data[by].dtype):
-                            self._connection_color_categories = dict(zip(self._data[by], self._data[by].cat.codes))
-                            self._points[:, component] = self._data[by].cat.codes
+                        categorical_data = get_categorical_data(self._data[by])
+
+                        if categorical_data is not None:
+                            self._connection_color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                            self._points[:, component] = categorical_data.cat.codes
                         else:
                             self._points[:, component] = self._connection_color_norm(self._data[by].values)
                     except TypeError:
@@ -840,6 +871,10 @@ class Scatter():
                 elif isinstance(map, str):
                     # Assiming `map` is the name of a Matplotlib ListedColormap
                     self._connection_color_map = [to_rgba(c) for c in plt.get_cmap(map).colors]
+                elif isinstance(map, dict):
+                    # Assiming `map` is a dictionary of colors
+                    self._connection_color_map = [to_rgba(c) for c in list(map.values())]
+                    self._connection_color_order = list(map.keys())
                 else:
                     # Assuming `map` is a list of colors
                     self._connection_color_map = [to_rgba(c) for c in map]
@@ -933,9 +968,11 @@ class Scatter():
                     component = self._encodings.data[by].component
                     try:
                         check_encoding_dtype(self._data[by])
-                        if pd.api.types.is_categorical_dtype(self._data[by].dtype):
-                            self._points[:, component] = self._data[by].cat.codes
-                            self._connection_opacity_categories = dict(zip(self._data[by], self._data[by].cat.codes))
+                        categorical_data = get_categorical_data(self._data[by])
+
+                        if categorical_data is not None:
+                            self._points[:, component] = categorical_data.cat.codes
+                            self._connection_opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                         else:
                             self._points[:, component] = self._connection_opacity_norm(self._data[by].values)
                     except TypeError:
@@ -961,6 +998,10 @@ class Scatter():
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
                 self._connection_opacity_map = np.linspace(*map)
+            elif isinstance(map, dict):
+                # Assiming `map` is a dictionary of opacities
+                self._connection_opacity_map = list(map.values())
+                self._connection_opacity_order = list(map.keys())
             else:
                 self._connection_opacity_map = np.asarray(map)
 
@@ -1053,9 +1094,11 @@ class Scatter():
                     component = self._encodings.data[by].component
                     try:
                         check_encoding_dtype(self._data[by])
-                        if pd.api.types.is_categorical_dtype(self._data[by].dtype):
-                            self._points[:, component] = self._data[by].cat.codes
-                            self._connection_size_categories = dict(zip(self._data[by], self._data[by].cat.codes))
+                        categorical_data = get_categorical_data(self._data[by])
+
+                        if categorical_data is not None:
+                            self._points[:, component] = categorical_data.cat.codes
+                            self._connection_size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                         else:
                             self._points[:, component] = self._connection_size_norm(self._data[by].values)
                     except TypeError:
@@ -1079,6 +1122,10 @@ class Scatter():
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
                 self._connection_size_map = np.linspace(*map)
+            elif isinstance(map, dict):
+                # Assiming `map` is a dictionary of sizes
+                self._connection_size_map = list(map.values())
+                self._connection_size_order = list(map.keys())
             else:
                 self._connection_size_map = np.asarray(map)
 
