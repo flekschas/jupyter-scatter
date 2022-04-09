@@ -1,10 +1,12 @@
 /* eslint-env browser */
 const widgets = require('@jupyter-widgets/base');
 const reglScatterplot = require('regl-scatterplot/dist/regl-scatterplot.js');
+const pubSub = require('pub-sub-es');
 const codecs = require('./codecs');
 const packageJson = require('../package.json');
 
 const createScatterplot = reglScatterplot.default;
+const createRenderer = reglScatterplot.createRenderer;
 
 const JupyterScatterModel = widgets.DOMWidgetModel.extend(
   {
@@ -23,6 +25,7 @@ const JupyterScatterModel = widgets.DOMWidgetModel.extend(
       ...widgets.DOMWidgetModel.serializers,
       points: new codecs.Numpy2D('float32'),
       selection: new codecs.Numpy1D('uint32'),
+      view_data: new codecs.Numpy1D('uint8'),
     }
   },
 );
@@ -106,6 +109,13 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   render: function render() {
     var self = this;
 
+    if (!window.jupyterScatter) {
+      window.jupyterScatter = {
+        renderer: createRenderer(),
+        versionLog: false,
+      }
+    }
+
     Object.keys(properties).forEach(function(propertyName) {
       self[propertyName] = self.model.get(camelToSnake(propertyName));
     });
@@ -117,14 +127,14 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
     // Create a random 6-letter string
     // From https://gist.github.com/6174/6062387
-    var randomStr = (
+    this.randomStr = (
       Math.random().toString(36).substring(2, 5) +
       Math.random().toString(36).substring(2, 5)
     );
-    this.model.set('dom_element_id', randomStr);
+    this.model.set('dom_element_id', this.randomStr);
 
     this.container = document.createElement('div');
-    this.container.setAttribute('id', randomStr);
+    this.container.setAttribute('id', this.randomStr);
     this.container.style.position = 'relative'
     this.container.style.width = this.width === 'auto'
       ? '100%'
@@ -141,6 +151,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
     window.requestAnimationFrame(function init() {
       const initialOptions = {
+        renderer: window.jupyterScatter.renderer,
         canvas: self.canvas,
       }
 
@@ -155,11 +166,14 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
       self.scatterplot = createScatterplot(initialOptions);
 
-      // eslint-disable-next-line
-      console.log(
-        'jscatter v' + packageJson.version +
-        ' with regl-scatterplot v' + self.scatterplot.get('version')
-      );
+      if (!window.jupyterScatter.versionLog) {
+        // eslint-disable-next-line
+        console.log(
+          'jupyter-scatter v' + packageJson.version +
+          ' with regl-scatterplot v' + self.scatterplot.get('version')
+        );
+        window.jupyterScatter.versionLog = true;
+      }
 
       self.container.api = self.scatterplot;
 
@@ -168,10 +182,18 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       self.pointoutHandlerBound = self.pointoutHandler.bind(self);
       self.selectHandlerBound = self.selectHandler.bind(self);
       self.deselectHandlerBound = self.deselectHandler.bind(self);
+      self.externalViewChangeHandlerBound = self.externalViewChangeHandler.bind(self);
+      self.viewChangeHandlerBound = self.viewChangeHandler.bind(self);
+
       self.scatterplot.subscribe('pointover', self.pointoverHandlerBound);
       self.scatterplot.subscribe('pointout', self.pointoutHandlerBound);
       self.scatterplot.subscribe('select', self.selectHandlerBound);
       self.scatterplot.subscribe('deselect', self.deselectHandlerBound);
+      self.scatterplot.subscribe('view', self.viewChangeHandlerBound);
+
+      pubSub.globalPubSub.subscribe(
+        'jscatter::view', self.externalViewChangeHandlerBound
+      );
 
       // Listen to messages from the Python world
       Object.keys(properties).forEach(function(propertyName) {
@@ -189,10 +211,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
         }
       });
 
-      window.addEventListener('resize', self.resizeHandler.bind(self));
-      window.addEventListener('deviceorientation', self.resizeHandler.bind(self));
-
-      self.resizeHandler();
       self.colorCanvas();
 
       if (self.points.length) {
@@ -210,6 +228,15 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   },
 
   remove: function destroy() {
+    pubSub.globalPubSub.unsubscribe(
+      'jscatter::view',
+      this.externalViewChangeHandlerBound
+    );
+    this.scatterplot.unsubscribe('pointover', this.pointoverHandlerBound);
+    this.scatterplot.unsubscribe('pointout', this.pointoutHandlerBound);
+    this.scatterplot.unsubscribe('select', this.selectHandlerBound);
+    this.scatterplot.unsubscribe('deselect', this.deselectHandlerBound);
+    this.scatterplot.unsubscribe('view', this.viewChangeHandlerBound);
     this.scatterplot.destroy();
   },
 
@@ -247,6 +274,29 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.selectionChangedByJs = true;
     this.model.set('selection', []);
     this.model.save_changes();
+  },
+
+  externalViewChangeHandler: function externalViewChangeHandler(event) {
+    const viewSync = this.model.get('view_sync');
+    if (
+      !viewSync
+      || event.uuid !== viewSync
+      || event.src === this.randomStr
+    ) return;
+    this.scatterplot.view(event.view, { preventEvent: true });
+  },
+
+  viewChangeHandler: function viewChangeHandler(event) {
+    const viewSync = this.model.get('view_sync');
+    if (!viewSync) return;
+    pubSub.globalPubSub.publish(
+      'jscatter::view',
+      {
+        src: this.randomStr,
+        uuid: viewSync,
+        view: event.view,
+      }
+    );
   },
 
   // Event handlers for Python-triggered events
@@ -421,40 +471,23 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   viewDownloadHandler: function viewDownloadHandler(target) {
     if (!target) return;
 
-    const data = this.scatterplot.export();
+    const image = this.scatterplot.export();
 
     if (target === 'property') {
-      this.model.set('view_pixels', Array.from(data.pixels));
-      this.model.set('view_shape', [data.width, data.height]);
+      this.model.set('view_data', image.data);
+      this.model.set('view_shape', [image.width, image.height]);
       this.model.set('view_download', null);
       this.model.save_changes();
       return;
     }
 
-    const c = document.createElement('canvas');
-    c.width = data.width;
-    c.height = data.height;
-
-    const ctx = c.getContext('2d');
-    ctx.putImageData(new ImageData(data.pixels, data.width, data.height), 0, 0);
-
-    // The following is only needed to flip the image vertically. Since `ctx.scale`
-    // only affects `draw*()` calls and not `put*()` calls we have to draw the
-    // image twice...
-    const imageObject = new Image();
-    imageObject.onload = () => {
-      ctx.clearRect(0, 0, data.width, data.height);
-      ctx.scale(1, -1);
-      ctx.drawImage(imageObject, 0, -data.height);
-      c.toBlob((blob) => {
-        downloadBlob(blob, 'scatter.png');
-        setTimeout(() => {
-          this.model.set('view_download', null);
-          this.model.save_changes();
-        }, 0);
-      });
-    };
-    imageObject.src = c.toDataURL();
+    this.scatterplot.get('canvas').toBlob((blob) => {
+      downloadBlob(blob, 'scatter.png');
+      setTimeout(() => {
+        this.model.set('view_download', null);
+        this.model.save_changes();
+      }, 0);
+    });
   },
 
   viewResetHandler: function viewResetHandler() {
@@ -463,15 +496,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       this.model.set('view_reset', false);
       this.model.save_changes();
     }, 0);
-  },
-
-  resizeHandler: function resizeHandler() {
-    this.width = Math.max(MIN_WIDTH, this.el.getBoundingClientRect().width);
-    this.container.style.height = this.height + 'px';
-    this.scatterplot.set({
-      width: this.width,
-      height: this.height
-    });
   },
 
   withPropertyChangeHandler: function withPropertyChangeHandler(property, changedValue) {
