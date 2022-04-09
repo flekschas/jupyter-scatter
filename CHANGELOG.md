@@ -1,3 +1,7 @@
+## v0.3.1
+
+- Make type hints backward compatible to Python 3.7
+
 ## v0.3.0
 
 - **Breaking change:** Change the signature of `compose()` to simplify correspondence mapping of data points.
