@@ -727,8 +727,9 @@ class Scatter():
 
             if by is not None:
                 try:
-                    if pd.api.types.is_categorical_dtype(self._data[by].dtype):
-                        self._points[:, COMPONENT_CONNECT] = self._data[by].cat.codes
+                    categorical_data = get_categorical_data(self._data[by])
+                    if categorical_data is not None:
+                        self._points[:, COMPONENT_CONNECT] = categorical_data.cat.codes
                     elif pd.api.types.is_integer_dtype(self._data[by].dtype):
                         self._points[:, COMPONENT_CONNECT] = self._data[by].values
                     else:
