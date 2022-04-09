@@ -8,6 +8,10 @@
 - Improve the ordering of the default Okabe Ito color map
 - Expose default the Okabe Ito (`okabe_ito`) and Glasbey (`glasbey_light` and `glasbey_dark`) color maps for convenience
 
+## v0.2.2
+
+- Fix broken installation of [v0.2.1](v0.2.1) (#23)
+
 ## v0.2.1
 
 - Simplify installation ([#16](https://github.com/flekschas/jupyter-scatter/pull/16))
