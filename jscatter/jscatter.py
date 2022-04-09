@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from matplotlib.colors import to_rgba
-from typing import Optional
+from typing import Optional, Union, List
 
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
@@ -82,8 +82,8 @@ def order_limit_color_map(map, order, categories):
 class Scatter():
     def __init__(
         self,
-        x: str | list[float] | np.ndarray,
-        y: str | list[float] | np.ndarray,
+        x: Union[str, List[float], np.ndarray],
+        y: Union[str, List[float], np.ndarray],
         data: Optional[pd.DataFrame] = None,
         **kwargs
     ):
