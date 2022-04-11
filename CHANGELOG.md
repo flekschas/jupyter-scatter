@@ -1,3 +1,7 @@
+## v0.3.3
+
+- Fix `scatter.pixels()`
+
 ## v0.3.2
 
 - Fix more type hints...

@@ -1394,10 +1394,10 @@ class Scatter():
 
     def pixels(self):
         if self._widget is not None:
-            assert len(self._widget.view_pixels) > 0, 'Download pixels first'
-            assert len(self._widget.view_shape) != 2, 'Download pixels first'
+            assert self._widget.view_data is not None and len(self._widget.view_data) > 0, 'Download pixels first by clicking on the button with the camera icon.'
+            assert self._widget.view_shape is not None and len(self._widget.view_shape) == 2, 'Download pixels first by clicking on the button with the camera icon.'
 
-            self._pixels = np.asarray(self._widget.view_pixels).astype(np.uint8)
+            self._pixels = np.asarray(self._widget.view_data).astype(np.uint8)
             self._pixels = self._pixels.reshape([*self._widget.view_shape, 4])
 
         return self._pixels
