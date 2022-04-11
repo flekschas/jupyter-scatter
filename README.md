@@ -33,7 +33,7 @@
 
 1. [Install](#install)
 2. [Get Started](#get-started)
-3. [API docs](DOCS.md)
+3. [API docs](API.md)
 4. [Examples](notebooks/examples.ipynb)
 5. [Development](#development)
 
