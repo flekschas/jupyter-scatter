@@ -471,9 +471,8 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   viewDownloadHandler: function viewDownloadHandler(target) {
     if (!target) return;
 
-    const image = this.scatterplot.export();
-
     if (target === 'property') {
+      const image = this.scatterplot.export();
       this.model.set('view_data', image.data);
       this.model.set('view_shape', [image.width, image.height]);
       this.model.set('view_download', null);
