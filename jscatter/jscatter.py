@@ -402,6 +402,12 @@ class Scatter():
 
             self.update_widget('color_by', self.js_color_by)
 
+        elif color is not Undefined:
+            # Presumably the user wants to switch to a static color encoding
+            self._color_by = None
+            self._encodings.delete('color')
+            self.update_widget('color_by', self.js_color_by)
+
         if order is not Undefined:
             if order is None or order == 'reverse':
                 self._color_order = order
@@ -546,6 +552,12 @@ class Scatter():
 
             self.update_widget('opacity_by', self.js_opacity_by)
 
+        elif opacity is not Undefined:
+            # Presumably the user wants to switch to a static opacity encoding
+            self._opacity_by = None
+            self._encodings.delete('opacity')
+            self.update_widget('opacity_by', self.js_opacity_by)
+
         if order is not Undefined:
             if order is None or order == 'reverse':
                 self._opacity_order = order
@@ -663,6 +675,12 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
 
+            self.update_widget('size_by', self.js_size_by)
+
+        elif size is not Undefined:
+            # Presumably the user wants to switch to a static color encoding
+            self._size_by = None
+            self._encodings.delete('size')
             self.update_widget('size_by', self.js_size_by)
 
         if order is not Undefined:
@@ -847,6 +865,12 @@ class Scatter():
 
             self.update_widget('connection_color_by', self.js_connection_color_by)
 
+        elif color is not Undefined:
+            # Presumably the user wants to switch to a static color encoding
+            self._connection_color_by = None
+            self._encodings.delete('connection_color')
+            self.update_widget('connection_color_by', self.js_connection_color_by)
+
         if order is not Undefined:
             if order is None or order == 'reverse':
                 self._connection_color_order = order
@@ -986,6 +1010,12 @@ class Scatter():
 
             self.update_widget('connection_opacity_by', self.js_connection_opacity_by)
 
+        elif opacity is not Undefined:
+            # Presumably the user wants to switch to a static opacity encoding
+            self._connection_opacity_by = None
+            self._encodings.delete('connection_opacity')
+            self.update_widget('connection_opacity_by', self.js_connection_opacity_by)
+
         if order is not Undefined:
             if order is None or order == 'reverse':
                 self._connection_opacity_order = order
@@ -1110,6 +1140,12 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
 
+            self.update_widget('connection_size_by', self.js_connection_size_by)
+
+        elif size is not Undefined:
+            # Presumably the user wants to switch to a static size encoding
+            self._connection_size_by = None
+            self._encodings.delete('connection_size')
             self.update_widget('connection_size_by', self.js_connection_size_by)
 
         if order is not Undefined:
