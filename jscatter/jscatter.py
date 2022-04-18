@@ -157,6 +157,8 @@ class Scatter():
         self._camera_rotation = 0.0
         self._camera_view = None
         self._mouse_mode = 'panZoom'
+        self._axes = True
+        self._axes_grid = False
         self._options = {}
 
         self.x(x)
@@ -235,6 +237,10 @@ class Scatter():
             kwargs.get('camera_distance', Undefined),
             kwargs.get('camera_rotation', Undefined),
             kwargs.get('camera_view', Undefined),
+        )
+        self.axes(
+            kwargs.get('axes', Undefined),
+            kwargs.get('axes_grid', Undefined),
         )
         self.options(kwargs.get('options', Undefined))
 
@@ -1223,6 +1229,7 @@ class Scatter():
             )
 
             self.update_widget('reticle_color', self.get_reticle_color())
+            self.update_widget('axes_color', self.get_axes_color())
 
         if image is not Undefined:
             if uri_validator(image):
@@ -1377,6 +1384,12 @@ class Scatter():
 
             return (0, 0, 0, 0.1) # Defaut
 
+    def get_axes_color(self):
+        if self._background_color_luminance < 0.5:
+            return (1, 1, 1, 1)
+
+        return (0, 0, 0, 1)
+
     def reticle(self, show = Undefined, color = Undefined):
         if show is not Undefined:
             try:
@@ -1413,6 +1426,31 @@ class Scatter():
                 pass
 
             return self
+
+        return self._mouse_mode
+
+    def axes(self, axes = Undefined, grid = Undefined):
+        if axes is not Undefined:
+            try:
+                self._axes = axes
+                self.update_widget('axes', axes)
+            except:
+                pass
+
+        if grid is not Undefined:
+            try:
+                self._axes_grid = grid
+                self.update_widget('axes_grid', grid)
+            except:
+                pass
+
+        if any_not([axes, grid], Undefined):
+            return self
+
+        return dict(
+            axes = self._axes,
+            grid = self._axes_grid,
+        )
 
         return self._mouse_mode
 
@@ -1540,6 +1578,9 @@ class Scatter():
             mouse_mode=self._mouse_mode,
             x_domain=self._x_domain,
             y_domain=self._y_domain,
+            axes=self._axes,
+            axes_grid=self._axes_grid,
+            axes_color=self.get_axes_color(),
             other_options=self._options
         )
 

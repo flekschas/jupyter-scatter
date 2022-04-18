@@ -37,12 +37,15 @@
   "dependencies": {
     "@jupyter-widgets/base": "^1.1.10 || ^2 || ^3 || ^4",
     "camera-2d-simple": "~2.2.1",
+    "d3-axis": "~3.0.0",
+    "d3-scale": "~4.0.2",
+    "d3-selection": "~3.0.0",
     "dom-2d-camera": "~2.2.3",
-    "gl-matrix": "^3.3.0",
-    "lodash": "^4.17.21",
+    "gl-matrix": "~3.3.0",
+    "lodash": "~4.17.21",
     "pub-sub-es": "~2.0.1",
     "regl": "~2.1.0",
-    "regl-scatterplot": "~1.2.2"
+    "regl-scatterplot": "~1.2.3"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.0.8",

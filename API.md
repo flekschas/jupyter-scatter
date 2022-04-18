@@ -6,8 +6,8 @@
     - [selection()](#scatter.selection)
     - [color()](#scatter.color), [opacity()](#scatter.opacity), and [size()](#scatter.size)
     - [connect()](#scatter.connect), [connection_color()](#scatter.connection_color), [connection_opacity()](#scatter.connection_opacity), and [connection_size()](#scatter.connection_size)
-    - [lasso()](#scatter.lasso), [reticle()](#scatter.reticle), [background()](#scatter.background)
-    - [mouse()](#scatter.mouse), [camera()](#scatter.camera), [options()](scatter.options)
+    - [axes()](#scatter.axes), [background()](#scatter.background), [lasso()](#scatter.lasso), and [reticle()](#scatter.reticle)
+    - [camera()](#scatter.camera), [mouse()](#scatter.mouse), and [options()](scatter.options)
   - [Properties](#properties)
 - [Plotting](#plotting)
 - [Composing \& Linking](#composing--linking)
@@ -250,6 +250,16 @@ Gets or sets the point connection opacity. This function behaves identical to [s
 
 Gets or sets the point connection size. This function behaves identical to [scatter.size()][scatter.color].
 
+<h3><a name="scatter.axes" href="#scatter.axes">#</a> scatter.<b>axes</b>(<i>axes=Undefined</i>, <i>grid=Undefined</i>)</h3>
+
+Gets or sets the x and y axes.
+
+**Arguments:**
+- `axes` is a Boolean value to specify if the x and y axes should be shown or not.
+- `grid` is a Boolean value to specify if an axes-based grid should be shown or not.
+
+**Returns:** either the axes properties when all arguments are `Undefined` or `self`.
+
 <h3><a name="scatter.lasso" href="#scatter.lasso">#</a> scatter.<b>lasso</b>(<i>color=Undefined</i>, <i>initiator=Undefined</i>, <i>min_delay=Undefined</i>, <i>min_dist=Undefined</i>)</h3>
 
 Gets or sets the lasso for selecting multiple points.
@@ -363,6 +373,8 @@ Gets or sets other [regl-scatterplot](https://github.com/flekschas/regl-scatterp
 | `connection_size_map`      | triple[float] \| list[int] \| dict \| 'auto'                                                                               | `None`                                         |
 | `connection_size_norm`     | tuple[float] \| [Normalizer](https://matplotlib.org/stable/api/colors_api.html#classes)                                    | `matplotlib.colors.Normalize(0, 1, clip=True)` |
 | `connection_size_order`    | list[str \| int] \| 'reverse'                                                                                              | `None`                                         |
+| `axes`                     | bool                                                                                                                       | `True`                                         |
+| `axes_grid`                | bool                                                                                                                       | `False`                                        |
 | `lasso_color`              | str \| tuple[float] \| list[float]                                                                                         | `(0, 0.666666667, 1, 1)`                       |
 | `lasso_initiator`          | bool                                                                                                                       | `True`                                         |
 | `lasso_min_delay`          | int                                                                                                                        | `10`                                           |

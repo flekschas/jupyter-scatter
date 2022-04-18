@@ -1,3 +1,7 @@
+## v0.4.0
+
+- Add support for axes via `Scatter(axes=True, axes_grid=True)` or `scatter.axes(True, grid=True)`.
+
 ## v0.3.4
 
 - Unset data-driven color, opacity, and size encoding when only a constant value was passed to an encoder function. E.g., after initializing `scatter = Scatter(..., color_by='property')`, calling `scatter.color('red')` will automatically unset `color_by`.

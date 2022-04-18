@@ -79,6 +79,11 @@ class JupyterScatter(widgets.DOMWidget):
     mouse_mode = Enum(['panZoom', 'lasso', 'rotate'], default_value='panZoom').tag(sync=True)
     lasso_initiator = Bool().tag(sync=True)
 
+    # Axes
+    axes = Bool().tag(sync=True)
+    axes_grid = Bool().tag(sync=True)
+    axes_color = List(default_value=[0, 0, 0, 1], minlen=4, maxlen=4).tag(sync=True)
+
     # Options
     color = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
     color_active = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
