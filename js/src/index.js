@@ -2,6 +2,9 @@
 const widgets = require('@jupyter-widgets/base');
 const reglScatterplot = require('regl-scatterplot/dist/regl-scatterplot.js');
 const pubSub = require('pub-sub-es');
+const d3Axis = require('d3-axis');
+const d3Scale = require('d3-scale');
+const d3Selection = require('d3-selection');
 const codecs = require('./codecs');
 const packageJson = require('../package.json');
 
@@ -29,6 +32,9 @@ const JupyterScatterModel = widgets.DOMWidgetModel.extend(
     }
   },
 );
+
+const AXES_PADDING_X = 40;
+const AXES_PADDING_Y = 20;
 
 function camelToSnake(string) {
   return string.replace(/[\w]([A-Z])/g, function(m) {
@@ -102,6 +108,8 @@ const properties = {
   viewDownload: 'viewDownload',
   viewReset: 'viewReset',
   hovering: 'hovering',
+  axes: 'axes',
+  axesGrid: 'axesGrid',
 };
 
 // Custom View. Renders the widget model.
@@ -140,14 +148,20 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       ? '100%'
       : this.width + 'px';
     this.container.style.height = this.height + 'px';
-
     this.el.appendChild(this.container);
+
+    this.canvasWrapper = document.createElement('div');
+    this.canvasWrapper.style.position = 'absolute';
+    this.canvasWrapper.style.top = '0';
+    this.canvasWrapper.style.left = '0';
+    this.canvasWrapper.style.right = '0';
+    this.canvasWrapper.style.bottom = '0';
+    this.container.appendChild(this.canvasWrapper);
 
     this.canvas = document.createElement('canvas');
     this.canvas.style.width = '100%';
     this.canvas.style.height = '100%';
-
-    this.container.appendChild(this.canvas);
+    this.canvasWrapper.appendChild(this.canvas);
 
     window.requestAnimationFrame(function init() {
       const initialOptions = {
@@ -177,6 +191,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
       self.container.api = self.scatterplot;
 
+      if (self.model.get('axes')) self.createAxes();
+      if (self.model.get('axes_grid')) self.createAxesGrid();
+
       // Listen to events from the JavaScript world
       self.pointoverHandlerBound = self.pointoverHandler.bind(self);
       self.pointoutHandlerBound = self.pointoutHandler.bind(self);
@@ -184,6 +201,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       self.deselectHandlerBound = self.deselectHandler.bind(self);
       self.externalViewChangeHandlerBound = self.externalViewChangeHandler.bind(self);
       self.viewChangeHandlerBound = self.viewChangeHandler.bind(self);
+      self.resizeHandlerBound = self.resizeHandler.bind(self);
 
       self.scatterplot.subscribe('pointover', self.pointoverHandlerBound);
       self.scatterplot.subscribe('pointout', self.pointoutHandlerBound);
@@ -194,6 +212,14 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       pubSub.globalPubSub.subscribe(
         'jscatter::view', self.externalViewChangeHandlerBound
       );
+
+      if ('ResizeObserver' in window) {
+        self.canvasObserver = new ResizeObserver(self.resizeHandlerBound);
+        self.canvasObserver.observe(self.canvas);
+      } else {
+        window.addEventListener('resize', self.resizeHandlerBound);
+        window.addEventListener('orientationchange', self.resizeHandlerBound);
+      }
 
       // Listen to messages from the Python world
       Object.keys(properties).forEach(function(propertyName) {
@@ -227,7 +253,133 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.model.save_changes();
   },
 
+  createAxes: function createAxes() {
+    this.axesSvg = d3Selection.select(this.container).append('svg');
+    this.axesSvg.style('top', 0);
+    this.axesSvg.style('left', 0);
+    this.axesSvg.style('width', '100%');
+    this.axesSvg.style('height', '100%');
+    this.axesSvg.style('pointer-events', 'none');
+    this.axesSvg.style('user-select', 'none');
+    const color = this.model.get('axes_color')
+      .map(function (c) { return Math.round(c * 255); });
+    this.axesSvg.style('color', `rgba(${color[0]}, ${color[1]}, ${color[2]}, 1)`);
+
+    const { width, height } = this.container.getBoundingClientRect();
+
+    this.xScale = d3Scale.scaleLinear()
+      .domain(this.model.get('x_domain'))
+      .range([0, width - AXES_PADDING_Y]);
+    this.yScale = d3Scale.scaleLinear()
+      .domain(this.model.get('y_domain'))
+      .range([height - AXES_PADDING_X, 0]);
+
+    this.xAxis = d3Axis.axisBottom(this.xScale);
+    this.yAxis = d3Axis.axisRight(this.yScale);
+
+    this.xAxisContainer = this.axesSvg
+      .append('g')
+      .attr('transform', `translate(0, ${height - AXES_PADDING_Y})`)
+      .call(this.xAxis);
+
+    this.yAxisContainer = this.axesSvg
+      .append('g')
+      .attr('transform', `translate(${width - AXES_PADDING_X}, 0)`)
+      .call(this.yAxis);
+
+    this.axesSvg.selectAll('.domain').attr('opacity', 0);
+
+    this.scatterplot.set({
+      xScale: this.xScale,
+      yScale: this.yScale,
+      height: this.model.get('height') - AXES_PADDING_Y,
+    });
+
+    this.canvasWrapper.style.right = `${AXES_PADDING_X}px`;
+    this.canvasWrapper.style.bottom = `${AXES_PADDING_Y}px`;
+
+    if (this.model.get('axes_grid')) this.createAxesGrid();
+  },
+
+  removeAxes: function removeAxes() {
+    this.axesSvg.node().remove();
+    this.axesSvg = undefined;
+    this.xAxis = undefined;
+    this.yAxis = undefined;
+    this.xAxisContainer = undefined;
+    this.yAxisContainer = undefined;
+
+    this.canvasWrapper.style.top = '0';
+    this.canvasWrapper.style.left = '0';
+    this.canvasWrapper.style.right = '0';
+    this.canvasWrapper.style.bottom = '0';
+
+    this.scatterplot.set({
+      xScale: undefined,
+      yScale: undefined,
+      height: this.model.get('height'),
+    });
+  },
+
+  createAxesGrid: function createAxesGrid() {
+    const { width, height } = this.canvasWrapper.getBoundingClientRect();
+    if (this.xAxis) {
+      this.xAxis.tickSizeInner(-height);
+      this.xAxisContainer.call(this.xAxis);
+    }
+    if (this.yAxis) {
+      this.yAxis.tickSizeInner(-width);
+      this.yAxisContainer.call(this.yAxis);
+    }
+    if (this.axesSvg) {
+      this.axesSvg.selectAll('line')
+        .attr('stroke-opacity', 0.2)
+        .attr('stroke-dasharray', 2);
+    }
+  },
+
+  removeAxesGrid: function removeAxesGrid() {
+    if (this.xAxis) {
+      this.xAxis.tickSizeInner(6);
+      this.xAxisContainer.call(this.xAxis);
+    }
+    if (this.yAxis) {
+      this.yAxis.tickSizeInner(6);
+      this.yAxisContainer.call(this.yAxis);
+    }
+    if (this.axesSvg) {
+      this.axesSvg.selectAll('line')
+        .attr('stroke-opacity', null)
+        .attr('stroke-dasharray', null);
+    }
+  },
+
+  resizeHandler: function resizeHandler() {
+    if (!this.model.get('axes')) return;
+
+    const { width, height } = this.container.getBoundingClientRect();
+
+    this.xAxisContainer
+      .attr('transform', `translate(0, ${height - AXES_PADDING_Y})`)
+      .call(this.xAxis);
+    this.yAxisContainer
+      .attr('transform', `translate(${width - AXES_PADDING_X}, 0)`)
+      .call(this.yAxis);
+
+    // Render grid
+    if (this.model.get('axes_grid')) {
+      this.xAxis.tickSizeInner(-(height - AXES_PADDING_Y));
+      this.yAxis.tickSizeInner(-(width - AXES_PADDING_X));
+    }
+  },
+
   remove: function destroy() {
+    if (this.canvasObserver) {
+      this.canvasObserver.disconnect();
+    } else {
+      window.removeEventListener('resize', this.resizeHandlerBound);
+      window.removeEventListener('orientationchange', this.resizeHandlerBound);
+    }
     pubSub.globalPubSub.unsubscribe(
       'jscatter::view',
       this.externalViewChangeHandlerBound
@@ -243,11 +395,11 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   // Helper
   colorCanvas: function colorCanvas() {
     if (Array.isArray(this.backgroundColor)) {
-      this.canvas.style.backgroundColor = 'rgb(' +
+      this.container.style.backgroundColor = 'rgb(' +
         this.backgroundColor.slice(0, 3).map(function (x) { return x * 255 }).join(',') +
         ')';
     } else {
-      this.canvas.style.backgroundColor = this.backgroundColor;
+      this.container.style.backgroundColor = this.backgroundColor;
     }
   },
 
@@ -288,15 +440,25 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
   viewChangeHandler: function viewChangeHandler(event) {
     const viewSync = this.model.get('view_sync');
-    if (!viewSync) return;
-    pubSub.globalPubSub.publish(
-      'jscatter::view',
-      {
-        src: this.randomStr,
-        uuid: viewSync,
-        view: event.view,
+    if (viewSync) {
+      pubSub.globalPubSub.publish(
+        'jscatter::view',
+        {
+          src: this.randomStr,
+          uuid: viewSync,
+          view: event.view,
+        }
+      );
+    }
+    if (this.model.get('axes')) {
+      this.xAxisContainer.call(this.xAxis.scale(event.xScale));
+      this.yAxisContainer.call(this.yAxis.scale(event.yScale));
+      if (this.model.get('axes_grid')) {
+        this.axesSvg.selectAll('line')
+          .attr('stroke-opacity', 0.2)
+          .attr('stroke-dasharray', 2);
       }
-    );
+    }
   },
 
   // Event handlers for Python-triggered events
@@ -462,6 +624,16 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
   mouseModeHandler: function mouseModeHandler(newValue) {
     this.withPropertyChangeHandler('mouseMode', newValue);
+  },
+
+  axesHandler: function axesHandler(newValue) {
+    if (newValue) this.createAxes();
+    else this.removeAxes();
+  },
+
+  axesGridHandler: function axesGridHandler(newValue) {
+    if (newValue) this.createAxesGrid();
+    else this.removeAxesGrid();
   },
 
   otherOptionsHandler: function otherOptionsHandler(newOptions) {
