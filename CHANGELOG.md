@@ -1,6 +1,7 @@
 ## v0.4.0
 
 - Add support for axes via `Scatter(axes=True, axes_grid=True)` or `scatter.axes(True, grid=True)`.
+- Add support for log and power x/y scales via `Scatter(x_scale='log')` or `scatter.y(scale='pow')`.
 
 ## v0.3.4
 

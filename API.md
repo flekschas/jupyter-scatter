@@ -9,6 +9,7 @@
     - [axes()](#scatter.axes), [background()](#scatter.background), [lasso()](#scatter.lasso), and [reticle()](#scatter.reticle)
     - [camera()](#scatter.camera), [mouse()](#scatter.mouse), and [options()](scatter.options)
   - [Properties](#properties)
+  - [Widget](#widget)
 - [Plotting](#plotting)
 - [Composing \& Linking](#composing--linking)
 - [Color Maps](#color-maps)
@@ -36,13 +37,14 @@ scatter.show()
 
 ## Methods
 
-<h3><a name="scatter.x" href="#scatter.x">#</a> scatter.<b>x</b>(<i>x=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.x" href="#scatter.x">#</a> scatter.<b>x</b>(<i>x=Undefined</i>, <i>scale=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Gets or sets the x coordinate.
 
 **Arguments:**
 
 - `x` is either an array-like list of coordinates or a string referencing a column in `data`.
+- `scale` is either a string (`linear`, `log`, `pow`), a tuple defining the value range that's map to the extent of the scatter plot, or an instance of `matplotlib.colors.LogNorm` or `matplotlib.colors.PowerNorm`.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
 
@@ -54,13 +56,14 @@ Gets or sets the x coordinate.
 scatter.x('price') # Triggers and animated transition of the x coordinates
 ```
 
-<h3><a name="scatter.y" href="#scatter.y">#</a> scatter.<b>y</b>(<i>y=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.y" href="#scatter.y">#</a> scatter.<b>y</b>(<i>y=Undefined</i>, <i>scale=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Gets or sets the y coordinate.
 
 **Arguments:**
 
 - `y` is either an array-like list of coordinates or a string referencing a column in `data`.
+- `scale` is either a string (`linear`, `log`, `pow`), a tuple defining the value range that's map to the extent of the scatter plot, or an instance of `matplotlib.colors.LogNorm` or `matplotlib.colors.PowerNorm`.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
 
@@ -72,7 +75,7 @@ Gets or sets the y coordinate.
 scatter.y('price') # Triggers and animated transition of the y coordinates
 ```
 
-<h3><a name="scatter.xy" href="#scatter.xy">#</a> scatter.<b>xy</b>(<i>x=Undefined</i>, <i>y=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.xy" href="#scatter.xy">#</a> scatter.<b>xy</b>(<i>x=Undefined</i>, <i>y=Undefined</i>, <i>x_scale=Undefined</i>, <i>y_scale=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Gets or sets the x and y coordinate. This is just a convenience function to animate a change in the x and y coordinate at the same time.
 
@@ -80,6 +83,8 @@ Gets or sets the x and y coordinate. This is just a convenience function to anim
 
 - `x` is either an array-like list of coordinates or a string referencing a column in `data`.
 - `y` is either an array-like list of coordinates or a string referencing a column in `data`.
+- `x_scale` is either a string (`linear`, `log`, `pow`), a tuple defining the value range that's map to the extent of the scatter plot, or an instance of `matplotlib.colors.LogNorm` or `matplotlib.colors.PowerNorm`.
+- `y_scale` is either a string (`linear`, `log`, `pow`), a tuple defining the value range that's map to the extent of the scatter plot, or an instance of `matplotlib.colors.LogNorm` or `matplotlib.colors.PowerNorm`.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
 
@@ -118,7 +123,7 @@ Gets or sets the point color.
 - `color_hover` is a valid matplotlib color.
 - `by` is either an array-like list of values or a string referencing a column in `data`.
 - `map` is either a string referencing a matplotlib color map, a matplotlib color map object, a list of matplotlib-compatible colors, a dictionary of category-color pairs, or `auto` (to let jscatter choose a default color map).
-- `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/stable/api/colors_api.html#classes).
+- `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Normalize.html).
 - `order` is either a list of values (for categorical coloring) or `reverse` to reverse a color map.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
@@ -156,7 +161,7 @@ Gets or sets the point opacity.
 - `opacity` is a valid matplotlib color.
 - `by` is either an array-like list of values, a string referencing a column in `data`, or `density`
 - `map` is either a triple specifying an `np.linspace(*map)`, a list of opacities, a dictionary of category-opacity pairs, or `auto` (to let jscatter choose a default opacity map).
-- `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/stable/api/colors_api.html#classes).
+- `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Normalize.html).
 - `order` is either a list of values (for categorical opacity encoding) or `reverse` to reverse the opacity map.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
@@ -183,7 +188,7 @@ Gets or sets the point size.
 - `size` is a valid matplotlib color.
 - `by` is either an array-like list of values or a string referencing a column in `data`.
 - `map` is either a triple specifying an `np.linspace(*map)`, a list of sizes, a dictionary of category-size pairs, or `auto` (to let jscatter choose a default size map).
-- `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/stable/api/colors_api.html#classes).
+- `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Normalize.html).
 - `order` is either a list of values (for categorical size encoding) or `reverse` to reverse the size map.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
@@ -238,17 +243,21 @@ scatter.connect(by='group', order='order')
 # - [4]--[2]
 ```
 
+
 <h3><a name="scatter.connection_color" href="#scatter.connection_color">#</a> scatter.<b>connection_color</b>(<i>color=Undefined</i>, <i>color_active=Undefined</i>, <i>color_hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Gets or sets the point connection color. This function behaves identical to [scatter.color()][scatter.color].
+
 
 <h3><a name="scatter.connection_opacity" href="#scatter.connection_opacity">#</a> scatter.<b>connection_opacity</b>(<i>opacity=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Gets or sets the point connection opacity. This function behaves identical to [scatter.opacity()][scatter.color].
 
+
 <h3><a name="scatter.connection_size" href="#scatter.connection_size">#</a> scatter.<b>connection_size</b>(<i>size=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Gets or sets the point connection size. This function behaves identical to [scatter.size()][scatter.color].
+
 
 <h3><a name="scatter.axes" href="#scatter.axes">#</a> scatter.<b>axes</b>(<i>axes=Undefined</i>, <i>grid=Undefined</i>)</h3>
 
@@ -259,6 +268,7 @@ Gets or sets the x and y axes.
 - `grid` is a Boolean value to specify if an axes-based grid should be shown or not.
 
 **Returns:** either the axes properties when all arguments are `Undefined` or `self`.
+
 
 <h3><a name="scatter.lasso" href="#scatter.lasso">#</a> scatter.<b>lasso</b>(<i>color=Undefined</i>, <i>initiator=Undefined</i>, <i>min_delay=Undefined</i>, <i>min_dist=Undefined</i>)</h3>
 
@@ -272,6 +282,7 @@ Gets or sets the lasso for selecting multiple points.
 
 **Returns:** either the lasso properties when all arguments are `Undefined` or `self`.
 
+
 <h3><a name="scatter.reticle" href="#scatter.reticle">#</a> scatter.<b>reticle</b>(<i>show=Undefined</i>, <i>color=Undefined</i>)</h3>
 
 Gets or sets the reticle for the point hover interaction.
@@ -281,6 +292,7 @@ Gets or sets the reticle for the point hover interaction.
 - `color` is either a string referring to a Matplotlib-compatible color or `'auto'`.
 
 **Returns:** either the reticle properties when all arguments are `Undefined` or `self`.
+
 
 <h3><a name="scatter.background" href="#scatter.background">#</a> scatter.<b>background</b>(<i>color=Undefined</i>, <i>image=Undefined</i>)</h3>
 
@@ -300,6 +312,7 @@ scatter.background(color='#000000')
 scatter.background(image='https://picsum.photos/640/640?random')
 ```
 
+
 <h3><a name="scatter.mouse" href="#scatter.mouse">#</a> scatter.<b>mouse</b>(<i>mode=Undefined</i>)</h3>
 
 Gets or sets the mouse mode.
@@ -308,6 +321,7 @@ Gets or sets the mouse mode.
 - `mode` is either `'panZoom'`, `'lasso'`, or `'rotate'`
 
 **Returns:** either the mouse mode when mode is `Undefined` or `self`.
+
 
 <h3><a name="scatter.camera" href="#scatter.camera">#</a> scatter.<b>camera</b>(<i>target=Undefined</i>, <i>distance=Undefined</i>, <i>rotation=Undefined</i>, <i>view=Undefined</i>)</h3>
 
@@ -321,6 +335,7 @@ Gets or sets the camera view.
 
 **Returns:** either the camera properties when all arguments are `Undefined` or `self`.
 
+
 <h3><a name="scatter.options" href="#scatter.options">#</a> scatter.<b>options</b>(<i>options=Undefined</i>)</h3>
 
 Gets or sets other [regl-scatterplot](https://github.com/flekschas/regl-scatterplot) options.
@@ -330,65 +345,92 @@ Gets or sets other [regl-scatterplot](https://github.com/flekschas/regl-scatterp
 
 **Returns:** either the options when options are `Undefined` or `self`.
 
+
+<h3><a name="scatter.pixels" href="#scatter.pixels">#</a> scatter.<b>pixels</b>()</h3>
+
+Gets the pixels of the current scatter plot view. Make sure to first download
+the pixels first by clicking on the button with the camera icon.
+
+**Returns:** a Numpy array with the pixels in RGBA format.
+
+
 ## Properties
 
-| Name                       | Type                                                                                                                       | Default                                        |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| `width`                    | int \| 'auto'                                                                                                              | `'auto'`                                       |
-| `height`                   | int                                                                                                                        | `240`                                          |
-| `selection`                | list[int]                                                                                                                  | `[]`                                           |
-| `color`                    | str \| tuple[float] \| list[float]                                                                                         | `(0, 0, 0, 0.66)`                              |
-| `color_active`             | str \| tuple[float] \| list[float]                                                                                         | `(0, 0.55, 1, 1)`                              |
-| `color_hover`              | str \| tuple[float] \| list[float]                                                                                         | `(0, 0, 0, 1)`                                 |
-| `color_by`                 | str \| list[float \| str]                                                                                                  | `None`                                         |
-| `color_map`                | str \| list[str] \| [Colormap](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Colormap.html) \| dict \| 'auto' | `None`                                         |
-| `color_norm`               | tuple[float] \| [Normalizer](https://matplotlib.org/stable/api/colors_api.html#classes)                                    | `matplotlib.colors.Normalize(0, 1, clip=True)` |
-| `color_order`              | list[str \| int] \| 'reverse'                                                                                              | `None`                                         |
-| `opacity`                  | float                                                                                                                      | `0.66`                                         |
-| `opacity_by`               | str \| list[float]                                                                                                         | `'density'`                                    |
-| `opacity_map`              | triple[float] \| list[float] \| dict \| 'auto'                                                                             | `None`                                         |
-| `opacity_norm`             | tuple[float] \| [Normalizer](https://matplotlib.org/stable/api/colors_api.html#classes)                                    | `matplotlib.colors.Normalize(0, 1, clip=True)` |
-| `opacity_order`            | list[str \| int] \| 'reverse'                                                                                              | `None`                                         |
-| `size`                     | int                                                                                                                        | `3`                                            |
-| `size_by`                  | str \| list[int]                                                                                                           | `None`                                         |
-| `size_map`                 | triple[float] \| list[int] \| dict \| 'auto'                                                                               | `None`                                         |
-| `size_norm`                | tuple[float] \| [Normalizer](https://matplotlib.org/stable/api/colors_api.html#classes)                                    | `matplotlib.colors.Normalize(0, 1, clip=True)` |
-| `size_order`               | list[str \| int] \| 'reverse'                                                                                              | `None`                                         |
-| `connect_by`               | str \| list[int]                                                                                                           | `None`                                         |
-| `connect_order`            | str \| list[int]                                                                                                           | `None`                                         |
-| `connection_color`         | str \| tuple[float] \| list[float]                                                                                         | `(0, 0, 0, 0.1)`                               |
-| `connection_color_active`  | str \| tuple[float] \| list[float]                                                                                         | `(0, 0.55, 1, 1)`                              |
-| `connection_color_hover`   | str \| tuple[float] \| list[float]                                                                                         | `(0, 0, 0, 0.66)`                              |
-| `connection_color_by`      | str \| list[float \| str]                                                                                                  | `None`                                         |
-| `connection_color_map`     | str \| list[str] \| [Colormap](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Colormap.html) \| dict \| 'auto' | `None`                                         |
-| `connection_color_norm`    | tuple[float] \| [Normalizer](https://matplotlib.org/stable/api/colors_api.html#classes)                                    | `matplotlib.colors.Normalize(0, 1, clip=True)` |
-| `connection_color_order`   | list[str \| int] \| 'reverse'                                                                                              | `None`                                         |
-| `connection_opacity`       | float                                                                                                                      | `0.1`                                          |
-| `connection_opacity_by`    | str \| list[float]                                                                                                         | `None`                                         |
-| `connection_opacity_map`   | triple[float] \| list[float] \| dict \| 'auto'                                                                             | `None`                                         |
-| `connection_opacity_norm`  | tuple[float] \| [Normalizer](https://matplotlib.org/stable/api/colors_api.html#classes)                                    | `matplotlib.colors.Normalize(0, 1, clip=True)` |
-| `connection_opacity_order` | list[str \| int] \| 'reverse'                                                                                              | `None`                                         |
-| `connection_size`          | int                                                                                                                        | `2`                                            |
-| `connection_size_by`       | str \| list[int]                                                                                                           | `None`                                         |
-| `connection_size_map`      | triple[float] \| list[int] \| dict \| 'auto'                                                                               | `None`                                         |
-| `connection_size_norm`     | tuple[float] \| [Normalizer](https://matplotlib.org/stable/api/colors_api.html#classes)                                    | `matplotlib.colors.Normalize(0, 1, clip=True)` |
-| `connection_size_order`    | list[str \| int] \| 'reverse'                                                                                              | `None`                                         |
-| `axes`                     | bool                                                                                                                       | `True`                                         |
-| `axes_grid`                | bool                                                                                                                       | `False`                                        |
-| `lasso_color`              | str \| tuple[float] \| list[float]                                                                                         | `(0, 0.666666667, 1, 1)`                       |
-| `lasso_initiator`          | bool                                                                                                                       | `True`                                         |
-| `lasso_min_delay`          | int                                                                                                                        | `10`                                           |
-| `lasso_min_dist`           | int                                                                                                                        | `3`                                            |
-| `reticle`                  | bool                                                                                                                       | `True`                                         |
-| `reticle_color`            | str \| 'auto'                                                                                                              | `'auto'`                                       |
-| `background_color`         | str                                                                                                                        | `'white'`                                      |
-| `background_image`         | str \| array-like or PIL image                                                                                             | `None`                                         |
-| `mouse_mode`               | 'panZoom' \| lasso' \| 'rotate'                                                                                            | `'panZoom'`                                    |
-| `camera_target`            | tuple[float]                                                                                                               | `[0, 0]`                                       |
-| `camera_distance`          | float                                                                                                                      | `1`                                            |
-| `camera_rotation`          | float                                                                                                                      | `0`                                            |
-| `camera_view`              | list[float]                                                                                                                | `None`                                         |
-| `options`                  | dict                                                                                                                       | `{}`                                           |
+The following is a list of all _settable_ properties of a `Scatter` instance.
+You can define those property when creating a `Scatter` instance. For example,
+`Scatter(data=df, x='speed', x_scale='log', ...)`.
+
+| Name                       | Type                                                                                     | Default                                        |
+| -------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `data`                     | pandas.DataFrame                                                                         | `None`                                         |
+| `x`                        | str \| list[float] \| ndarray                                                            | `None`                                         |
+| `x_scale`                  | 'linear' \| 'log' \| 'pow' \| tuple[float] \| [LogNorm][lognorm] \| [PowerNorm][pownorm] | `linear`                                       |
+| `y`                        | str \| list[float] \| ndarray                                                            | `None`                                         |
+| `y_scale`                  | 'linear' \| 'log' \| 'pow' \| tuple[float] \| [LogNorm][lognorm] \| [PowerNorm][pownorm] | `linear`                                       |
+| `selection`                | list[int]                                                                                | `[]`                                           |
+| `width`                    | int \| 'auto'                                                                            | `'auto'`                                       |
+| `height`                   | int                                                                                      | `240`                                          |
+| `color`                    | str \| tuple[float] \| list[float]                                                       | `(0, 0, 0, 0.66)`                              |
+| `color_active`             | str \| tuple[float] \| list[float]                                                       | `(0, 0.55, 1, 1)`                              |
+| `color_hover`              | str \| tuple[float] \| list[float]                                                       | `(0, 0, 0, 1)`                                 |
+| `color_by`                 | str \| list[float \| str]                                                                | `None`                                         |
+| `color_map`                | str \| list[str] \| [Colormap][colormap] \| dict \| 'auto'                               | `None`                                         |
+| `color_norm`               | tuple[float] \| [Normalize][linnorm]                                                     | `matplotlib.colors.Normalize(0, 1, clip=True)` |
+| `color_order`              | list[str \| int] \| 'reverse'                                                            | `None`                                         |
+| `opacity`                  | float                                                                                    | `0.66`                                         |
+| `opacity_by`               | str \| list[float]                                                                       | `'density'`                                    |
+| `opacity_map`              | triple[float] \| list[float] \| dict \| 'auto'                                           | `None`                                         |
+| `opacity_norm`             | tuple[float] \| [Normalize][linnorm]                                                     | `matplotlib.colors.Normalize(0, 1, clip=True)` |
+| `opacity_order`            | list[str \| int] \| 'reverse'                                                            | `None`                                         |
+| `size`                     | int                                                                                      | `3`                                            |
+| `size_by`                  | str \| list[int]                                                                         | `None`                                         |
+| `size_map`                 | triple[float] \| list[int] \| dict \| 'auto'                                             | `None`                                         |
+| `size_norm`                | tuple[float] \| [Normalize][linnorm]                                                     | `matplotlib.colors.Normalize(0, 1, clip=True)` |
+| `size_order`               | list[str \| int] \| 'reverse'                                                            | `None`                                         |
+| `connect_by`               | str \| list[int]                                                                         | `None`                                         |
+| `connect_order`            | str \| list[int]                                                                         | `None`                                         |
+| `connection_color`         | str \| tuple[float] \| list[float]                                                       | `(0, 0, 0, 0.1)`                               |
+| `connection_color_active`  | str \| tuple[float] \| list[float]                                                       | `(0, 0.55, 1, 1)`                              |
+| `connection_color_hover`   | str \| tuple[float] \| list[float]                                                       | `(0, 0, 0, 0.66)`                              |
+| `connection_color_by`      | str \| list[float \| str]                                                                | `None`                                         |
+| `connection_color_map`     | str \| list[str] \| [Colormap][colormap] \| dict \| 'auto'                               | `None`                                         |
+| `connection_color_norm`    | tuple[float] \| [Normalize][linnorm]                                                     | `matplotlib.colors.Normalize(0, 1, clip=True)` |
+| `connection_color_order`   | list[str \| int] \| 'reverse'                                                            | `None`                                         |
+| `connection_opacity`       | float                                                                                    | `0.1`                                          |
+| `connection_opacity_by`    | str \| list[float]                                                                       | `None`                                         |
+| `connection_opacity_map`   | triple[float] \| list[float] \| dict \| 'auto'                                           | `None`                                         |
+| `connection_opacity_norm`  | tuple[float] \| [Normalize][linnorm]                                                     | `matplotlib.colors.Normalize(0, 1, clip=True)` |
+| `connection_opacity_order` | list[str \| int] \| 'reverse'                                                            | `None`                                         |
+| `connection_size`          | int                                                                                      | `2`                                            |
+| `connection_size_by`       | str \| list[int]                                                                         | `None`                                         |
+| `connection_size_map`      | triple[float] \| list[int] \| dict \| 'auto'                                             | `None`                                         |
+| `connection_size_norm`     | tuple[float] \| [Normalize][linnorm]                                                     | `matplotlib.colors.Normalize(0, 1, clip=True)` |
+| `connection_size_order`    | list[str \| int] \| 'reverse'                                                            | `None`                                         |
+| `axes`                     | bool                                                                                     | `True`                                         |
+| `axes_grid`                | bool                                                                                     | `False`                                        |
+| `lasso_color`              | str \| tuple[float] \| list[float]                                                       | `(0, 0.666666667, 1, 1)`                       |
+| `lasso_initiator`          | bool                                                                                     | `True`                                         |
+| `lasso_min_delay`          | int                                                                                      | `10`                                           |
+| `lasso_min_dist`           | int                                                                                      | `3`                                            |
+| `reticle`                  | bool                                                                                     | `True`                                         |
+| `reticle_color`            | str \| 'auto'                                                                            | `'auto'`                                       |
+| `background_color`         | str                                                                                      | `'white'`                                      |
+| `background_image`         | str \| array-like or PIL image                                                           | `None`                                         |
+| `mouse_mode`               | 'panZoom' \| 'lasso' \| 'rotate'                                                         | `'panZoom'`                                    |
+| `camera_target`            | tuple[float]                                                                             | `[0, 0]`                                       |
+| `camera_distance`          | float                                                                                    | `1`                                            |
+| `camera_rotation`          | float                                                                                    | `0`                                            |
+| `camera_view`              | list[float]                                                                              | `None`                                         |
+| `options`                  | dict                                                                                     | `{}`                                           |
+
+[LogNorm]: https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.LogNorm.html
+[PowNorm]: https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.PowerNorm.html
+[LinNorm]: https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Normalize.html
+[Colormap]: https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Colormap.html
+
+## Widget
+
+_So sorry, I haven't had a chance to document the widget properties yet._
 
 
 # Plotting
