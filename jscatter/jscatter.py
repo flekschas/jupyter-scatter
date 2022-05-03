@@ -4,13 +4,13 @@ import matplotlib
 import numpy as np
 import pandas as pd
 
-from matplotlib.colors import to_rgba
+from matplotlib.colors import to_rgba, Normalize, LogNorm, PowerNorm
 from typing import Optional, Union, List
 
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not, minmax_scale, tolist, uri_validator
+from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -24,8 +24,10 @@ VALID_ENCODING_TYPES = [
 # To distinguish between None and an undefined optional argument
 Undefined = object()
 
-default_norm = matplotlib.colors.Normalize(0, 1, clip=True)
 default_background_color = 'white'
+
+def get_default_norm():
+    return Normalize(clip=True)
 
 def check_encoding_dtype(series):
     if not any([check(series.dtype) for check in VALID_ENCODING_TYPES]):
@@ -94,6 +96,8 @@ class Scatter():
         except TypeError:
             self._n = np.asarray(x).size
 
+        self._x_scale = get_default_norm()
+        self._y_scale = get_default_norm()
         self._points = np.zeros((self._n, 6))
         self._widget = None
         self._pixels = None
@@ -111,19 +115,19 @@ class Scatter():
         self._color_hover = (0, 0, 0, 1)
         self._color_by = None
         self._color_map = None
-        self._color_norm = default_norm
+        self._color_norm = get_default_norm()
         self._color_order = None
         self._color_categories = None
         self._opacity = 0.66
         self._opacity_by = 'density'
         self._opacity_map = None
-        self._opacity_norm = default_norm
+        self._opacity_norm = get_default_norm()
         self._opacity_order = None
         self._opacity_categories = None
         self._size = 3
         self._size_by = None
         self._size_map = None
-        self._size_norm = default_norm
+        self._size_norm = get_default_norm()
         self._size_order = None
         self._size_categories = None
         self._connect_by = None
@@ -133,19 +137,19 @@ class Scatter():
         self._connection_color_hover = (0, 0, 0, 0.66)
         self._connection_color_by = None
         self._connection_color_map = None
-        self._connection_color_norm = default_norm
+        self._connection_color_norm = get_default_norm()
         self._connection_color_order = None
         self._connection_color_categories = None
         self._connection_opacity = 0.1
         self._connection_opacity_by = None
         self._connection_opacity_map = None
-        self._connection_opacity_norm = default_norm
+        self._connection_opacity_norm = get_default_norm()
         self._connection_opacity_order = None
         self._connection_opacity_categories = None
         self._connection_size = 2
         self._connection_size_by = None
         self._connection_size_map = None
-        self._connection_size_norm = default_norm
+        self._connection_size_norm = get_default_norm()
         self._connection_size_order = None
         self._connection_size_categories = None
         self._width = 'auto'
@@ -161,8 +165,8 @@ class Scatter():
         self._axes_grid = False
         self._options = {}
 
-        self.x(x)
-        self.y(y)
+        self.x(x, kwargs.get('x_scale', Undefined))
+        self.y(y, kwargs.get('y_scale', Undefined))
         self.width(kwargs.get('width', Undefined))
         self.height(kwargs.get('height', Undefined))
         self.selection(
@@ -260,57 +264,103 @@ class Scatter():
 
         return view.copy()
 
-    def x(self, x = Undefined, **kwargs):
+    def x(self, x = Undefined, scale = Undefined, **kwargs):
+        if scale is not Undefined:
+            if scale is None or scale == 'linear':
+                self._x_scale = get_default_norm()
+            elif scale == 'log':
+                self._x_scale = LogNorm(clip=True)
+            elif scale == 'pow':
+                self._x_scale = PowerNorm(2, clip=True)
+            elif isinstance(scale, LogNorm) or isinstance(scale, PowerNorm):
+                self._x_scale = scale
+                self._x_scale.clip = True
+            else:
+                try:
+                    vmin, vmax = scale
+                    self._x_scale = Normalize(vmin, vmax, clip=True)
+                except:
+                    pass
+
+            if 'skip_widget_update' not in kwargs:
+                self.update_widget('x_scale', to_scale_type(self._x_scale))
+
         if x is not Undefined:
             self._x = x
 
+        if x is not Undefined or scale is not Undefined:
             try:
-                self._points[:, 0] = self._data[x].values
+                self._points[:, 0] = self._data[self._x].values
             except TypeError:
-                self._points[:, 0] = np.asarray(x)
+                self._points[:, 0] = np.asarray(self._x)
 
-            # Normalize x coordinate to [-1,1]
             self._x_min = np.min(self._points[:, 0])
             self._x_max = np.max(self._points[:, 0])
             self._x_domain = [self._x_min, self._x_max]
 
-            self._points[:, 0] = minmax_scale(self._points[:, 0], (-1,1))
+            # Normalize x coordinate to [-1,1]
+            self._points[:, 0] = to_ndc(self._points[:, 0], self._x_scale)
 
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('points', self.get_point_list())
 
+        if any_not([x, scale], Undefined):
             return self
 
         return self._x
 
-    def y(self, y = Undefined, **kwargs):
+    def y(self, y = Undefined, scale = Undefined, **kwargs):
+        if scale is not Undefined:
+            if scale is None or scale == 'linear':
+                self._y_scale = get_default_norm()
+            elif scale == 'log':
+                self._y_scale = LogNorm(clip=True)
+            elif scale == 'pow':
+                self._y_scale = PowerNorm(2, clip=True)
+            elif isinstance(scale, LogNorm) or isinstance(scale, PowerNorm):
+                self._y_scale = scale
+                self._y_scale.clip = True
+            else:
+                try:
+                    vmin, vmax = scale
+                    self._y_scale = Normalize(vmin, vmax, clip=True)
+                except:
+                    pass
+
+            if 'skip_widget_update' not in kwargs:
+                self.update_widget('y_scale', to_scale_type(self._y_scale))
+
         if y is not Undefined:
             self._y = y
 
+        if y is not Undefined or scale is not Undefined:
             try:
-                self._points[:, 1] = self._data[y].values
+                self._points[:, 1] = self._data[self._y].values
             except TypeError:
-                self._points[:, 1] = np.asarray(y)
+                self._points[:, 1] = np.asarray(self._y)
 
-            # Normalize y coordinate to [-1,1]
             self._y_min = np.min(self._points[:, 1])
             self._y_max = np.max(self._points[:, 1])
             self._y_domain = [self._y_min, self._y_max]
 
-            self._points[:, 1] = minmax_scale(self._points[:, 1], (-1,1))
+            # Normalize y coordinate to [-1,1]
+            self._points[:, 1] = to_ndc(self._points[:, 1], self._y_scale)
 
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('points', self.get_point_list())
 
+        if any_not([y, scale], Undefined):
             return self
 
         return self._y
 
-    def xy(self, x, y, **kwargs):
-        self.x(x, skip_widget_update=True)
-        self.y(y, skip_widget_update=True)
+    def xy(self, x = Undefined, y = Undefined, x_scale = Undefined, y_scale = Undefined, **kwargs):
+        self.x(x, x_scale, skip_widget_update=True)
+        self.y(y, y_scale, skip_widget_update=True)
 
         if 'skip_widget_update' not in kwargs:
+            self.update_widget('x_scale', to_scale_type(self._x_scale))
+            self.update_widget('y_scale', to_scale_type(self._y_scale))
             self.update_widget('points', self.get_point_list())
 
     def selection(self, selection = Undefined):
@@ -371,10 +421,10 @@ class Scatter():
             else:
                 try:
                     vmin, vmax = norm
-                    self._color_norm = matplotlib.colors.Normalize(vmin, vmax, clip=True)
+                    self._color_norm = Normalize(vmin, vmax, clip=True)
                 except:
                     if norm is None:
-                        self._color_norm = default_norm
+                        self._color_norm = get_default_norm()
                     pass
 
         data_updated = False
@@ -517,11 +567,11 @@ class Scatter():
             else:
                 try:
                     vmin, vmax = norm
-                    self._opacity_norm = matplotlib.colors.Normalize(vmin, vmax, clip=True)
+                    self._opacity_norm = Normalize(vmin, vmax, clip=True)
                 except:
                     if norm is None:
                         # Reset to default value
-                        self._opacity_norm = default_norm
+                        self._opacity_norm = get_default_norm()
                     pass
 
         data_updated = False
@@ -646,10 +696,10 @@ class Scatter():
             else:
                 try:
                     vmin, vmax = norm
-                    self._size_norm = matplotlib.colors.Normalize(vmin, vmax, clip=True)
+                    self._size_norm = Normalize(vmin, vmax, clip=True)
                 except:
                     if norm is not None:
-                        self._size_norm = default_norm
+                        self._size_norm = get_default_norm()
                     pass
 
         data_updated = False
@@ -831,10 +881,10 @@ class Scatter():
             else:
                 try:
                     vmin, vmax = norm
-                    self._connection_color_norm = matplotlib.colors.Normalize(vmin, vmax, clip=True)
+                    self._connection_color_norm = Normalize(vmin, vmax, clip=True)
                 except:
                     if norm is None:
-                        self._connection_color_norm = default_norm
+                        self._connection_color_norm = get_default_norm()
                     pass
 
         data_updated = True
@@ -979,10 +1029,10 @@ class Scatter():
             else:
                 try:
                     vmin, vmax = norm
-                    self._connection_opacity_norm = matplotlib.colors.Normalize(vmin, vmax, clip=True)
+                    self._connection_opacity_norm = Normalize(vmin, vmax, clip=True)
                 except:
                     if norm is None:
-                        self._connection_opacity_norm = default_norm
+                        self._connection_opacity_norm = get_default_norm()
                     pass
 
         data_updated = False
@@ -1111,10 +1161,10 @@ class Scatter():
             else:
                 try:
                     vmin, vmax = norm
-                    self._connection_size_norm = matplotlib.colors.Normalize(vmin, vmax, clip=True)
+                    self._connection_size_norm = Normalize(vmin, vmax, clip=True)
                 except:
                     if norm is None:
-                        self._connection_size_norm = default_norm
+                        self._connection_size_norm = get_default_norm()
                     pass
 
         data_updated = False
@@ -1542,6 +1592,8 @@ class Scatter():
             return self._widget
 
         self._widget = JupyterScatter(
+            x_scale=to_scale_type(self._x_scale),
+            y_scale=to_scale_type(self._y_scale),
             points=self.get_point_list(),
             selection=self._selection,
             width=self._width,

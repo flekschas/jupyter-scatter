@@ -68,8 +68,25 @@ function downloadBlob(blob, name) {
   document.body.removeChild(link);
 }
 
+function getScale(scaleType) {
+  if (scaleType.startsWith('log')) {
+    return d3Scale.scaleLog().base(scaleType.split('_')[1] || 10);
+  }
+
+  if (scaleType.startsWith('pow')) {
+    return d3Scale.scalePow().exponent(scaleType.split('_')[1] || 2);
+  }
+
+  return d3Scale.scaleLinear();
+}
+
 const MIN_WIDTH = 240;
 
+/**
+ * This dictionary maps between the camelCased Python property name and their
+ * JavaScript counter part. In most cases the name is identical but they can be
+ * different. E.g., size (Python) vs pointSize (JavaScript)
+ */
 const properties = {
   backgroundColor: 'backgroundColor',
   backgroundImage: 'backgroundImage',
@@ -110,7 +127,45 @@ const properties = {
   hovering: 'hovering',
   axes: 'axes',
   axesGrid: 'axesGrid',
+  xScale: 'xScale',
+  yScale: 'yScale',
 };
+
+const reglScatterplotProperty = new Set([
+  'backgroundColor',
+  'backgroundImage',
+  'cameraDistance',
+  'cameraRotation',
+  'cameraTarget',
+  'cameraView',
+  'pointColor',
+  'pointColorActive',
+  'colorBy',
+  'pointColorHover',
+  'height',
+  'lassoColor',
+  'lassoInitiator',
+  'lassoMinDelay',
+  'lassoMinDist',
+  'mouseMode',
+  'opacity',
+  'opacityBy',
+  'points',
+  'showReticle',
+  'reticleColor',
+  'selectedPoints',
+  'pointSize',
+  'sizeBy',
+  'showPointConnections',
+  'pointConnectionColor',
+  'pointConnectionColorActive',
+  'pointConnectionColorHover',
+  'pointConnectionColorBy',
+  'pointConnectionOpacity',
+  'pointConnectionOpacityBy',
+  'pointConnectionSize',
+  'pointConnectionSizeBy',
+]);
 
 // Custom View. Renders the widget model.
 const JupyterScatterView = widgets.DOMWidgetView.extend({
@@ -174,7 +229,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       Object.entries(properties).forEach(function(property) {
         const pyName = property[0];
         const jsName = property[1];
-        if (self[pyName] !== null)
+        if (self[pyName] !== null && reglScatterplotProperty.has(jsName))
           initialOptions[jsName] = self[pyName];
       });
 
@@ -254,7 +309,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   },
 
   createAxes: function createAxes() {
-    this.axesSvg = d3Selection.select(this.container).append('svg');
+    this.axesSvg = d3Selection.select(this.container).select('svg').node()
+      ? d3Selection.select(this.container).select('svg')
+      : d3Selection.select(this.container).append('svg');
     this.axesSvg.style('top', 0);
     this.axesSvg.style('left', 0);
     this.axesSvg.style('width', '100%');
@@ -267,31 +324,71 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
     const { width, height } = this.container.getBoundingClientRect();
 
-    this.xScale = d3Scale.scaleLinear()
+    const currentXScaleRegl = this.scatterplot.get('xScale');
+    const currentYScaleRegl = this.scatterplot.get('yScale');
+
+    // Regl-Scatterplot's gl-space is always linear, hence we have to pass a
+    // linear scale to regl-scatterplot.
+    // In the future we might integrate this into regl-scatterplot directly
+    this.xScaleRegl = d3Scale.scaleLinear()
       .domain(this.model.get('x_domain'))
-      .range([0, width - AXES_PADDING_Y]);
-    this.yScale = d3Scale.scaleLinear()
+      .range([0, width - AXES_PADDING_X]);
+    // This scale is used for the D3 axis
+    this.xScaleAxis = getScale(this.model.get('x_scale'))
+      .domain(this.model.get('x_domain'))
+      .range([0, width - AXES_PADDING_X]);
+    // This scale converts between the linear, log, or power normalized data
+    // scale and the axis
+    this.xScaleRegl2Axis = getScale(this.model.get('x_scale'))
+      .domain(this.model.get('x_domain'))
+      .range(this.model.get('x_domain'));
+
+    this.yScaleRegl = d3Scale.scaleLinear()
       .domain(this.model.get('y_domain'))
-      .range([height - AXES_PADDING_X, 0]);
+      .range([height - AXES_PADDING_Y, 0]);
+    this.yScaleAxis = getScale(this.model.get('y_scale'))
+      .domain(this.model.get('y_domain'))
+      .range([height - AXES_PADDING_Y, 0]);
+    this.yScaleRegl2Axis = getScale(this.model.get('y_scale'))
+      .domain(this.model.get('y_domain'))
+      .range(this.model.get('y_domain'));
 
-    this.xAxis = d3Axis.axisBottom(this.xScale);
-    this.yAxis = d3Axis.axisRight(this.yScale);
+    if (currentXScaleRegl) {
+      this.xScaleAxis.domain(
+        currentXScaleRegl.domain().map(this.xScaleRegl2Axis.invert)
+      );
+    }
 
-    this.xAxisContainer = this.axesSvg
-      .append('g')
+    if (currentYScaleRegl) {
+      this.yScaleAxis.domain(
+        currentYScaleRegl.domain().map(this.yScaleRegl2Axis.invert)
+      );
+    }
+
+    this.xAxis = d3Axis.axisBottom(this.xScaleAxis);
+    this.yAxis = d3Axis.axisRight(this.yScaleAxis);
+
+    this.xAxisContainer = this.axesSvg.select('.x-axis').node()
+      ? this.axesSvg.select('.x-axis')
+      : this.axesSvg.append('g').attr('class', 'x-axis');
+
+    this.xAxisContainer
       .attr('transform', `translate(0, ${height - AXES_PADDING_Y})`)
       .call(this.xAxis);
 
-    this.yAxisContainer = this.axesSvg
-      .append('g')
+    this.yAxisContainer = this.axesSvg.select('.y-axis').node()
+      ? this.axesSvg.select('.y-axis')
+      : this.axesSvg.append('g').attr('class', 'y-axis');
+
+    this.yAxisContainer
       .attr('transform', `translate(${width - AXES_PADDING_X}, 0)`)
       .call(this.yAxis);
 
     this.axesSvg.selectAll('.domain').attr('opacity', 0);
 
     this.scatterplot.set({
-      xScale: this.xScale,
-      yScale: this.yScale,
+      xScale: this.xScaleRegl,
+      yScale: this.yScaleRegl,
       height: this.model.get('height') - AXES_PADDING_Y,
     });
 
@@ -451,14 +548,26 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       );
     }
     if (this.model.get('axes')) {
-      this.xAxisContainer.call(this.xAxis.scale(event.xScale));
-      this.yAxisContainer.call(this.yAxis.scale(event.yScale));
+      this.xScaleAxis.domain(event.xScale.domain().map(this.xScaleRegl2Axis.invert));
+      this.yScaleAxis.domain(event.yScale.domain().map(this.yScaleRegl2Axis.invert));
+
+      this.xAxisContainer.call(this.xAxis.scale(this.xScaleAxis));
+      this.yAxisContainer.call(this.yAxis.scale(this.yScaleAxis));
+
       if (this.model.get('axes_grid')) {
         this.axesSvg.selectAll('line')
           .attr('stroke-opacity', 0.2)
           .attr('stroke-dasharray', 2);
       }
     }
+  },
+
+  xScaleHandler: function xScaleHandler(newXScale) {
+    this.createAxes();
+  },
+
+  yScaleHandler: function yScaleHandler(newXScale) {
+    this.createAxes();
   },
 
   // Event handlers for Python-triggered events

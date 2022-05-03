@@ -66,6 +66,8 @@ class JupyterScatter(widgets.DOMWidget):
     points = Array(default_value=None).tag(sync=True, **ndarray_serialization)
     x_domain = List(minlen=2, maxlen=2).tag(sync=True)
     y_domain = List(minlen=2, maxlen=2).tag(sync=True)
+    x_scale = Unicode(None, allow_none=True).tag(sync=True)
+    y_scale = Unicode(None, allow_none=True).tag(sync=True)
     selection = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
     hovering = Int(None, allow_none=True).tag(sync=True)
 

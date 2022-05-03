@@ -1,3 +1,4 @@
+from matplotlib.colors import LogNorm, PowerNorm
 import ipywidgets as widgets
 from urllib.parse import urlparse
 
@@ -44,7 +45,14 @@ def sorting_to_dict(sorting):
         out[original_idx] = order_idx
     return out
 
-def minmax_scale(X, feature_range=(0,1)):
-    min, max = feature_range
-    X_std = (X - X.min(axis=0)) / (X.max(axis=0) - X.min(axis=0))
-    return X_std * (max - min) + min
+def to_ndc(X, norm):
+    return (norm(X).data * 2) - 1
+
+def to_scale_type(norm):
+    if (isinstance(norm, LogNorm)):
+        return 'log_10'
+
+    if (isinstance(norm, PowerNorm)):
+        return f'pow_{norm.gamma}'
+
+    return 'linear'
