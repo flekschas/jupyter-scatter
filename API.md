@@ -39,7 +39,7 @@ scatter.show()
 
 <h3><a name="scatter.x" href="#scatter.x">#</a> scatter.<b>x</b>(<i>x=Undefined</i>, <i>scale=Undefined</i>, <i>**kwargs</i>)</h3>
 
-Gets or sets the x coordinate.
+Get or set the x coordinate.
 
 **Arguments:**
 
@@ -58,7 +58,7 @@ scatter.x('price') # Triggers and animated transition of the x coordinates
 
 <h3><a name="scatter.y" href="#scatter.y">#</a> scatter.<b>y</b>(<i>y=Undefined</i>, <i>scale=Undefined</i>, <i>**kwargs</i>)</h3>
 
-Gets or sets the y coordinate.
+Get or set the y coordinate.
 
 **Arguments:**
 
@@ -77,7 +77,7 @@ scatter.y('price') # Triggers and animated transition of the y coordinates
 
 <h3><a name="scatter.xy" href="#scatter.xy">#</a> scatter.<b>xy</b>(<i>x=Undefined</i>, <i>y=Undefined</i>, <i>x_scale=Undefined</i>, <i>y_scale=Undefined</i>, <i>**kwargs</i>)</h3>
 
-Gets or sets the x and y coordinate. This is just a convenience function to animate a change in the x and y coordinate at the same time.
+Get or set the x and y coordinate. This is just a convenience function to animate a change in the x and y coordinate at the same time.
 
 **Arguments:**
 
@@ -98,7 +98,7 @@ scatter.xy('size', 'speed') # Mirror plot along the diagonal
 
 <h3><a name="scatter.selection" href="#scatter.selection">#</a> scatter.<b>selection</b>(<i>selection=Undefined</i>)</h3>
 
-Gets or sets the selected points.
+Get or set the selected points.
 
 **Arguments:**
 
@@ -112,14 +112,14 @@ Gets or sets the selected points.
 scatter.selection(cars.query('speed < 50').index)
 ```
 
-<h3><a name="scatter.color" href="#scatter.color">#</a> scatter.<b>color</b>(<i>color=Undefined</i>, <i>color_active=Undefined</i>, <i>color_hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.color" href="#scatter.color">#</a> scatter.<b>color</b>(<i>color=Undefined</i>, <i>color_selected=Undefined</i>, <i>color_hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
-Gets or sets the point color.
+Get or set the point color.
 
 **Arguments:**
 
 - `color` is a valid matplotlib color.
-- `color_active` is a valid matplotlib color.
+- `color_selected` is a valid matplotlib color.
 - `color_hover` is a valid matplotlib color.
 - `by` is either an array-like list of values or a string referencing a column in `data`.
 - `map` is either a string referencing a matplotlib color map, a matplotlib color map object, a list of matplotlib-compatible colors, a dictionary of category-color pairs, or `auto` (to let jscatter choose a default color map).
@@ -154,7 +154,7 @@ scatter.color(by='gpd', map='viridis')
 
 <h3><a name="scatter.opacity" href="#scatter.opacity">#</a> scatter.<b>opacity</b>(<i>opacity=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
-Gets or sets the point opacity.
+Get or set the point opacity.
 
 **Arguments:**
 
@@ -181,7 +181,7 @@ scatter.opacity(by='density')
 
 <h3><a name="scatter.size" href="#scatter.size">#</a> scatter.<b>size</b>(<i>size=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
-Gets or sets the point size.
+Get or set the point size.
 
 **Arguments:**
 
@@ -203,14 +203,14 @@ scatter.size(by='price', map=(1, 0.25, 10))
 
 <h3><a name="scatter.connect" href="#scatter.connect">#</a> scatter.<b>connect</b>(<i>by=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
-Gets or sets the point connection.
+Get or set the point connection.
 
 **Description:** The `by` argument defines which points are part of a line segment. Points with the same value are considered to be part of a line segment. By default, points are connected in the order in which they appear the dataframe. You can customize that ordering via `order`.
 
 **Arguments:**
 
 - `by` is either an array-like list of integers or a string referencing a column in the dataframe.
-- `order` is either a list of integers or a string referencing a column in the dataframe.
+- `order` is either an array-like list of integers or a string referencing a column in the dataframe.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
 
@@ -244,24 +244,24 @@ scatter.connect(by='group', order='order')
 ```
 
 
-<h3><a name="scatter.connection_color" href="#scatter.connection_color">#</a> scatter.<b>connection_color</b>(<i>color=Undefined</i>, <i>color_active=Undefined</i>, <i>color_hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.connection_color" href="#scatter.connection_color">#</a> scatter.<b>connection_color</b>(<i>color=Undefined</i>, <i>color_selected=Undefined</i>, <i>color_hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
-Gets or sets the point connection color. This function behaves identical to [scatter.color()][scatter.color].
+Get or set the point connection color. This function behaves identical to [scatter.color()][scatter.color].
 
 
 <h3><a name="scatter.connection_opacity" href="#scatter.connection_opacity">#</a> scatter.<b>connection_opacity</b>(<i>opacity=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
-Gets or sets the point connection opacity. This function behaves identical to [scatter.opacity()][scatter.color].
+Get or set the point connection opacity. This function behaves identical to [scatter.opacity()][scatter.color].
 
 
 <h3><a name="scatter.connection_size" href="#scatter.connection_size">#</a> scatter.<b>connection_size</b>(<i>size=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
-Gets or sets the point connection size. This function behaves identical to [scatter.size()][scatter.color].
+Get or set the point connection size. This function behaves identical to [scatter.size()][scatter.color].
 
 
 <h3><a name="scatter.axes" href="#scatter.axes">#</a> scatter.<b>axes</b>(<i>axes=Undefined</i>, <i>grid=Undefined</i>)</h3>
 
-Gets or sets the x and y axes.
+Get or set the x and y axes.
 
 **Arguments:**
 - `axes` is a Boolean value to specify if the x and y axes should be shown or not.
@@ -272,7 +272,7 @@ Gets or sets the x and y axes.
 
 <h3><a name="scatter.lasso" href="#scatter.lasso">#</a> scatter.<b>lasso</b>(<i>color=Undefined</i>, <i>initiator=Undefined</i>, <i>min_delay=Undefined</i>, <i>min_dist=Undefined</i>)</h3>
 
-Gets or sets the lasso for selecting multiple points.
+Get or set the lasso for selecting multiple points.
 
 **Arguments:**
 - `color` is a string referring to a Matplotlib-compatible color.
@@ -285,7 +285,7 @@ Gets or sets the lasso for selecting multiple points.
 
 <h3><a name="scatter.reticle" href="#scatter.reticle">#</a> scatter.<b>reticle</b>(<i>show=Undefined</i>, <i>color=Undefined</i>)</h3>
 
-Gets or sets the reticle for the point hover interaction.
+Get or set the reticle for the point hover interaction.
 
 **Arguments:**
 - `show` is a Boolean value to display the reticle when set to `True`.
@@ -296,11 +296,11 @@ Gets or sets the reticle for the point hover interaction.
 
 <h3><a name="scatter.background" href="#scatter.background">#</a> scatter.<b>background</b>(<i>color=Undefined</i>, <i>image=Undefined</i>)</h3>
 
-Gets or sets a background color or image.
+Get or set a background color or image.
 
 **Arguments:**
 - `color` is a string representing a color compatible with Matplotlib
-- `image` is either a URL string pointing to an array-like or PIL image understood by [Matplotlib's imshow() method](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.pyplot.imshow.html)
+- `image` is either a URL string pointing to an image or a PIL image understood by [Matplotlib's imshow() method](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.pyplot.imshow.html)
 
 **Returns:** either the background properties when all arguments are `Undefined` or `self`.
 
@@ -315,7 +315,7 @@ scatter.background(image='https://picsum.photos/640/640?random')
 
 <h3><a name="scatter.mouse" href="#scatter.mouse">#</a> scatter.<b>mouse</b>(<i>mode=Undefined</i>)</h3>
 
-Gets or sets the mouse mode.
+Get or set the mouse mode.
 
 **Arguments:**
 - `mode` is either `'panZoom'`, `'lasso'`, or `'rotate'`
@@ -325,7 +325,7 @@ Gets or sets the mouse mode.
 
 <h3><a name="scatter.camera" href="#scatter.camera">#</a> scatter.<b>camera</b>(<i>target=Undefined</i>, <i>distance=Undefined</i>, <i>rotation=Undefined</i>, <i>view=Undefined</i>)</h3>
 
-Gets or sets the camera view.
+Get or set the camera view.
 
 **Arguments:**
 - `target` is a float tuple defining the view center.
@@ -338,7 +338,7 @@ Gets or sets the camera view.
 
 <h3><a name="scatter.options" href="#scatter.options">#</a> scatter.<b>options</b>(<i>options=Undefined</i>)</h3>
 
-Gets or sets other [regl-scatterplot](https://github.com/flekschas/regl-scatterplot) options.
+Get or set other [regl-scatterplot](https://github.com/flekschas/regl-scatterplot) options.
 
 **Arguments:**
 - `options` is a dictionary of [regl-scatterplot properties](https://github.com/flekschas/regl-scatterplot/#properties).
@@ -371,7 +371,7 @@ You can define those property when creating a `Scatter` instance. For example,
 | `width`                    | int \| 'auto'                                                                            | `'auto'`                                       |
 | `height`                   | int                                                                                      | `240`                                          |
 | `color`                    | str \| tuple[float] \| list[float]                                                       | `(0, 0, 0, 0.66)`                              |
-| `color_active`             | str \| tuple[float] \| list[float]                                                       | `(0, 0.55, 1, 1)`                              |
+| `color_selected`             | str \| tuple[float] \| list[float]                                                       | `(0, 0.55, 1, 1)`                              |
 | `color_hover`              | str \| tuple[float] \| list[float]                                                       | `(0, 0, 0, 1)`                                 |
 | `color_by`                 | str \| list[float \| str]                                                                | `None`                                         |
 | `color_map`                | str \| list[str] \| [Colormap][colormap] \| dict \| 'auto'                               | `None`                                         |
@@ -390,7 +390,7 @@ You can define those property when creating a `Scatter` instance. For example,
 | `connect_by`               | str \| list[int]                                                                         | `None`                                         |
 | `connect_order`            | str \| list[int]                                                                         | `None`                                         |
 | `connection_color`         | str \| tuple[float] \| list[float]                                                       | `(0, 0, 0, 0.1)`                               |
-| `connection_color_active`  | str \| tuple[float] \| list[float]                                                       | `(0, 0.55, 1, 1)`                              |
+| `connection_color_selected`  | str \| tuple[float] \| list[float]                                                       | `(0, 0.55, 1, 1)`                              |
 | `connection_color_hover`   | str \| tuple[float] \| list[float]                                                       | `(0, 0, 0, 0.66)`                              |
 | `connection_color_by`      | str \| list[float \| str]                                                                | `None`                                         |
 | `connection_color_map`     | str \| list[str] \| [Colormap][colormap] \| dict \| 'auto'                               | `None`                                         |
