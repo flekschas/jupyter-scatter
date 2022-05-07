@@ -83,8 +83,8 @@ function getScale(scaleType) {
 const MIN_WIDTH = 240;
 
 /**
- * This dictionary maps between the camelCased Python property name and their
- * JavaScript counter part. In most cases the name is identical but they can be
+ * This dictionary maps between the camelCased Python property names and their
+ * JavaScript counter parts. In most cases the name is identical but they can be
  * different. E.g., size (Python) vs pointSize (JavaScript)
  */
 const properties = {
@@ -95,7 +95,7 @@ const properties = {
   cameraTarget: 'cameraTarget',
   cameraView: 'cameraView',
   color: 'pointColor',
-  colorActive: 'pointColorActive',
+  colorSelected: 'pointColorActive',
   colorBy: 'colorBy',
   colorHover: 'pointColorHover',
   height: 'height',
@@ -115,7 +115,7 @@ const properties = {
   sizeBy: 'sizeBy',
   connect: 'showPointConnections',
   connectionColor: 'pointConnectionColor',
-  connectionColorActive: 'pointConnectionColorActive',
+  connectionColorSelected: 'pointConnectionColorActive',
   connectionColorHover: 'pointConnectionColorHover',
   connectionColorBy: 'pointConnectionColorBy',
   connectionOpacity: 'pointConnectionOpacity',
@@ -639,7 +639,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.withPropertyChangeHandler('pointColor', newValue);
   },
 
-  colorActiveHandler: function colorActiveHandler(newValue) {
+  colorSelectedHandler: function colorSelectedHandler(newValue) {
     this.withPropertyChangeHandler('pointColorActive', newValue);
   },
 
@@ -675,7 +675,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.withPropertyChangeHandler('pointConnectionColor', newValue);
   },
 
-  connectionColorActiveHandler: function connectionColorActiveHandler(newValue) {
+  connectionColorSelectedHandler: function connectionColorSelectedHandler(newValue) {
     this.withPropertyChangeHandler('pointConnectionColorActive', newValue);
   },
 
@@ -720,6 +720,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   },
 
   cameraRotationHandler: function cameraRotationHandler(newValue) {
+
     this.withPropertyChangeHandler('cameraRotation', newValue);
   },
 

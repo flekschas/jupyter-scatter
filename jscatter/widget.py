@@ -72,9 +72,9 @@ class JupyterScatter(widgets.DOMWidget):
     hovering = Int(None, allow_none=True).tag(sync=True)
 
     # View properties
-    camera_target = List().tag(sync=True)
-    camera_distance = Float().tag(sync=True)
-    camera_rotation = Float().tag(sync=True)
+    camera_target = List([0, 0]).tag(sync=True)
+    camera_distance = Float(1).tag(sync=True)
+    camera_rotation = Float(1).tag(sync=True)
     camera_view = List(None, allow_none=True).tag(sync=True)
 
     # Interaction properties
@@ -88,7 +88,7 @@ class JupyterScatter(widgets.DOMWidget):
 
     # Options
     color = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
-    color_active = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
+    color_selected = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
     color_hover = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
     color_by = Enum([None, 'valueA', 'valueB'], allow_none=True, default_value=None).tag(sync=True)
     opacity = Union([Float(), List(Float())], allow_none=True).tag(sync=True)
@@ -98,7 +98,7 @@ class JupyterScatter(widgets.DOMWidget):
     size_by = Enum([None, 'valueA', 'valueB'], allow_none=True, default_value=None).tag(sync=True)
     connect = Bool().tag(sync=True)
     connection_color = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
-    connection_color_active = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
+    connection_color_selected = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
     connection_color_hover = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
     connection_color_by = Enum([None, 'valueA', 'valueB', 'segment'], allow_none=True, default_value=None).tag(sync=True)
     connection_opacity = Union([Float(), List(Float())], allow_none=True).tag(sync=True)
@@ -375,11 +375,11 @@ class JupyterScatter(widgets.DOMWidget):
         return with_left_label('Point color', widget)
 
     @property
-    def color_active_widget(self):
-        widget = widgets.ColorPicker(value=to_hex(self.color_active))
+    def color_selected_widget(self):
+        widget = widgets.ColorPicker(value=to_hex(self.color_selected))
 
         def change_handler(change):
-            self.color_active = change.new
+            self.color_selected = change.new
 
         widget.observe(change_handler, names='value')
 
@@ -543,7 +543,7 @@ class JupyterScatter(widgets.DOMWidget):
             color_by_widget,
             colormap_widget,
             color_widget,
-            self.color_active_widget,
+            self.color_selected_widget,
             self.color_hover_widget,
             self.selection_outline_width_widget,
             self.selection_size_addition_widget,
