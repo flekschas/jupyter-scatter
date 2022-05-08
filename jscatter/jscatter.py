@@ -2097,7 +2097,7 @@ class Scatter():
 
     def lasso(
         self,
-        color: Optional[Union[Color, Undefined]] = UNDEF, = UNDEF,
+        color: Optional[Union[Color, Undefined]] = UNDEF,
         initiator: Optional[Union[bool, Undefined]] = UNDEF,
         min_delay: Optional[Union[int, Undefined]] = UNDEF,
         min_dist: Optional[Union[float, Undefined]]  = UNDEF,
