@@ -1,7 +1,6 @@
-from matplotlib.colors import LogNorm, PowerNorm
+from matplotlib.colors import LogNorm, PowerNorm, Normalize
 import ipywidgets as widgets
 from urllib.parse import urlparse
-
 
 def to_uint8(x):
   return int(max(0, min(x * 255, 255)))
@@ -44,6 +43,9 @@ def sorting_to_dict(sorting):
     for order_idx, original_idx in enumerate(sorting):
         out[original_idx] = order_idx
     return out
+
+def get_default_norm():
+    return Normalize(clip=True)
 
 def to_ndc(X, norm):
     return (norm(X).data * 2) - 1

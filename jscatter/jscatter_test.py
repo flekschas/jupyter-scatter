@@ -2,14 +2,14 @@ import numpy as np
 import pandas as pd
 
 from .jscatter import Scatter, component_idx_to_name
-from .utils import minmax_scale
+from .utils import to_ndc, get_default_norm
 
 def test_component_idx_to_name():
-    assert 'valueA' == component_idx_to_name(2)
-    assert 'valueB' == component_idx_to_name(3)
-    assert None == component_idx_to_name(4)
-    assert None == component_idx_to_name(1)
-    assert None == component_idx_to_name(None)
+    assert component_idx_to_name(2) == 'valueA'
+    assert component_idx_to_name(3) == 'valueB'
+    assert component_idx_to_name(4) is None
+    assert component_idx_to_name(1) is None
+    assert component_idx_to_name(None) is None
 
 def test_scatter_numpy():
     x = np.random.rand(500)
@@ -20,8 +20,8 @@ def test_scatter_numpy():
     widget_data = np.asarray(widget.points)
 
     assert (500, 4) == widget_data.shape
-    assert np.allclose(minmax_scale(x, (-1,1)), widget_data[:,0])
-    assert np.allclose(minmax_scale(y, (-1,1)), widget_data[:,1])
+    assert np.allclose(to_ndc(x, get_default_norm()), widget_data[:,0])
+    assert np.allclose(to_ndc(y, get_default_norm()), widget_data[:,1])
     assert np.sum(widget_data[:,2:]) == 0
 
 def get_df():
@@ -53,8 +53,8 @@ def test_scatter_pandas():
     widget_data = np.asarray(widget.points)
 
     assert (500, 4) == np.asarray(widget.points).shape
-    assert np.allclose(minmax_scale(df['a'].values, (-1,1)), widget_data[:,0])
-    assert np.allclose(minmax_scale(df['b'].values, (-1,1)), widget_data[:,1])
+    assert np.allclose(to_ndc(df['a'].values, get_default_norm()), widget_data[:,0])
+    assert np.allclose(to_ndc(df['b'].values, get_default_norm()), widget_data[:,1])
 
 def test_scatter_point_encoding_updates():
     df = get_df()
