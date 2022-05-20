@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 
 from matplotlib.colors import to_rgba, Normalize, LogNorm, PowerNorm, LinearSegmentedColormap, ListedColormap
-from typing import Optional, Union, List, Tuple, Literal, NewType
+from typing import Optional, Union, List, Tuple
+from enum import Enum
 
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
@@ -16,6 +17,25 @@ from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_de
 Rgb = Tuple[float, float, float]
 Rgba = Tuple[float, float, float, float]
 Color = Union[str, Rgb, Rgba]
+
+class Scales(Enum):
+    LINEAR = 'linear'
+    LOG = 'log'
+    POW = 'pow'
+
+class MouseModes(Enum):
+    PAN_ZOOM = 'panZoom'
+    LASSO = 'lasso'
+    ROTATE = 'rotate'
+
+class Auto(Enum):
+    AUTO = 'auto'
+
+class Reverse(Enum):
+    REVERSE = 'reverse'
+
+class Segment(Enum):
+    SEGMENT = 'segment'
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -315,7 +335,7 @@ class Scatter():
     def x(
         self,
         x: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        scale: Optional[Union[Literal['linear', 'log', 'pow'], Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        scale: Optional[Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -401,7 +421,7 @@ class Scatter():
     def y(
         self,
         y: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        scale: Optional[Union[Literal['linear', 'log', 'pow'], Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        scale: Optional[Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -488,8 +508,8 @@ class Scatter():
         self,
         x: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
         y: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        x_scale: Optional[Union[Literal['linear', 'log', 'pow'], Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
-        y_scale: Optional[Union[Literal['linear', 'log', 'pow'], Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        x_scale: Optional[Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        y_scale: Optional[Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -605,9 +625,9 @@ class Scatter():
         color_selected: Optional[Union[Color, Undefined]] = UNDEF,
         color_hover: Optional[Union[Color, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Literal['auto'], str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
+        map: Optional[Union[Auto, str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
-        order: Optional[Union[Literal['reverse'], List[int], List[str], Undefined]] = UNDEF,
+        order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -831,9 +851,9 @@ class Scatter():
         self,
         opacity: Optional[Union[float, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Literal['auto'], dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
+        map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
-        order: Optional[Union[Literal['reverse'], List[int], List[str], Undefined]] = UNDEF,
+        order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1019,9 +1039,9 @@ class Scatter():
         self,
         size: Optional[Union[float, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Literal['auto'], dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
+        map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
-        order: Optional[Union[Literal['reverse'], List[int], List[str], Undefined]] = UNDEF,
+        order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1295,10 +1315,10 @@ class Scatter():
         color: Optional[Union[Color, Undefined]] = UNDEF,
         color_selected: Optional[Union[Color, Undefined]] = UNDEF,
         color_hover: Optional[Union[Color, Undefined]] = UNDEF,
-        by: Optional[Union[Literal['segment'], str, List[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Literal['auto'], str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
+        by: Optional[Union[Segment, str, List[float], np.ndarray, Undefined]] = UNDEF,
+        map: Optional[Union[Auto, str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
-        order: Optional[Union[Literal['reverse'], List[int], List[str], Undefined]] = UNDEF,
+        order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1530,9 +1550,9 @@ class Scatter():
         self,
         opacity: Optional[Union[float, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Literal['auto'], dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
+        map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
-        order: Optional[Union[Literal['reverse'], List[int], List[str], Undefined]] = UNDEF,
+        order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1724,9 +1744,9 @@ class Scatter():
         self,
         size: Optional[Union[float, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Literal['auto'], dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
+        map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
-        order: Optional[Union[Literal['reverse'], List[int], List[str], Undefined]] = UNDEF,
+        order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -2197,7 +2217,7 @@ class Scatter():
 
     def width(
         self,
-        width: Optional[Union[Literal['auto'], int, Undefined]] = UNDEF
+        width: Optional[Union[Auto, int, Undefined]] = UNDEF
     ):
         """
         Set or get the width of the scatter plot.
@@ -2359,7 +2379,7 @@ class Scatter():
 
     def mouse(
         self,
-        mode: Optional[Union[Literal['panZoom', 'lasso', 'rotate'], Undefined]] = UNDEF
+        mode: Optional[Union[MouseModes, Undefined]] = UNDEF
     ):
         """
         Set or get the mouse mode.
