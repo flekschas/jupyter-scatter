@@ -6,15 +6,15 @@ import numpy as np
 import pandas as pd
 
 from matplotlib.colors import to_rgba, Normalize, LogNorm, PowerNorm, LinearSegmentedColormap, ListedColormap
-from typing import Optional, Union, List, Literal, NewType
+from typing import Optional, Union, List, Tuple, Literal, NewType
 
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
 from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_default_norm
 
-Rgb = tuple[float, float, float]
-Rgba = tuple[float, float, float, float]
+Rgb = Tuple[float, float, float]
+Rgba = Tuple[float, float, float, float]
 Color = Union[str, Rgb, Rgba]
 
 COMPONENT_CONNECT = 4
@@ -314,8 +314,8 @@ class Scatter():
 
     def x(
         self,
-        x: Optional[Union[str, list[float], np.ndarray, Undefined]] = UNDEF,
-        scale: Optional[Union[Literal['linear', 'log', 'pow'], tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        x: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
+        scale: Optional[Union[Literal['linear', 'log', 'pow'], Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -400,8 +400,8 @@ class Scatter():
 
     def y(
         self,
-        y: Optional[Union[str, list[float], np.ndarray, Undefined]] = UNDEF,
-        scale: Optional[Union[Literal['linear', 'log', 'pow'], tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        y: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
+        scale: Optional[Union[Literal['linear', 'log', 'pow'], Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -486,10 +486,10 @@ class Scatter():
 
     def xy(
         self,
-        x: Optional[Union[str, list[float], np.ndarray, Undefined]] = UNDEF,
-        y: Optional[Union[str, list[float], np.ndarray, Undefined]] = UNDEF,
-        x_scale: Optional[Union[Literal['linear', 'log', 'pow'], tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
-        y_scale: Optional[Union[Literal['linear', 'log', 'pow'], tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        x: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
+        y: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
+        x_scale: Optional[Union[Literal['linear', 'log', 'pow'], Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        y_scale: Optional[Union[Literal['linear', 'log', 'pow'], Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -558,7 +558,7 @@ class Scatter():
 
     def selection(
         self,
-        selection: Optional[Union[list[int], np.ndarray, Undefined]] = UNDEF
+        selection: Optional[Union[List[int], np.ndarray, Undefined]] = UNDEF
     ) -> Union[Scatter, np.ndarray]:
         """
         Set or get selected points.
@@ -604,10 +604,10 @@ class Scatter():
         color: Optional[Union[Color, Undefined]] = UNDEF,
         color_selected: Optional[Union[Color, Undefined]] = UNDEF,
         color_hover: Optional[Union[Color, Undefined]] = UNDEF,
-        by: Optional[Union[str, list[float], np.ndarray, Undefined]] = UNDEF,
+        by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
         map: Optional[Union[Literal['auto'], str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
-        norm: Optional[Union[tuple[float, float], Normalize, Undefined]] = UNDEF,
-        order: Optional[Union[Literal['reverse'], list[int], list[str], Undefined]] = UNDEF,
+        norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
+        order: Optional[Union[Literal['reverse'], List[int], List[str], Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -830,10 +830,10 @@ class Scatter():
     def opacity(
         self,
         opacity: Optional[Union[float, Undefined]] = UNDEF,
-        by: Optional[Union[str, list[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Literal['auto'], dict, list[float], tuple[float, float, int], Undefined]] = UNDEF,
-        norm: Optional[Union[tuple[float, float], Normalize, Undefined]] = UNDEF,
-        order: Optional[Union[Literal['reverse'], list[int], list[str], Undefined]] = UNDEF,
+        by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
+        map: Optional[Union[Literal['auto'], dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
+        norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
+        order: Optional[Union[Literal['reverse'], List[int], List[str], Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1018,10 +1018,10 @@ class Scatter():
     def size(
         self,
         size: Optional[Union[float, Undefined]] = UNDEF,
-        by: Optional[Union[str, list[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Literal['auto'], dict, list[float], tuple[float, float, int], Undefined]] = UNDEF,
-        norm: Optional[Union[tuple[float, float], Normalize, Undefined]] = UNDEF,
-        order: Optional[Union[Literal['reverse'], list[int], list[str], Undefined]] = UNDEF,
+        by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
+        map: Optional[Union[Literal['auto'], dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
+        norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
+        order: Optional[Union[Literal['reverse'], List[int], List[str], Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1202,8 +1202,8 @@ class Scatter():
 
     def connect(
         self,
-        by: Optional[Union[str, list[int], np.ndarray[int], Undefined]] = UNDEF,
-        order: Optional[Union[list[int], np.ndarray[int], Undefined]] = UNDEF,
+        by: Optional[Union[str, List[int], np.ndarray[int], Undefined]] = UNDEF,
+        order: Optional[Union[List[int], np.ndarray[int], Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1295,10 +1295,10 @@ class Scatter():
         color: Optional[Union[Color, Undefined]] = UNDEF,
         color_selected: Optional[Union[Color, Undefined]] = UNDEF,
         color_hover: Optional[Union[Color, Undefined]] = UNDEF,
-        by: Optional[Union[Literal['segment'], str, list[float], np.ndarray, Undefined]] = UNDEF,
+        by: Optional[Union[Literal['segment'], str, List[float], np.ndarray, Undefined]] = UNDEF,
         map: Optional[Union[Literal['auto'], str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
-        norm: Optional[Union[tuple[float, float], Normalize, Undefined]] = UNDEF,
-        order: Optional[Union[Literal['reverse'], list[int], list[str], Undefined]] = UNDEF,
+        norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
+        order: Optional[Union[Literal['reverse'], List[int], List[str], Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1529,10 +1529,10 @@ class Scatter():
     def connection_opacity(
         self,
         opacity: Optional[Union[float, Undefined]] = UNDEF,
-        by: Optional[Union[str, list[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Literal['auto'], dict, list[float], tuple[float, float, int], Undefined]] = UNDEF,
-        norm: Optional[Union[tuple[float, float], Normalize, Undefined]] = UNDEF,
-        order: Optional[Union[Literal['reverse'], list[int], list[str], Undefined]] = UNDEF,
+        by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
+        map: Optional[Union[Literal['auto'], dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
+        norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
+        order: Optional[Union[Literal['reverse'], List[int], List[str], Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1723,10 +1723,10 @@ class Scatter():
     def connection_size(
         self,
         size: Optional[Union[float, Undefined]] = UNDEF,
-        by: Optional[Union[str, list[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Literal['auto'], dict, list[float], tuple[float, float, int], Undefined]] = UNDEF,
-        norm: Optional[Union[tuple[float, float], Normalize, Undefined]] = UNDEF,
-        order: Optional[Union[Literal['reverse'], list[int], list[str], Undefined]] = UNDEF,
+        by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
+        map: Optional[Union[Literal['auto'], dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
+        norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
+        order: Optional[Union[Literal['reverse'], List[int], List[str], Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -2005,10 +2005,10 @@ class Scatter():
 
     def camera(
         self,
-        target: Optional[Union[tuple[float, float], Undefined]] = UNDEF,
+        target: Optional[Union[Tuple[float, float], Undefined]] = UNDEF,
         distance: Optional[Union[float, Undefined]] = UNDEF,
         rotation: Optional[Union[float, Undefined]] = UNDEF,
-        view: Optional[Union[list[float], np.ndarray, Undefined]] = UNDEF,
+        view: Optional[Union[List[float], np.ndarray, Undefined]] = UNDEF,
     ):
         """
         Set or get the camera settings.
