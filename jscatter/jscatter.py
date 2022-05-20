@@ -11,7 +11,7 @@ from typing import Optional, Union, List, Literal, NewType
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type
+from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_default_norm
 
 Rgb = tuple[float, float, float]
 Rgba = tuple[float, float, float, float]
@@ -36,9 +36,6 @@ Undefined = type(
 UNDEF = Undefined()
 
 default_background_color = 'white'
-
-def get_default_norm():
-    return Normalize(clip=True)
 
 def check_encoding_dtype(series):
     if not any([check(series.dtype) for check in VALID_ENCODING_TYPES]):
