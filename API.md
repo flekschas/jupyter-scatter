@@ -112,15 +112,15 @@ Get or set the selected points.
 scatter.selection(cars.query('speed < 50').index)
 ```
 
-<h3><a name="scatter.color" href="#scatter.color">#</a> scatter.<b>color</b>(<i>color=Undefined</i>, <i>color_selected=Undefined</i>, <i>color_hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.color" href="#scatter.color">#</a> scatter.<b>color</b>(<i>default=Undefined</i>, <i>selected=Undefined</i>, <i>hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Get or set the point color.
 
 **Arguments:**
 
-- `color` is a valid matplotlib color.
-- `color_selected` is a valid matplotlib color.
-- `color_hover` is a valid matplotlib color.
+- `default` is a valid matplotlib color.
+- `selected` is a valid matplotlib color.
+- `hover` is a valid matplotlib color.
 - `by` is either an array-like list of values or a string referencing a column in `data`.
 - `map` is either a string referencing a matplotlib color map, a matplotlib color map object, a list of matplotlib-compatible colors, a dictionary of category-color pairs, or `auto` (to let jscatter choose a default color map).
 - `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Normalize.html).
@@ -152,14 +152,14 @@ scatter.color(
 scatter.color(by='gpd', map='viridis')
 ```
 
-<h3><a name="scatter.opacity" href="#scatter.opacity">#</a> scatter.<b>opacity</b>(<i>opacity=Undefined</i>, <i>opacity_unselected=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.opacity" href="#scatter.opacity">#</a> scatter.<b>opacity</b>(<i>default=Undefined</i>, <i>unselected=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Get or set the point opacity.
 
 **Arguments:**
 
-- `opacity` is a valid matplotlib color.
-- `opacity_unselected` is the factor by which the opacity of unselected points is scaled. It must be in [0, 1] and is only applied if one or more points are selected.
+- `default` is a valid matplotlib color.
+- `unselected` is the factor by which the opacity of unselected points is scaled. It must be in [0, 1] and is only applied if one or more points are selected.
 - `by` is either an array-like list of values, a string referencing a column in `data`, or `density`
 - `map` is either a triple specifying an `np.linspace(*map)`, a list of opacities, a dictionary of category-opacity pairs, or `auto` (to let jscatter choose a default opacity map).
 - `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Normalize.html).
@@ -180,13 +180,13 @@ scatter.opacity(by='price', map=(1, 0.25, 10))
 scatter.opacity(by='density')
 ```
 
-<h3><a name="scatter.size" href="#scatter.size">#</a> scatter.<b>size</b>(<i>size=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.size" href="#scatter.size">#</a> scatter.<b>size</b>(<i>default=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Get or set the point size.
 
 **Arguments:**
 
-- `size` is a valid matplotlib color.
+- `default` is a valid matplotlib color.
 - `by` is either an array-like list of values or a string referencing a column in `data`.
 - `map` is either a triple specifying an `np.linspace(*map)`, a list of sizes, a dictionary of category-size pairs, or `auto` (to let jscatter choose a default size map).
 - `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Normalize.html).
@@ -245,17 +245,17 @@ scatter.connect(by='group', order='order')
 ```
 
 
-<h3><a name="scatter.connection_color" href="#scatter.connection_color">#</a> scatter.<b>connection_color</b>(<i>color=Undefined</i>, <i>color_selected=Undefined</i>, <i>color_hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.connection_color" href="#scatter.connection_color">#</a> scatter.<b>connection_color</b>(<i>default=Undefined</i>, <i>selected=Undefined</i>, <i>hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Get or set the point connection color. This function behaves identical to [scatter.color()][scatter.color].
 
 
-<h3><a name="scatter.connection_opacity" href="#scatter.connection_opacity">#</a> scatter.<b>connection_opacity</b>(<i>opacity=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.connection_opacity" href="#scatter.connection_opacity">#</a> scatter.<b>connection_opacity</b>(<i>default=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Get or set the point connection opacity. This function behaves identical to [scatter.opacity()][scatter.color].
 
 
-<h3><a name="scatter.connection_size" href="#scatter.connection_size">#</a> scatter.<b>connection_size</b>(<i>size=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.connection_size" href="#scatter.connection_size">#</a> scatter.<b>connection_size</b>(<i>default=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Get or set the point connection size. This function behaves identical to [scatter.size()][scatter.color].
 
@@ -372,13 +372,14 @@ You can define those property when creating a `Scatter` instance. For example,
 | `width`                    | int \| 'auto'                                                                            | `'auto'`                                       |
 | `height`                   | int                                                                                      | `240`                                          |
 | `color`                    | str \| tuple[float] \| list[float]                                                       | `(0, 0, 0, 0.66)`                              |
-| `color_selected`             | str \| tuple[float] \| list[float]                                                       | `(0, 0.55, 1, 1)`                              |
+| `color_selected`           | str \| tuple[float] \| list[float]                                                       | `(0, 0.55, 1, 1)`                              |
 | `color_hover`              | str \| tuple[float] \| list[float]                                                       | `(0, 0, 0, 1)`                                 |
 | `color_by`                 | str \| list[float \| str]                                                                | `None`                                         |
 | `color_map`                | str \| list[str] \| [Colormap][colormap] \| dict \| 'auto'                               | `None`                                         |
 | `color_norm`               | tuple[float] \| [Normalize][linnorm]                                                     | `matplotlib.colors.Normalize(0, 1, clip=True)` |
 | `color_order`              | list[str \| int] \| 'reverse'                                                            | `None`                                         |
 | `opacity`                  | float                                                                                    | `0.66`                                         |
+| `opacity_unselected`       | float                                                                                    | `0.5`                                         |
 | `opacity_by`               | str \| list[float]                                                                       | `'density'`                                    |
 | `opacity_map`              | triple[float] \| list[float] \| dict \| 'auto'                                           | `None`                                         |
 | `opacity_norm`             | tuple[float] \| [Normalize][linnorm]                                                     | `matplotlib.colors.Normalize(0, 1, clip=True)` |
