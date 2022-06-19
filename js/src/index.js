@@ -183,7 +183,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       self[propertyName] = self.model.get(camelToSnake(propertyName));
     });
 
-    this.height = this.model.get('height');
     this.width = !Number.isNaN(+this.model.get('width')) && +this.model.get('width') > 0
       ? +this.model.get('width')
       : 'auto';
@@ -202,7 +201,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.container.style.width = this.width === 'auto'
       ? '100%'
       : this.width + 'px';
-    this.container.style.height = this.height + 'px';
+    this.container.style.height = this.model.get('height') + 'px';
     this.el.appendChild(this.container);
 
     this.canvasWrapper = document.createElement('div');
@@ -456,6 +455,11 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
     const { width, height } = this.container.getBoundingClientRect();
 
+    this.xScaleAxis.range([0, width - AXES_PADDING_X]);
+    this.yScaleAxis.range([height - AXES_PADDING_Y, 0]);
+    this.xAxis.scale(this.xScaleAxis);
+    this.yAxis.scale(this.yScaleAxis);
+
     this.xAxisContainer
       .attr('transform', `translate(0, ${height - AXES_PADDING_Y})`)
       .call(this.xAxis);
@@ -610,7 +614,11 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   },
 
   heightHandler: function heightHandler(newValue) {
-    this.withPropertyChangeHandler('height', newValue);
+    this.container.style.height = newValue + 'px';
+    this.withPropertyChangeHandler(
+      'height',
+      this.model.get('axes') ? newValue - AXES_PADDING_Y : newValue
+    );
     this.resizeHandler();
   },
 

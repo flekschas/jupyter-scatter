@@ -1,3 +1,7 @@
+## v0.4.1
+
+- Fix an issue when dynamically resizing the scatter plot height
+
 ## v0.4.0
 
 - **Breaking change:** Renamed `color_active` and `connection_color_active` to `color_selected` and `connection_color_selected` respectively for clarity.
