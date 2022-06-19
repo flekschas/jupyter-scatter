@@ -187,6 +187,7 @@ class Scatter():
         self._color_order = None
         self._color_categories = None
         self._opacity = 0.66
+        self._opacity_unselected = 0.5
         self._opacity_by = 'density'
         self._opacity_map = None
         self._opacity_norm = get_default_norm()
@@ -251,6 +252,7 @@ class Scatter():
         )
         self.opacity(
             kwargs.get('opacity', UNDEF),
+            kwargs.get('opacity_unselected', UNDEF),
             kwargs.get('opacity_by', UNDEF),
             kwargs.get('opacity_map', UNDEF),
             kwargs.get('opacity_norm', UNDEF),
@@ -621,9 +623,9 @@ class Scatter():
 
     def color(
         self,
-        color: Optional[Union[Color, Undefined]] = UNDEF,
-        color_selected: Optional[Union[Color, Undefined]] = UNDEF,
-        color_hover: Optional[Union[Color, Undefined]] = UNDEF,
+        default: Optional[Union[Color, Undefined]] = UNDEF,
+        selected: Optional[Union[Color, Undefined]] = UNDEF,
+        hover: Optional[Union[Color, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
         map: Optional[Union[Auto, str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
@@ -635,11 +637,11 @@ class Scatter():
 
         Parameters
         ----------
-        color : matplotlib compatible color, optional
+        default : matplotlib compatible color, optional
             The color to be applied uniformly to all points.
-        color_selected : matplotlib compatible color, optional
+        selected : matplotlib compatible color, optional
             The color to be applied uniformly to all selected points.
-        color_hover : matplotlib compatible color, optional
+        hover : matplotlib compatible color, optional
             The color to be applied uniformly to hovered points.
         by : str or array_like, optional
             The parameter is used for data-driven color encoding. It can either
@@ -697,22 +699,22 @@ class Scatter():
          'norm': <matplotlib.colors.Normalize at 0x12fa8b250>,
          'order': None}
         """
-        if color is not UNDEF:
+        if default is not UNDEF:
             try:
-                self._color = to_rgba(color)
+                self._color = to_rgba(default)
             except ValueError:
                 pass
 
-        if color_selected is not UNDEF:
+        if selected is not UNDEF:
             try:
-                self._color_selected = to_rgba(color_selected)
+                self._color_selected = to_rgba(selected)
                 self.update_widget('color_selected', self._color_selected)
             except ValueError:
                 pass
 
-        if color_hover is not UNDEF:
+        if hover is not UNDEF:
             try:
-                self._color_hover = to_rgba(color_hover)
+                self._color_hover = to_rgba(hover)
                 self.update_widget('color_hover', self._color_hover)
             except ValueError:
                 pass
@@ -765,7 +767,7 @@ class Scatter():
 
             self.update_widget('color_by', self.js_color_by)
 
-        elif color is not UNDEF:
+        elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
             self._color_by = None
             self._encodings.delete('color')
@@ -835,13 +837,13 @@ class Scatter():
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('points', self.get_point_list())
 
-        if any_not([color, color_selected, color_hover, by, map, norm, order], UNDEF):
+        if any_not([default, selected, hover, by, map, norm, order], UNDEF):
             return self
 
         return dict(
-            color = self._color,
-            color_selected = self._color_selected,
-            color_hover = self._color_hover,
+            default = self._color,
+            selected = self._color_selected,
+            hover = self._color_hover,
             by = self._color_by,
             map = self._color_map,
             norm = self._color_norm,
@@ -850,7 +852,8 @@ class Scatter():
 
     def opacity(
         self,
-        opacity: Optional[Union[float, Undefined]] = UNDEF,
+        default: Optional[Union[float, Undefined]] = UNDEF,
+        unselected: Optional[Union[float, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
         map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
@@ -862,8 +865,12 @@ class Scatter():
 
         Parameters
         ----------
-        opacity : float, optional
+        default : float, optional
             The opacity to be applied uniformly to all points.
+        unselected : float, optional
+            The factor by which the opacity of unselected points is scaled.
+            It must be in [0, 1] and is only applied if one or more points are
+            selected.
         by : str or array_like, optional
             The parameter is used for data-driven opacity encoding. It can
             either be an array-like list of floats or a string referencing a
@@ -917,10 +924,18 @@ class Scatter():
          'norm': <matplotlib.colors.Normalize at 0x12fa8b4c0>,
          'order': None}
         """
-        if opacity is not UNDEF:
+        if default is not UNDEF:
             try:
-                self._opacity = float(opacity)
+                self._opacity = float(default)
                 assert self._opacity >= 0 and self._opacity <= 1, 'Opacity must be in [0,1]'
+            except ValueError:
+                pass
+
+        if unselected is not UNDEF:
+            try:
+                self._opacity_unselected = float(unselected)
+                assert self._opacity_unselected >= 0 and self._opacity_unselected <= 1, 'Opacity scaling of unselected points must be in [0,1]'
+                self.update_widget('opacity_unselected', self._opacity_unselected)
             except ValueError:
                 pass
 
@@ -976,7 +991,7 @@ class Scatter():
 
             self.update_widget('opacity_by', self.js_opacity_by)
 
-        elif opacity is not UNDEF:
+        elif default is not UNDEF:
             # Presumably the user wants to switch to a static opacity encoding
             self._opacity_by = None
             self._encodings.delete('opacity')
@@ -1026,11 +1041,12 @@ class Scatter():
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('points', self.get_point_list())
 
-        if any_not([opacity, by, map, norm, order], UNDEF):
+        if any_not([default, unselected, by, map, norm, order], UNDEF):
             return self
 
         return dict(
-            opacity = self._opacity,
+            default = self._opacity,
+            unselected = self._opacity_unselected,
             by = self._opacity_by,
             map = self._opacity_map,
             norm = self._opacity_norm,
@@ -1039,7 +1055,7 @@ class Scatter():
 
     def size(
         self,
-        size: Optional[Union[float, Undefined]] = UNDEF,
+        default: Optional[Union[float, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
         map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
@@ -1051,7 +1067,7 @@ class Scatter():
 
         Parameters
         ----------
-        size : float, optional
+        default : float, optional
             The size to be applied uniformly to all points.
         by : str or array_like, optional
             The parameter is used for data-driven size encoding. It can
@@ -1106,9 +1122,9 @@ class Scatter():
          'norm': <matplotlib.colors.Normalize at 0x12fa8b580>,
          'order': None}
         """
-        if size is not UNDEF:
+        if default is not UNDEF:
             try:
-                self._size = int(size)
+                self._size = int(default)
                 assert self._size > 0, 'Size must be a positive integer'
                 self.update_widget('size', self._size_map or self._size)
             except ValueError:
@@ -1162,7 +1178,7 @@ class Scatter():
 
             self.update_widget('size_by', self.js_size_by)
 
-        elif size is not UNDEF:
+        elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
             self._size_by = None
             self._encodings.delete('size')
@@ -1212,11 +1228,11 @@ class Scatter():
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('points', self.get_point_list())
 
-        if any_not([size, by, map, norm, order], UNDEF):
+        if any_not([default, by, map, norm, order], UNDEF):
             return self
 
         return dict(
-            size = self._size,
+            default = self._size,
             by = self._size_by,
             map = self._size_map,
             norm = self._size_norm,
@@ -1315,9 +1331,9 @@ class Scatter():
 
     def connection_color(
         self,
-        color: Optional[Union[Color, Undefined]] = UNDEF,
-        color_selected: Optional[Union[Color, Undefined]] = UNDEF,
-        color_hover: Optional[Union[Color, Undefined]] = UNDEF,
+        default: Optional[Union[Color, Undefined]] = UNDEF,
+        selected: Optional[Union[Color, Undefined]] = UNDEF,
+        hover: Optional[Union[Color, Undefined]] = UNDEF,
         by: Optional[Union[Segment, str, List[float], np.ndarray, Undefined]] = UNDEF,
         map: Optional[Union[Auto, str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
@@ -1329,12 +1345,12 @@ class Scatter():
 
         Parameters
         ----------
-        color : matplotlib compatible color, optional
+        default : matplotlib compatible color, optional
             The color to be applied uniformly to all point-connecting lines.
-        color_selected : matplotlib compatible color, optional
+        selected : matplotlib compatible color, optional
             The color to be applied uniformly to all point-connecting lines that
             contain at least one selected point.
-        color_hover : matplotlib compatible color, optional
+        hover : matplotlib compatible color, optional
             The color to be applied uniformly to point-connecting lines that
             contain hovered points.
         by : str or array_like, optional
@@ -1398,22 +1414,22 @@ class Scatter():
          'norm': <matplotlib.colors.Normalize at 0x12fa8b250>,
          'order': None}
         """
-        if color is not UNDEF:
+        if default is not UNDEF:
             try:
-                self._connection_color = to_rgba(color)
+                self._connection_color = to_rgba(default)
             except ValueError:
                 pass
 
-        if color_selected is not UNDEF:
+        if selected is not UNDEF:
             try:
-                self._connection_color_selected = to_rgba(color_selected)
+                self._connection_color_selected = to_rgba(selected)
                 self.update_widget('connection_color_selected', self._connection_color_selected)
             except ValueError:
                 pass
 
-        if color_hover is not UNDEF:
+        if hover is not UNDEF:
             try:
-                self._connection_color_hover = to_rgba(color_hover)
+                self._connection_color_hover = to_rgba(hover)
                 self.update_widget('connection_color_hover', self._connection_color_hover)
             except ValueError:
                 pass
@@ -1469,7 +1485,7 @@ class Scatter():
 
             self.update_widget('connection_color_by', self.js_connection_color_by)
 
-        elif color is not UNDEF:
+        elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
             self._connection_color_by = None
             self._encodings.delete('connection_color')
@@ -1539,11 +1555,13 @@ class Scatter():
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('points', self.get_point_list())
 
-        if any_not([color, by, map, norm, order], UNDEF):
+        if any_not([default, selected, hover, by, map, norm, order], UNDEF):
             return self
 
         return dict(
-            color = self._connection_color,
+            default = self._connection_color,
+            selected = self._connection_color_selected,
+            hover = self._connection_color_hover,
             by = self._connection_color_by,
             map = self._connection_color_map,
             norm = self._connection_color_norm,
@@ -1552,7 +1570,7 @@ class Scatter():
 
     def connection_opacity(
         self,
-        opacity: Optional[Union[float, Undefined]] = UNDEF,
+        default: Optional[Union[float, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
         map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
@@ -1564,7 +1582,7 @@ class Scatter():
 
         Parameters
         ----------
-        opacity : float, optional
+        default : float, optional
             The opacity to be applied uniformly to all point-connecting lines.
         by : str or array_like, optional
             The parameter is used for data-driven opacity encoding. It can
@@ -1620,9 +1638,9 @@ class Scatter():
          'norm': <matplotlib.colors.Normalize at 0x12fa8b700>,
          'order': None}
         """
-        if opacity is not UNDEF:
+        if default is not UNDEF:
             try:
-                self._connection_opacity = float(opacity)
+                self._connection_opacity = float(default)
                 assert self._connection_opacity >= 0 and self._connection_opacity <= 1, 'Connection opacity must be in [0,1]'
                 self.update_widget('connection_opacity', self._connection_opacity_map or self._connection_opacity)
             except ValueError:
@@ -1676,7 +1694,7 @@ class Scatter():
 
             self.update_widget('connection_opacity_by', self.js_connection_opacity_by)
 
-        elif opacity is not UNDEF:
+        elif default is not UNDEF:
             # Presumably the user wants to switch to a static opacity encoding
             self._connection_opacity_by = None
             self._encodings.delete('connection_opacity')
@@ -1734,11 +1752,11 @@ class Scatter():
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('points', self.get_point_list())
 
-        if any_not([opacity, by, map, norm, order], UNDEF):
+        if any_not([default, by, map, norm, order], UNDEF):
             return self
 
         return dict(
-            opacity = self._connection_opacity,
+            default = self._connection_opacity,
             by = self._connection_opacity_by,
             map = self._connection_opacity_map,
             norm = self._connection_opacity_norm,
@@ -1747,7 +1765,7 @@ class Scatter():
 
     def connection_size(
         self,
-        size: Optional[Union[float, Undefined]] = UNDEF,
+        default: Optional[Union[float, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
         map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
@@ -1759,7 +1777,7 @@ class Scatter():
 
         Parameters
         ----------
-        size : float, optional
+        default : float, optional
             The size to be applied uniformly to all point-connecting lines.
         by : str or array_like, optional
             The parameter is used for data-driven size encoding. It can
@@ -1815,9 +1833,9 @@ class Scatter():
          'norm': <matplotlib.colors.Normalize at 0x12fa8b7c0>,
          'order': None}
         """
-        if size is not UNDEF:
+        if default is not UNDEF:
             try:
-                self._connection_size = int(size)
+                self._connection_size = int(default)
                 assert self._connection_size > 0, 'Connection size must be a positive integer'
             except ValueError:
                 pass
@@ -1870,7 +1888,7 @@ class Scatter():
 
             self.update_widget('connection_size_by', self.js_connection_size_by)
 
-        elif size is not UNDEF:
+        elif default is not UNDEF:
             # Presumably the user wants to switch to a static size encoding
             self._connection_size_by = None
             self._encodings.delete('connection_size')
@@ -1922,11 +1940,11 @@ class Scatter():
         if self._connection_size_categories is not None:
             assert len(self._connection_size_categories) <= len(self._connection_size_map), 'More categories than connection sizes'
 
-        if any_not([size, by, map, norm, order], UNDEF):
+        if any_not([default, by, map, norm, order], UNDEF):
             return self
 
         return dict(
-            size = self._connection_size,
+            default = self._connection_size,
             by = self._connection_size_by,
             map = self._connection_size_map,
             norm = self._connection_size_norm,
@@ -2640,6 +2658,7 @@ class Scatter():
             color_by=self.js_color_by,
             opacity=order_map(self._opacity_map, self._opacity_order) if self._opacity_map else self._opacity,
             opacity_by=self.js_opacity_by,
+            opacity_unselected=self._opacity_unselected,
             size=order_map(self._size_map, self._size_order) if self._size_map else self._size,
             size_by=self.js_size_by,
             connect=bool(self._connect_by),

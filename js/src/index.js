@@ -106,6 +106,7 @@ const properties = {
   mouseMode: 'mouseMode',
   opacity: 'opacity',
   opacityBy: 'opacityBy',
+  opacityUnselected: 'opacityInactiveScale',
   otherOptions: 'otherOptions',
   points: 'points',
   reticle: 'showReticle',
@@ -150,6 +151,7 @@ const reglScatterplotProperty = new Set([
   'mouseMode',
   'opacity',
   'opacityBy',
+  'opacityInactiveScale',
   'points',
   'showReticle',
   'reticleColor',
@@ -661,6 +663,10 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
   opacityHandler: function opacityHandler(newValue) {
     this.withPropertyChangeHandler('opacity', newValue);
+  },
+
+  opacityUnselectedHandler: function opacityUnselectedHandler(newValue) {
+    this.withPropertyChangeHandler('opacityInactiveScale', newValue);
   },
 
   opacityByHandler: function opacityByHandler(newValue) {

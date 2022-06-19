@@ -152,13 +152,14 @@ scatter.color(
 scatter.color(by='gpd', map='viridis')
 ```
 
-<h3><a name="scatter.opacity" href="#scatter.opacity">#</a> scatter.<b>opacity</b>(<i>opacity=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.opacity" href="#scatter.opacity">#</a> scatter.<b>opacity</b>(<i>opacity=Undefined</i>, <i>opacity_unselected=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Get or set the point opacity.
 
 **Arguments:**
 
 - `opacity` is a valid matplotlib color.
+- `opacity_unselected` is the factor by which the opacity of unselected points is scaled. It must be in [0, 1] and is only applied if one or more points are selected.
 - `by` is either an array-like list of values, a string referencing a column in `data`, or `density`
 - `map` is either a triple specifying an `np.linspace(*map)`, a list of opacities, a dictionary of category-opacity pairs, or `auto` (to let jscatter choose a default opacity map).
 - `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Normalize.html).

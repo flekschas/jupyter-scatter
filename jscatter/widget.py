@@ -92,6 +92,7 @@ class JupyterScatter(widgets.DOMWidget):
     color_hover = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
     color_by = Enum([None, 'valueA', 'valueB'], allow_none=True, default_value=None).tag(sync=True)
     opacity = Union([Float(), List(Float())], allow_none=True).tag(sync=True)
+    opacity_unselected = Float().tag(sync=True)
     opacity_by = Enum([None, 'valueA', 'valueB', 'density'], allow_none=True, default_value=None).tag(sync=True)
     size = Union([Union([Int(), Float()]), List(Union([Int(), Float()]))]).tag(sync=True)
     size_active = Int().tag(sync=True)
