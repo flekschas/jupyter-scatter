@@ -1,3 +1,14 @@
+## v0.5.0
+
+- **Breaking changes:**
+  - For `scatter.color()`, rename `color` to `default`, `color_selected` to `selected`, and `color_hover` and `hover`
+  - For `scatter.opacity()`, rename `opacity` to `default`
+  - For `scatter.size()`, rename `size` to `default`
+  - For `scatter.connection_color()`, rename `color` to `default`, `color_selected` to `selected`, and `color_hover` and `hover`
+  - For `scatter.connection_opacity()`, rename `opacity` to `default`
+  - For `scatter.connection_size()`, rename `size` to `default`
+- Add `scatter.opacity(unselected=0.5)`. This property defines the opacity scaling factor of unselected points and must be in `[0, 1]`. This scaling is only applied if one or more points are selected.
+
 ## v0.4.1
 
 - Fix an issue when dynamically resizing the scatter plot height
