@@ -1,6 +1,7 @@
 ## v0.4.1
 
 - Fix an issue when dynamically resizing the scatter plot height
+- Fix an issue when switching from categorical to continuous color/opacity/size encoding
 
 ## v0.4.0
 

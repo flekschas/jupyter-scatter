@@ -753,6 +753,7 @@ class Scatter():
                             self._color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                             self._points[:, component] = categorical_data.cat.codes
                         else:
+                            self._color_categories = None
                             self._points[:, component] = self._color_norm(self._data[by].values)
                     except TypeError:
                         self._points[:, component] = self._color_norm(np.asarray(by))
@@ -964,6 +965,7 @@ class Scatter():
                             self._opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                         else:
                             self._points[:, component] = self._opacity_norm(self._data[by].values)
+                            self._opacity_categories = None
                     except TypeError:
                         self._points[:, component] = self._opacity_norm(np.asarray(by))
 
@@ -1149,6 +1151,7 @@ class Scatter():
                             self._size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                         else:
                             self._points[:, component] = self._size_norm(self._data[by].values)
+                            self._size_categories = None
                     except TypeError:
                         self._points[:, component] = self._size_norm(np.asarray(by))
 
@@ -1454,6 +1457,7 @@ class Scatter():
                             self._connection_color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                             self._points[:, component] = categorical_data.cat.codes
                         else:
+                            self._connection_color_categories = None
                             self._points[:, component] = self._connection_color_norm(self._data[by].values)
                     except TypeError:
                         self._points[:, component] = self._connection_color_norm(np.asarray(by))
@@ -1661,6 +1665,7 @@ class Scatter():
                             self._connection_opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                         else:
                             self._points[:, component] = self._connection_opacity_norm(self._data[by].values)
+                            self._connection_opacity_categories = None
                     except TypeError:
                         self._points[:, component] = self._connection_opacity_norm(np.asarray(by))
 
@@ -1854,6 +1859,7 @@ class Scatter():
                             self._connection_size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                         else:
                             self._points[:, component] = self._connection_size_norm(self._data[by].values)
+                            self._connection_size_categories = None
                     except TypeError:
                         self._points[:, component] = self._connection_size_norm(np.asarray(by))
 
