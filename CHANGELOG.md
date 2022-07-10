@@ -1,3 +1,7 @@
+## v0.5.1
+
+- Fix issues when specifying the color, opacity, or size map via a `dict`
+
 ## v0.5.0
 
 - **Breaking changes:**
