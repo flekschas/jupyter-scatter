@@ -7,35 +7,12 @@ import pandas as pd
 
 from matplotlib.colors import to_rgba, Normalize, LogNorm, PowerNorm, LinearSegmentedColormap, ListedColormap
 from typing import Optional, Union, List, Tuple
-from enum import Enum
 
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
 from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_default_norm
-
-Rgb = Tuple[float, float, float]
-Rgba = Tuple[float, float, float, float]
-Color = Union[str, Rgb, Rgba]
-
-class Scales(Enum):
-    LINEAR = 'linear'
-    LOG = 'log'
-    POW = 'pow'
-
-class MouseModes(Enum):
-    PAN_ZOOM = 'panZoom'
-    LASSO = 'lasso'
-    ROTATE = 'rotate'
-
-class Auto(Enum):
-    AUTO = 'auto'
-
-class Reverse(Enum):
-    REVERSE = 'reverse'
-
-class Segment(Enum):
-    SEGMENT = 'segment'
+from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Undefined
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -46,13 +23,7 @@ VALID_ENCODING_TYPES = [
     pd.api.types.is_string_dtype,
 ]
 
-# To distinguish between None and an undefined (optional) argument, where None
-# is used for unsetting and Undefined is used for skipping.
-Undefined = type(
-    'Undefined',
-    (object,),
-    { '__str__': lambda s: 'Undefined', '__repr__': lambda s: 'Undefined' }
-)
+# An "undefined" value
 UNDEF = Undefined()
 
 default_background_color = 'white'
@@ -800,8 +771,8 @@ class Scatter():
                     self._color_map = [to_rgba(c) for c in plt.get_cmap(map).colors]
                 elif isinstance(map, dict):
                     # Assiming `map` is a dictionary of colors
-                    self._color_map = [to_rgba(c) for c in list(map.values())]
-                    self._color_order = list(map.keys())
+                    self._color_map = [to_rgba(c) for c in map.values()]
+                    self._color_order = [self._color_categories[cat] for cat in map.keys()]
                 else:
                     # Assuming `map` is a list of colors
                     self._color_map = [to_rgba(c) for c in map]
@@ -1011,7 +982,7 @@ class Scatter():
             elif isinstance(map, dict):
                 # Assiming `map` is a dictionary of opacities
                 self._opacity_map = list(map.values())
-                self._opacity_order = list(map.keys())
+                self._opacity_order = [self._opacity_categories[cat] for cat in map.keys()]
             else:
                 self._opacity_map = np.asarray(map)
 
@@ -1198,7 +1169,7 @@ class Scatter():
             elif isinstance(map, dict):
                 # Assiming `map` is a dictionary of sizes
                 self._size_map = list(map.values())
-                self._size_order = list(map.keys())
+                self._size_order = [self._size_categories[cat] for cat in map.keys()]
             else:
                 self._size_map = np.asarray(map)
 
@@ -1518,8 +1489,8 @@ class Scatter():
                     self._connection_color_map = [to_rgba(c) for c in plt.get_cmap(map).colors]
                 elif isinstance(map, dict):
                     # Assiming `map` is a dictionary of colors
-                    self._connection_color_map = [to_rgba(c) for c in list(map.values())]
-                    self._connection_color_order = list(map.keys())
+                    self._connection_color_map = [to_rgba(c) for c in map.values()]
+                    self._connection_color_order = [self._connection_color_categories[cat] for cat in map.keys()]
                 else:
                     # Assuming `map` is a list of colors
                     self._connection_color_map = [to_rgba(c) for c in map]
@@ -1716,7 +1687,9 @@ class Scatter():
             elif isinstance(map, dict):
                 # Assiming `map` is a dictionary of opacities
                 self._connection_opacity_map = list(map.values())
-                self._connection_opacity_order = list(map.keys())
+                self._connection_opacity_order = [
+                    self._connection_opacity_categories[cat] for cat in map.keys()
+                ]
             else:
                 self._connection_opacity_map = np.asarray(map)
 
@@ -1908,7 +1881,7 @@ class Scatter():
             elif isinstance(map, dict):
                 # Assiming `map` is a dictionary of sizes
                 self._connection_size_map = list(map.values())
-                self._connection_size_order = list(map.keys())
+                self._connection_size_order = [self._connection_size_categories[cat] for cat in map.keys()]
             else:
                 self._connection_size_map = np.asarray(map)
 
