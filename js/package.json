@@ -26,13 +26,14 @@
   ],
   "scripts": {
     "clean": "rimraf dist/ && rimraf ../jscatter/labextension/ && rimraf ../jscatter/nbextension",
-    "prepare": "npm run clean && npm run build:prod",
+    "prepare": "npm run clean && npm run lint && npm run build:prod",
     "build": "webpack --mode=development && npm run build:labextension:dev",
     "build:prod": "webpack --mode=production && npm run build:labextension",
     "build:labextension": "jupyter labextension build .",
     "build:labextension:dev": "jupyter labextension build --development True .",
+    "lint": "eslint src embed.js extension.js get-version-info.js index.js labplugin.js",
     "watch": "webpack --watch --mode=development",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run lint"
   },
   "dependencies": {
     "@jupyter-widgets/base": "^1.1.10 || ^2 || ^3 || ^4",

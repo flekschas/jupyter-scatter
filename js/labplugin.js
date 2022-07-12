@@ -1,13 +1,13 @@
 const plugin = require('./index');
 const base = require('@jupyter-widgets/base');
-const name = require('./package.json').name;
+const widgetName = require('./package.json').name;
 
 module.exports = {
-  id: 'jupyter.extensions.' + name,
+  id: 'jupyter.extensions.' + widgetName,
   requires: [base.IJupyterWidgetRegistry],
   activate: function(app, widgets) {
     widgets.registerWidget({
-      name: name,
+      name: widgetName,
       version: plugin.version,
       exports: plugin
     });
