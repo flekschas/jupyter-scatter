@@ -1,4 +1,3 @@
-/* eslint-env browser */
 const widgets = require('@jupyter-widgets/base');
 const reglScatterplot = require('regl-scatterplot/dist/regl-scatterplot.js');
 const pubSub = require('pub-sub-es');
@@ -13,24 +12,30 @@ const createRenderer = reglScatterplot.createRenderer;
 
 const JupyterScatterModel = widgets.DOMWidgetModel.extend(
   {
-    defaults: {
-      ...widgets.DOMWidgetModel.prototype.defaults(),
-      _model_name : 'JupyterScatterModel',
-      _model_module : packageJson.name,
-      _model_module_version : packageJson.version,
-      _view_name : 'JupyterScatterView',
-      _view_module : packageJson.name,
-      _view_module_version : packageJson.version
-    }
+    defaults: Object.assign(
+      {},
+      widgets.DOMWidgetModel.prototype.defaults(),
+      {
+        _model_name : 'JupyterScatterModel',
+        _model_module : packageJson.name,
+        _model_module_version : packageJson.version,
+        _view_name : 'JupyterScatterView',
+        _view_module : packageJson.name,
+        _view_module_version : packageJson.version,
+      }
+    )
   },
   {
-    serializers: {
-      ...widgets.DOMWidgetModel.serializers,
-      points: new codecs.Numpy2D('float32'),
-      selection: new codecs.Numpy1D('uint32'),
-      view_data: new codecs.Numpy1D('uint8'),
-    }
-  },
+    serializers: Object.assign(
+      {},
+      widgets.DOMWidgetModel.serializers,
+      {
+        points: new codecs.Numpy2D('float32'),
+        selection: new codecs.Numpy1D('uint32'),
+        view_data: new codecs.Numpy1D('uint8'),
+      }
+    )
+  }
 );
 
 const AXES_LABEL_SIZE = 16;
@@ -43,14 +48,6 @@ function camelToSnake(string) {
   return string.replace(/[\w]([A-Z])/g, function(m) {
     return m[0] + "_" + m[1];
   }).toLowerCase();
-}
-
-function flipObj(obj) {
-  return Object.entries(obj).reduce((ret, entry) => {
-    const [ key, value ] = entry;
-    ret[ value ] = key;
-    return ret;
-  }, {});
 }
 
 function downloadBlob(blob, name) {
@@ -82,8 +79,6 @@ function getScale(scaleType) {
 
   return d3Scale.scaleLinear();
 }
-
-const MIN_WIDTH = 240;
 
 /**
  * This dictionary maps between the camelCased Python property names and their
@@ -612,11 +607,11 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     }
   },
 
-  xScaleHandler: function xScaleHandler(newXScale) {
+  xScaleHandler: function xScaleHandler() {
     this.createAxes();
   },
 
-  yScaleHandler: function yScaleHandler(newXScale) {
+  yScaleHandler: function yScaleHandler() {
     this.createAxes();
   },
 
