@@ -1,3 +1,7 @@
+## v0.6.1
+
+- Remove accidentally added `console.log`
+
 ## v0.6.0
 
 - Add support for axes labels via `scatter.axes(labels=True)` or `scatter.axes(labels=['x-axis', 'y-axis'])` ([#29](https://github.com/flekschas/jupyter-scatter/issues/29))

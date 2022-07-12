@@ -337,8 +337,6 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     const xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
     const yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
 
-    console.log('createAxes(): labels', labels, xPadding, width, width - xPadding);
-
     // Regl-Scatterplot's gl-space is always linear, hence we have to pass a
     // linear scale to regl-scatterplot.
     // In the future we might integrate this into regl-scatterplot directly
