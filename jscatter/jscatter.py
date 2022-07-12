@@ -203,6 +203,7 @@ class Scatter():
         self._mouse_mode = 'panZoom'
         self._axes = True
         self._axes_grid = False
+        self._axes_labels = False
         self._options = {}
 
         self.x(x, kwargs.get('x_scale', UNDEF))
@@ -286,6 +287,7 @@ class Scatter():
         self.axes(
             kwargs.get('axes', UNDEF),
             kwargs.get('axes_grid', UNDEF),
+            kwargs.get('axes_labels', UNDEF),
         )
         self.options(kwargs.get('options', UNDEF))
 
@@ -2415,7 +2417,8 @@ class Scatter():
     def axes(
         self,
         axes: Optional[Union[bool, Undefined]] = UNDEF,
-        grid: Optional[Union[bool, Undefined]] = UNDEF
+        grid: Optional[Union[bool, Undefined]] = UNDEF,
+        labels: Optional[Union[bool, list, dict, Undefined]] = UNDEF,
     ):
         """
         Set or get the axes settings.
@@ -2426,6 +2429,10 @@ class Scatter():
             When set to `True`, an x and y axis will be shown.
         grid : bool, optional
             When set to `True`, the x and y tick marks are extended into a grid.
+        labels : bool or list of str or dict of str, optional
+            When set to `True`, the x and y axes labels are the x and y column
+            names. Alternatively pass a list of strings or a dictionary with two
+            keys (x and y).
 
         Returns
         -------
@@ -2441,8 +2448,11 @@ class Scatter():
         >>> scatter.axes(grid=True)
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.axes(labels=['x', 'y'])
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.axes()
-        {'axes': True, 'grid': True}
+        {'axes': True, 'grid': True, 'labels': ['x', 'y']}
         """
         if axes is not UNDEF:
             try:
@@ -2458,12 +2468,33 @@ class Scatter():
             except:
                 pass
 
-        if any_not([axes, grid], UNDEF):
+        if labels is not UNDEF:
+            if labels == False:
+                self._axes_labels = labels
+            elif labels == True:
+                if self._data is None:
+                    self._axes_labels = ['x', 'y']
+                else:
+                    self._axes_labels = [self._x, self._y]
+            elif isinstance(labels, dict):
+                self._axes_labels = [
+                    labels.get('x', 'x'), labels.get('y', 'y')
+                ]
+            else:
+                self._axes_labels = labels
+
+            try:
+                self.update_widget('axes_labels', self._axes_labels)
+            except:
+                pass
+
+        if any_not([axes, grid, labels], UNDEF):
             return self
 
         return dict(
             axes = self._axes,
             grid = self._axes_grid,
+            labels = self._axes_labels,
         )
 
         return self._mouse_mode
@@ -2654,6 +2685,7 @@ class Scatter():
             y_domain=self._y_domain,
             axes=self._axes,
             axes_grid=self._axes_grid,
+            axes_labels=self._axes_labels,
             axes_color=self.get_axes_color(),
             other_options=self._options
         )
