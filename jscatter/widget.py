@@ -85,6 +85,7 @@ class JupyterScatter(widgets.DOMWidget):
     axes = Bool().tag(sync=True)
     axes_grid = Bool().tag(sync=True)
     axes_color = List(default_value=[0, 0, 0, 1], minlen=4, maxlen=4).tag(sync=True)
+    axes_labels = Union([Bool(), List(minlen=1, maxlen=2)]).tag(sync=True)
 
     # Options
     color = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)

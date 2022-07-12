@@ -33,8 +33,11 @@ const JupyterScatterModel = widgets.DOMWidgetModel.extend(
   },
 );
 
+const AXES_LABEL_SIZE = 16;
 const AXES_PADDING_X = 40;
+const AXES_PADDING_X_WITH_LABEL = AXES_PADDING_X + AXES_LABEL_SIZE;
 const AXES_PADDING_Y = 20;
+const AXES_PADDING_Y_WITH_LABEL = AXES_PADDING_Y + AXES_LABEL_SIZE;
 
 function camelToSnake(string) {
   return string.replace(/[\w]([A-Z])/g, function(m) {
@@ -128,6 +131,7 @@ const properties = {
   hovering: 'hovering',
   axes: 'axes',
   axesGrid: 'axesGrid',
+  axesLabels: 'axesLabels',
   xScale: 'xScale',
   yScale: 'yScale',
 };
@@ -328,16 +332,23 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     const currentXScaleRegl = this.scatterplot.get('xScale');
     const currentYScaleRegl = this.scatterplot.get('yScale');
 
+    const labels = this.model.get('axes_labels');
+
+    const xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
+    const yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+
+    console.log('createAxes(): labels', labels, xPadding, width, width - xPadding);
+
     // Regl-Scatterplot's gl-space is always linear, hence we have to pass a
     // linear scale to regl-scatterplot.
     // In the future we might integrate this into regl-scatterplot directly
     this.xScaleRegl = d3Scale.scaleLinear()
       .domain(this.model.get('x_domain'))
-      .range([0, width - AXES_PADDING_X]);
+      .range([0, width - xPadding]);
     // This scale is used for the D3 axis
     this.xScaleAxis = getScale(this.model.get('x_scale'))
       .domain(this.model.get('x_domain'))
-      .range([0, width - AXES_PADDING_X]);
+      .range([0, width - xPadding]);
     // This scale converts between the linear, log, or power normalized data
     // scale and the axis
     this.xScaleRegl2Axis = getScale(this.model.get('x_scale'))
@@ -346,10 +357,10 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
     this.yScaleRegl = d3Scale.scaleLinear()
       .domain(this.model.get('y_domain'))
-      .range([height - AXES_PADDING_Y, 0]);
+      .range([height - yPadding, 0]);
     this.yScaleAxis = getScale(this.model.get('y_scale'))
       .domain(this.model.get('y_domain'))
-      .range([height - AXES_PADDING_Y, 0]);
+      .range([height - yPadding, 0]);
     this.yScaleRegl2Axis = getScale(this.model.get('y_scale'))
       .domain(this.model.get('y_domain'))
       .range(this.model.get('y_domain'));
@@ -374,7 +385,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       : this.axesSvg.append('g').attr('class', 'x-axis');
 
     this.xAxisContainer
-      .attr('transform', `translate(0, ${height - AXES_PADDING_Y})`)
+      .attr('transform', `translate(0, ${height - yPadding})`)
       .call(this.xAxis);
 
     this.yAxisContainer = this.axesSvg.select('.y-axis').node()
@@ -382,19 +393,47 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       : this.axesSvg.append('g').attr('class', 'y-axis');
 
     this.yAxisContainer
-      .attr('transform', `translate(${width - AXES_PADDING_X}, 0)`)
+      .attr('transform', `translate(${width - xPadding}, 0)`)
       .call(this.yAxis);
 
     this.axesSvg.selectAll('.domain').attr('opacity', 0);
 
+    if (labels) {
+      this.xAxisLabel = this.axesSvg.select('.x-axis-label').node()
+        ? this.axesSvg.select('.x-axis-label')
+        : this.axesSvg.append('text').attr('class', 'x-axis-label');
+
+      this.xAxisLabel
+        .text(labels[0])
+        .attr('text-anchor', 'middle')
+        .attr('font-size', '12px')
+        .attr('font-weight', 'bold')
+        .attr('x', (width - xPadding) / 2)
+        .attr('y', height);
+
+      this.yAxisLabel = this.axesSvg.select('.y-axis-label').node()
+        ? this.axesSvg.select('.y-axis-label')
+        : this.axesSvg.append('text').attr('class', 'y-axis-label');
+
+      this.yAxisLabel
+        .text(labels[1])
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'hanging')
+        .attr('x', (height - yPadding) / 2)
+        .attr('y', -width)
+        .attr('font-size', '12px')
+        .attr('font-weight', 'bold')
+        .attr('transform', `rotate(90)`);
+    }
+
     this.scatterplot.set({
       xScale: this.xScaleRegl,
       yScale: this.yScaleRegl,
-      height: this.model.get('height') - AXES_PADDING_Y,
+      height: this.model.get('height') - yPadding,
     });
 
-    this.canvasWrapper.style.right = `${AXES_PADDING_X}px`;
-    this.canvasWrapper.style.bottom = `${AXES_PADDING_Y}px`;
+    this.canvasWrapper.style.right = `${xPadding}px`;
+    this.canvasWrapper.style.bottom = `${yPadding}px`;
 
     if (this.model.get('axes_grid')) this.createAxesGrid();
   },
@@ -406,6 +445,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.yAxis = undefined;
     this.xAxisContainer = undefined;
     this.yAxisContainer = undefined;
+    this.xAxisContainer = undefined;
+    this.xAxisLabel = undefined;
+    this.yAxisLabel = undefined;
 
     this.canvasWrapper.style.top = '0';
     this.canvasWrapper.style.left = '0';
@@ -457,22 +499,26 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
     const { width, height } = this.container.getBoundingClientRect();
 
-    this.xScaleAxis.range([0, width - AXES_PADDING_X]);
-    this.yScaleAxis.range([height - AXES_PADDING_Y, 0]);
+    const labels = this.model.get('axes_labels');
+    const xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
+    const yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+
+    this.xScaleAxis.range([0, width - xPadding]);
+    this.yScaleAxis.range([height - yPadding, 0]);
     this.xAxis.scale(this.xScaleAxis);
     this.yAxis.scale(this.yScaleAxis);
 
     this.xAxisContainer
-      .attr('transform', `translate(0, ${height - AXES_PADDING_Y})`)
+      .attr('transform', `translate(0, ${height - yPadding})`)
       .call(this.xAxis);
     this.yAxisContainer
-      .attr('transform', `translate(${width - AXES_PADDING_X}, 0)`)
+      .attr('transform', `translate(${width - xPadding}, 0)`)
       .call(this.yAxis);
 
     // Render grid
     if (this.model.get('axes_grid')) {
-      this.xAxis.tickSizeInner(-(height - AXES_PADDING_Y));
-      this.yAxis.tickSizeInner(-(width - AXES_PADDING_X));
+      this.xAxis.tickSizeInner(-(height - yPadding));
+      this.yAxis.tickSizeInner(-(width - xPadding));
     }
   },
 
@@ -758,6 +804,11 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   axesGridHandler: function axesGridHandler(newValue) {
     if (newValue) this.createAxesGrid();
     else this.removeAxesGrid();
+  },
+
+  axesLabelsHandler: function axesLabelsHandler(newValue) {
+    if (!newValue) this.removeAxes();
+    this.createAxes();
   },
 
   otherOptionsHandler: function otherOptionsHandler(newOptions) {

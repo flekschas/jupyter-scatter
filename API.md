@@ -260,13 +260,14 @@ Get or set the point connection opacity. This function behaves identical to [sca
 Get or set the point connection size. This function behaves identical to [scatter.size()][scatter.color].
 
 
-<h3><a name="scatter.axes" href="#scatter.axes">#</a> scatter.<b>axes</b>(<i>axes=Undefined</i>, <i>grid=Undefined</i>)</h3>
+<h3><a name="scatter.axes" href="#scatter.axes">#</a> scatter.<b>axes</b>(<i>axes=Undefined</i>, <i>grid=Undefined</i>, <i>labels=Undefined</i>)</h3>
 
 Get or set the x and y axes.
 
 **Arguments:**
 - `axes` is a Boolean value to specify if the x and y axes should be shown or not.
 - `grid` is a Boolean value to specify if an axes-based grid should be shown or not.
+- `labels` is a Boolean value, a list of strings, or a dictionary with two keys (x and y) that specify the axes labels. When set to `True` the labels are the x and y column name of `data`.
 
 **Returns:** either the axes properties when all arguments are `Undefined` or `self`.
 

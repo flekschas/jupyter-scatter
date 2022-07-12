@@ -1,3 +1,7 @@
+## v0.6.0
+
+- Add support for axes labels via `scatter.axes(labels=True)` or `scatter.axes(labels=['x-axis', 'y-axis'])` ([#29](https://github.com/flekschas/jupyter-scatter/issues/29))
+
 ## v0.5.1
 
 - Fix issues when specifying the color, opacity, or size map via a `dict`
