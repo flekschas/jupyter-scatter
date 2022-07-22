@@ -10,24 +10,24 @@ def test_encodings():
     enc.set('color', 'test')
     assert len(enc.data) == 1
     assert len(enc.visual) == 1
-    assert enc.data[enc.visual['color']].component == 2
+    assert enc.data[enc.visual['color'].data].component == 2
 
     enc.set('opacity', 'test')
     # The data component should remain at one since we only encode
     # the same data twice visually
     assert len(enc.data) == 1
     assert len(enc.visual) == 2
-    assert enc.data[enc.visual['opacity']].component == 2
+    assert enc.data[enc.visual['opacity'].data].component == 2
 
     enc.set('size', 'test2')
     assert len(enc.data) == 2
     assert len(enc.visual) == 3
-    assert enc.data[enc.visual['size']].component == 3
+    assert enc.data[enc.visual['size'].data].component == 3
 
     enc.set('opacity', 'test2')
     assert len(enc.data) == 2
     assert len(enc.visual) == 3
-    assert enc.data[enc.visual['opacity']].component == 3
+    assert enc.data[enc.visual['opacity'].data].component == 3
 
     try:
         enc.set('opacity', 'test3')
@@ -47,8 +47,8 @@ def test_encodings():
     # Nothing should have changed
     assert len(enc.data) == 2
     assert len(enc.visual) == 3
-    assert enc.visual['opacity'] == 'test2'
-    assert enc.data[enc.visual['opacity']].component == 3
+    assert enc.visual['opacity'].data == 'test2'
+    assert enc.data[enc.visual['opacity'].data].component == 3
 
     color_component = enc.get('color').component
     assert color_component == 2
@@ -57,10 +57,10 @@ def test_encodings():
     enc.set('opacity', 'test3')
     assert len(enc.data) == 2
     assert len(enc.visual) == 2
-    assert enc.visual['opacity'] == 'test3'
-    assert enc.data[enc.visual['opacity']].component == color_component
+    assert enc.visual['opacity'].data == 'test3'
+    assert enc.data[enc.visual['opacity'].data].component == color_component
 
     enc.set('opacity', 'test4')
     assert len(enc.data) == 2
     assert len(enc.visual) == 2
-    assert enc.visual['opacity'] == 'test4'
+    assert enc.visual['opacity'].data == 'test4'
