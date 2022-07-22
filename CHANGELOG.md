@@ -1,3 +1,7 @@
+## v0.7.0
+
+- Add support for legends via `scatter.legend(True, position='top-right')` ([#30](https://github.com/flekschas/jupyter-scatter/issues/30))
+
 ## v0.6.1
 
 - Remove accidentally added `console.log`

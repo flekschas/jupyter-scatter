@@ -1,4 +1,16 @@
+import numpy as np
+import pandas as pd
 from functools import reduce
+from math import floor
+
+def create_legend(values, encoding, norm, categories, linspace_num=5):
+    if categories:
+        assert len(categories) == len(encoding), 'The categories and encoding need to be of the same size'
+        cat_by_idx = { catIdx: cat for cat, catIdx in categories.items() }
+        return [(cat_by_idx[i], encoding[i]) for i in range(len(cat_by_idx))]
+
+    S = np.linspace(0, 1, linspace_num)
+    return [(norm.inverse(s), encoding[floor((len(encoding) - 1) * s)]) for s in S]
 
 
 class Component():
@@ -72,6 +84,13 @@ class Components():
                 break
 
 
+class VisualEncoding():
+    def __init__(self, channel, data, legend=None):
+        self.channel = channel
+        self.data = data
+        self.legend = legend
+
+
 class Encodings():
     def __init__(self, total_components = 4, reserved_components = 2):
         self.data = {}
@@ -90,15 +109,29 @@ class Encodings():
             # The second value
             self.data[data_enc] = self.components.add(data_enc)
 
-        self.visual[visual_enc] = data_enc
+        self.visual[visual_enc] = VisualEncoding(visual_enc, data_enc)
 
     def get(self, visual_enc):
         if visual_enc in self.visual:
-            return self.data[self.visual[visual_enc]]
+            return self.data[self.visual[visual_enc].data]
+
+    def get_legend(self, visual_enc):
+        if visual_enc in self.visual:
+            return self.visual[visual_enc].legend
+
+    def set_legend(self, visual_enc, values, encoding, norm, categories, linspace_num=5):
+        if visual_enc in self.visual:
+            self.visual[visual_enc].legend = create_legend(
+                values,
+                encoding,
+                norm,
+                categories,
+                linspace_num
+            )
 
     def delete(self, visual_enc):
         if visual_enc in self.visual:
-            data_enc = self.visual[visual_enc]
+            data_enc = self.visual[visual_enc].data
 
             del self.visual[visual_enc]
 
@@ -111,5 +144,5 @@ class Encodings():
             return False
 
         return sum(
-            [v == self.visual[visual_enc] for v in self.visual.values()]
+            [v.data == self.visual[visual_enc].data for v in self.visual.values()]
         ) == 1

@@ -87,6 +87,27 @@ class JupyterScatter(widgets.DOMWidget):
     axes_color = List(default_value=[0, 0, 0, 1], minlen=4, maxlen=4).tag(sync=True)
     axes_labels = Union([Bool(), List(minlen=1, maxlen=2)]).tag(sync=True)
 
+    # Legend
+    legend = Bool().tag(sync=True)
+    legend_position = Enum(
+        [
+            'top',
+            'top-right',
+            'top-left',
+            'bottom',
+            'bottom-right',
+            'bottom-left',
+            'left',
+            'right',
+            'center',
+        ],
+        default_value='top-left'
+    ).tag(sync=True)
+    legend_color = List(
+        default_value=[0, 0, 0, 1], minlen=4, maxlen=4
+    ).tag(sync=True)
+    legend_encoding = Dict(dict()).tag(sync=True)
+
     # Options
     color = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
     color_selected = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)

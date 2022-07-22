@@ -11,8 +11,8 @@ from typing import Optional, Union, List, Tuple
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_default_norm
-from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Undefined
+from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, create_default_norm
+from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Position, Undefined
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -31,6 +31,9 @@ default_background_color = 'white'
 def check_encoding_dtype(series):
     if not any([check(series.dtype) for check in VALID_ENCODING_TYPES]):
         raise ValueError(f'{series.name} is of an unsupported data type: {series.dtype}. Must be one of float*, int*, category, or string.')
+
+def is_categorical_data(data):
+    return pd.api.types.is_categorical_dtype(data) or pd.api.types.is_string_dtype(data)
 
 def get_categorical_data(data):
     categorical_data = None
@@ -62,22 +65,22 @@ def order_map(map, order):
 
     return ordered_map[::(1 + (-2 * (order == 'reverse')))]
 
-def order_limit_color_map(map, order, categories):
-    final_color_map = order_map(map, order)
+def order_limit_map(map, order, categories):
+    final_map = order_map(map, order)
 
-    # tl/dr: Regl-scatterplot uses linear and continuous colormaps the
+    # tl/dr: Regl-scatterplot uses linear and continuous *maps the
     # same way. It create a texture and based on the point value
     # accesses a color. The point values are first normalized to [0, 1]
     # given the value range and then mapped to the range of colors.
     # E.g., if you have data values in [0, 10] and 5 colors,
     # 6.7 maps to the color with index floor(5 * 6.7/10) = 3. The same
     # principle is applied to categorical data! This means we need to
-    # ensure that the number of colors is the same as the number of
-    # categories otherwise weird mapping glitches can appear.
+    # ensure that the number of map values is the same as the number of
+    # categories otherwise weird mapping glitches can happe .
     if categories is not None:
-        return final_color_map[:len(categories)]
+        return final_map[:len(categories)]
 
-    return final_color_map
+    return final_map
 
 
 class Scatter():
@@ -135,8 +138,8 @@ class Scatter():
         except TypeError:
             self._n = np.asarray(x).size
 
-        self._x_scale = get_default_norm()
-        self._y_scale = get_default_norm()
+        self._x_scale = create_default_norm()
+        self._y_scale = create_default_norm()
         self._points = np.zeros((self._n, 6))
         self._widget = None
         self._pixels = None
@@ -154,20 +157,20 @@ class Scatter():
         self._color_hover = (0, 0, 0, 1)
         self._color_by = None
         self._color_map = None
-        self._color_norm = get_default_norm()
+        self._color_norm = create_default_norm()
         self._color_order = None
         self._color_categories = None
         self._opacity = 0.66
         self._opacity_unselected = 0.5
         self._opacity_by = 'density'
         self._opacity_map = None
-        self._opacity_norm = get_default_norm()
+        self._opacity_norm = create_default_norm()
         self._opacity_order = None
         self._opacity_categories = None
         self._size = 3
         self._size_by = None
         self._size_map = None
-        self._size_norm = get_default_norm()
+        self._size_norm = create_default_norm()
         self._size_order = None
         self._size_categories = None
         self._connect_by = None
@@ -177,19 +180,19 @@ class Scatter():
         self._connection_color_hover = (0, 0, 0, 0.66)
         self._connection_color_by = None
         self._connection_color_map = None
-        self._connection_color_norm = get_default_norm()
+        self._connection_color_norm = create_default_norm()
         self._connection_color_order = None
         self._connection_color_categories = None
         self._connection_opacity = 0.1
         self._connection_opacity_by = None
         self._connection_opacity_map = None
-        self._connection_opacity_norm = get_default_norm()
+        self._connection_opacity_norm = create_default_norm()
         self._connection_opacity_order = None
         self._connection_opacity_categories = None
         self._connection_size = 2
         self._connection_size_by = None
         self._connection_size_map = None
-        self._connection_size_norm = get_default_norm()
+        self._connection_size_norm = create_default_norm()
         self._connection_size_order = None
         self._connection_size_categories = None
         self._width = 'auto'
@@ -204,6 +207,8 @@ class Scatter():
         self._axes = True
         self._axes_grid = False
         self._axes_labels = False
+        self._legend = False
+        self._legend_position = 'top-left'
         self._options = {}
 
         self.x(x, kwargs.get('x_scale', UNDEF))
@@ -289,6 +294,10 @@ class Scatter():
             kwargs.get('axes_grid', UNDEF),
             kwargs.get('axes_labels', UNDEF),
         )
+        self.legend(
+            kwargs.get('legend', UNDEF),
+            kwargs.get('legend_position', UNDEF),
+        )
         self.options(kwargs.get('options', UNDEF))
 
     def get_point_list(self):
@@ -348,7 +357,7 @@ class Scatter():
         """
         if scale is not UNDEF:
             if scale is None or scale == 'linear':
-                self._x_scale = get_default_norm()
+                self._x_scale = create_default_norm()
             elif scale == 'log':
                 self._x_scale = LogNorm(clip=True)
             elif scale == 'pow':
@@ -434,7 +443,7 @@ class Scatter():
         """
         if scale is not UNDEF:
             if scale is None or scale == 'linear':
-                self._y_scale = get_default_norm()
+                self._y_scale = create_default_norm()
             elif scale == 'log':
                 self._y_scale = LogNorm(clip=True)
             elif scale == 'pow':
@@ -705,7 +714,7 @@ class Scatter():
                     self._color_norm = Normalize(vmin, vmax, clip=True)
                 except:
                     if norm is None:
-                        self._color_norm = get_default_norm()
+                        self._color_norm = create_default_norm()
                     pass
 
         data_updated = False
@@ -737,6 +746,11 @@ class Scatter():
 
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
+                else:
+                    # However, we have to initialize vmin and vmax
+                    if not is_categorical_data(self._data[by]):
+                        self._color_norm.vmin = self._data[by].min()
+                        self._color_norm.vmax = self._data[by].max()
 
             self.update_widget('color_by', self.js_color_by)
 
@@ -794,16 +808,22 @@ class Scatter():
         if self._color_categories is not None:
             assert len(self._color_categories) <= len(self._color_map), 'More categories than colors'
 
-        # Update widget
+        # Update widget and encoding domain-range
         if self._color_by is not None and self._color_map is not None:
-            self.update_widget(
-                'color',
-                order_limit_color_map(
-                    self._color_map,
-                    self._color_order,
-                    self._color_categories
-                )
+            final_color_map = order_limit_map(
+                self._color_map,
+                self._color_order,
+                self._color_categories
             )
+            self.update_widget('color', final_color_map)
+            self._encodings.set_legend(
+                'color',
+                self._data[self._color_by],
+                final_color_map,
+                self._color_norm,
+                self._color_categories,
+            )
+            self.update_widget('legend_encoding', self.get_legend_encoding())
         else:
             self.update_widget('color', self._color)
 
@@ -926,18 +946,15 @@ class Scatter():
                 except:
                     if norm is None:
                         # Reset to default value
-                        self._opacity_norm = get_default_norm()
+                        self._opacity_norm = create_default_norm()
                     pass
 
         data_updated = False
         if by is not UNDEF:
             self._opacity_by = by
 
-            if by is None:
+            if by is None or by == 'density':
                 self._encodings.delete('opacity')
-
-            elif by == 'density':
-                pass
 
             else:
                 self._encodings.set('opacity', by)
@@ -961,6 +978,11 @@ class Scatter():
 
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
+                else:
+                    # However, we have to initialize vmin and vmax
+                    if not is_categorical_data(self._data[by]):
+                        self._opacity_norm.vmin = self._data[by].min()
+                        self._opacity_norm.vmax = self._data[by].max()
 
             self.update_widget('opacity_by', self.js_opacity_by)
 
@@ -1002,12 +1024,23 @@ class Scatter():
 
         # Update widget
         if self._opacity_by is not None and self._opacity_map is not None:
-            final_opacity_map = order_map(self._opacity_map, self._opacity_order)
-
-            if self._opacity_categories is not None:
-                final_opacity_map = final_opacity_map[:len(self._opacity_categories)]
-
+            final_opacity_map = order_limit_map(
+                self._opacity_map,
+                self._opacity_order,
+                self._opacity_categories
+            )
             self.update_widget('opacity', final_opacity_map)
+            if self._opacity_by != 'density':
+                self._encodings.set_legend(
+                    'opacity',
+                    self._data[self._opacity_by],
+                    final_opacity_map,
+                    self._opacity_norm,
+                    self._opacity_categories,
+                )
+                self.update_widget(
+                    'legend_encoding', self.get_legend_encoding()
+                )
         else:
             self.update_widget('opacity', self._opacity)
 
@@ -1116,7 +1149,7 @@ class Scatter():
                     self._size_norm = Normalize(vmin, vmax, clip=True)
                 except:
                     if norm is not None:
-                        self._size_norm = get_default_norm()
+                        self._size_norm = create_default_norm()
                     pass
 
         data_updated = False
@@ -1148,6 +1181,11 @@ class Scatter():
 
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
+                else:
+                    # However, we have to initialize vmin and vmax
+                    if not is_categorical_data(self._data[by]):
+                        self._size_norm.vmin = self._data[by].min()
+                        self._size_norm.vmax = self._data[by].max()
 
             self.update_widget('size_by', self.js_size_by)
 
@@ -1187,14 +1225,22 @@ class Scatter():
         if self._size_categories is not None:
             assert len(self._size_categories) <= len(self._size_map), 'More categories than sizes'
 
-        # Update widget
+        # Update widget and encoding domain-range
         if self._size_by is not None and self._size_map is not None:
-            final_size_map = order_map(self._size_map, self._size_order)
-
-            if self._size_categories is not None:
-                final_size_map = final_size_map[:len(self._size_categories)]
-
+            final_size_map = order_limit_map(
+                self._size_map,
+                self._size_order,
+                self._size_categories
+            )
             self.update_widget('size', final_size_map)
+            self._encodings.set_legend(
+                'size',
+                self._data[self._size_by],
+                final_size_map,
+                self._size_norm,
+                self._size_categories,
+            )
+            self.update_widget('legend_encoding', self.get_legend_encoding())
         else:
             self.update_widget('size', self._size)
 
@@ -1420,7 +1466,7 @@ class Scatter():
                     self._connection_color_norm = Normalize(vmin, vmax, clip=True)
                 except:
                     if norm is None:
-                        self._connection_color_norm = get_default_norm()
+                        self._connection_color_norm = create_default_norm()
                     pass
 
         data_updated = True
@@ -1455,6 +1501,11 @@ class Scatter():
 
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
+                else:
+                    # However, we have to initialize vmin and vmax
+                    if not is_categorical_data(self._data[by]):
+                        self._connection_color_norm.vmin = self._data[by].min()
+                        self._connection_color_norm.vmax = self._data[by].max()
 
             self.update_widget('connection_color_by', self.js_connection_color_by)
 
@@ -1632,7 +1683,7 @@ class Scatter():
                     self._connection_opacity_norm = Normalize(vmin, vmax, clip=True)
                 except:
                     if norm is None:
-                        self._connection_opacity_norm = get_default_norm()
+                        self._connection_opacity_norm = create_default_norm()
                     pass
 
         data_updated = False
@@ -1664,6 +1715,11 @@ class Scatter():
 
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
+                else:
+                    # However, we have to initialize vmin and vmax
+                    if not is_categorical_data(self._data[by]):
+                        self._connection_opacity_norm.vmin = self._data[by].min()
+                        self._connection_opacity_norm.vmax = self._data[by].max()
 
             self.update_widget('connection_opacity_by', self.js_connection_opacity_by)
 
@@ -1715,7 +1771,7 @@ class Scatter():
         if self._connection_opacity_by is not None and self._connection_opacity_map is not None:
             self.update_widget(
                 'connection_opacity',
-                order_limit_color_map(
+                order_limit_map(
                     self._connection_opacity_map,
                     self._connection_opacity_order,
                     self._connection_opacity_categories
@@ -1828,7 +1884,7 @@ class Scatter():
                     self._connection_size_norm = Normalize(vmin, vmax, clip=True)
                 except:
                     if norm is None:
-                        self._connection_size_norm = get_default_norm()
+                        self._connection_size_norm = create_default_norm()
                     pass
 
         data_updated = False
@@ -1860,6 +1916,11 @@ class Scatter():
 
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
+                else:
+                    # However, we have to initialize vmin and vmax
+                    if not is_categorical_data(self._data[by]):
+                        self._connection_size_norm.vmin = self._data[by].min()
+                        self._connection_size_norm.vmax = self._data[by].max()
 
             self.update_widget('connection_size_by', self.js_connection_size_by)
 
@@ -1994,6 +2055,7 @@ class Scatter():
 
             self.update_widget('reticle_color', self.get_reticle_color())
             self.update_widget('axes_color', self.get_axes_color())
+            self.update_widget('legend_color', self.get_legend_color())
 
         if image is not UNDEF:
             if uri_validator(image):
@@ -2318,6 +2380,19 @@ class Scatter():
 
         return (0, 0, 0, 1)
 
+    def get_legend_color(self):
+        if self._background_color_luminance < 0.5:
+            return (1, 1, 1, 1)
+
+        return (0, 0, 0, 1)
+
+    def get_legend_encoding(self):
+        return {
+            channel: self._encodings.get_legend(channel)
+            for channel
+            in self._encodings.visual.keys()
+        }
+
     def reticle(
         self,
         show: Optional[Union[bool, Undefined]] = UNDEF,
@@ -2497,7 +2572,64 @@ class Scatter():
             labels = self._axes_labels,
         )
 
-        return self._mouse_mode
+    def legend(
+        self,
+        legend: Optional[Union[bool, Undefined]] = UNDEF,
+        position: Optional[Union[Position, Undefined]] = UNDEF,
+    ):
+        """
+        Set or get the legend settings.
+
+        Parameters
+        ----------
+        legend : bool, optional
+            When set to `True`, a legend will be shown.
+        position : str, optional
+            The legend position. It must be one of top, left, right, bottom,
+            top-left, top-right, bottom-left, bottom-right, or center.
+
+        Returns
+        -------
+        self or dict
+            If no parameters are provided the current legend settings are
+            returned as a dictionary. Otherwise, `self` is returned.
+
+        Examples
+        --------
+        >>> scatter.legend(True)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.legend(position='top-right')
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.legend()
+        {'legend': True, 'position': 'top-right'}
+        """
+        if legend is not UNDEF:
+            try:
+                self._legend = legend
+                self.update_widget('legend', legend)
+                if legend:
+                    self.update_widget(
+                        'legend_encoding', self.get_legend_encoding()
+                    )
+            except:
+                pass
+
+        if position is not UNDEF:
+            try:
+                self._legend_position = position
+                self.update_widget('legend_position', position)
+            except:
+                pass
+
+        if any_not([legend, position], UNDEF):
+            return self
+
+        return dict(
+            legend = self._legend,
+            position = self._legend_position,
+        )
 
     def options(self, options: Optional[Union[dict, Undefined]] = UNDEF):
         """
@@ -2656,23 +2788,23 @@ class Scatter():
             lasso_initiator=self._lasso_initiator,
             lasso_min_delay=self._lasso_min_delay,
             lasso_min_dist=self._lasso_min_dist,
-            color=order_limit_color_map(self._color_map, self._color_order, self._color_categories) if self._color_map else self._color,
+            color=order_limit_map(self._color_map, self._color_order, self._color_categories) if self._color_map else self._color,
             color_selected=self._color_selected,
             color_hover=self._color_hover,
             color_by=self.js_color_by,
-            opacity=order_map(self._opacity_map, self._opacity_order) if self._opacity_map else self._opacity,
+            opacity=order_limit_map(self._opacity_map, self._opacity_order, self._opacity_categories) if self._opacity_map else self._opacity,
             opacity_by=self.js_opacity_by,
             opacity_unselected=self._opacity_unselected,
-            size=order_map(self._size_map, self._size_order) if self._size_map else self._size,
+            size=order_limit_map(self._size_map, self._size_order, self._size_categories) if self._size_map else self._size,
             size_by=self.js_size_by,
             connect=bool(self._connect_by),
-            connection_color=order_limit_color_map(self._connection_color_map, self._connection_color_order, self._connection_color_categories) if self._connection_color_map else self._connection_color,
+            connection_color=order_limit_map(self._connection_color_map, self._connection_color_order, self._connection_color_categories) if self._connection_color_map else self._connection_color,
             connection_color_selected=self._connection_color_selected,
             connection_color_hover=self._connection_color_hover,
             connection_color_by=self.js_connection_color_by,
-            connection_opacity=order_map(self._connection_opacity_map, self._connection_opacity_order) if self._connection_opacity_map else self._connection_opacity,
+            connection_opacity=order_limit_map(self._connection_opacity_map, self._connection_opacity_order, self._connection_opacity_categories) if self._connection_opacity_map else self._connection_opacity,
             connection_opacity_by=self.js_connection_opacity_by,
-            connection_size=order_map(self._connection_size_map, self._connection_size_order) if self._connection_size_map else self._connection_size,
+            connection_size=order_limit_map(self._connection_size_map, self._connection_size_order, self._connection_size_categories) if self._connection_size_map else self._connection_size,
             connection_size_by=self.js_connection_size_by,
             reticle=self._reticle,
             reticle_color=self.get_reticle_color(),
@@ -2687,6 +2819,10 @@ class Scatter():
             axes_grid=self._axes_grid,
             axes_labels=self._axes_labels,
             axes_color=self.get_axes_color(),
+            legend=self._legend,
+            legend_position=self._legend_position,
+            legend_color=self.get_legend_color(),
+            legend_encoding=self.get_legend_encoding(),
             other_options=self._options
         )
 
