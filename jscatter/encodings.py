@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
+from dataclasses import dataclass
 from functools import reduce
 from math import floor
+from typing import List, Tuple, Union
 
 def create_legend(values, encoding, norm, categories, linspace_num=5):
     if categories:
@@ -84,11 +86,11 @@ class Components():
                 break
 
 
+@dataclass
 class VisualEncoding():
-    def __init__(self, channel, data, legend=None):
-        self.channel = channel
-        self.data = data
-        self.legend = legend
+    channel: str
+    data: str
+    legend: List[Tuple[float, Union[float, int, str]]] = None
 
 
 class Encodings():
@@ -98,7 +100,7 @@ class Encodings():
         self.max = total_components - reserved_components
         self.components = Components(total_components, reserved_components)
 
-    def set(self, visual_enc, data_enc):
+    def set(self, visual_enc: str, data_enc: str):
         # Remove previous `visual_enc` encoding
         if self.is_unique(visual_enc):
             self.delete(visual_enc)
