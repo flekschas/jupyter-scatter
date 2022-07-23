@@ -76,7 +76,7 @@ def order_limit_map(map, order, categories):
     # 6.7 maps to the color with index floor(5 * 6.7/10) = 3. The same
     # principle is applied to categorical data! This means we need to
     # ensure that the number of map values is the same as the number of
-    # categories otherwise weird mapping glitches can happe .
+    # categories otherwise weird mapping glitches can happen.
     if categories is not None:
         return final_map[:len(categories)]
 
