@@ -1,3 +1,12 @@
+const sortOrder = {
+  'color': 0,
+  'opacity': 1,
+  'size': 2,
+  'connection_color': 3,
+  'connection_opacity': 4,
+  'connection_size': 5,
+}
+
 function createLabelFormatter(valueRange) {
   const min = valueRange[0];
   const max = valueRange[1];
@@ -33,16 +42,16 @@ function createIcon(title, encoding, encodingRange, sizePx, fontColor) {
   element.style.borderRadius = sizePx + 'px';
   element.style.backgroundColor = 'rgb(' + fontColor + ','  + fontColor + ',' + fontColor + ')';
 
-  if (title === 'color') {
+  if (title.indexOf('color') >= 0) {
     element.style.backgroundColor = Array.isArray(encoding)
       ? 'rgb(' + encoding.slice(0, 3).map((v) => v * 255).join(', ') + ')'
       : encoding;
-  } else if (title === 'opacity') {
+  } else if (title.indexOf('opacity') >= 0) {
     element.style.backgroundColor = 'rgba(' + fontColor + ',' + fontColor + ','  + fontColor + ',' + encoding + ')';
     if (encoding < 0.2) {
       element.style.boxShadow = 'inset 0 0 1px rgba(' + fontColor + ',' + fontColor + ','  + fontColor + ', 0.66)';
     }
-  } else if (title === 'size') {
+  } else if (title.indexOf('size') >= 0) {
     const extent = encodingRange[1] - encodingRange[0];
     const normEncoding = 0.2 + ((encoding - encodingRange[0]) / extent) * 0.8;
     element.style.transform = `scale(${normEncoding})`;
@@ -67,8 +76,9 @@ function createTitle(title) {
   const element = document.createElement('div');
   element.className = 'legend-title';
   element.style.fontWeight = 'bold';
+  element.style.textTransform = 'capitalize';
 
-  element.textContent = title[0].toUpperCase() + title.slice(1);
+  element.textContent = title.replace('connection', 'line').replaceAll('_', ' ');
 
   return element;
 }
@@ -103,37 +113,41 @@ function createLegend(encodings, fontColor, backgroundColor, size) {
   root.style.pointerEvents = 'none';
   root.style.userSelect = 'none';
 
-  Object.entries(encodings).sort().forEach(([title, valueEncodingPairs]) => {
-    const encoding = createEncoding();
-    encoding.appendChild(createTitle(title));
+  Object.entries(encodings)
+    .sort((a, b) => sortOrder[a[0]] - sortOrder[b[0]])
+    .forEach((encodingEntry) => {
+      const title = encodingEntry[0];
+      const valueEncodingPairs = encodingEntry[1];
+      const encoding = createEncoding();
+      encoding.appendChild(createTitle(title));
 
-    const valueRange = [
-      valueEncodingPairs[0][0],
-      valueEncodingPairs[valueEncodingPairs.length - 1][0]
-    ];
+      const valueRange = [
+        valueEncodingPairs[0][0],
+        valueEncodingPairs[valueEncodingPairs.length - 1][0]
+      ];
 
-    const encodingRange = [
-      valueEncodingPairs[0][1],
-      valueEncodingPairs[valueEncodingPairs.length - 1][1]
-    ];
+      const encodingRange = [
+        valueEncodingPairs[0][1],
+        valueEncodingPairs[valueEncodingPairs.length - 1][1]
+      ];
 
-    const formatter = createLabelFormatter(valueRange);
+      const formatter = createLabelFormatter(valueRange);
 
-    valueEncodingPairs.forEach(([value, encodedValue]) => {
-      encoding.appendChild(
-        createEntry(
-          title,
-          formatter(value),
-          encodedValue,
-          encodingRange,
-          sizePx,
-          f
-        )
-      );
+      valueEncodingPairs.forEach(([value, encodedValue]) => {
+        encoding.appendChild(
+          createEntry(
+            title,
+            formatter(value),
+            encodedValue,
+            encodingRange,
+            sizePx,
+            f
+          )
+        );
+      });
+
+      root.append(encoding);
     });
-
-    root.append(encoding);
-  });
 
   return root;
 }

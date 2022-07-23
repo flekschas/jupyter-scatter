@@ -1543,18 +1543,25 @@ class Scatter():
         if self._connection_color_categories is not None:
             assert len(self._connection_color_categories) <= len(self._connection_color_map), 'More categories than connection colors'
 
-        # Update widget
+        # Update widget and legend encoding
         if self._connection_color_by is not None and self._connection_color_map is not None:
-            final_connection_color_map = order_map(
-                self._connection_color_map, self._connection_color_order
+            final_connection_color_map = order_limit_map(
+                self._connection_color_map,
+                self._connection_color_order,
+                self._connection_color_categories,
             )
-
-            if self._connection_color_categories is not None:
-                final_connection_color_map = final_connection_color_map[:len(self._connection_color_categories)]
-
             self.update_widget('connection_color', final_connection_color_map)
+            self._encodings.set_legend(
+                'connection_color',
+                self._data[self._connection_color_by],
+                final_connection_color_map,
+                self._connection_color_norm,
+                self._connection_color_categories,
+            )
         else:
             self.update_widget('connection_color', self._connection_color)
+
+        self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('points', self.get_point_list())
@@ -1741,18 +1748,25 @@ class Scatter():
         if self._connection_opacity_categories is not None:
             assert len(self._connection_opacity_categories) <= len(self._connection_opacity_map), 'More categories than connection opacities'
 
-        # Update widget
+        # Update widget and legend encoding
         if self._connection_opacity_by is not None and self._connection_opacity_map is not None:
-            self.update_widget(
+            final_opacity_map = order_limit_map(
+                self._connection_opacity_map,
+                self._connection_opacity_order,
+                self._connection_opacity_categories
+            )
+            self.update_widget('connection_opacity', final_opacity_map)
+            self._encodings.set_legend(
                 'connection_opacity',
-                order_limit_map(
-                    self._connection_opacity_map,
-                    self._connection_opacity_order,
-                    self._connection_opacity_categories
-                )
+                self._data[self._connection_opacity_by],
+                final_opacity_map,
+                self._connection_opacity_norm,
+                self._connection_opacity_categories,
             )
         else:
             self.update_widget('connection_opacity', self._connection_opacity)
+
+        self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('points', self.get_point_list())
@@ -1925,18 +1939,25 @@ class Scatter():
 
         self._connection_size_map = tolist(self._connection_size_map)
 
-        # Update widget
+        # Update widget and legend encoding
         if self._connection_size_by is not None and self._connection_size_map is not None:
-            final_connection_size_map = order_map(
-                self._connection_size_map, self._connection_size_order
+            final_connection_size_map = order_limit_map(
+                self._connection_size_map,
+                self._connection_size_order,
+                self._connection_size_categories,
             )
-
-            if self._connection_size_categories is not None:
-                final_connection_size_map = final_connection_size_map[:len(self._connection_size_categories)]
-
             self.update_widget('connection_size', final_connection_size_map)
+            self._encodings.set_legend(
+                'connection_size',
+                self._data[self._connection_size_by],
+                final_connection_size_map,
+                self._connection_size_norm,
+                self._connection_size_categories,
+            )
         else:
             self.update_widget('connection_size', self._connection_size)
+
+        self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('points', self.get_point_list())
