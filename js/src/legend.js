@@ -25,22 +25,22 @@ function createLabel(value) {
   return element;
 }
 
-function createIcon(title, encoding, encodingRange) {
+function createIcon(title, encoding, encodingRange, sizePx, fontColor) {
   const element = document.createElement('div');
   element.className = 'legend-icon';
-  element.style.width = '0.625rem';
-  element.style.height = '0.625rem';
-  element.style.borderRadius = '0.625rem';
-  element.style.backgroundColor = 'black';
+  element.style.width = sizePx + 'px';
+  element.style.height = sizePx + 'px';
+  element.style.borderRadius = sizePx + 'px';
+  element.style.backgroundColor = 'rgb(' + fontColor + ','  + fontColor + ',' + fontColor + ')';
 
   if (title === 'color') {
     element.style.backgroundColor = Array.isArray(encoding)
       ? 'rgb(' + encoding.slice(0, 3).map((v) => v * 255).join(', ') + ')'
       : encoding;
   } else if (title === 'opacity') {
-    element.style.backgroundColor = 'rgba(0, 0, 0, ' + encoding + ')';
+    element.style.backgroundColor = 'rgba(' + fontColor + ',' + fontColor + ','  + fontColor + ',' + encoding + ')';
     if (encoding < 0.2) {
-      element.style.boxShadow = 'inset 0 0 1px rgba(0, 0, 0, 0.5)';
+      element.style.boxShadow = 'inset 0 0 1px rgba(' + fontColor + ',' + fontColor + ','  + fontColor + ', 0.66)';
     }
   } else if (title === 'size') {
     const extent = encodingRange[1] - encodingRange[0];
@@ -51,13 +51,13 @@ function createIcon(title, encoding, encodingRange) {
   return element;
 }
 
-function createEntry(title, value, encoding, encodingRange) {
+function createEntry(title, value, encoding, encodingRange, sizePx, fontColor) {
   const element = document.createElement('div');
   element.className = 'legend-entry';
   element.style.display = 'flex';
   element.style.alignItems = 'center';
 
-  element.appendChild(createIcon(title, encoding, encodingRange));
+  element.appendChild(createIcon(title, encoding, encodingRange, sizePx, fontColor));
   element.appendChild(createLabel(value));
 
   return element;
@@ -82,20 +82,28 @@ function createEncoding() {
   return element;
 }
 
-function createLegend(encodings) {
+function createLegend(encodings, fontColor, backgroundColor, size) {
+  const f = fontColor ? fontColor[0] * 255 : 0;
+  const b = backgroundColor ? backgroundColor[0] * 255 : 255;
+
+  let sizePx = 10;
+  if (size === 'medium') sizePx = 12;
+  else if (size === 'large') sizePx = 16;
+
   const root = document.createElement('div');
   root.className = 'legend';
   root.style.display = 'flex';
-  root.style.gap = '0.5rem';
-  root.style.margin = '2px';
-  root.style.padding = '0.25rem';
-  root.style.fontSize = '0.625rem';
-  root.style.borderRadius = '0.25rem';
-  root.style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
+  root.style.gap = (sizePx * 0.5) + 'px';
+  root.style.margin = (sizePx * 0.2) + 'px';
+  root.style.padding = (sizePx * 0.25) + 'px';
+  root.style.fontSize = sizePx + 'px';
+  root.style.borderRadius = (sizePx * 0.25) + 'px';
+  root.style.color = 'rgb(' + f + ', ' + f + ', ' + f + ')';
+  root.style.backgroundColor = 'rgba(' + b + ', ' + b + ', ' + b + ', 0.85)';
   root.style.pointerEvents = 'none';
   root.style.userSelect = 'none';
 
-  Object.entries(encodings).forEach(([title, valueEncodingPairs]) => {
+  Object.entries(encodings).sort().forEach(([title, valueEncodingPairs]) => {
     const encoding = createEncoding();
     encoding.appendChild(createTitle(title));
 
@@ -113,7 +121,14 @@ function createLegend(encodings) {
 
     valueEncodingPairs.forEach(([value, encodedValue]) => {
       encoding.appendChild(
-        createEntry(title, formatter(value), encodedValue, encodingRange)
+        createEntry(
+          title,
+          formatter(value),
+          encodedValue,
+          encodingRange,
+          sizePx,
+          f
+        )
       );
     });
 

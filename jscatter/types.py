@@ -18,6 +18,11 @@ class Scales(Enum):
     LOG = 'log'
     POW = 'pow'
 
+class Size(Enum):
+    S = 'small'
+    M = 'medium'
+    L = 'large'
+
 class MouseModes(Enum):
     PAN_ZOOM = 'panZoom'
     LASSO = 'lasso'

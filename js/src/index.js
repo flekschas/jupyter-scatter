@@ -130,6 +130,7 @@ const properties = {
   axesGrid: 'axesGrid',
   axesLabels: 'axesLabels',
   legend: 'legend',
+  legendSize: 'legendSize',
   legendColor: 'legendColor',
   legendPosition: 'legendPosition',
   legendEncoding: 'legendEncoding',
@@ -505,7 +506,12 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.legendWrapper.style.pointerEvents = 'none';
     this.updateLegendWrapperPosition();
 
-    this.legend = createLegend(this.model.get('legend_encoding'));
+    this.legend = createLegend(
+      this.model.get('legend_encoding'),
+      this.model.get('legend_color'),
+      this.model.get('background_color'),
+      this.model.get('legend_size')
+    );
     this.updateLegendPosition();
 
     this.legendWrapper.appendChild(this.legend);
@@ -536,6 +542,11 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     if (!this.legend) return;
 
     this.legend.style.position = 'absolute';
+    this.legend.style.top = null;
+    this.legend.style.bottom = null;
+    this.legend.style.left = null;
+    this.legend.style.right = null;
+    this.legend.style.transform = null;
 
     const position = this.model.get('legend_position');
     let translateX = 0;
@@ -893,6 +904,11 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   },
 
   legendColorHandler: function legendColorHandler() {
+    this.hideLegend();
+    this.showLegend();
+  },
+
+  legendSizeHandler: function legendSizeHandler() {
     this.hideLegend();
     this.showLegend();
   },

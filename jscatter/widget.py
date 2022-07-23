@@ -103,6 +103,9 @@ class JupyterScatter(widgets.DOMWidget):
         ],
         default_value='top-left'
     ).tag(sync=True)
+    legend_size = Enum(
+        ['small', 'medium', 'large'], default_value='small'
+    ).tag(sync=True)
     legend_color = List(
         default_value=[0, 0, 0, 1], minlen=4, maxlen=4
     ).tag(sync=True)

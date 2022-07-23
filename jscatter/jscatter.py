@@ -12,7 +12,7 @@ from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
 from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, create_default_norm
-from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Position, Undefined
+from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Size, Position, Undefined
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -209,6 +209,7 @@ class Scatter():
         self._axes_labels = False
         self._legend = False
         self._legend_position = 'top-left'
+        self._legend_size = 'small'
         self._options = {}
 
         self.x(x, kwargs.get('x_scale', UNDEF))
@@ -297,6 +298,7 @@ class Scatter():
         self.legend(
             kwargs.get('legend', UNDEF),
             kwargs.get('legend_position', UNDEF),
+            kwargs.get('legend_size', UNDEF),
         )
         self.options(kwargs.get('options', UNDEF))
 
@@ -727,30 +729,25 @@ class Scatter():
             else:
                 self._encodings.set('color', by)
 
+                component = self._encodings.data[by].component
+                try:
+                    check_encoding_dtype(self._data[by])
+                    categorical_data = get_categorical_data(self._data[by])
+
+                    if categorical_data is not None:
+                        self._color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                        self._points[:, component] = categorical_data.cat.codes
+                    else:
+                        self._color_categories = None
+                        self._points[:, component] = self._color_norm(self._data[by].values)
+                except TypeError:
+                    self._points[:, component] = self._color_norm(np.asarray(by))
+
+
                 if not self._encodings.data[by].prepared:
-                    component = self._encodings.data[by].component
-                    try:
-                        check_encoding_dtype(self._data[by])
-                        categorical_data = get_categorical_data(self._data[by])
-
-                        if categorical_data is not None:
-                            self._color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                            self._points[:, component] = categorical_data.cat.codes
-                        else:
-                            self._color_categories = None
-                            self._points[:, component] = self._color_norm(self._data[by].values)
-                    except TypeError:
-                        self._points[:, component] = self._color_norm(np.asarray(by))
-
                     data_updated = True
-
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
-                else:
-                    # However, we have to initialize vmin and vmax
-                    if not is_categorical_data(self._data[by]):
-                        self._color_norm.vmin = self._data[by].min()
-                        self._color_norm.vmax = self._data[by].max()
 
             self.update_widget('color_by', self.js_color_by)
 
@@ -823,9 +820,10 @@ class Scatter():
                 self._color_norm,
                 self._color_categories,
             )
-            self.update_widget('legend_encoding', self.get_legend_encoding())
         else:
             self.update_widget('color', self._color)
+
+        self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('points', self.get_point_list())
@@ -959,30 +957,24 @@ class Scatter():
             else:
                 self._encodings.set('opacity', by)
 
+                component = self._encodings.data[by].component
+                try:
+                    check_encoding_dtype(self._data[by])
+                    categorical_data = get_categorical_data(self._data[by])
+
+                    if categorical_data is not None:
+                        self._points[:, component] = categorical_data.cat.codes
+                        self._opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    else:
+                        self._points[:, component] = self._opacity_norm(self._data[by].values)
+                        self._opacity_categories = None
+                except TypeError:
+                    self._points[:, component] = self._opacity_norm(np.asarray(by))
+
                 if not self._encodings.data[by].prepared:
-                    component = self._encodings.data[by].component
-                    try:
-                        check_encoding_dtype(self._data[by])
-                        categorical_data = get_categorical_data(self._data[by])
-
-                        if categorical_data is not None:
-                            self._points[:, component] = categorical_data.cat.codes
-                            self._opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                        else:
-                            self._points[:, component] = self._opacity_norm(self._data[by].values)
-                            self._opacity_categories = None
-                    except TypeError:
-                        self._points[:, component] = self._opacity_norm(np.asarray(by))
-
                     data_updated = True
-
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
-                else:
-                    # However, we have to initialize vmin and vmax
-                    if not is_categorical_data(self._data[by]):
-                        self._opacity_norm.vmin = self._data[by].min()
-                        self._opacity_norm.vmax = self._data[by].max()
 
             self.update_widget('opacity_by', self.js_opacity_by)
 
@@ -1038,11 +1030,10 @@ class Scatter():
                     self._opacity_norm,
                     self._opacity_categories,
                 )
-                self.update_widget(
-                    'legend_encoding', self.get_legend_encoding()
-                )
         else:
             self.update_widget('opacity', self._opacity)
+
+        self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('points', self.get_point_list())
@@ -1162,30 +1153,24 @@ class Scatter():
             else:
                 self._encodings.set('size', by)
 
+                component = self._encodings.data[by].component
+                try:
+                    check_encoding_dtype(self._data[by])
+                    categorical_data = get_categorical_data(self._data[by])
+
+                    if categorical_data is not None:
+                        self._points[:, component] = categorical_data.cat.codes
+                        self._size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    else:
+                        self._points[:, component] = self._size_norm(self._data[by].values)
+                        self._size_categories = None
+                except TypeError:
+                    self._points[:, component] = self._size_norm(np.asarray(by))
+
                 if not self._encodings.data[by].prepared:
-                    component = self._encodings.data[by].component
-                    try:
-                        check_encoding_dtype(self._data[by])
-                        categorical_data = get_categorical_data(self._data[by])
-
-                        if categorical_data is not None:
-                            self._points[:, component] = categorical_data.cat.codes
-                            self._size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                        else:
-                            self._points[:, component] = self._size_norm(self._data[by].values)
-                            self._size_categories = None
-                    except TypeError:
-                        self._points[:, component] = self._size_norm(np.asarray(by))
-
                     data_updated = True
-
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
-                else:
-                    # However, we have to initialize vmin and vmax
-                    if not is_categorical_data(self._data[by]):
-                        self._size_norm.vmin = self._data[by].min()
-                        self._size_norm.vmax = self._data[by].max()
 
             self.update_widget('size_by', self.js_size_by)
 
@@ -1240,9 +1225,10 @@ class Scatter():
                 self._size_norm,
                 self._size_categories,
             )
-            self.update_widget('legend_encoding', self.get_legend_encoding())
         else:
             self.update_widget('size', self._size)
+
+        self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('points', self.get_point_list())
@@ -1482,30 +1468,24 @@ class Scatter():
             else:
                 self._encodings.set('connection_color', by)
 
+                component = self._encodings.data[by].component
+                try:
+                    check_encoding_dtype(self._data[by])
+                    categorical_data = get_categorical_data(self._data[by])
+
+                    if categorical_data is not None:
+                        self._connection_color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                        self._points[:, component] = categorical_data.cat.codes
+                    else:
+                        self._connection_color_categories = None
+                        self._points[:, component] = self._connection_color_norm(self._data[by].values)
+                except TypeError:
+                    self._points[:, component] = self._connection_color_norm(np.asarray(by))
+
                 if not self._encodings.data[by].prepared:
-                    component = self._encodings.data[by].component
-                    try:
-                        check_encoding_dtype(self._data[by])
-                        categorical_data = get_categorical_data(self._data[by])
-
-                        if categorical_data is not None:
-                            self._connection_color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                            self._points[:, component] = categorical_data.cat.codes
-                        else:
-                            self._connection_color_categories = None
-                            self._points[:, component] = self._connection_color_norm(self._data[by].values)
-                    except TypeError:
-                        self._points[:, component] = self._connection_color_norm(np.asarray(by))
-
                     data_updated = True
-
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
-                else:
-                    # However, we have to initialize vmin and vmax
-                    if not is_categorical_data(self._data[by]):
-                        self._connection_color_norm.vmin = self._data[by].min()
-                        self._connection_color_norm.vmax = self._data[by].max()
 
             self.update_widget('connection_color_by', self.js_connection_color_by)
 
@@ -1696,30 +1676,24 @@ class Scatter():
             else:
                 self._encodings.set('connection_opacity', by)
 
+                component = self._encodings.data[by].component
+                try:
+                    check_encoding_dtype(self._data[by])
+                    categorical_data = get_categorical_data(self._data[by])
+
+                    if categorical_data is not None:
+                        self._points[:, component] = categorical_data.cat.codes
+                        self._connection_opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    else:
+                        self._points[:, component] = self._connection_opacity_norm(self._data[by].values)
+                        self._connection_opacity_categories = None
+                except TypeError:
+                    self._points[:, component] = self._connection_opacity_norm(np.asarray(by))
+
                 if not self._encodings.data[by].prepared:
-                    component = self._encodings.data[by].component
-                    try:
-                        check_encoding_dtype(self._data[by])
-                        categorical_data = get_categorical_data(self._data[by])
-
-                        if categorical_data is not None:
-                            self._points[:, component] = categorical_data.cat.codes
-                            self._connection_opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                        else:
-                            self._points[:, component] = self._connection_opacity_norm(self._data[by].values)
-                            self._connection_opacity_categories = None
-                    except TypeError:
-                        self._points[:, component] = self._connection_opacity_norm(np.asarray(by))
-
                     data_updated = True
-
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
-                else:
-                    # However, we have to initialize vmin and vmax
-                    if not is_categorical_data(self._data[by]):
-                        self._connection_opacity_norm.vmin = self._data[by].min()
-                        self._connection_opacity_norm.vmax = self._data[by].max()
 
             self.update_widget('connection_opacity_by', self.js_connection_opacity_by)
 
@@ -1897,30 +1871,24 @@ class Scatter():
             else:
                 self._encodings.set('connection_size', by)
 
+                component = self._encodings.data[by].component
+                try:
+                    check_encoding_dtype(self._data[by])
+                    categorical_data = get_categorical_data(self._data[by])
+
+                    if categorical_data is not None:
+                        self._points[:, component] = categorical_data.cat.codes
+                        self._connection_size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    else:
+                        self._points[:, component] = self._connection_size_norm(self._data[by].values)
+                        self._connection_size_categories = None
+                except TypeError:
+                    self._points[:, component] = self._connection_size_norm(np.asarray(by))
+
                 if not self._encodings.data[by].prepared:
-                    component = self._encodings.data[by].component
-                    try:
-                        check_encoding_dtype(self._data[by])
-                        categorical_data = get_categorical_data(self._data[by])
-
-                        if categorical_data is not None:
-                            self._points[:, component] = categorical_data.cat.codes
-                            self._connection_size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                        else:
-                            self._points[:, component] = self._connection_size_norm(self._data[by].values)
-                            self._connection_size_categories = None
-                    except TypeError:
-                        self._points[:, component] = self._connection_size_norm(np.asarray(by))
-
                     data_updated = True
-
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
-                else:
-                    # However, we have to initialize vmin and vmax
-                    if not is_categorical_data(self._data[by]):
-                        self._connection_size_norm.vmin = self._data[by].min()
-                        self._connection_size_norm.vmax = self._data[by].max()
 
             self.update_widget('connection_size_by', self.js_connection_size_by)
 
@@ -2576,6 +2544,7 @@ class Scatter():
         self,
         legend: Optional[Union[bool, Undefined]] = UNDEF,
         position: Optional[Union[Position, Undefined]] = UNDEF,
+        size: Optional[Union[Size, Undefined]] = UNDEF,
     ):
         """
         Set or get the legend settings.
@@ -2585,8 +2554,10 @@ class Scatter():
         legend : bool, optional
             When set to `True`, a legend will be shown.
         position : str, optional
-            The legend position. It must be one of top, left, right, bottom,
+            The legend position. Must be one of top, left, right, bottom,
             top-left, top-right, bottom-left, bottom-right, or center.
+        size : small or medium or large, optional
+            The size of the legend. Must be one of small, medium, or large
 
         Returns
         -------
@@ -2602,8 +2573,11 @@ class Scatter():
         >>> scatter.legend(position='top-right')
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.legend(size='large')
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.legend()
-        {'legend': True, 'position': 'top-right'}
+        {'legend': True, 'position': 'top-right', size: 'large'}
         """
         if legend is not UNDEF:
             try:
@@ -2623,7 +2597,14 @@ class Scatter():
             except:
                 pass
 
-        if any_not([legend, position], UNDEF):
+        if size is not UNDEF:
+            try:
+                self._legend_size = size
+                self.update_widget('legend_size', size)
+            except:
+                pass
+
+        if any_not([legend, position, size], UNDEF):
             return self
 
         return dict(
@@ -2820,6 +2801,7 @@ class Scatter():
             axes_labels=self._axes_labels,
             axes_color=self.get_axes_color(),
             legend=self._legend,
+            legend_size=self._legend_size,
             legend_position=self._legend_position,
             legend_color=self.get_legend_color(),
             legend_encoding=self.get_legend_encoding(),
