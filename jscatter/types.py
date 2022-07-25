@@ -18,6 +18,11 @@ class Scales(Enum):
     LOG = 'log'
     POW = 'pow'
 
+class Size(Enum):
+    S = 'small'
+    M = 'medium'
+    L = 'large'
+
 class MouseModes(Enum):
     PAN_ZOOM = 'panZoom'
     LASSO = 'lasso'
@@ -31,3 +36,14 @@ class Reverse(Enum):
 
 class Segment(Enum):
     SEGMENT = 'segment'
+
+class Position(Enum):
+    TOP = 'top'
+    TOP_RIGHT = 'top-right'
+    TOP_LEFT = 'top-left'
+    BOTTOM = 'bottom'
+    BOTTOM_RIGHT = 'bottom-right'
+    BOTTOM_LEFT = 'bottom-left'
+    RIGHT = 'right'
+    LEFT = 'left'
+    CENTER = 'center'
