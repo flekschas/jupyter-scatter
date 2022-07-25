@@ -5,6 +5,7 @@ const d3Axis = require('d3-axis');
 const d3Scale = require('d3-scale');
 const d3Selection = require('d3-selection');
 const codecs = require('./codecs');
+const createLegend = require('./legend');
 const packageJson = require('../package.json');
 
 const createScatterplot = reglScatterplot.default;
@@ -125,8 +126,14 @@ const properties = {
   viewReset: 'viewReset',
   hovering: 'hovering',
   axes: 'axes',
+  axesColor: 'axesColor',
   axesGrid: 'axesGrid',
   axesLabels: 'axesLabels',
+  legend: 'legend',
+  legendSize: 'legendSize',
+  legendColor: 'legendColor',
+  legendPosition: 'legendPosition',
+  legendEncoding: 'legendEncoding',
   xScale: 'xScale',
   yScale: 'yScale',
 };
@@ -248,6 +255,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
       if (self.model.get('axes')) self.createAxes();
       if (self.model.get('axes_grid')) self.createAxesGrid();
+      if (self.model.get('legend')) self.showLegend();
 
       // Listen to events from the JavaScript world
       self.pointoverHandlerBound = self.pointoverHandler.bind(self);
@@ -429,6 +437,8 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.canvasWrapper.style.bottom = `${yPadding}px`;
 
     if (this.model.get('axes_grid')) this.createAxesGrid();
+
+    this.updateLegendWrapperPosition();
   },
 
   removeAxes: function removeAxes() {
@@ -487,6 +497,84 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     }
   },
 
+  showLegend: function showLegend() {
+    this.hideLegend();
+
+    this.legendWrapper = document.createElement('div');
+    this.legendWrapper.className = 'legend-wrapper';
+    this.legendWrapper.style.position = 'absolute';
+    this.legendWrapper.style.pointerEvents = 'none';
+    this.updateLegendWrapperPosition();
+
+    this.legend = createLegend(
+      this.model.get('legend_encoding'),
+      this.model.get('legend_color'),
+      this.model.get('background_color'),
+      this.model.get('legend_size')
+    );
+    this.updateLegendPosition();
+
+    this.legendWrapper.appendChild(this.legend);
+    this.container.appendChild(this.legendWrapper);
+  },
+
+  hideLegend: function hideLegend() {
+    if (!this.legendWrapper) return;
+    this.container.removeChild(this.legendWrapper);
+    this.legendWrapper = undefined;
+    this.legend = undefined;
+  },
+
+  updateLegendWrapperPosition: function updateLegendWrapperPosition() {
+    if (!this.legendWrapper) return;
+
+    const labels = this.model.get('axes_labels');
+    const xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
+    const yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+
+    this.legendWrapper.style.top = 0;
+    this.legendWrapper.style.bottom = yPadding + 'px';
+    this.legendWrapper.style.left = 0;
+    this.legendWrapper.style.right = xPadding + 'px';
+  },
+
+  updateLegendPosition: function updateLegendPosition() {
+    if (!this.legend) return;
+
+    this.legend.style.position = 'absolute';
+    this.legend.style.top = null;
+    this.legend.style.bottom = null;
+    this.legend.style.left = null;
+    this.legend.style.right = null;
+    this.legend.style.transform = null;
+
+    const position = this.model.get('legend_position');
+    let translateX = 0;
+    let translateY = 0;
+
+    if (position.indexOf('top') >= 0) {
+      this.legend.style.top = 0;
+    } else if (position.indexOf('bottom') >= 0) {
+      this.legend.style.bottom = 0;
+    } else {
+      this.legend.style.top = '50%';
+      translateY = '-50%';
+    }
+
+    if (position.indexOf('left') >= 0) {
+      this.legend.style.left = 0;
+    } else if (position.indexOf('right') >= 0) {
+      this.legend.style.right = 0;
+    } else {
+      this.legend.style.left = '50%';
+      translateX = '-50%';
+    }
+
+    if (translateX || translateY) {
+      this.legend.style.transform = `translate(${translateX}, ${translateY})`;
+    }
+  },
+
   resizeHandler: function resizeHandler() {
     if (!this.model.get('axes')) return;
 
@@ -507,6 +595,8 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.yAxisContainer
       .attr('transform', `translate(${width - xPadding}, 0)`)
       .call(this.yAxis);
+
+    this.updateLegendWrapperPosition();
 
     // Render grid
     if (this.model.get('axes_grid')) {
@@ -794,6 +884,10 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     else this.removeAxes();
   },
 
+  axesColorHandler: function axesColorHandler() {
+    this.createAxes();
+  },
+
   axesGridHandler: function axesGridHandler(newValue) {
     if (newValue) this.createAxesGrid();
     else this.removeAxesGrid();
@@ -802,6 +896,30 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
   axesLabelsHandler: function axesLabelsHandler(newValue) {
     if (!newValue) this.removeAxes();
     this.createAxes();
+  },
+
+  legendHandler: function legendHandler(newValue) {
+    if (newValue) this.showLegend();
+    else this.hideLegend();
+  },
+
+  legendColorHandler: function legendColorHandler() {
+    this.hideLegend();
+    this.showLegend();
+  },
+
+  legendSizeHandler: function legendSizeHandler() {
+    this.hideLegend();
+    this.showLegend();
+  },
+
+  legendPositionHandler: function legendPositionHandler() {
+    this.updateLegendPosition();
+  },
+
+  legendEncodingHandler: function legendEncodingHandler() {
+    if (!this.model.get('legend')) return;
+    this.showLegend();
   },
 
   otherOptionsHandler: function otherOptionsHandler(newOptions) {

@@ -44,7 +44,7 @@ def sorting_to_dict(sorting):
         out[original_idx] = order_idx
     return out
 
-def get_default_norm():
+def create_default_norm():
     return Normalize(clip=True)
 
 def to_ndc(X, norm):
