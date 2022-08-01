@@ -97,6 +97,7 @@ const properties = {
   colorSelected: 'pointColorActive',
   colorBy: 'colorBy',
   colorHover: 'pointColorHover',
+  width: 'width',
   height: 'height',
   lassoColor: 'lassoColor',
   lassoInitiator: 'lassoInitiator',
@@ -149,6 +150,7 @@ const reglScatterplotProperty = new Set([
   'pointColorActive',
   'colorBy',
   'pointColorHover',
+  'width',
   'height',
   'lassoColor',
   'lassoInitiator',
@@ -430,6 +432,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.scatterplot.set({
       xScale: this.xScaleRegl,
       yScale: this.yScaleRegl,
+      width: this.model.get('width')
+        ? this.model.get('width') - xPadding
+        : 'auto',
       height: this.model.get('height') - yPadding,
     });
 
@@ -460,6 +465,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.scatterplot.set({
       xScale: undefined,
       yScale: undefined,
+      width: this.model.get('width') || 'auto',
       height: this.model.get('height'),
     });
   },
@@ -597,6 +603,16 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       .call(this.yAxis);
 
     this.updateLegendWrapperPosition();
+
+    this.withPropertyChangeHandler(
+      'width', this.model.get('width')
+        ? this.model.get('width') - xPadding
+        : 'auto'
+    );
+
+    this.withPropertyChangeHandler(
+      'height', this.model.get('axes') ? height - yPadding : height
+    );
 
     // Render grid
     if (this.model.get('axes_grid')) {
@@ -744,12 +760,16 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     }
   },
 
+  widthHandler: function widthHandler(newValue) {
+    this.width = newValue;
+    this.container.style.width = this.width === 'auto'
+      ? '100%'
+      : this.width + 'px';
+    this.resizeHandler();
+  },
+
   heightHandler: function heightHandler(newValue) {
     this.container.style.height = newValue + 'px';
-    this.withPropertyChangeHandler(
-      'height',
-      this.model.get('axes') ? newValue - AXES_PADDING_Y : newValue
-    );
     this.resizeHandler();
   },
 

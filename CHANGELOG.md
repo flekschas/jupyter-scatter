@@ -1,3 +1,7 @@
+## v0.7.1
+
+- Take the x-padding into account when setting a fixed width ([#36](https://github.com/flekschas/jupyter-scatter/issues/36))
+
 ## v0.7.0
 
 - Add support for legends via `scatter.legend(True, position='top-right', size='small')` ([#30](https://github.com/flekschas/jupyter-scatter/issues/30))
