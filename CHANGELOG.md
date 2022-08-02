@@ -1,6 +1,7 @@
 ## v0.7.1
 
 - Take the x-padding into account when setting a fixed width ([#36](https://github.com/flekschas/jupyter-scatter/issues/36))
+- Make `width` and `height` correspond to the canvas' (i.e., inner) dimensions such that `Scatter(width=500, height=500)` will lead to a canvas of size 500x500 px.
 
 ## v0.7.0
 
