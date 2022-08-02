@@ -318,6 +318,25 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.model.save_changes();
   },
 
+  getOuterDimensions: function getOuterDimensions() {
+    let xPadding = 0;
+    let yPadding = 0;
+
+    if (this.model.get('axes')) {
+      const labels = this.model.get('axes_labels');
+      xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
+      yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+    }
+
+    const outerWidth = this.model.get('width') === 'auto'
+      ? this.container.getBoundingClientRect().width
+      : this.model.get('width') + xPadding;
+
+    const outerHeight = this.model.get('height') + yPadding;
+
+    return [outerWidth, outerHeight]
+  },
+
   createAxes: function createAxes() {
     this.axesSvg = d3Selection.select(this.container).select('svg').node()
       ? d3Selection.select(this.container).select('svg')
@@ -332,13 +351,12 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       .map(function (c) { return Math.round(c * 255); });
     this.axesSvg.style('color', `rgba(${color[0]}, ${color[1]}, ${color[2]}, 1)`);
 
-    const { width, height } = this.container.getBoundingClientRect();
+    const [width, height] = this.getOuterDimensions();
 
     const currentXScaleRegl = this.scatterplot.get('xScale');
     const currentYScaleRegl = this.scatterplot.get('yScale');
 
     const labels = this.model.get('axes_labels');
-
     const xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
     const yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
 
@@ -429,13 +447,11 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
         .attr('transform', `rotate(90)`);
     }
 
+    this.updateContainerDimensions();
+
     this.scatterplot.set({
       xScale: this.xScaleRegl,
       yScale: this.yScaleRegl,
-      width: this.model.get('width')
-        ? this.model.get('width') - xPadding
-        : 'auto',
-      height: this.model.get('height') - yPadding,
     });
 
     this.canvasWrapper.style.right = `${xPadding}px`;
@@ -462,11 +478,11 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.canvasWrapper.style.right = '0';
     this.canvasWrapper.style.bottom = '0';
 
+    this.updateContainerDimensions();
+
     this.scatterplot.set({
       xScale: undefined,
       yScale: undefined,
-      width: this.model.get('width') || 'auto',
-      height: this.model.get('height'),
     });
   },
 
@@ -581,10 +597,31 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     }
   },
 
+  updateContainerDimensions: function updateContainerDimensions() {
+    const width = this.model.get('width');
+    const height = this.model.get('height');
+
+    let xPadding = 0;
+    let yPadding = 0;
+
+    if (this.model.get('axes')) {
+      const labels = this.model.get('axes_labels');
+      xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
+      yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+    }
+
+    this.container.style.width = width === 'auto'
+      ? '100%'
+      : (width + xPadding) + 'px';
+    this.container.style.height = (height + yPadding) + 'px';
+
+    window.requestAnimationFrame(() => { this.resizeHandler(); });
+  },
+
   resizeHandler: function resizeHandler() {
     if (!this.model.get('axes')) return;
 
-    const { width, height } = this.container.getBoundingClientRect();
+    const [width, height] = this.getOuterDimensions();
 
     const labels = this.model.get('axes_labels');
     const xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
@@ -604,20 +641,18 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
     this.updateLegendWrapperPosition();
 
-    this.withPropertyChangeHandler(
-      'width', this.model.get('width')
-        ? this.model.get('width') - xPadding
-        : 'auto'
-    );
-
-    this.withPropertyChangeHandler(
-      'height', this.model.get('axes') ? height - yPadding : height
-    );
+    this.withPropertyChangeHandler('width', this.model.get('width') || 'auto');
+    this.withPropertyChangeHandler('height', this.model.get('height'));
 
     // Render grid
     if (this.model.get('axes_grid')) {
       this.xAxis.tickSizeInner(-(height - yPadding));
       this.yAxis.tickSizeInner(-(width - xPadding));
+    }
+
+    if (labels) {
+      this.xAxisLabel.attr('x', (width - xPadding) / 2).attr('y', height);
+      this.yAxisLabel.attr('x', (height - yPadding) / 2).attr('y', -width);
     }
   },
 
@@ -760,17 +795,12 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     }
   },
 
-  widthHandler: function widthHandler(newValue) {
-    this.width = newValue;
-    this.container.style.width = this.width === 'auto'
-      ? '100%'
-      : this.width + 'px';
-    this.resizeHandler();
+  widthHandler: function widthHandler() {
+    this.updateContainerDimensions();
   },
 
-  heightHandler: function heightHandler(newValue) {
-    this.container.style.height = newValue + 'px';
-    this.resizeHandler();
+  heightHandler: function heightHandler() {
+    this.updateContainerDimensions();
   },
 
   backgroundColorHandler: function backgroundColorHandler(newValue) {
