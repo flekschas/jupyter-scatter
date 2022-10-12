@@ -1,3 +1,7 @@
+## v0.7.2
+
+- Fix versions of ipywidgets and jupyterlab_widgets to avoid running into incompatibilities ([#40](https://github.com/flekschas/jupyter-scatter/issues/40))
+
 ## v0.7.1
 
 - Take the x-padding into account when setting a fixed width ([#36](https://github.com/flekschas/jupyter-scatter/issues/36))
