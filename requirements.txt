@@ -1,6 +1,6 @@
-ipywidgets>=7.6,<8
+ipywidgets>=7.6,<9
 ipython
-jupyterlab_widgets==1.*
+jupyterlab_widgets>=1.0,<4
 jupyter_packaging
 matplotlib
 numpy

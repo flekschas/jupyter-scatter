@@ -37,6 +37,7 @@
     "test": "npm run ssl && npm run lint"
   },
   "dependencies": {
+    "@jupyter-widgets/base": "^1.1 || ^2 || ^3 || ^4 || ^5 || ^6",
     "camera-2d-simple": "~2.2.1",
     "d3-axis": "~3.0.0",
     "d3-scale": "~4.0.2",
