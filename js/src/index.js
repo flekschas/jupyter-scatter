@@ -11,31 +11,30 @@ const packageJson = require('../package.json');
 const createScatterplot = reglScatterplot.default;
 const createRenderer = reglScatterplot.createRenderer;
 
-const JupyterScatterModel = widgets.DOMWidgetModel.extend(
-  {
-    defaults: Object.assign(
+class JupyterScatterModel extends widgets.DOMWidgetModel {
+  defaults() {
+    return Object.assign(
       {},
-      widgets.DOMWidgetModel.prototype.defaults(),
+      super.defaults(),
       {
-        _model_name : 'JupyterScatterModel',
-        _model_module : packageJson.name,
-        _model_module_version : packageJson.version,
-        _view_name : 'JupyterScatterView',
-        _view_module : packageJson.name,
-        _view_module_version : packageJson.version,
+        _model_name: 'JupyterScatterModel',
+        _view_name: 'JupyterScatterView',
+        _model_module: packageJson.name,
+        _view_module: packageJson.name,
+        _model_module_version: packageJson.version,
+        _view_module_version: packageJson.version,
       }
-    )
-  },
+    );
+  }
+}
+
+JupyterScatterModel.serializers = Object.assign(
+  {},
+  widgets.DOMWidgetModel.serializers,
   {
-    serializers: Object.assign(
-      {},
-      widgets.DOMWidgetModel.serializers,
-      {
-        points: new codecs.Numpy2D('float32'),
-        selection: new codecs.Numpy1D('uint32'),
-        view_data: new codecs.Numpy1D('uint8'),
-      }
-    )
+    points: new codecs.Numpy2D('float32'),
+    selection: new codecs.Numpy1D('uint32'),
+    view_data: new codecs.Numpy1D('uint8'),
   }
 );
 
@@ -178,9 +177,9 @@ const reglScatterplotProperty = new Set([
 ]);
 
 // Custom View. Renders the widget model.
-const JupyterScatterView = widgets.DOMWidgetView.extend({
-  render: function render() {
-    var self = this;
+class JupyterScatterView extends widgets.DOMWidgetView {
+  render() {
+    const self = this;
 
     if (!window.jupyterScatter) {
       window.jupyterScatter = {
@@ -316,9 +315,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     });
 
     this.model.save_changes();
-  },
+  }
 
-  getOuterDimensions: function getOuterDimensions() {
+  getOuterDimensions() {
     let xPadding = 0;
     let yPadding = 0;
 
@@ -335,9 +334,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     const outerHeight = this.model.get('height') + yPadding;
 
     return [outerWidth, outerHeight]
-  },
+  }
 
-  createAxes: function createAxes() {
+  createAxes() {
     this.axesSvg = d3Selection.select(this.container).select('svg').node()
       ? d3Selection.select(this.container).select('svg')
       : d3Selection.select(this.container).append('svg');
@@ -460,9 +459,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     if (this.model.get('axes_grid')) this.createAxesGrid();
 
     this.updateLegendWrapperPosition();
-  },
+  }
 
-  removeAxes: function removeAxes() {
+  removeAxes() {
     this.axesSvg.node().remove();
     this.axesSvg = undefined;
     this.xAxis = undefined;
@@ -484,9 +483,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       xScale: undefined,
       yScale: undefined,
     });
-  },
+  }
 
-  createAxesGrid: function createAxesGrid() {
+  createAxesGrid() {
     const { width, height } = this.canvasWrapper.getBoundingClientRect();
     if (this.xAxis) {
       this.xAxis.tickSizeInner(-height);
@@ -501,9 +500,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
         .attr('stroke-opacity', 0.2)
         .attr('stroke-dasharray', 2);
     }
-  },
+  }
 
-  removeAxesGrid: function removeAxesGrid() {
+  removeAxesGrid() {
     if (this.xAxis) {
       this.xAxis.tickSizeInner(6);
       this.xAxisContainer.call(this.xAxis);
@@ -517,9 +516,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
         .attr('stroke-opacity', null)
         .attr('stroke-dasharray', null);
     }
-  },
+  }
 
-  showLegend: function showLegend() {
+  showLegend() {
     this.hideLegend();
 
     this.legendWrapper = document.createElement('div');
@@ -538,16 +537,16 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
 
     this.legendWrapper.appendChild(this.legend);
     this.container.appendChild(this.legendWrapper);
-  },
+  }
 
-  hideLegend: function hideLegend() {
+  hideLegend() {
     if (!this.legendWrapper) return;
     this.container.removeChild(this.legendWrapper);
     this.legendWrapper = undefined;
     this.legend = undefined;
-  },
+  }
 
-  updateLegendWrapperPosition: function updateLegendWrapperPosition() {
+  updateLegendWrapperPosition() {
     if (!this.legendWrapper) return;
 
     const labels = this.model.get('axes_labels');
@@ -558,9 +557,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.legendWrapper.style.bottom = yPadding + 'px';
     this.legendWrapper.style.left = 0;
     this.legendWrapper.style.right = xPadding + 'px';
-  },
+  }
 
-  updateLegendPosition: function updateLegendPosition() {
+  updateLegendPosition() {
     if (!this.legend) return;
 
     this.legend.style.position = 'absolute';
@@ -595,9 +594,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     if (translateX || translateY) {
       this.legend.style.transform = `translate(${translateX}, ${translateY})`;
     }
-  },
+  }
 
-  updateContainerDimensions: function updateContainerDimensions() {
+  updateContainerDimensions() {
     const width = this.model.get('width');
     const height = this.model.get('height');
 
@@ -616,9 +615,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.container.style.height = (height + yPadding) + 'px';
 
     window.requestAnimationFrame(() => { this.resizeHandler(); });
-  },
+  }
 
-  resizeHandler: function resizeHandler() {
+  resizeHandler() {
     if (!this.model.get('axes')) return;
 
     const [width, height] = this.getOuterDimensions();
@@ -654,9 +653,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       this.xAxisLabel.attr('x', (width - xPadding) / 2).attr('y', height);
       this.yAxisLabel.attr('x', (height - yPadding) / 2).attr('y', -width);
     }
-  },
+  }
 
-  remove: function destroy() {
+  destroy() {
     if (this.canvasObserver) {
       this.canvasObserver.disconnect();
     } else {
@@ -673,10 +672,10 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     this.scatterplot.unsubscribe('deselect', this.deselectHandlerBound);
     this.scatterplot.unsubscribe('view', this.viewChangeHandlerBound);
     this.scatterplot.destroy();
-  },
+  }
 
   // Helper
-  colorCanvas: function colorCanvas() {
+  colorCanvas() {
     if (Array.isArray(this.backgroundColor)) {
       this.container.style.backgroundColor = 'rgb(' +
         this.backgroundColor.slice(0, 3).map(function (x) { return x * 255 }).join(',') +
@@ -684,34 +683,34 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     } else {
       this.container.style.backgroundColor = this.backgroundColor;
     }
-  },
+  }
 
   // Event handlers for JS-triggered events
-  pointoverHandler: function pointoverHandler(pointIndex) {
+  pointoverHandler(pointIndex) {
     this.hoveringChangedByJs = true;
     this.model.set('hovering', pointIndex);
     this.model.save_changes();
-  },
+  }
 
-  pointoutHandler: function pointoutHandler() {
+  pointoutHandler() {
     this.hoveringChangedByJs = true;
     this.model.set('hovering', null);
     this.model.save_changes();
-  },
+  }
 
-  selectHandler: function selectHandler(event) {
+  selectHandler(event) {
     this.selectionChangedByJs = true;
     this.model.set('selection', [...event.points]);
     this.model.save_changes();
-  },
+  }
 
-  deselectHandler: function deselectHandler() {
+  deselectHandler() {
     this.selectionChangedByJs = true;
     this.model.set('selection', []);
     this.model.save_changes();
-  },
+  }
 
-  externalViewChangeHandler: function externalViewChangeHandler(event) {
+  externalViewChangeHandler(event) {
     const viewSync = this.model.get('view_sync');
     if (
       !viewSync
@@ -719,9 +718,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       || event.src === this.randomStr
     ) return;
     this.scatterplot.view(event.view, { preventEvent: true });
-  },
+  }
 
-  viewChangeHandler: function viewChangeHandler(event) {
+  viewChangeHandler(event) {
     const viewSync = this.model.get('view_sync');
     if (viewSync) {
       pubSub.globalPubSub.publish(
@@ -746,26 +745,26 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
           .attr('stroke-dasharray', 2);
       }
     }
-  },
+  }
 
-  xScaleHandler: function xScaleHandler() {
+  xScaleHandler() {
     this.createAxes();
-  },
+  }
 
-  yScaleHandler: function yScaleHandler() {
+  yScaleHandler() {
     this.createAxes();
-  },
+  }
 
   // Event handlers for Python-triggered events
-  pointsHandler: function pointsHandler(newPoints) {
+  pointsHandler(newPoints) {
     this.scatterplot.draw(newPoints, {
       transition: true,
       transitionDuration: 3000,
       transitionEasing: 'quadInOut',
     });
-  },
+  }
 
-  selectionHandler: function selectionHandler(newSelection) {
+  selectionHandler(newSelection) {
     // Avoid calling `this.scatterplot.select()` twice when the selection was
     // triggered by the JavaScript (i.e., the user interactively selected points)
     if (this.selectionChangedByJs) {
@@ -778,9 +777,9 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     } else {
       this.scatterplot.select(newSelection, { preventEvent: true });
     }
-  },
+  }
 
-  hoveringHandler: function hoveringHandler(newHovering) {
+  hoveringHandler(newHovering) {
     // Avoid calling `this.scatterplot.hover()` twice when the hovering was
     // triggered by the JavaScript (i.e., the user interactively selected points)
     if (this.hoveringChangedByJs) {
@@ -793,190 +792,189 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
     } else {
       this.scatterplot.hover(+newHovering, { preventEvent: true });
     }
-  },
+  }
 
-  widthHandler: function widthHandler() {
+  widthHandler() {
     this.updateContainerDimensions();
-  },
+  }
 
-  heightHandler: function heightHandler() {
+  heightHandler() {
     this.updateContainerDimensions();
-  },
+  }
 
-  backgroundColorHandler: function backgroundColorHandler(newValue) {
+  backgroundColorHandler(newValue) {
     this.withPropertyChangeHandler('backgroundColor', newValue);
     this.colorCanvas();
-  },
+  }
 
-  backgroundImageHandler: function backgroundImageHandler(newValue) {
+  backgroundImageHandler(newValue) {
     this.withPropertyChangeHandler('backgroundImage', newValue);
-  },
+  }
 
-  lassoColorHandler: function lassoColorHandler(newValue) {
+  lassoColorHandler(newValue) {
     this.withPropertyChangeHandler('lassoColor', newValue);
-  },
+  }
 
-  lassoMinDelayHandler: function lassoMinDelayHandler(newValue) {
+  lassoMinDelayHandler(newValue) {
     this.withPropertyChangeHandler('lassoMinDelay', newValue);
-  },
+  }
 
-  lassoMinDistHandler: function lassoMinDistHandler(newValue) {
+  lassoMinDistHandler(newValue) {
     this.withPropertyChangeHandler('lassoMinDist', newValue);
-  },
+  }
 
-  colorHandler: function colorHandler(newValue) {
+  colorHandler(newValue) {
     this.withPropertyChangeHandler('pointColor', newValue);
-  },
+  }
 
-  colorSelectedHandler: function colorSelectedHandler(newValue) {
+  colorSelectedHandler(newValue) {
     this.withPropertyChangeHandler('pointColorActive', newValue);
-  },
+  }
 
-  colorHoverHandler: function colorHoverHandler(newValue) {
+  colorHoverHandler(newValue) {
     this.withPropertyChangeHandler('pointColorHover', newValue);
-  },
+  }
 
-  colorByHandler: function colorByHandler(newValue) {
+  colorByHandler(newValue) {
     this.withPropertyChangeHandler('colorBy', newValue);
-  },
+  }
 
-  opacityHandler: function opacityHandler(newValue) {
+  opacityHandler(newValue) {
     this.withPropertyChangeHandler('opacity', newValue);
-  },
+  }
 
-  opacityUnselectedHandler: function opacityUnselectedHandler(newValue) {
+  opacityUnselectedHandler(newValue) {
     this.withPropertyChangeHandler('opacityInactiveScale', newValue);
-  },
+  }
 
-  opacityByHandler: function opacityByHandler(newValue) {
+  opacityByHandler(newValue) {
     this.withPropertyChangeHandler('opacityBy', newValue);
-  },
+  }
 
-  sizeHandler: function sizeHandler(newValue) {
+  sizeHandler(newValue) {
     this.withPropertyChangeHandler('pointSize', newValue);
-  },
+  }
 
-  sizeByHandler: function sizeByHandler(newValue) {
+  sizeByHandler(newValue) {
     this.withPropertyChangeHandler('sizeBy', newValue);
-  },
+  }
 
-  connectHandler: function connectHandler(newValue) {
+  connectHandler(newValue) {
     this.withPropertyChangeHandler('showPointConnections', Boolean(newValue));
-  },
+  }
 
-  connectionColorHandler: function connectionColorHandler(newValue) {
+  connectionColorHandler(newValue) {
     this.withPropertyChangeHandler('pointConnectionColor', newValue);
-  },
+  }
 
-  connectionColorSelectedHandler: function connectionColorSelectedHandler(newValue) {
+  connectionColorSelectedHandler(newValue) {
     this.withPropertyChangeHandler('pointConnectionColorActive', newValue);
-  },
+  }
 
-  connectionColorHoverHandler: function connectionColorHoverHandler(newValue) {
+  connectionColorHoverHandler(newValue) {
     this.withPropertyChangeHandler('pointConnectionColorHover', newValue);
-  },
+  }
 
-  connectionColorByHandler: function connectionColorByHandler(newValue) {
+  connectionColorByHandler(newValue) {
     this.withPropertyChangeHandler('pointConnectionColorBy', newValue);
-  },
+  }
 
-  connectionOpacityHandler: function connectionOpacityHandler(newValue) {
+  connectionOpacityHandler(newValue) {
     this.withPropertyChangeHandler('pointConnectionOpacity', newValue);
-  },
+  }
 
-  connectionOpacityByHandler: function connectionOpacityByHandler(newValue) {
+  connectionOpacityByHandler(newValue) {
     this.withPropertyChangeHandler('pointConnectionOpacityBy', newValue);
-  },
+  }
 
-  connectionSizeHandler: function connectionSizeHandler(newValue) {
+  connectionSizeHandler(newValue) {
     this.withPropertyChangeHandler('pointConnectionSize', newValue);
-  },
+  }
 
-  connectionSizeByHandler: function connectionSizeByHandler(newValue) {
+  connectionSizeByHandler(newValue) {
     this.withPropertyChangeHandler('pointConnectionSizeBy', newValue);
-  },
+  }
 
-  reticleHandler: function reticleHandler(newValue) {
+  reticleHandler(newValue) {
     this.withPropertyChangeHandler('showReticle', newValue);
-  },
+  }
 
-  reticleColorHandler: function reticleColorHandler(newValue) {
+  reticleColorHandler(newValue) {
     this.withPropertyChangeHandler('reticleColor', newValue);
-  },
+  }
 
-  cameraTargetHandler: function cameraTargetHandler(newValue) {
+  cameraTargetHandler(newValue) {
     this.withPropertyChangeHandler('cameraTarget', newValue);
-  },
+  }
 
-  cameraDistanceHandler: function cameraDistanceHandler(newValue) {
+  cameraDistanceHandler(newValue) {
     this.withPropertyChangeHandler('cameraDistance', newValue);
-  },
+  }
 
-  cameraRotationHandler: function cameraRotationHandler(newValue) {
-
+  cameraRotationHandler(newValue) {
     this.withPropertyChangeHandler('cameraRotation', newValue);
-  },
+  }
 
-  cameraViewHandler: function cameraViewHandler(newValue) {
+  cameraViewHandler(newValue) {
     this.withPropertyChangeHandler('cameraView', newValue);
-  },
+  }
 
-  lassoInitiatorHandler: function lassoInitiatorHandler(newValue) {
+  lassoInitiatorHandler(newValue) {
     this.withPropertyChangeHandler('lassoInitiator', newValue);
-  },
+  }
 
-  mouseModeHandler: function mouseModeHandler(newValue) {
+  mouseModeHandler(newValue) {
     this.withPropertyChangeHandler('mouseMode', newValue);
-  },
+  }
 
-  axesHandler: function axesHandler(newValue) {
+  axesHandler(newValue) {
     if (newValue) this.createAxes();
     else this.removeAxes();
-  },
+  }
 
-  axesColorHandler: function axesColorHandler() {
+  axesColorHandler() {
     this.createAxes();
-  },
+  }
 
-  axesGridHandler: function axesGridHandler(newValue) {
+  axesGridHandler(newValue) {
     if (newValue) this.createAxesGrid();
     else this.removeAxesGrid();
-  },
+  }
 
-  axesLabelsHandler: function axesLabelsHandler(newValue) {
+  axesLabelsHandler(newValue) {
     if (!newValue) this.removeAxes();
     this.createAxes();
-  },
+  }
 
-  legendHandler: function legendHandler(newValue) {
+  legendHandler(newValue) {
     if (newValue) this.showLegend();
     else this.hideLegend();
-  },
+  }
 
-  legendColorHandler: function legendColorHandler() {
+  legendColorHandler() {
     this.hideLegend();
     this.showLegend();
-  },
+  }
 
-  legendSizeHandler: function legendSizeHandler() {
+  legendSizeHandler() {
     this.hideLegend();
     this.showLegend();
-  },
+  }
 
-  legendPositionHandler: function legendPositionHandler() {
+  legendPositionHandler() {
     this.updateLegendPosition();
-  },
+  }
 
-  legendEncodingHandler: function legendEncodingHandler() {
+  legendEncodingHandler() {
     if (!this.model.get('legend')) return;
     this.showLegend();
-  },
+  }
 
-  otherOptionsHandler: function otherOptionsHandler(newOptions) {
+  otherOptionsHandler(newOptions) {
     this.scatterplot.set(newOptions);
-  },
+  }
 
-  viewDownloadHandler: function viewDownloadHandler(target) {
+  viewDownloadHandler(target) {
     if (!target) return;
 
     if (target === 'property') {
@@ -995,28 +993,28 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
         this.model.save_changes();
       }, 0);
     });
-  },
+  }
 
-  viewResetHandler: function viewResetHandler() {
+  viewResetHandler() {
     this.scatterplot.reset();
     setTimeout(() => {
       this.model.set('view_reset', false);
       this.model.save_changes();
     }, 0);
-  },
+  }
 
-  withPropertyChangeHandler: function withPropertyChangeHandler(property, changedValue) {
-    var p = {};
+  withPropertyChangeHandler(property, changedValue) {
+    const p = {};
     p[property] = changedValue;
     this.scatterplot.set(p);
-  },
+  }
 
-  withModelChangeHandler: function withModelChangeHandler(property, handler) {
-    var self = this;
+  withModelChangeHandler(property, handler) {
+    const self = this;
 
     return function modelChangeHandler() {
-      var changes = self.model.changedAttributes();
-      var pyPropertyName = camelToSnake(property);
+      const changes = self.model.changedAttributes();
+      const pyPropertyName = camelToSnake(property);
 
       if (
         changes[pyPropertyName] === undefined ||
@@ -1031,7 +1029,7 @@ const JupyterScatterView = widgets.DOMWidgetView.extend({
       if (handler) handler(self[property]);
     }
   }
-});
+};
 
 module.exports = {
   JupyterScatterModel: JupyterScatterModel,

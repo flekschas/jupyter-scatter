@@ -1,6 +1,15 @@
+## v0.7.4
+
+- Adjust widget to be compatible with ipywidgets `v8` and jupyterlab-widgets `v3` ([#39]((https://github.com/flekschas/jupyter-scatter/issues/39)))
+
+## v0.7.3
+
+- Fix broken build of `v0.7.2`
+- Fix versions of ipywidgets and jupyterlab_widgets to avoid running into incompatibilities ([#40](https://github.com/flekschas/jupyter-scatter/issues/40))
+
 ## v0.7.2
 
-- Fix versions of ipywidgets and jupyterlab_widgets to avoid running into incompatibilities ([#40](https://github.com/flekschas/jupyter-scatter/issues/40))
+**Do not use. Build is broken**
 
 ## v0.7.1
 
