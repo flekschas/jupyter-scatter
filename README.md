@@ -6,7 +6,7 @@
   
   [![pypi version](https://img.shields.io/pypi/v/jupyter-scatter.svg?color=1a8cff&style=flat-square)](https://pypi.org/project/jupyter-scatter/)
   [![build status](https://img.shields.io/github/workflow/status/flekschas/jupyter-scatter/Build%20Python%20&%20JavaScript?color=139ce9&style=flat-square)](https://github.com/flekschas/jupyter-scatter/actions?query=workflow%3A%22Build+Python+%26+JavaScript%22)
-  [![API docs](https://img.shields.io/badge/API-docs-139ce9.svg?style=flat-square)](DOCS.md)
+  [![API docs](https://img.shields.io/badge/API-docs-139ce9.svg?style=flat-square)](API.md)
   [![notebook examples](https://img.shields.io/badge/notebook-examples-139ce9.svg?style=flat-square)](notebooks/get-started.ipynb)
   
 </div>
