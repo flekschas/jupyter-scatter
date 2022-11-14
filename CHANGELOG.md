@@ -1,3 +1,7 @@
+## v0.8.0
+
+- Add support for end labeling of continuous data encoding via a new `labeling` argument of `color()`, `opacity()`, `size()`, `connection_color()`, `connection_opacity()`, and `connection_size()`. ([#46](https://github.com/flekschas/jupyter-scatter/pull/46))
+
 ## v0.7.4
 
 - Adjust widget to be compatible with ipywidgets `v8` and jupyterlab-widgets `v3` ([#39]((https://github.com/flekschas/jupyter-scatter/issues/39)))
