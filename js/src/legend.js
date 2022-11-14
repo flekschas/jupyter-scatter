@@ -68,8 +68,10 @@ function createIcon(
       element.style.boxShadow = 'inset 0 0 1px rgba(' + fontColor + ',' + fontColor + ','  + fontColor + ', 0.66)';
     }
   } else if (visualChannel.indexOf('size') >= 0) {
-    const extent = encodingRange[1] - encodingRange[0];
-    const normEncoding = 0.2 + ((encoding - encodingRange[0]) / extent) * 0.8;
+    const minValue = Math.min.apply(null, encodingRange);
+    const maxValue = Math.max.apply(null, encodingRange);
+    const extent = maxValue - minValue;
+    const normEncoding = 0.2 + ((encoding - minValue) / extent) * 0.8;
     element.style.transform = `scale(${normEncoding})`;
   }
 
