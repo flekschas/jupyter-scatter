@@ -2,6 +2,8 @@ from matplotlib.colors import LogNorm, PowerNorm, Normalize
 import ipywidgets as widgets
 from urllib.parse import urlparse
 
+from .types import Labeling
+
 def to_uint8(x):
   return int(max(0, min(x * 255, 255)))
 
@@ -58,3 +60,30 @@ def to_scale_type(norm):
         return f'pow_{norm.gamma}'
 
     return 'linear'
+
+def create_labeling(partial_labeling, column: str | None = None) -> Labeling:
+    labeling: Labeling = {}
+
+    if isinstance(partial_labeling, dict):
+        if 'minValue' in partial_labeling:
+            labeling['minValue'] = partial_labeling['minValue']
+
+        if 'maxValue' in partial_labeling:
+            labeling['maxValue'] = partial_labeling['maxValue']
+
+        if 'variable' in partial_labeling:
+            labeling['variable'] = partial_labeling['variable']
+    else:
+        if len(partial_labeling) > 0:
+            labeling['minValue'] = partial_labeling[0]
+
+        if len(partial_labeling) > 1:
+            labeling['maxValue'] = partial_labeling[1]
+
+        if len(partial_labeling) > 2:
+            labeling['variable'] = partial_labeling[2]
+
+    if 'variable' not in labeling and column is not None:
+        labeling['variable'] = column
+
+    return labeling

@@ -11,8 +11,8 @@ from typing import Optional, Union, List, Tuple
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, create_default_norm
-from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Size, Position, Undefined
+from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, create_default_norm, create_labeling
+from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Size, Position, Labeling, Undefined
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -160,6 +160,7 @@ class Scatter():
         self._color_norm = create_default_norm()
         self._color_order = None
         self._color_categories = None
+        self._color_labeling = None
         self._opacity = 0.66
         self._opacity_unselected = 0.5
         self._opacity_by = 'density'
@@ -167,12 +168,14 @@ class Scatter():
         self._opacity_norm = create_default_norm()
         self._opacity_order = None
         self._opacity_categories = None
+        self._opacity_labeling = None
         self._size = 3
         self._size_by = None
         self._size_map = None
         self._size_norm = create_default_norm()
         self._size_order = None
         self._size_categories = None
+        self._size_labeling = None
         self._connect_by = None
         self._connect_order = None
         self._connection_color = (0, 0, 0, 0.1)
@@ -183,18 +186,21 @@ class Scatter():
         self._connection_color_norm = create_default_norm()
         self._connection_color_order = None
         self._connection_color_categories = None
+        self._connection_color_labeling = None
         self._connection_opacity = 0.1
         self._connection_opacity_by = None
         self._connection_opacity_map = None
         self._connection_opacity_norm = create_default_norm()
         self._connection_opacity_order = None
         self._connection_opacity_categories = None
+        self._connection_opacity_labeling = None
         self._connection_size = 2
         self._connection_size_by = None
         self._connection_size_map = None
         self._connection_size_norm = create_default_norm()
         self._connection_size_order = None
         self._connection_size_categories = None
+        self._connection_size_labeling = None
         self._width = 'auto'
         self._height = 240
         self._reticle = True
@@ -227,6 +233,7 @@ class Scatter():
             kwargs.get('color_map', UNDEF),
             kwargs.get('color_norm', UNDEF),
             kwargs.get('color_order', UNDEF),
+            kwargs.get('color_labeling', UNDEF),
         )
         self.opacity(
             kwargs.get('opacity', UNDEF),
@@ -235,6 +242,7 @@ class Scatter():
             kwargs.get('opacity_map', UNDEF),
             kwargs.get('opacity_norm', UNDEF),
             kwargs.get('opacity_order', UNDEF),
+            kwargs.get('opacity_labeling', UNDEF),
         )
         self.size(
             kwargs.get('size', UNDEF),
@@ -242,6 +250,7 @@ class Scatter():
             kwargs.get('size_map', UNDEF),
             kwargs.get('size_norm', UNDEF),
             kwargs.get('size_order', UNDEF),
+            kwargs.get('size_labeling', UNDEF),
         )
         self.connect(
             kwargs.get('connect_by', UNDEF),
@@ -255,6 +264,7 @@ class Scatter():
             kwargs.get('connection_color_map', UNDEF),
             kwargs.get('connection_color_norm', UNDEF),
             kwargs.get('connection_color_order', UNDEF),
+            kwargs.get('connection_color_labeling', UNDEF),
         )
         self.connection_opacity(
             kwargs.get('connection_opacity', UNDEF),
@@ -262,12 +272,14 @@ class Scatter():
             kwargs.get('connection_opacity_map', UNDEF),
             kwargs.get('connection_opacity_norm', UNDEF),
             kwargs.get('connection_opacity_order', UNDEF),
+            kwargs.get('connection_opacity_labeling', UNDEF),
         )
         self.connection_size(
             kwargs.get('connection_size', UNDEF),
             kwargs.get('connection_size_by', UNDEF),
             kwargs.get('connection_size_map', UNDEF),
             kwargs.get('connection_size_order', UNDEF),
+            kwargs.get('connection_size_labeling', UNDEF),
         )
         self.lasso(
             kwargs.get('lasso_color', UNDEF),
@@ -614,6 +626,7 @@ class Scatter():
         map: Optional[Union[Auto, str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
         order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
+        labeling: Optional[Union[Tuple[str, str], Tuple[str, str, str], Labeling, Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -644,6 +657,11 @@ class Scatter():
         order : array_like, optional
             The order of the color map. It can either be a list of values (for
             categorical coloring) or `reverse` to reverse the color map.
+        labeling : array_like, optional
+            The labeling of the minimum and maximum value as well as the data
+            variable. If defined, labels are shown with the legend. THe labeling
+            can either be a list of strings (`[minValue, maxValue, variable]`)
+            or a dictionary (`{ min: label, max: label, variable: label }`).
         kwargs : optional
             Options which can be used to skip updating the widget when
             `skip_widget_update` is set to `True`
@@ -681,7 +699,8 @@ class Scatter():
          'by': None,
          'map': None,
          'norm': <matplotlib.colors.Normalize at 0x12fa8b250>,
-         'order': None}
+         'order': None,
+         'labeling': None}
         """
         if default is not UNDEF:
             try:
@@ -805,6 +824,10 @@ class Scatter():
         if self._color_categories is not None:
             assert len(self._color_categories) <= len(self._color_map), 'More categories than colors'
 
+        if labeling is not UNDEF:
+            column = self._color_by if isinstance(self._color_by, str) else None
+            self._color_labeling = create_labeling(labeling, column)
+
         # Update widget and encoding domain-range
         if self._color_by is not None and self._color_map is not None:
             final_color_map = order_limit_map(
@@ -815,10 +838,10 @@ class Scatter():
             self.update_widget('color', final_color_map)
             self._encodings.set_legend(
                 'color',
-                self._data[self._color_by],
                 final_color_map,
                 self._color_norm,
                 self._color_categories,
+                self._color_labeling,
             )
         else:
             self.update_widget('color', self._color)
@@ -839,6 +862,7 @@ class Scatter():
             map = self._color_map,
             norm = self._color_norm,
             order = self._color_order,
+            labeling = self._color_labeling,
         )
 
     def opacity(
@@ -849,6 +873,7 @@ class Scatter():
         map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
         order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
+        labeling: Optional[Union[Labeling, Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -878,6 +903,11 @@ class Scatter():
         order : array_like, optional
             The order of the opacity map. It can either be a list of values (for
             categorical opacity values) or `reverse` to reverse the opacity map.
+        labeling : array_like, optional
+            The labeling of the minimum and maximum value as well as the data
+            variable. If defined, labels are shown with the legend. THe labeling
+            can either be a list of strings (`[minValue, maxValue, variable]`)
+            or a dictionary (`{ min: label, max: label, variable: label }`).
         kwargs : optional
             Options which can be used to skip updating the widget when
             `skip_widget_update` is set to `True`
@@ -913,7 +943,8 @@ class Scatter():
          'by': 'speed',
          'map': [0.0, 0.25, 0.5, 0.75, 1.0],
          'norm': <matplotlib.colors.Normalize at 0x12fa8b4c0>,
-         'order': None}
+         'order': None,
+         'labeling': None}
         """
         if default is not UNDEF:
             try:
@@ -1014,6 +1045,10 @@ class Scatter():
         if self._opacity_categories is not None:
             assert len(self._opacity_categories) <= len(self._opacity_map), 'More categories than opacities'
 
+        if labeling is not UNDEF:
+            column = self._opacity_by if isinstance(self._opacity_by, str) else None
+            self._opacity_labeling = create_labeling(labeling, column)
+
         # Update widget
         if self._opacity_by is not None and self._opacity_map is not None:
             final_opacity_map = order_limit_map(
@@ -1025,10 +1060,10 @@ class Scatter():
             if self._opacity_by != 'density':
                 self._encodings.set_legend(
                     'opacity',
-                    self._data[self._opacity_by],
                     final_opacity_map,
                     self._opacity_norm,
                     self._opacity_categories,
+                    self._opacity_labeling,
                 )
         else:
             self.update_widget('opacity', self._opacity)
@@ -1048,6 +1083,7 @@ class Scatter():
             map = self._opacity_map,
             norm = self._opacity_norm,
             order = self._opacity_order,
+            labeling = self._opacity_labeling,
         )
 
     def size(
@@ -1057,6 +1093,7 @@ class Scatter():
         map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
         order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
+        labeling: Optional[Union[Labeling, Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1082,6 +1119,11 @@ class Scatter():
         order : array_like, optional
             The order of the size map. It can either be a list of values (for
             categorical size values) or `reverse` to reverse the size map.
+        labeling : array_like, optional
+            The labeling of the minimum and maximum value as well as the data
+            variable. If defined, labels are shown with the legend. THe labeling
+            can either be a list of strings (`[minValue, maxValue, variable]`)
+            or a dictionary (`{ min: label, max: label, variable: label }`).
         kwargs : optional
             Options which can be used to skip updating the widget when
             `skip_widget_update` is set to `True`
@@ -1117,7 +1159,8 @@ class Scatter():
          'by': 'weight',
          'map': [2.0, 8.0, 14.0, 20.0],
          'norm': <matplotlib.colors.Normalize at 0x12fa8b580>,
-         'order': None}
+         'order': None,
+         'labeling': None}
         """
         if default is not UNDEF:
             try:
@@ -1210,6 +1253,10 @@ class Scatter():
         if self._size_categories is not None:
             assert len(self._size_categories) <= len(self._size_map), 'More categories than sizes'
 
+        if labeling is not UNDEF:
+            column = self._size_by if isinstance(self._size_by, str) else None
+            self._size_labeling = create_labeling(labeling, column)
+
         # Update widget and encoding domain-range
         if self._size_by is not None and self._size_map is not None:
             final_size_map = order_limit_map(
@@ -1220,10 +1267,10 @@ class Scatter():
             self.update_widget('size', final_size_map)
             self._encodings.set_legend(
                 'size',
-                self._data[self._size_by],
                 final_size_map,
                 self._size_norm,
                 self._size_categories,
+                self._size_labeling,
             )
         else:
             self.update_widget('size', self._size)
@@ -1242,6 +1289,7 @@ class Scatter():
             map = self._size_map,
             norm = self._size_norm,
             order = self._size_order,
+            labeling = self._size_labeling,
         )
 
     def connect(
@@ -1343,6 +1391,7 @@ class Scatter():
         map: Optional[Union[Auto, str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
         order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
+        labeling: Optional[Union[Labeling, Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1379,6 +1428,11 @@ class Scatter():
         order : array_like, optional
             The order of the color map. It can either be a list of values (for
             categorical coloring) or `reverse` to reverse the color map.
+        labeling : array_like, optional
+            The labeling of the minimum and maximum value as well as the data
+            variable. If defined, labels are shown with the legend. THe labeling
+            can either be a list of strings (`[minValue, maxValue, variable]`)
+            or a dictionary (`{ min: label, max: label, variable: label }`).
         kwargs : optional
             Options which can be used to skip updating the widget when
             `skip_widget_update` is set to `True`
@@ -1404,20 +1458,21 @@ class Scatter():
 
         Examples
         --------
-        >>> scatter.color('red')
+        >>> scatter.connection_color('red')
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.color(by='speed', map='plasma', order='reverse')
+        >>> scatter.connection_color(by='speed', map='plasma', order='reverse')
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.color()
+        >>> scatter.connection_color()
         {'color': (0, 0, 0, 0.66),
          'color_selected': (0, 0.55, 1, 1),
          'color_hover': (0, 0, 0, 1),
          'by': None,
          'map': None,
          'norm': <matplotlib.colors.Normalize at 0x12fa8b250>,
-         'order': None}
+         'order': None,
+         'labeling': None}
         """
         if default is not UNDEF:
             try:
@@ -1543,6 +1598,10 @@ class Scatter():
         if self._connection_color_categories is not None:
             assert len(self._connection_color_categories) <= len(self._connection_color_map), 'More categories than connection colors'
 
+        if labeling is not UNDEF:
+            column = self._connection_color_by if isinstance(self._connection_color_by, str) else None
+            self._connection_color_labeling = create_labeling(labeling, column)
+
         # Update widget and legend encoding
         if self._connection_color_by is not None and self._connection_color_map is not None:
             final_connection_color_map = order_limit_map(
@@ -1553,10 +1612,10 @@ class Scatter():
             self.update_widget('connection_color', final_connection_color_map)
             self._encodings.set_legend(
                 'connection_color',
-                self._data[self._connection_color_by],
                 final_connection_color_map,
                 self._connection_color_norm,
                 self._connection_color_categories,
+                self._connection_color_labeling,
             )
         else:
             self.update_widget('connection_color', self._connection_color)
@@ -1577,6 +1636,7 @@ class Scatter():
             map = self._connection_color_map,
             norm = self._connection_color_norm,
             order = self._connection_color_order,
+            labeling = self._connection_color_labeling,
         )
 
     def connection_opacity(
@@ -1586,6 +1646,7 @@ class Scatter():
         map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
         order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
+        labeling: Optional[Union[Labeling, Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1611,6 +1672,11 @@ class Scatter():
         order : array_like, optional
             The order of the opacity map. It can either be a list of values (for
             categorical opacity values) or `reverse` to reverse the opacity map.
+        labeling : array_like, optional
+            The labeling of the minimum and maximum value as well as the data
+            variable. If defined, labels are shown with the legend. THe labeling
+            can either be a list of strings (`[minValue, maxValue, variable]`)
+            or a dictionary (`{ min: label, max: label, variable: label }`).
         kwargs : optional
             Options which can be used to skip updating the widget when
             `skip_widget_update` is set to `True`
@@ -1647,7 +1713,8 @@ class Scatter():
          'by': None,
          'map': None,
          'norm': <matplotlib.colors.Normalize at 0x12fa8b700>,
-         'order': None}
+         'order': None,
+         'labeling': None}
         """
         if default is not UNDEF:
             try:
@@ -1748,6 +1815,10 @@ class Scatter():
         if self._connection_opacity_categories is not None:
             assert len(self._connection_opacity_categories) <= len(self._connection_opacity_map), 'More categories than connection opacities'
 
+        if labeling is not UNDEF:
+            column = self._connection_opacity_by if isinstance(self._connection_opacity_by, str) else None
+            self._connection_opacity_labeling = create_labeling(labeling, column)
+
         # Update widget and legend encoding
         if self._connection_opacity_by is not None and self._connection_opacity_map is not None:
             final_opacity_map = order_limit_map(
@@ -1758,10 +1829,10 @@ class Scatter():
             self.update_widget('connection_opacity', final_opacity_map)
             self._encodings.set_legend(
                 'connection_opacity',
-                self._data[self._connection_opacity_by],
                 final_opacity_map,
                 self._connection_opacity_norm,
                 self._connection_opacity_categories,
+                self._connection_opacity_labeling,
             )
         else:
             self.update_widget('connection_opacity', self._connection_opacity)
@@ -1780,6 +1851,7 @@ class Scatter():
             map = self._connection_opacity_map,
             norm = self._connection_opacity_norm,
             order = self._connection_opacity_order,
+            labeling = self._connection_opacity_labeling,
         )
 
     def connection_size(
@@ -1789,6 +1861,7 @@ class Scatter():
         map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
         order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
+        labeling: Optional[Union[Labeling, Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1814,6 +1887,11 @@ class Scatter():
         order : array_like, optional
             The order of the size map. It can either be a list of values (for
             categorical size values) or `reverse` to reverse the size map.
+        labeling : array_like, optional
+            The labeling of the minimum and maximum value as well as the data
+            variable. If defined, labels are shown with the legend. THe labeling
+            can either be a list of strings (`[minValue, maxValue, variable]`)
+            or a dictionary (`{ min: label, max: label, variable: label }`).
         kwargs : optional
             Options which can be used to skip updating the widget when
             `skip_widget_update` is set to `True`
@@ -1850,7 +1928,8 @@ class Scatter():
          'by': None,
          'map': None,
          'norm': <matplotlib.colors.Normalize at 0x12fa8b7c0>,
-         'order': None}
+         'order': None,
+         'labeling': None}
         """
         if default is not UNDEF:
             try:
@@ -1939,6 +2018,10 @@ class Scatter():
 
         self._connection_size_map = tolist(self._connection_size_map)
 
+        if labeling is not UNDEF:
+            column = self._connection_size_by if isinstance(self._connection_size_by, str) else None
+            self._connection_size_labeling = create_labeling(labeling, column)
+
         # Update widget and legend encoding
         if self._connection_size_by is not None and self._connection_size_map is not None:
             final_connection_size_map = order_limit_map(
@@ -1949,10 +2032,10 @@ class Scatter():
             self.update_widget('connection_size', final_connection_size_map)
             self._encodings.set_legend(
                 'connection_size',
-                self._data[self._connection_size_by],
                 final_connection_size_map,
                 self._connection_size_norm,
                 self._connection_size_categories,
+                self._connection_size_labeling,
             )
         else:
             self.update_widget('connection_size', self._connection_size)
@@ -1974,6 +2057,7 @@ class Scatter():
             map = self._connection_size_map,
             norm = self._connection_size_norm,
             order = self._connection_size_order,
+            labeling = self._connection_size_labeling,
         )
 
     def background(

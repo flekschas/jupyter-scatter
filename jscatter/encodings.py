@@ -5,14 +5,44 @@ from functools import reduce
 from math import floor
 from typing import List, Tuple, Union
 
-def create_legend(values, encoding, norm, categories, linspace_num=5):
+def create_legend(encoding, norm, categories, labeling=None, linspace_num=5):
+    variable = None
+    if labeling:
+        try:
+            variable = labeling['variable']
+        except KeyError as e:
+            variable = None
+    values = []
+
     if categories:
         assert len(categories) == len(encoding), 'The categories and encoding need to be of the same size'
         cat_by_idx = { catIdx: cat for cat, catIdx in categories.items() }
-        return [(cat_by_idx[i], encoding[i]) for i in range(len(cat_by_idx))]
+        values = [(cat_by_idx[i], encoding[i], None) for i in range(len(cat_by_idx))]
+    else:
+        S = np.linspace(0, 1, linspace_num)
+        for s in S:
+            label = None
 
-    S = np.linspace(0, 1, linspace_num)
-    return [(norm.inverse(s), encoding[floor((len(encoding) - 1) * s)]) for s in S]
+            if labeling:
+                if s == 0:
+                    try:
+                        label = labeling['minValue']
+                    except KeyError as e:
+                        label = None
+
+                if s == S[-1]:
+                    try:
+                        label = labeling['maxValue']
+                    except KeyError as e:
+                        label = None
+
+            values.append((
+                norm.inverse(s),
+                encoding[floor((len(encoding) - 1) * s)],
+                label
+            ))
+
+    return dict(variable=variable, values=values)
 
 
 class Component():
@@ -121,13 +151,21 @@ class Encodings():
         if visual_enc in self.visual:
             return self.visual[visual_enc].legend
 
-    def set_legend(self, visual_enc, values, encoding, norm, categories, linspace_num=5):
+    def set_legend(
+        self,
+        visual_enc,
+        encoding,
+        norm,
+        categories,
+        labeling = None,
+        linspace_num = 5
+    ):
         if visual_enc in self.visual:
             self.visual[visual_enc].legend = create_legend(
-                values,
                 encoding,
                 norm,
                 categories,
+                labeling,
                 linspace_num
             )
 
