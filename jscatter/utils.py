@@ -1,6 +1,7 @@
 from matplotlib.colors import LogNorm, PowerNorm, Normalize
 import ipywidgets as widgets
 from urllib.parse import urlparse
+from typing import Union
 
 from .types import Labeling
 
@@ -61,7 +62,7 @@ def to_scale_type(norm):
 
     return 'linear'
 
-def create_labeling(partial_labeling, column: str | None = None) -> Labeling:
+def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeling:
     labeling: Labeling = {}
 
     if isinstance(partial_labeling, dict):
