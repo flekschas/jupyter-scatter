@@ -15,21 +15,15 @@ def create_legend(encoding, norm, categories, labeling=None, linspace_num=5):
         values = [(cat_by_idx[i], encoding[i], None) for i in range(len(cat_by_idx))]
     else:
         S = np.linspace(0, 1, linspace_num)
-        for s in S:
-            label = None
 
-            if labeling:
-                if s == 0:
-                    label = labeling.get('minValue')
+        values = [
+            (norm.inverse(s), encoding[floor((len(encoding) - 1) * s)], None)
+            for s in np.linspace(0, 1, linspace_num)
+        ]
 
-                if s == S[-1]:
-                    label = labeling.get('maxValue')
-
-            values.append((
-                norm.inverse(s),
-                encoding[floor((len(encoding) - 1) * s)],
-                label
-            ))
+        if labeling:
+            values[0] = (*values[0][0:2], labeling.get('minValue'))
+            values[-1] = (*values[-1][0:2], labeling.get('maxValue'))
 
     return dict(variable=variable, values=values)
 
