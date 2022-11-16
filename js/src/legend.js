@@ -58,7 +58,7 @@ function createIcon(
   element.style.borderRadius = sizePx + 'px';
   element.style.backgroundColor = 'rgb(' + fontColor + ','  + fontColor + ',' + fontColor + ')';
 
-  if (visualChannel.indexOf('color') >= 0) {
+  if (visualChannel.includes('color')) {
     element.style.backgroundColor = Array.isArray(encoding)
       ? 'rgb(' + encoding.slice(0, 3).map((v) => v * 255).join(', ') + ')'
       : encoding;
