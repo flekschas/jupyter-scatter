@@ -6,12 +6,7 @@ from math import floor
 from typing import List, Tuple, Union
 
 def create_legend(encoding, norm, categories, labeling=None, linspace_num=5):
-    variable = None
-    if labeling:
-        try:
-            variable = labeling['variable']
-        except KeyError as e:
-            variable = None
+    variable = labeling.get('variable') if labeling else None
     values = []
 
     if categories:
