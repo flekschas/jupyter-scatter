@@ -62,12 +62,12 @@ function createIcon(
     element.style.backgroundColor = Array.isArray(encoding)
       ? 'rgb(' + encoding.slice(0, 3).map((v) => v * 255).join(', ') + ')'
       : encoding;
-  } else if (visualChannel.indexOf('opacity') >= 0) {
+  } else if (visualChannel.includes('opacity')) {
     element.style.backgroundColor = 'rgba(' + fontColor + ',' + fontColor + ','  + fontColor + ',' + encoding + ')';
     if (encoding < 0.2) {
       element.style.boxShadow = 'inset 0 0 1px rgba(' + fontColor + ',' + fontColor + ','  + fontColor + ', 0.66)';
     }
-  } else if (visualChannel.indexOf('size') >= 0) {
+  } else if (visualChannel.includes('size')) {
     const minValue = Math.min.apply(null, encodingRange);
     const maxValue = Math.max.apply(null, encodingRange);
     const extent = maxValue - minValue;
