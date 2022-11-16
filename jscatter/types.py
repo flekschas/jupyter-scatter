@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Union, Tuple
+from typing_extensions import NotRequired, TypedDict
 
 Rgb = Tuple[float, float, float]
 Rgba = Tuple[float, float, float, float]
@@ -47,3 +48,8 @@ class Position(Enum):
     RIGHT = 'right'
     LEFT = 'left'
     CENTER = 'center'
+
+class Labeling(TypedDict):
+    variable: NotRequired[str]
+    minValue: NotRequired[str]
+    maxValue: NotRequired[str]
