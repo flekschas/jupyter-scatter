@@ -112,7 +112,7 @@ Get or set the selected points.
 scatter.selection(cars.query('speed < 50').index)
 ```
 
-<h3><a name="scatter.color" href="#scatter.color">#</a> scatter.<b>color</b>(<i>default=Undefined</i>, <i>selected=Undefined</i>, <i>hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.color" href="#scatter.color">#</a> scatter.<b>color</b>(<i>default=Undefined</i>, <i>selected=Undefined</i>, <i>hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Get or set the point color.
 
@@ -125,6 +125,7 @@ Get or set the point color.
 - `map` is either a string referencing a matplotlib color map, a matplotlib color map object, a list of matplotlib-compatible colors, a dictionary of category-color pairs, or `auto` (to let jscatter choose a default color map).
 - `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Normalize.html).
 - `order` is either a list of values (for categorical coloring) or `reverse` to reverse a color map.
+- `labeling` is either a tuple of three strings specyfing a label for the minimum value, maximum value, and variable that the color encodes or a dictionary of the form `{'minValue': 'label', 'maxValue': 'label', 'variable': 'label'}`. The specified labels are only used for continuous color encoding and are displayed together with the legend.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
 
@@ -152,7 +153,7 @@ scatter.color(
 scatter.color(by='gpd', map='viridis')
 ```
 
-<h3><a name="scatter.opacity" href="#scatter.opacity">#</a> scatter.<b>opacity</b>(<i>default=Undefined</i>, <i>unselected=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.opacity" href="#scatter.opacity">#</a> scatter.<b>opacity</b>(<i>default=Undefined</i>, <i>unselected=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Get or set the point opacity.
 
@@ -164,6 +165,7 @@ Get or set the point opacity.
 - `map` is either a triple specifying an `np.linspace(*map)`, a list of opacities, a dictionary of category-opacity pairs, or `auto` (to let jscatter choose a default opacity map).
 - `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Normalize.html).
 - `order` is either a list of values (for categorical opacity encoding) or `reverse` to reverse the opacity map.
+- `labeling` is either a tuple of three strings specyfing a label for the minimum value, maximum value, and variable that the opacity encodes or a dictionary of the form `{'minValue': 'label', 'maxValue': 'label', 'variable': 'label'}`. The specified labels are only used for continuous opacity encoding and are displayed together with the legend.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
 
@@ -180,7 +182,7 @@ scatter.opacity(by='price', map=(1, 0.25, 10))
 scatter.opacity(by='density')
 ```
 
-<h3><a name="scatter.size" href="#scatter.size">#</a> scatter.<b>size</b>(<i>default=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.size" href="#scatter.size">#</a> scatter.<b>size</b>(<i>default=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Get or set the point size.
 
@@ -191,6 +193,7 @@ Get or set the point size.
 - `map` is either a triple specifying an `np.linspace(*map)`, a list of sizes, a dictionary of category-size pairs, or `auto` (to let jscatter choose a default size map).
 - `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Normalize.html).
 - `order` is either a list of values (for categorical size encoding) or `reverse` to reverse the size map.
+- `labeling` is either a tuple of three strings specyfing a label for the minimum value, maximum value, and variable that the size encodes or a dictionary of the form `{'minValue': 'label', 'maxValue': 'label', 'variable': 'label'}`. The specified labels are only used for continuous size encoding and are displayed together with the legend.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
 
@@ -245,19 +248,19 @@ scatter.connect(by='group', order='order')
 ```
 
 
-<h3><a name="scatter.connection_color" href="#scatter.connection_color">#</a> scatter.<b>connection_color</b>(<i>default=Undefined</i>, <i>selected=Undefined</i>, <i>hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.connection_color" href="#scatter.connection_color">#</a> scatter.<b>connection_color</b>(<i>default=Undefined</i>, <i>selected=Undefined</i>, <i>hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
 
 Get or set the point connection color. This function behaves identical to [scatter.color()][scatter.color].
 
 
-<h3><a name="scatter.connection_opacity" href="#scatter.connection_opacity">#</a> scatter.<b>connection_opacity</b>(<i>default=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.connection_opacity" href="#scatter.connection_opacity">#</a> scatter.<b>connection_opacity</b>(<i>default=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
 
-Get or set the point connection opacity. This function behaves identical to [scatter.opacity()][scatter.color].
+Get or set the point connection opacity. This function behaves identical to [scatter.opacity()][scatter.opacity].
 
 
-<h3><a name="scatter.connection_size" href="#scatter.connection_size">#</a> scatter.<b>connection_size</b>(<i>default=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+<h3><a name="scatter.connection_size" href="#scatter.connection_size">#</a> scatter.<b>connection_size</b>(<i>default=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
 
-Get or set the point connection size. This function behaves identical to [scatter.size()][scatter.color].
+Get or set the point connection size. This function behaves identical to [scatter.size()][scatter.size].
 
 
 <h3><a name="scatter.axes" href="#scatter.axes">#</a> scatter.<b>axes</b>(<i>axes=Undefined</i>, <i>grid=Undefined</i>, <i>labels=Undefined</i>)</h3>
