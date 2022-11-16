@@ -20,16 +20,10 @@ def create_legend(encoding, norm, categories, labeling=None, linspace_num=5):
 
             if labeling:
                 if s == 0:
-                    try:
-                        label = labeling['minValue']
-                    except KeyError as e:
-                        label = None
+                    label = labeling.get('minValue')
 
                 if s == S[-1]:
-                    try:
-                        label = labeling['maxValue']
-                    except KeyError as e:
-                        label = None
+                    label = labeling.get('maxValue')
 
             values.append((
                 norm.inverse(s),
