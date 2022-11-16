@@ -24,9 +24,9 @@ function createLabelFormatter(valueRange) {
   return function (value) { return (Math.round(value * l) / l).toFixed(k); }
 }
 
-function createLabel(value) {
+function createValue(value) {
   const element = document.createElement('span');
-  element.className = 'legend-label';
+  element.className = 'legend-value';
   element.style.marginLeft = '0.25rem';
 
   element.textContent = value;
@@ -34,7 +34,23 @@ function createLabel(value) {
   return element;
 }
 
-function createIcon(title, encoding, encodingRange, sizePx, fontColor) {
+function createLabel(label) {
+  const element = document.createElement('span');
+  element.className = 'legend-label';
+  element.style.opacity = 0.5;
+
+  element.textContent = label || '';
+
+  return element;
+}
+
+function createIcon(
+  visualChannel,
+  encoding,
+  encodingRange,
+  sizePx,
+  fontColor
+) {
   const element = document.createElement('div');
   element.className = 'legend-icon';
   element.style.width = sizePx + 'px';
@@ -42,43 +58,56 @@ function createIcon(title, encoding, encodingRange, sizePx, fontColor) {
   element.style.borderRadius = sizePx + 'px';
   element.style.backgroundColor = 'rgb(' + fontColor + ','  + fontColor + ',' + fontColor + ')';
 
-  if (title.indexOf('color') >= 0) {
+  if (visualChannel.includes('color')) {
     element.style.backgroundColor = Array.isArray(encoding)
       ? 'rgb(' + encoding.slice(0, 3).map((v) => v * 255).join(', ') + ')'
       : encoding;
-  } else if (title.indexOf('opacity') >= 0) {
+  } else if (visualChannel.includes('opacity')) {
     element.style.backgroundColor = 'rgba(' + fontColor + ',' + fontColor + ','  + fontColor + ',' + encoding + ')';
     if (encoding < 0.2) {
       element.style.boxShadow = 'inset 0 0 1px rgba(' + fontColor + ',' + fontColor + ','  + fontColor + ', 0.66)';
     }
-  } else if (title.indexOf('size') >= 0) {
-    const extent = encodingRange[1] - encodingRange[0];
-    const normEncoding = 0.2 + ((encoding - encodingRange[0]) / extent) * 0.8;
+  } else if (visualChannel.includes('size')) {
+    const minValue = Math.min.apply(null, encodingRange);
+    const maxValue = Math.max.apply(null, encodingRange);
+    const extent = maxValue - minValue;
+    const normEncoding = 0.2 + ((encoding - minValue) / extent) * 0.8;
     element.style.transform = `scale(${normEncoding})`;
   }
 
   return element;
 }
 
-function createEntry(title, value, encoding, encodingRange, sizePx, fontColor) {
+function createEntry(
+  visualChannel,
+  value,
+  encodedValue,
+  encodingRange,
+  sizePx,
+  fontColor
+) {
   const element = document.createElement('div');
   element.className = 'legend-entry';
   element.style.display = 'flex';
   element.style.alignItems = 'center';
 
-  element.appendChild(createIcon(title, encoding, encodingRange, sizePx, fontColor));
-  element.appendChild(createLabel(value));
+  element.appendChild(
+    createIcon(visualChannel, encodedValue, encodingRange, sizePx, fontColor)
+  );
+  element.appendChild(createValue(value));
 
   return element;
 }
 
-function createTitle(title) {
+function createTitle(visualChannel, isRightAligned) {
   const element = document.createElement('div');
   element.className = 'legend-title';
-  element.style.fontWeight = 'bold';
   element.style.textTransform = 'capitalize';
-
-  element.textContent = title.replace('connection', 'line').replaceAll('_', ' ');
+  element.style.fontWeight = 'bold';
+  if (isRightAligned) element.style.textAlign = 'right';
+  element.textContent = visualChannel
+    .replace('connection', 'line')
+    .replaceAll('_', ' ');
 
   return element;
 }
@@ -86,8 +115,9 @@ function createTitle(title) {
 function createEncoding() {
   const element = document.createElement('div');
   element.className = 'legend-encoding';
-  element.style.display = 'flex';
-  element.style.flexDirection = 'column';
+  element.style.display = 'grid';
+  element.style.gridTemplateColumns = 'max-content max-content';
+  element.style.gap = '0 0.2rem';
 
   return element;
 }
@@ -103,7 +133,7 @@ function createLegend(encodings, fontColor, backgroundColor, size) {
   const root = document.createElement('div');
   root.className = 'legend';
   root.style.display = 'flex';
-  root.style.gap = (sizePx * 0.5) + 'px';
+  root.style.gap = sizePx + 'px';
   root.style.margin = (sizePx * 0.2) + 'px';
   root.style.padding = (sizePx * 0.25) + 'px';
   root.style.fontSize = sizePx + 'px';
@@ -116,27 +146,28 @@ function createLegend(encodings, fontColor, backgroundColor, size) {
   Object.entries(encodings)
     .sort((a, b) => sortOrder[a[0]] - sortOrder[b[0]])
     .forEach((encodingEntry) => {
-      const title = encodingEntry[0];
-      const valueEncodingPairs = encodingEntry[1];
+      const visualChannel = encodingEntry[0];
+      const visualEncoding = encodingEntry[1];
       const encoding = createEncoding();
-      encoding.appendChild(createTitle(title));
+      encoding.appendChild(createTitle(visualChannel, Boolean(visualEncoding.variable)));
+      encoding.appendChild(createLabel(visualEncoding.variable));
 
       const valueRange = [
-        valueEncodingPairs[0][0],
-        valueEncodingPairs[valueEncodingPairs.length - 1][0]
+        visualEncoding.values[0][0],
+        visualEncoding.values[visualEncoding.values.length - 1][0]
       ];
 
       const encodingRange = [
-        valueEncodingPairs[0][1],
-        valueEncodingPairs[valueEncodingPairs.length - 1][1]
+        visualEncoding.values[0][1],
+        visualEncoding.values[visualEncoding.values.length - 1][1]
       ];
 
       const formatter = createLabelFormatter(valueRange);
 
-      valueEncodingPairs.forEach(([value, encodedValue]) => {
+      visualEncoding.values.forEach(([value, encodedValue, label]) => {
         encoding.appendChild(
           createEntry(
-            title,
+            visualChannel,
             formatter(value),
             encodedValue,
             encodingRange,
@@ -144,6 +175,7 @@ function createLegend(encodings, fontColor, backgroundColor, size) {
             f
           )
         );
+        encoding.appendChild(createLabel(label));
       });
 
       root.append(encoding);
