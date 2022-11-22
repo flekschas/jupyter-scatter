@@ -1,3 +1,8 @@
+## v0.9.0
+
+- Add support for animated zooming to a set of points via `scatter.zoom(pointIndices)` ([#49](https://github.com/flekschas/jupyter-scatter/issues/49))
+- Bump regl-scatterplot to `v1.4.0`
+
 ## v0.8.0
 
 - Add support for end labeling of continuous data encoding via a new `labeling` argument of `color()`, `opacity()`, `size()`, `connection_color()`, `connection_opacity()`, and `connection_size()`. ([#46](https://github.com/flekschas/jupyter-scatter/pull/46))
