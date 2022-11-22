@@ -7,7 +7,7 @@
     - [color()](#scatter.color), [opacity()](#scatter.opacity), and [size()](#scatter.size)
     - [connect()](#scatter.connect), [connection_color()](#scatter.connection_color), [connection_opacity()](#scatter.connection_opacity), and [connection_size()](#scatter.connection_size)
     - [axes()](#scatter.axes), [background()](#scatter.background), [lasso()](#scatter.lasso), and [reticle()](#scatter.reticle)
-    - [camera()](#scatter.camera), [mouse()](#scatter.mouse), and [options()](scatter.options)
+    - [zoom()](#scatter.zoom), [camera()](#scatter.camera), [mouse()](#scatter.mouse), and [options()](scatter.options)
   - [Properties](#properties)
   - [Widget](#widget)
 - [Plotting](#plotting)
@@ -318,14 +318,25 @@ scatter.background(image='https://picsum.photos/640/640?random')
 ```
 
 
-<h3><a name="scatter.mouse" href="#scatter.mouse">#</a> scatter.<b>mouse</b>(<i>mode=Undefined</i>)</h3>
+<h3><a name="scatter.zoom" href="#scatter.zoom">#</a> scatter.<b>zoom</b>(<i>target=Undefined</i>, <i>animation=Undefined</i>, <i>padding=Undefined</i>)</h3>
 
-Get or set the mouse mode.
+Zoom to a set of points.
 
 **Arguments:**
-- `mode` is either `'panZoom'`, `'lasso'`, or `'rotate'`
+- `target` is a list of point indices or `None`. When set to `None` the camera zoom is reset.
+- `animation` defines whether to animate the transition to the new zoom state. This value can either be a Boolean or an Integer specifying the duration of the animation in milliseconds.
+- `padding` is the relative padding around the bounding box of the target points. E.g., `0` stands for no padding and `1` stands for a padding that is as wide and tall as the width and height of the points' bounding box.
 
-**Returns:** either the mouse mode when mode is `Undefined` or `self`.
+**Returns:** either the current zoom state (when all arguments are `Undefined`) or `self`.
+
+**Example:**
+
+```python
+scatter.zoom([0, 1, 2, 3])
+scatter.zoom(None)
+scatter.zoom(scatter.selection())
+scatter.zoom(target=scatter.selection(), animation=2000, padding=0.1)
+```
 
 
 <h3><a name="scatter.camera" href="#scatter.camera">#</a> scatter.<b>camera</b>(<i>target=Undefined</i>, <i>distance=Undefined</i>, <i>rotation=Undefined</i>, <i>view=Undefined</i>)</h3>
@@ -339,6 +350,16 @@ Get or set the camera view.
 - `view` is an array-like list of 16 floats defining a view matrix.
 
 **Returns:** either the camera properties when all arguments are `Undefined` or `self`.
+
+
+<h3><a name="scatter.mouse" href="#scatter.mouse">#</a> scatter.<b>mouse</b>(<i>mode=Undefined</i>)</h3>
+
+Get or set the mouse mode.
+
+**Arguments:**
+- `mode` is either `'panZoom'`, `'lasso'`, or `'rotate'`
+
+**Returns:** either the mouse mode when mode is `Undefined` or `self`.
 
 
 <h3><a name="scatter.options" href="#scatter.options">#</a> scatter.<b>options</b>(<i>options=Undefined</i>)</h3>

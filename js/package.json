@@ -47,7 +47,7 @@
     "lodash": "~4.17.21",
     "pub-sub-es": "~2.0.1",
     "regl": "~2.1.0",
-    "regl-scatterplot": "~1.3.0"
+    "regl-scatterplot": "~1.4.0"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.4.8",

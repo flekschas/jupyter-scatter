@@ -216,6 +216,9 @@ class Scatter():
         self._legend = False
         self._legend_position = 'top-left'
         self._legend_size = 'small'
+        self._zoom_target = None
+        self._zoom_animation = 1000
+        self._zoom_padding = 0.33
         self._options = {}
 
         self.x(x, kwargs.get('x_scale', UNDEF))
@@ -311,6 +314,11 @@ class Scatter():
             kwargs.get('legend', UNDEF),
             kwargs.get('legend_position', UNDEF),
             kwargs.get('legend_size', UNDEF),
+        )
+        self.zoom(
+            kwargs.get('zoom_target', UNDEF),
+            kwargs.get('zoom_animation', UNDEF),
+            kwargs.get('zoom_padding', UNDEF),
         )
         self.options(kwargs.get('options', UNDEF))
 
@@ -584,8 +592,7 @@ class Scatter():
         Parameters
         ----------
         selection : array_like, optional
-            The y coordinates given as either an array-like list of coordinates
-            or a string referencing a column in `data`.
+            The point indices to be selected.
 
         Returns
         -------
@@ -2717,6 +2724,77 @@ class Scatter():
             position = self._legend_position,
         )
 
+    def zoom(
+        self,
+        target: Optional[Union[List[int], np.ndarray, None, Undefined]] = UNDEF,
+        animation: Optional[Union[bool, int, Undefined]] = UNDEF,
+        padding: Optional[Union[float, Undefined]] = UNDEF,
+    ):
+        """
+        Zoom to a set of points.
+
+        Parameters
+        ----------
+        target : array_like, optional
+            A list of point indices or `None`. When set to `None` the
+            camera's zoom state is reset.
+        animation : bool or int, optional
+            Whether to animate the transitioning of the camera from the current
+            to the new zoom state. This can either be a Boolean value or an
+            integer specifying the duration of the animation in milliseconds.
+        padding : float, optional
+            Relative padding around the bounding box of the target points. Zero
+            stands for no padding at all and one stands for a padding that is as
+            wide and tall as the width and height of the points' bounding box.
+
+        Returns
+        -------
+        self or dict
+            If no parameters are provided the current zoom target is
+            returned as a dictionary. Otherwise, `self` is returned.
+
+        Examples
+        --------
+        >>> scatter.zoom(target=[0, 1, 2])
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.zoom(target=scatter.selection(), animation=True)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.zoom(target=None, animation=500, padding=0)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.zoom()
+        {'target': None, 'animation': 1000, 'padding': 0.333}
+        """
+
+        if animation is not UNDEF:
+            if isinstance(animation, bool):
+                self._zoom_animation = animation = 1000 if animation else 0
+            else:
+                self._zoom_animation = animation
+
+            self.update_widget('zoom_animation', self._zoom_animation)
+
+        if padding is not UNDEF:
+            self._zoom_padding = padding
+            self.update_widget('zoom_padding', padding)
+
+        if target is not UNDEF:
+            self._zoom_target = target
+            self.update_widget('zoom_target', target)
+
+        if any_not([target, animation], UNDEF):
+            return self
+
+        return dict(
+            target = self._zoom_target,
+            animation = self._zoom_animation,
+            padding = self._zoom_padding
+        )
+
+
+
     def options(self, options: Optional[Union[dict, Undefined]] = UNDEF):
         """
         Set or get additional options to be passed to regl-scatterplot
@@ -2910,6 +2988,9 @@ class Scatter():
             legend_position=self._legend_position,
             legend_color=self.get_legend_color(),
             legend_encoding=self.get_legend_encoding(),
+            zoom_target=self._zoom_target,
+            zoom_animation=self._zoom_animation,
+            zoom_padding=self._zoom_padding,
             other_options=self._options
         )
 
