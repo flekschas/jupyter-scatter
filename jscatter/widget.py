@@ -42,10 +42,10 @@ def array_to_binary(ar, obj=None, force_contiguous=True):
         ar = ar.astype(np.int32)
     if force_contiguous and not ar.flags["C_CONTIGUOUS"]:  # make sure it's contiguous
         ar = np.ascontiguousarray(ar)
-    return {'buffer': memoryview(ar), 'dtype': str(ar.dtype), 'shape': ar.shape}
+    return {'view': memoryview(ar), 'dtype': str(ar.dtype), 'shape': ar.shape}
 
 def binary_to_array(value, obj=None):
-    return np.frombuffer(value['data'], dtype=value['dtype']).reshape(value['shape'])
+    return np.frombuffer(value['view'], dtype=value['dtype']).reshape(value['shape'])
 
 ndarray_serialization = dict(to_json=array_to_binary, from_json=binary_to_array)
 

@@ -9,6 +9,14 @@ const DTYPES = {
   float64: Float64Array,
 };
 
+/**
+ * @template {number[]} Shape
+ * @typedef SerializedArray
+ * @prop {DataView} view
+ * @prop {keyof typeof DTYPES} dtype
+ * @prop {Shape} shape
+ */
+
 class NumpyCodec {
   /** @param {keyof typeof DTYPES} dtype */
   constructor(dtype) {
@@ -20,27 +28,26 @@ class NumpyCodec {
 }
 
 class Numpy2D extends NumpyCodec {
-
   /**
-   * @param {{buffer: DataView, dtype: keyof typeof DTYPES, shape: [number, number]}} data
-   * @returns {number[][]}
+   * @param {SerializedArray<[number, number]>} data
+   * @returns {number[][] | null}
    */
   deserialize(data) {
     if (data == null) return null;
     // Take full view of data buffer
-    const arr = new DTYPES[this.dtype](data.buffer.buffer);
+    const arr = new DTYPES[this.dtype](data.view.buffer);
     // Chunk single TypedArray into nested Array of points
     const [height, width] = data.shape;
     // Float32Array(width * height) -> [Array(width), Array(width), ...]
-    const points = Array
-      .from({ length: height })
-      .map((_, i) => Array.from(arr.subarray(i * width, (i + 1) * width)));
+    const points = Array.from({ length: height }).map((_, i) =>
+      Array.from(arr.subarray(i * width, (i + 1) * width))
+    );
     return points;
   }
 
   /**
    * @param {number[][]} data
-   * @returns {{data: ArrayBuffer, dtype: keyof typeof DTYPES, shape: [number, number]}}
+   * @returns {SerializedArray<[number, number]>}
    */
   serialize(data) {
     const height = data.length;
@@ -49,29 +56,36 @@ class Numpy2D extends NumpyCodec {
     for (let i = 0; i < data.length; i++) {
       arr.set(data[i], i * height);
     }
-    return { data: arr.buffer, dtype: this.dtype, shape: [height, width] };
+    return {
+      view: new DataView(arr.buffer),
+      dtype: this.dtype,
+      shape: [height, width],
+    };
   }
 }
 
 class Numpy1D extends NumpyCodec {
-
   /**
-   * @param {{buffer: DataView, dtype: keyof typeof DTYPES, shape: [number]}} data
-   * @returns {number[]}
+   * @param {SerializedArray<[number]>} data
+   * @returns {number[] | null}
    */
   deserialize(data) {
     if (data == null) return null;
     // for some reason can't be a typed array
-    return Array.from(new DTYPES[this.dtype](data.buffer.buffer));
+    return Array.from(new DTYPES[this.dtype](data.view.buffer));
   }
 
   /**
    * @param {number[]} data
-   * @returns {{data: ArrayBuffer, dtype: keyof typeof DTYPES, shape: [number]}}
+   * @returns {SerializedArray<[number]>}
    */
   serialize(data) {
-    const arr = new DTYPES[this.dtype](data)
-    return { data: arr.buffer, dtype: this.dtype, shape: [data.length] };
+    const arr = new DTYPES[this.dtype](data);
+    return {
+      view: new DataView(arr.buffer),
+      dtype: this.dtype,
+      shape: [data.length],
+    };
   }
 }
 
