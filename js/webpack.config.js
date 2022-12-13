@@ -65,7 +65,6 @@ module.exports = (env, argv) => {
         filename: 'index.js',
         path: path.resolve(__dirname, 'dist'),
         libraryTarget: 'amd',
-        library: "jscatter",
         publicPath: '', // Set in amd-public-path.js
       },
       devtool,
