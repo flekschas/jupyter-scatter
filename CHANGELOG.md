@@ -2,6 +2,7 @@
 
 - Add support for animated zooming to a set of points via `scatter.zoom(pointIndices)` ([#49](https://github.com/flekschas/jupyter-scatter/issues/49))
 - Bump regl-scatterplot to `v1.4.1`
+- Fix serde of numpy data for JS client. Use consistent serialization object between JS and Python.
 
 ## v0.8.0
 
