@@ -4,6 +4,9 @@
   "description": "A scatter plot extension for Jupyter Notebook and Lab",
   "author": "Fritz Lekschas",
   "main": "src/index.js",
+  "publishConfig": {
+    "main": "dist/index.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/flekschas/jupyter-scatter.git"
