@@ -1,7 +1,7 @@
 ## v0.9.0
 
 - Add support for animated zooming to a set of points via `scatter.zoom(pointIndices)` ([#49](https://github.com/flekschas/jupyter-scatter/issues/49))
-- Bump regl-scatterplot to `v1.4.0`
+- Bump regl-scatterplot to `v1.4.1`
 
 ## v0.8.0
 

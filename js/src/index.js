@@ -35,7 +35,7 @@ JupyterScatterModel.serializers = Object.assign(
     points: new codecs.Numpy2D('float32'),
     selection: new codecs.Numpy1D('uint32'),
     view_data: new codecs.Numpy1D('uint8'),
-    zoom_target: new codecs.Numpy1D('uint32'),
+    zoom_to: new codecs.Numpy1D('uint32'),
   }
 );
 
@@ -137,7 +137,7 @@ const properties = {
   legendEncoding: 'legendEncoding',
   xScale: 'xScale',
   yScale: 'yScale',
-  zoomTarget: 'zoomTarget',
+  zoomTo: 'zoomTo',
   zoomAnimation: 'zoomAnimation',
   zoomPadding: 'zoomPadding',
 };
@@ -974,7 +974,7 @@ class JupyterScatterView extends widgets.DOMWidgetView {
     this.showLegend();
   }
 
-  zoomTargetHandler(newTarget) {
+  zoomToHandler(points) {
     const animation = this.model.get('zoom_animation');
     const padding = this.model.get('zoom_padding');
 
@@ -985,8 +985,8 @@ class JupyterScatterView extends widgets.DOMWidgetView {
       ? { padding, transition, transitionDuration }
       : { padding };
 
-    if (newTarget) {
-      this.scatterplot.zoomToPoints(newTarget, options);
+    if (points) {
+      this.scatterplot.zoomToPoints(points, options);
     } else {
       this.scatterplot.zoomToOrigin(options);
     }

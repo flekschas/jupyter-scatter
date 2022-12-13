@@ -323,7 +323,7 @@ scatter.background(image='https://picsum.photos/640/640?random')
 Zoom to a set of points.
 
 **Arguments:**
-- `target` is a list of point indices or `None`. When set to `None` the camera zoom is reset.
+- `to` is a list of point indices or `None`. When set to `None` the camera zoom is reset.
 - `animation` defines whether to animate the transition to the new zoom state. This value can either be a Boolean or an Integer specifying the duration of the animation in milliseconds.
 - `padding` is the relative padding around the bounding box of the target points. E.g., `0` stands for no padding and `1` stands for a padding that is as wide and tall as the width and height of the points' bounding box.
 
@@ -335,7 +335,7 @@ Zoom to a set of points.
 scatter.zoom([0, 1, 2, 3])
 scatter.zoom(None)
 scatter.zoom(scatter.selection())
-scatter.zoom(target=scatter.selection(), animation=2000, padding=0.1)
+scatter.zoom(to=scatter.selection(), animation=2000, padding=0.1)
 ```
 
 

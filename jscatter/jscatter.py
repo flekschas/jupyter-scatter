@@ -216,8 +216,8 @@ class Scatter():
         self._legend = False
         self._legend_position = 'top-left'
         self._legend_size = 'small'
-        self._zoom_target = None
-        self._zoom_animation = 1000
+        self._zoom_to = None
+        self._zoom_animation = 500
         self._zoom_padding = 0.33
         self._options = {}
 
@@ -316,7 +316,7 @@ class Scatter():
             kwargs.get('legend_size', UNDEF),
         )
         self.zoom(
-            kwargs.get('zoom_target', UNDEF),
+            kwargs.get('zoom_to', UNDEF),
             kwargs.get('zoom_animation', UNDEF),
             kwargs.get('zoom_padding', UNDEF),
         )
@@ -2726,7 +2726,7 @@ class Scatter():
 
     def zoom(
         self,
-        target: Optional[Union[List[int], np.ndarray, None, Undefined]] = UNDEF,
+        to: Optional[Union[List[int], np.ndarray, None, Undefined]] = UNDEF,
         animation: Optional[Union[bool, int, Undefined]] = UNDEF,
         padding: Optional[Union[float, Undefined]] = UNDEF,
     ):
@@ -2735,7 +2735,7 @@ class Scatter():
 
         Parameters
         ----------
-        target : array_like, optional
+        to : array_like, optional
             A list of point indices or `None`. When set to `None` the
             camera's zoom state is reset.
         animation : bool or int, optional
@@ -2780,15 +2780,15 @@ class Scatter():
             self._zoom_padding = padding
             self.update_widget('zoom_padding', padding)
 
-        if target is not UNDEF:
-            self._zoom_target = target
-            self.update_widget('zoom_target', target)
+        if to is not UNDEF:
+            self._zoom_to = to
+            self.update_widget('zoom_to', to)
 
-        if any_not([target, animation], UNDEF):
+        if any_not([to, animation, padding], UNDEF):
             return self
 
         return dict(
-            target = self._zoom_target,
+            to = self._zoom_to,
             animation = self._zoom_animation,
             padding = self._zoom_padding
         )
@@ -2988,7 +2988,7 @@ class Scatter():
             legend_position=self._legend_position,
             legend_color=self.get_legend_color(),
             legend_encoding=self.get_legend_encoding(),
-            zoom_target=self._zoom_target,
+            zoom_to=self._zoom_to,
             zoom_animation=self._zoom_animation,
             zoom_padding=self._zoom_padding,
             other_options=self._options

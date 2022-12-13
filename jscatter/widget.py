@@ -78,7 +78,7 @@ class JupyterScatter(widgets.DOMWidget):
     camera_view = List(None, allow_none=True).tag(sync=True)
 
     # Zoom properties
-    zoom_target = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
+    zoom_to = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
     zoom_animation = Int(1000).tag(sync=True)
     zoom_padding = Float(0.333).tag(sync=True)
 
