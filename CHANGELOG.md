@@ -2,6 +2,7 @@
 
 - Add support for animated zooming to a set of points via `scatter.zoom(pointIndices)` ([#49](https://github.com/flekschas/jupyter-scatter/issues/49))
 - Bump regl-scatterplot to `v1.4.1`
+- Add support for VSCode and Colab ([#37](https://github.com/flekschas/jupyter-scatter/issues/37))
 
 ## v0.8.0
 
