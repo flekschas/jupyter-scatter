@@ -300,8 +300,6 @@ class JupyterScatterView extends widgets.DOMWidgetView {
             ),
             self
           );
-        } else {
-          console.warn('No handler for ' + propertyName);
         }
       });
 
@@ -715,13 +713,13 @@ class JupyterScatterView extends widgets.DOMWidgetView {
   }
 
   externalViewChangeHandler(event) {
-    const viewSync = this.model.get('view_sync');
     if (
-      !viewSync
-      || event.uuid !== viewSync
-      || event.src === this.randomStr
-    ) return;
-    this.scatterplot.view(event.view, { preventEvent: true });
+      event.uuid === this.model.get('view_sync') &&
+      event.src !== this.randomStr
+    ) {
+      console.log('sync view');
+      this.scatterplot.view(event.view, { preventEvent: true });
+    }
   }
 
   viewChangeHandler(event) {
