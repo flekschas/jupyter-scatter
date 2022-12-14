@@ -678,6 +678,10 @@ class JupyterScatterView extends widgets.DOMWidgetView {
     this.scatterplot.destroy();
   }
 
+  remove() {
+    this.destroy();
+  }
+
   // Helper
   colorCanvas() {
     if (Array.isArray(this.backgroundColor)) {
