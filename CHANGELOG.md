@@ -1,3 +1,7 @@
+## v0.10.0
+
+- Add support for automatic zooming to selected points via `scatter.zoom(on_selection=True)`
+
 ## v0.9.0
 
 - Add support for animated zooming to a set of points via `scatter.zoom(pointIndices)` ([#49](https://github.com/flekschas/jupyter-scatter/issues/49))

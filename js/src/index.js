@@ -140,6 +140,7 @@ const properties = {
   zoomTo: 'zoomTo',
   zoomAnimation: 'zoomAnimation',
   zoomPadding: 'zoomPadding',
+  zoomOnSelection: 'zoomOnSelection',
 };
 
 const reglScatterplotProperty = new Set([
@@ -313,6 +314,9 @@ class JupyterScatterView extends widgets.DOMWidgetView {
           .then(function onInitialDraw() {
             if (self.selection.length) {
               self.scatterplot.select(self.selection, { preventEvent: true });
+              if (self.model.get('zoom_on_selection')) {
+                self.zoomToHandler(self.selection);
+              }
             }
           });
       }
@@ -704,12 +708,14 @@ class JupyterScatterView extends widgets.DOMWidgetView {
 
   selectHandler(event) {
     this.selectionChangedByJs = true;
+    if (this.model.get('zoom_on_selection')) this.zoomToHandler(event.points);
     this.model.set('selection', [...event.points]);
     this.model.save_changes();
   }
 
   deselectHandler() {
     this.selectionChangedByJs = true;
+    if (this.model.get('zoom_on_selection')) this.zoomToHandler();
     this.model.set('selection', []);
     this.model.save_changes();
   }
@@ -776,11 +782,16 @@ class JupyterScatterView extends widgets.DOMWidgetView {
       return;
     }
 
-    if (!newSelection || !newSelection.length) {
-      this.scatterplot.deselect({ preventEvent: true });
-    } else {
-      this.scatterplot.select(newSelection, { preventEvent: true });
-    }
+    const selection = newSelection && newSelection.length > 0
+      ? newSelection
+      : undefined;
+
+    const options = { preventEvent: true };
+
+    if (selection) this.scatterplot.select(newSelection, options);
+    else this.scatterplot.deselect(options);
+
+    if (this.model.get('zoom_on_selection')) this.zoomToHandler(selection);
   }
 
   hoveringHandler(newHovering) {
