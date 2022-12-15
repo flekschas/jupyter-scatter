@@ -1,6 +1,6 @@
 ## v0.9.1
 
-- Add `remove()` to the JS widget to ensure that the scatterplot is destroyed in ipywidgets `v8`. (Please ask the ipywidget folks why they introduced this beautiful memory-leak-inducing change instead of ensuring backward compatibility...)
+- Add `remove()` to the JS widget to ensure that the scatterplot is destroyed in ipywidgets `v8`.
 
 ## v0.9.0
 
