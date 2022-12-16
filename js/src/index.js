@@ -721,7 +721,6 @@ class JupyterScatterView extends widgets.DOMWidgetView {
       event.uuid === this.model.get('view_sync') &&
       event.src !== this.randomStr
     ) {
-      console.log('sync view');
       this.scatterplot.view(event.view, { preventEvent: true });
     }
   }
