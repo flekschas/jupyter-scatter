@@ -1,3 +1,7 @@
+## v0.9.1
+
+- Add `remove()` to the JS widget to ensure that the scatterplot is destroyed in ipywidgets `v8`.
+
 ## v0.9.0
 
 - Add support for animated zooming to a set of points via `scatter.zoom(pointIndices)` ([#49](https://github.com/flekschas/jupyter-scatter/issues/49))
