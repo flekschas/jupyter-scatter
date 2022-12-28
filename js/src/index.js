@@ -783,7 +783,7 @@ class JupyterScatterView extends widgets.DOMWidgetView {
       return;
     }
 
-    const selection = newSelection && newSelection.length > 0
+    const selection = newSelection?.length > 0
       ? newSelection
       : undefined;
 
