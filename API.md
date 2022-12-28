@@ -318,7 +318,7 @@ scatter.background(image='https://picsum.photos/640/640?random')
 ```
 
 
-<h3><a name="scatter.zoom" href="#scatter.zoom">#</a> scatter.<b>zoom</b>(<i>target=Undefined</i>, <i>animation=Undefined</i>, <i>padding=Undefined</i>)</h3>
+<h3><a name="scatter.zoom" href="#scatter.zoom">#</a> scatter.<b>zoom</b>(<i>target=Undefined</i>, <i>animation=Undefined</i>, <i>padding=Undefined</i>, <i>on_selection=Undefined</i>)</h3>
 
 Zoom to a set of points.
 
@@ -326,6 +326,7 @@ Zoom to a set of points.
 - `to` is a list of point indices or `None`. When set to `None` the camera zoom is reset.
 - `animation` defines whether to animate the transition to the new zoom state. This value can either be a Boolean or an Integer specifying the duration of the animation in milliseconds.
 - `padding` is the relative padding around the bounding box of the target points. E.g., `0` stands for no padding and `1` stands for a padding that is as wide and tall as the width and height of the points' bounding box.
+- `on_selection` if `True` jscatter will automatically zoom to selected points.
 
 **Returns:** either the current zoom state (when all arguments are `Undefined`) or `self`.
 

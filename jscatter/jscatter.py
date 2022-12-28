@@ -219,6 +219,7 @@ class Scatter():
         self._zoom_to = None
         self._zoom_animation = 500
         self._zoom_padding = 0.33
+        self._zoom_on_selection = False
         self._options = {}
 
         self.x(x, kwargs.get('x_scale', UNDEF))
@@ -319,6 +320,7 @@ class Scatter():
             kwargs.get('zoom_to', UNDEF),
             kwargs.get('zoom_animation', UNDEF),
             kwargs.get('zoom_padding', UNDEF),
+            kwargs.get('zoom_on_selection', UNDEF),
         )
         self.options(kwargs.get('options', UNDEF))
 
@@ -2729,6 +2731,7 @@ class Scatter():
         to: Optional[Union[List[int], np.ndarray, None, Undefined]] = UNDEF,
         animation: Optional[Union[bool, int, Undefined]] = UNDEF,
         padding: Optional[Union[float, Undefined]] = UNDEF,
+        on_selection: Optional[Union[bool, Undefined]] = UNDEF,
     ):
         """
         Zoom to a set of points.
@@ -2746,6 +2749,8 @@ class Scatter():
             Relative padding around the bounding box of the target points. Zero
             stands for no padding at all and one stands for a padding that is as
             wide and tall as the width and height of the points' bounding box.
+        on_selection : bool, optional
+            If `True` jscatter will automatically zoom to selected points.
 
         Returns
         -------
@@ -2765,7 +2770,7 @@ class Scatter():
         <jscatter.jscatter.Scatter>
 
         >>> scatter.zoom()
-        {'target': None, 'animation': 1000, 'padding': 0.333}
+        {'target': None, 'animation': 1000, 'padding': 0.333, 'on_selection': False}
         """
 
         if animation is not UNDEF:
@@ -2780,17 +2785,22 @@ class Scatter():
             self._zoom_padding = padding
             self.update_widget('zoom_padding', padding)
 
+        if on_selection is not UNDEF:
+            self._zoom_on_selection = on_selection
+            self.update_widget('zoom_on_selection', on_selection)
+
         if to is not UNDEF:
             self._zoom_to = to
             self.update_widget('zoom_to', to)
 
-        if any_not([to, animation, padding], UNDEF):
+        if any_not([to, animation, padding, on_selection], UNDEF):
             return self
 
         return dict(
             to = self._zoom_to,
             animation = self._zoom_animation,
-            padding = self._zoom_padding
+            padding = self._zoom_padding,
+            on_selection = self._zoom_on_selection,
         )
 
 
@@ -2990,6 +3000,7 @@ class Scatter():
             legend_encoding=self.get_legend_encoding(),
             zoom_to=self._zoom_to,
             zoom_animation=self._zoom_animation,
+            zoom_on_selection=self._zoom_on_selection,
             zoom_padding=self._zoom_padding,
             other_options=self._options
         )
