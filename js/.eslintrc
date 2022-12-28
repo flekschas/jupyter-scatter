@@ -11,6 +11,9 @@
     "eslint:recommended",
     "prettier"
   ],
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
   "plugins": [
     "prettier"
   ],

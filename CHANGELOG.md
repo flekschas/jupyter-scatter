@@ -1,5 +1,6 @@
-## v0.9.1
+## v0.10.0
 
+- Add support for automatic zooming to selected points via `scatter.zoom(on_selection=True)`
 - Fix view sychronization issue
 - Add `remove()` to the JS widget to ensure that the scatterplot is destroyed in ipywidgets `v8`.
 

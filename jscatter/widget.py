@@ -81,6 +81,7 @@ class JupyterScatter(widgets.DOMWidget):
     zoom_to = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
     zoom_animation = Int(1000).tag(sync=True)
     zoom_padding = Float(0.333).tag(sync=True)
+    zoom_on_selection = Bool(False).tag(sync=True)
 
     # Interaction properties
     mouse_mode = Enum(['panZoom', 'lasso', 'rotate'], default_value='panZoom').tag(sync=True)
