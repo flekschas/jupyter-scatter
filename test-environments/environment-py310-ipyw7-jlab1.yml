@@ -1,0 +1,16 @@
+name: jscatter-py310-ipyw7-jlab1
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python==3.10.*
+  - numpy
+  - pandas
+  - pip
+  - pip:
+    - jupyterlab==3.*
+    - ipywidgets==7.*
+    - jupyterlab_widgets==1.*
+    - jupyter-scatter

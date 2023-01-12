@@ -1,0 +1,16 @@
+name: jscatter-py39-ipyw8-jlab3
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python==3.9.*
+  - numpy
+  - pandas
+  - pip
+  - pip:
+    - jupyterlab==3.*
+    - ipywidgets==8.*
+    - jupyterlab_widgets==3.*
+    - jupyter-scatter
