@@ -3,9 +3,9 @@
 This directory contains several minimal [Conda]() environments for testing the extension in Jupyter Lab and Notebook.
 
 - Python v3.9 with ipywidgets v7 and Jupyter Lab widgets v1
-- Python v3.9 with ipywidgets v8 and Jupyter Lab widgets v1
-- Python v3.9 with ipywidgets v8 and Jupyter Lab widgets v2
 - Python v3.9 with ipywidgets v8 and Jupyter Lab widgets v3
+- Python v3.10 with ipywidgets v8 and Jupyter Lab widgets v1
+- Python v3.10 with ipywidgets v8 and Jupyter Lab widgets v3
 
 1. **Install and activate the environment**
 
