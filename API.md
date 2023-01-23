@@ -102,14 +102,19 @@ Get or set the selected points.
 
 **Arguments:**
 
-- `selection` is either an array-like list of point indices.
+- `selection` is an array-like list of point indices.
 
-**Returns:** either the x and y coordinate when x and y are `Undefined` or `self`.
+**Returns:** either the indices of selected points when `selection` is `Undefined`, or `self`.
 
 **Examples:**
 
 ```python
+// Select all points corresponding to cars with a speed of less than 50
 scatter.selection(cars.query('speed < 50').index)
+
+// Retrieve the point indices of the currently selected points
+scatter.selection()
+// => array([0, 42, 1337], dtype=uint32)
 ```
 
 <h3><a name="scatter.color" href="#scatter.color">#</a> scatter.<b>color</b>(<i>default=Undefined</i>, <i>selected=Undefined</i>, <i>hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
