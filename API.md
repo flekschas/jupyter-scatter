@@ -303,7 +303,7 @@ Set or get the legend settings.
 **Example:**
 
 ```python
-scatter.legend(true, 'to-right', 'small')
+scatter.legend(true, 'top-right', 'small')
 ```
 
 
