@@ -6,8 +6,10 @@
     - [selection()](#scatter.selection)
     - [color()](#scatter.color), [opacity()](#scatter.opacity), and [size()](#scatter.size)
     - [connect()](#scatter.connect), [connection_color()](#scatter.connection_color), [connection_opacity()](#scatter.connection_opacity), and [connection_size()](#scatter.connection_size)
-    - [axes()](#scatter.axes), [background()](#scatter.background), [lasso()](#scatter.lasso), and [reticle()](#scatter.reticle)
-    - [zoom()](#scatter.zoom), [camera()](#scatter.camera), [mouse()](#scatter.mouse), and [options()](scatter.options)
+    - [axes()](#scatter.axes) and [legend()](#scatter.legend)
+    - [zoom()](#scatter.zoom) and [camera()](#scatter.camera)
+    - [lasso()](#scatter.lasso), [reticle()](#scatter.reticle), and [mouse()](#scatter.mouse),
+    - [background()](#scatter.background) and [options()](scatter.options)
   - [Properties](#properties)
   - [Widget](#widget)
 - [Plotting](#plotting)
@@ -279,47 +281,29 @@ Get or set the x and y axes.
 
 **Returns:** either the axes properties when all arguments are `Undefined` or `self`.
 
+**Example:**
 
-<h3><a name="scatter.lasso" href="#scatter.lasso">#</a> scatter.<b>lasso</b>(<i>color=Undefined</i>, <i>initiator=Undefined</i>, <i>min_delay=Undefined</i>, <i>min_dist=Undefined</i>)</h3>
-
-Get or set the lasso for selecting multiple points.
-
-**Arguments:**
-- `color` is a string referring to a Matplotlib-compatible color.
-- `initiator` is a Boolean value to specify if the click-based lasso initiator should be enabled or not.
-- `min_delay` is an integer specifying the minimal delay in milliseconds before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant. 
-- `min_dist` is an integer specifying the minimal distance in pixels that the mouse has to move before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant.
-
-**Returns:** either the lasso properties when all arguments are `Undefined` or `self`.
+```python
+scatter = Scatter(data=df, x='speed', y='weight')
+scatter.axes(axes=True, labels=['Speed (km/h)', 'Weight (tons)'])
+```
 
 
-<h3><a name="scatter.reticle" href="#scatter.reticle">#</a> scatter.<b>reticle</b>(<i>show=Undefined</i>, <i>color=Undefined</i>)</h3>
+<h3><a name="scatter.legend" href="#scatter.legend">#</a> scatter.<b>legend</b>(<i>legend=Undefined</i>, <i>position=Undefined</i>, <i>size=Undefined</i>)</h3>
 
-Get or set the reticle for the point hover interaction.
+Set or get the legend settings.
 
 **Arguments:**
-- `show` is a Boolean value to display the reticle when set to `True`.
-- `color` is either a string referring to a Matplotlib-compatible color or `'auto'`.
+- `legend` is a Boolean specifying if the legend should be shown or not.
+- `position` is a string specifying the legend position. It must be one of `top`, `left`, `right`, `bottom`, `top-left`, `top-right`, `bottom-left`, `bottom-right`, or `center`.
+- `size` is a string specifying the size of the legend. It must be one of `small`, `medium`, or `large`.
 
-**Returns:** either the reticle properties when all arguments are `Undefined` or `self`.
-
-
-<h3><a name="scatter.background" href="#scatter.background">#</a> scatter.<b>background</b>(<i>color=Undefined</i>, <i>image=Undefined</i>)</h3>
-
-Get or set a background color or image.
-
-**Arguments:**
-- `color` is a string representing a color compatible with Matplotlib
-- `image` is either a URL string pointing to an image or a PIL image understood by [Matplotlib's imshow() method](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.pyplot.imshow.html)
-
-**Returns:** either the background properties when all arguments are `Undefined` or `self`.
+**Returns:** either the legend properties when all arguments are `Undefined` or `self`.
 
 **Example:**
 
 ```python
-scatter.background(color='black')
-scatter.background(color='#000000')
-scatter.background(image='https://picsum.photos/640/640?random')
+scatter.legend(true, 'to-right', 'small')
 ```
 
 
@@ -357,6 +341,12 @@ Get or set the camera view.
 
 **Returns:** either the camera properties when all arguments are `Undefined` or `self`.
 
+**Example:**
+
+```python
+scatter.camera(target=[0.5, 0.5])
+```
+
 
 <h3><a name="scatter.mouse" href="#scatter.mouse">#</a> scatter.<b>mouse</b>(<i>mode=Undefined</i>)</h3>
 
@@ -366,6 +356,67 @@ Get or set the mouse mode.
 - `mode` is either `'panZoom'`, `'lasso'`, or `'rotate'`
 
 **Returns:** either the mouse mode when mode is `Undefined` or `self`.
+
+**Example:**
+
+```python
+scatter.mouse(mode='lasso')
+```
+
+
+<h3><a name="scatter.lasso" href="#scatter.lasso">#</a> scatter.<b>lasso</b>(<i>color=Undefined</i>, <i>initiator=Undefined</i>, <i>min_delay=Undefined</i>, <i>min_dist=Undefined</i>)</h3>
+
+Get or set the lasso for selecting multiple points.
+
+**Arguments:**
+- `color` is a string referring to a Matplotlib-compatible color.
+- `initiator` is a Boolean value to specify if the click-based lasso initiator should be enabled or not.
+- `min_delay` is an integer specifying the minimal delay in milliseconds before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant. 
+- `min_dist` is an integer specifying the minimal distance in pixels that the mouse has to move before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant.
+
+**Returns:** either the lasso properties when all arguments are `Undefined` or `self`.
+
+**Example:**
+
+```python
+scatter.lasso(initiator=True)
+```
+
+
+<h3><a name="scatter.reticle" href="#scatter.reticle">#</a> scatter.<b>reticle</b>(<i>show=Undefined</i>, <i>color=Undefined</i>)</h3>
+
+Get or set the reticle for the point hover interaction.
+
+**Arguments:**
+- `show` is a Boolean value to display the reticle when set to `True`.
+- `color` is either a string referring to a Matplotlib-compatible color or `'auto'`.
+
+**Returns:** either the reticle properties when all arguments are `Undefined` or `self`.
+
+**Example:**
+
+```python
+scatter.reticle(show=True, color="red")
+```
+
+
+<h3><a name="scatter.background" href="#scatter.background">#</a> scatter.<b>background</b>(<i>color=Undefined</i>, <i>image=Undefined</i>)</h3>
+
+Get or set a background color or image.
+
+**Arguments:**
+- `color` is a string representing a color compatible with Matplotlib
+- `image` is either a URL string pointing to an image or a PIL image understood by [Matplotlib's imshow() method](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.pyplot.imshow.html)
+
+**Returns:** either the background properties when all arguments are `Undefined` or `self`.
+
+**Example:**
+
+```python
+scatter.background(color='black')
+scatter.background(color='#000000')
+scatter.background(image='https://picsum.photos/640/640?random')
+```
 
 
 <h3><a name="scatter.options" href="#scatter.options">#</a> scatter.<b>options</b>(<i>options=Undefined</i>)</h3>
