@@ -13,7 +13,7 @@
 
 <div align="center">
   
-  <strong>An interactive scatter plot widget for Jupyter Lab and Notebook</strong><br/>that can handle [millions of points](#visualize-millions-of-data-points) and supports [view linking](#linking-scatter-plots).
+  <strong>An interactive scatter plot widget for Jupyter Notebook, Lab, and Google Colab</strong><br/>that can handle [millions of points](#visualize-millions-of-data-points) and supports [view linking](#linking-scatter-plots).
   
 </div>
 
@@ -183,6 +183,10 @@ jscatter.plot(points[:,0], points[:,1], height=640)
 https://user-images.githubusercontent.com/932103/162586987-0b5313b0-befd-4bd1-8ef5-13332d8b15d1.mp4
 
 See [notebooks/examples.ipynb](notebooks/examples.ipynb) for more details.
+
+#### Google Colab
+
+While jscatter is primarily developed for Jupyter Lab and Notebook, it also runs just fine in Google Colab. See [jupyter-scatter-colab-test.ipynb](https://colab.research.google.com/drive/195z6h6LsYpC25IIB3fSZIVUbqVlhtnQo?usp=sharing) for an example.
 
 ---
 
