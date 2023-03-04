@@ -145,11 +145,13 @@ class Scatter():
         self._pixels = None
         self._encodings = Encodings()
         self._selection = np.asarray([], dtype=SELECTION_DTYPE)
+        self._filter = np.asarray([], dtype=SELECTION_DTYPE)
         self._background_color = to_rgba(default_background_color)
         self._background_color_luminance = 1
         self._background_image = None
         self._lasso_color = (0, 0.666666667, 1, 1)
-        self._lasso_initiator = True
+        self._lasso_on_long_press = True
+        self._lasso_initiator = False
         self._lasso_min_delay = 10
         self._lasso_min_dist = 3
         self._color = (0, 0, 0, 0.66)
@@ -220,6 +222,7 @@ class Scatter():
         self._zoom_animation = 500
         self._zoom_padding = 0.33
         self._zoom_on_selection = False
+        self._zoom_on_filter = False
         self._options = {}
 
         self.x(x, kwargs.get('x_scale', UNDEF))
@@ -290,6 +293,7 @@ class Scatter():
             kwargs.get('lasso_initiator', UNDEF),
             kwargs.get('lasso_min_delay', UNDEF),
             kwargs.get('lasso_min_dist', UNDEF),
+            kwargs.get('lasso_on_long_press', UNDEF),
         )
         self.reticle(
             kwargs.get('reticle', UNDEF),
@@ -321,6 +325,7 @@ class Scatter():
             kwargs.get('zoom_animation', UNDEF),
             kwargs.get('zoom_padding', UNDEF),
             kwargs.get('zoom_on_selection', UNDEF),
+            kwargs.get('zoom_on_filter', UNDEF),
         )
         self.options(kwargs.get('options', UNDEF))
 
@@ -586,21 +591,21 @@ class Scatter():
 
     def selection(
         self,
-        selection: Optional[Union[List[int], np.ndarray, Undefined]] = UNDEF
+        point_idxs: Optional[Union[List[int], np.ndarray, Undefined]] = UNDEF
     ) -> Union[Scatter, np.ndarray]:
         """
         Set or get selected points.
 
         Parameters
         ----------
-        selection : array_like, optional
+        point_idxs : array_like, optional
             The point indices to be selected.
 
         Returns
         -------
         self or array_like
-            If no `selection` was provided the indices of the currently selected
-            points are returned. Otherwise, `self` is returned.
+            If no `point_idxs` was provided the indices of the currently
+            selected points are returned. Otherwise, `self` is returned.
 
         Examples
         --------
@@ -610,14 +615,14 @@ class Scatter():
         >>> scatter.selection()
         array([0, 4, 12], dtype=uint32)
         """
-        if selection is not UNDEF:
+        if point_idxs is not UNDEF:
             try:
-                self._selection = np.asarray(selection).astype(SELECTION_DTYPE)
-                self.update_widget('selection', self._selection)
+                self._selection = np.asarray(point_idxs, dtype=SELECTION_DTYPE)
             except:
-                if selection is None:
+                if point_idxs is None:
                     self._selection = np.asarray([], dtype=SELECTION_DTYPE)
                 pass
+            self.update_widget('selection', self._selection)
 
             return self
 
@@ -625,6 +630,49 @@ class Scatter():
             return self._widget.selection.astype(SELECTION_DTYPE)
 
         return self._selection
+
+    def filter(
+        self,
+        point_idxs: Optional[Union[List[int], np.ndarray, Undefined]] = UNDEF
+    ) -> Union[Scatter, np.ndarray]:
+        """
+        Set or get filtered points. When filtering down to a set of points, all
+        other points will be hidden from the view.
+
+        Parameters
+        ----------
+        point_idxs : array_like, optional
+            The point indices to be filtered.
+
+        Returns
+        -------
+        self or array_like
+            If no `point_idxs` was provided the indices of the currently
+            filtered points are returned. Otherwise, `self` is returned.
+
+        Examples
+        --------
+        >>> scatter.filter(df.query('mass < 0.5').index)')
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.filter()
+        array([0, 4, 12], dtype=uint32)
+        """
+        if point_idxs is not UNDEF:
+            try:
+                self._filter = np.asarray(point_idxs, dtype=SELECTION_DTYPE)
+            except:
+                if point_idxs is None:
+                    self._filter = np.asarray([], dtype=SELECTION_DTYPE)
+                pass
+            self.update_widget('filter', self._filter)
+
+            return self
+
+        if self._widget is not None:
+            return self._widget.filter.astype(SELECTION_DTYPE)
+
+        return self._filter
 
     def color(
         self,
@@ -2261,6 +2309,7 @@ class Scatter():
         initiator: Optional[Union[bool, Undefined]] = UNDEF,
         min_delay: Optional[Union[int, Undefined]] = UNDEF,
         min_dist: Optional[Union[float, Undefined]]  = UNDEF,
+        on_long_press: Optional[Union[bool, Undefined]]  = UNDEF,
     ):
         """
         Set or get the lasso settings.
@@ -2270,7 +2319,7 @@ class Scatter():
         color : matplotlib compatible color, optional
             The lasso color
         initiator : bool, optional
-            When set to `True` the lasso can be initiated via a click on the
+            When set to `True`, the lasso can be initiated via a click on the
             background and then click+hold+drag onto the circle with the dashed
             outline that appears. This circle, the "lasso initiator", can also
             be triggered via a long press anywhere.
@@ -2284,6 +2333,8 @@ class Scatter():
             lasso polygon is extended. In 99.99% of the cases, you can ignore
             this setting but in can be useful to lower the distance if you want
             a high-resolution lasso.
+        on_long_press : bool, optional
+            When set to `True`, the lasso is activated upon a long press.
 
         Returns
         -------
@@ -2314,11 +2365,15 @@ class Scatter():
         >>> scatter.lasso(min_dist=2)
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.lasso(on_long_press=False)
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.lasso()
         {'color': (0, 0.666666667, 1, 1),
-         'initiator': True,
+         'initiator': False,
          'min_delay': 10,
-         'min_dist': 3}
+         'min_dist': 3,
+         'on_long_press': True}
         """
         if color is not UNDEF:
             try:
@@ -2348,6 +2403,13 @@ class Scatter():
             except:
                 pass
 
+        if on_long_press is not UNDEF:
+            try:
+                self._lasso_on_long_press = bool(on_long_press)
+                self.update_widget('lasso_on_long_press', self._lasso_on_long_press)
+            except:
+                pass
+
         if any_not([color, initiator, min_delay, min_dist], UNDEF):
             return self
 
@@ -2356,6 +2418,7 @@ class Scatter():
             initiator = self._lasso_initiator,
             min_delay = self._lasso_min_delay,
             min_dist = self._lasso_min_dist,
+            on_long_press = self._lasso_on_long_press,
         )
 
     def width(
@@ -2732,6 +2795,7 @@ class Scatter():
         animation: Optional[Union[bool, int, Undefined]] = UNDEF,
         padding: Optional[Union[float, Undefined]] = UNDEF,
         on_selection: Optional[Union[bool, Undefined]] = UNDEF,
+        on_filter: Optional[Union[bool, Undefined]] = UNDEF,
     ):
         """
         Zoom to a set of points.
@@ -2751,6 +2815,8 @@ class Scatter():
             wide and tall as the width and height of the points' bounding box.
         on_selection : bool, optional
             If `True` jscatter will automatically zoom to selected points.
+        on_filter : bool, optional
+            If `True` jscatter will automatically zoom to filtered points.
 
         Returns
         -------
@@ -2770,7 +2836,7 @@ class Scatter():
         <jscatter.jscatter.Scatter>
 
         >>> scatter.zoom()
-        {'target': None, 'animation': 1000, 'padding': 0.333, 'on_selection': False}
+        {'target': None, 'animation': 1000, 'padding': 0.333, 'on_selection': False, 'on_filter': False}
         """
 
         if animation is not UNDEF:
@@ -2789,6 +2855,10 @@ class Scatter():
             self._zoom_on_selection = on_selection
             self.update_widget('zoom_on_selection', on_selection)
 
+        if on_filter is not UNDEF:
+            self._zoom_on_filter = on_filter
+            self.update_widget('zoom_on_filter', on_filter)
+
         if to is not UNDEF:
             self._zoom_to = to
             self.update_widget('zoom_to', to)
@@ -2801,6 +2871,7 @@ class Scatter():
             animation = self._zoom_animation,
             padding = self._zoom_padding,
             on_selection = self._zoom_on_selection,
+            on_filter = self._zoom_on_filter,
         )
 
 
@@ -2954,6 +3025,7 @@ class Scatter():
             y_scale=to_scale_type(self._y_scale),
             points=self.get_point_list(),
             selection=self._selection,
+            filter=self._filter,
             width=self._width,
             height=self._height,
             background_color=self._background_color,
@@ -2962,6 +3034,7 @@ class Scatter():
             lasso_initiator=self._lasso_initiator,
             lasso_min_delay=self._lasso_min_delay,
             lasso_min_dist=self._lasso_min_dist,
+            lasso_on_long_press=self._lasso_on_long_press,
             color=order_limit_map(self._color_map, self._color_order, self._color_categories) if self._color_map else self._color,
             color_selected=self._color_selected,
             color_hover=self._color_hover,
@@ -3001,6 +3074,7 @@ class Scatter():
             zoom_to=self._zoom_to,
             zoom_animation=self._zoom_animation,
             zoom_on_selection=self._zoom_on_selection,
+            zoom_on_filter=self._zoom_on_filter,
             zoom_padding=self._zoom_padding,
             other_options=self._options
         )

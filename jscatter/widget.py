@@ -69,6 +69,7 @@ class JupyterScatter(widgets.DOMWidget):
     x_scale = Unicode(None, allow_none=True).tag(sync=True)
     y_scale = Unicode(None, allow_none=True).tag(sync=True)
     selection = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
+    filter = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
     hovering = Int(None, allow_none=True).tag(sync=True)
 
     # View properties
@@ -82,10 +83,12 @@ class JupyterScatter(widgets.DOMWidget):
     zoom_animation = Int(1000).tag(sync=True)
     zoom_padding = Float(0.333).tag(sync=True)
     zoom_on_selection = Bool(False).tag(sync=True)
+    zoom_on_filter = Bool(False).tag(sync=True)
 
     # Interaction properties
     mouse_mode = Enum(['panZoom', 'lasso', 'rotate'], default_value='panZoom').tag(sync=True)
     lasso_initiator = Bool().tag(sync=True)
+    lasso_on_long_press = Bool().tag(sync=True)
 
     # Axes
     axes = Bool().tag(sync=True)

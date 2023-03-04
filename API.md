@@ -3,7 +3,7 @@
 - [Scatter](#scatter)
   - [Methods](#methods)
     - [x()](#scatter.x), [y()](#scatter.x), and [xy()](#scatter.xy)
-    - [selection()](#scatter.selection)
+    - [selection()](#scatter.selection), [filter()](#scatter.filter)
     - [color()](#scatter.color), [opacity()](#scatter.opacity), and [size()](#scatter.size)
     - [connect()](#scatter.connect), [connection_color()](#scatter.connection_color), [connection_opacity()](#scatter.connection_opacity), and [connection_size()](#scatter.connection_size)
     - [axes()](#scatter.axes) and [legend()](#scatter.legend)
@@ -98,15 +98,15 @@ Get or set the x and y coordinate. This is just a convenience function to animat
 scatter.xy('size', 'speed') # Mirror plot along the diagonal
 ```
 
-<h3><a name="scatter.selection" href="#scatter.selection">#</a> scatter.<b>selection</b>(<i>selection=Undefined</i>)</h3>
+<h3><a name="scatter.selection" href="#scatter.selection">#</a> scatter.<b>selection</b>(<i>point_idxs=Undefined</i>)</h3>
 
 Get or set the selected points.
 
 **Arguments:**
 
-- `selection` is an array-like list of point indices.
+- `point_idxs` is either an array-like list of point indices.
 
-**Returns:** either the indices of selected points when `selection` is `Undefined`, or `self`.
+**Returns:** either the currently selected point indices when `point_idxs` is `Undefined` or `self`.
 
 **Examples:**
 
@@ -117,6 +117,22 @@ scatter.selection(cars.query('speed < 50').index)
 # Retrieve the point indices of the currently selected points
 scatter.selection()
 # => array([0, 42, 1337], dtype=uint32)
+```
+
+<h3><a name="scatter.filter" href="#scatter.filter">#</a> scatter.<b>filter</b>(<i>point_idxs=Undefined</i>)</h3>
+
+Get or set the filtered points. When filtering down to a set of points, all other points will be hidden from the view.
+
+**Arguments:**
+
+- `point_idxs` is either an array-like list of point indices.
+
+**Returns:** either the currently filtered point indices when `point_idxs` is `Undefined` or `self`.
+
+**Examples:**
+
+```python
+scatter.filter(cars.query('speed < 50').index)
 ```
 
 <h3><a name="scatter.color" href="#scatter.color">#</a> scatter.<b>color</b>(<i>default=Undefined</i>, <i>selected=Undefined</i>, <i>hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
@@ -283,10 +299,14 @@ Get or set the x and y axes.
 
 **Example:**
 
+<<<<<<< HEAD
 ```python
 scatter = Scatter(data=df, x='speed', y='weight')
 scatter.axes(axes=True, labels=['Speed (km/h)', 'Weight (tons)'])
 ```
+=======
+<h3><a name="scatter.lasso" href="#scatter.lasso">#</a> scatter.<b>lasso</b>(<i>color=Undefined</i>, <i>initiator=Undefined</i>, <i>min_delay=Undefined</i>, <i>min_dist=Undefined</i>, <i>on_long_press=Undefined</i>)</h3>
+>>>>>>> dda0106 (Add filter function)
 
 
 <h3><a name="scatter.legend" href="#scatter.legend">#</a> scatter.<b>legend</b>(<i>legend=Undefined</i>, <i>position=Undefined</i>, <i>size=Undefined</i>)</h3>
@@ -294,9 +314,17 @@ scatter.axes(axes=True, labels=['Speed (km/h)', 'Weight (tons)'])
 Set or get the legend settings.
 
 **Arguments:**
+<<<<<<< HEAD
 - `legend` is a Boolean specifying if the legend should be shown or not.
 - `position` is a string specifying the legend position. It must be one of `top`, `left`, `right`, `bottom`, `top-left`, `top-right`, `bottom-left`, `bottom-right`, or `center`.
 - `size` is a string specifying the size of the legend. It must be one of `small`, `medium`, or `large`.
+=======
+- `color` is a string referring to a Matplotlib-compatible color.
+- `initiator` is a Boolean value specifying if the click-based lasso initiator should be enabled or not.
+- `min_delay` is an integer specifying the minimal delay in milliseconds before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant. 
+- `min_dist` is an integer specifying the minimal distance in pixels that the mouse has to move before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant.
+- `on_long_press` is a Boolean value specifying if the lasso should be activated upon a long press.
+>>>>>>> dda0106 (Add filter function)
 
 **Returns:** either the legend properties when all arguments are `Undefined` or `self`.
 
@@ -307,7 +335,7 @@ scatter.legend(true, 'top-right', 'small')
 ```
 
 
-<h3><a name="scatter.zoom" href="#scatter.zoom">#</a> scatter.<b>zoom</b>(<i>target=Undefined</i>, <i>animation=Undefined</i>, <i>padding=Undefined</i>, <i>on_selection=Undefined</i>)</h3>
+<h3><a name="scatter.zoom" href="#scatter.zoom">#</a> scatter.<b>zoom</b>(<i>target=Undefined</i>, <i>animation=Undefined</i>, <i>padding=Undefined</i>, <i>on_selection=Undefined</i>, <i>on_filter=Undefined</i>)</h3>
 
 Zoom to a set of points.
 
@@ -316,6 +344,7 @@ Zoom to a set of points.
 - `animation` defines whether to animate the transition to the new zoom state. This value can either be a Boolean or an Integer specifying the duration of the animation in milliseconds.
 - `padding` is the relative padding around the bounding box of the target points. E.g., `0` stands for no padding and `1` stands for a padding that is as wide and tall as the width and height of the points' bounding box.
 - `on_selection` if `True` jscatter will automatically zoom to selected points.
+- `on_filter` if `True` jscatter will automatically zoom to filtered points.
 
 **Returns:** either the current zoom state (when all arguments are `Undefined`) or `self`.
 
@@ -493,9 +522,10 @@ You can define those property when creating a `Scatter` instance. For example,
 | `axes`                     | bool                                                                                     | `True`                                         |
 | `axes_grid`                | bool                                                                                     | `False`                                        |
 | `lasso_color`              | str \| tuple[float] \| list[float]                                                       | `(0, 0.666666667, 1, 1)`                       |
-| `lasso_initiator`          | bool                                                                                     | `True`                                         |
+| `lasso_initiator`          | bool                                                                                     | `False`                                        |
 | `lasso_min_delay`          | int                                                                                      | `10`                                           |
 | `lasso_min_dist`           | int                                                                                      | `3`                                            |
+| `lasso_on_long_press`      | bool                                                                                     | `True`                                         |
 | `reticle`                  | bool                                                                                     | `True`                                         |
 | `reticle_color`            | str \| 'auto'                                                                            | `'auto'`                                       |
 | `background_color`         | str                                                                                      | `'white'`                                      |
@@ -505,6 +535,11 @@ You can define those property when creating a `Scatter` instance. For example,
 | `camera_distance`          | float                                                                                    | `1`                                            |
 | `camera_rotation`          | float                                                                                    | `0`                                            |
 | `camera_view`              | list[float]                                                                              | `None`                                         |
+| `zoom_to`                  | list[int]                                                                                | `None`                                         |
+| `zoom_animation`           | int                                                                                      | `500`                                          |
+| `zoom_on_selection`        | list[float]                                                                              | `0.33`                                         |
+| `zoom_on_filter`           | list[float]                                                                              | `False`                                        |
+| `zoom_padding`             | list[float]                                                                              | `False`                                        |
 | `options`                  | dict                                                                                     | `{}`                                           |
 
 [LogNorm]: https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.LogNorm.html

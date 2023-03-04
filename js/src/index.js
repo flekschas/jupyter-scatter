@@ -34,6 +34,7 @@ JupyterScatterModel.serializers = Object.assign(
   {
     points: new codecs.Numpy2D('float32'),
     selection: new codecs.Numpy1D('uint32'),
+    filter: new codecs.Numpy1D('uint32'),
     view_data: new codecs.Numpy1D('uint8'),
     zoom_to: new codecs.Numpy1D('uint32'),
   }
@@ -101,6 +102,7 @@ const properties = {
   height: 'height',
   lassoColor: 'lassoColor',
   lassoInitiator: 'lassoInitiator',
+  lassoOnLongPress: 'lassoOnLongPress',
   lassoMinDelay: 'lassoMinDelay',
   lassoMinDist: 'lassoMinDist',
   mouseMode: 'mouseMode',
@@ -112,6 +114,7 @@ const properties = {
   reticle: 'showReticle',
   reticleColor: 'reticleColor',
   selection: 'selectedPoints',
+  filter: 'filteredPoints',
   size: 'pointSize',
   sizeBy: 'sizeBy',
   connect: 'showPointConnections',
@@ -141,6 +144,7 @@ const properties = {
   zoomAnimation: 'zoomAnimation',
   zoomPadding: 'zoomPadding',
   zoomOnSelection: 'zoomOnSelection',
+  zoomOnFilter: 'zoomOnFilter',
 };
 
 const reglScatterplotProperty = new Set([
@@ -158,6 +162,7 @@ const reglScatterplotProperty = new Set([
   'height',
   'lassoColor',
   'lassoInitiator',
+  'lassoOnLongPress',
   'lassoMinDelay',
   'lassoMinDist',
   'mouseMode',
@@ -168,6 +173,7 @@ const reglScatterplotProperty = new Set([
   'showReticle',
   'reticleColor',
   'selectedPoints',
+  'filteredPoints',
   'pointSize',
   'sizeBy',
   'showPointConnections',
@@ -268,6 +274,7 @@ class JupyterScatterView extends widgets.DOMWidgetView {
       self.pointoutHandlerBound = self.pointoutHandler.bind(self);
       self.selectHandlerBound = self.selectHandler.bind(self);
       self.deselectHandlerBound = self.deselectHandler.bind(self);
+      self.filterEventHandlerBound = self.filterEventHandler.bind(self);
       self.externalViewChangeHandlerBound = self.externalViewChangeHandler.bind(self);
       self.viewChangeHandlerBound = self.viewChangeHandler.bind(self);
       self.resizeHandlerBound = self.resizeHandler.bind(self);
@@ -276,6 +283,7 @@ class JupyterScatterView extends widgets.DOMWidgetView {
       self.scatterplot.subscribe('pointout', self.pointoutHandlerBound);
       self.scatterplot.subscribe('select', self.selectHandlerBound);
       self.scatterplot.subscribe('deselect', self.deselectHandlerBound);
+      self.scatterplot.subscribe('filter', self.filterEventHandlerBound);
       self.scatterplot.subscribe('view', self.viewChangeHandlerBound);
 
       pubSub.globalPubSub.subscribe(
@@ -310,6 +318,12 @@ class JupyterScatterView extends widgets.DOMWidgetView {
         self.scatterplot
           .draw(self.points)
           .then(function onInitialDraw() {
+            if (self.filter.length) {
+              self.scatterplot.filter(self.filter, { preventEvent: true });
+              if (self.model.get('zoom_on_filter')) {
+                self.zoomToHandler(self.filter);
+              }
+            }
             if (self.selection.length) {
               self.scatterplot.select(self.selection, { preventEvent: true });
               if (self.model.get('zoom_on_selection')) {
@@ -676,6 +690,7 @@ class JupyterScatterView extends widgets.DOMWidgetView {
     this.scatterplot.unsubscribe('pointout', this.pointoutHandlerBound);
     this.scatterplot.unsubscribe('select', this.selectHandlerBound);
     this.scatterplot.unsubscribe('deselect', this.deselectHandlerBound);
+    this.scatterplot.unsubscribe('filter', this.filterEventHandlerBound);
     this.scatterplot.unsubscribe('view', this.viewChangeHandlerBound);
     this.scatterplot.destroy();
   }
@@ -719,6 +734,13 @@ class JupyterScatterView extends widgets.DOMWidgetView {
     this.selectionChangedByJs = true;
     if (this.model.get('zoom_on_selection')) this.zoomToHandler();
     this.model.set('selection', []);
+    this.model.save_changes();
+  }
+
+  filterEventHandler(event) {
+    this.filterChangedByJs = true;
+    if (this.model.get('zoom_on_filter')) this.zoomToHandler(event.points);
+    this.model.set('filter', [...event.points]);
     this.model.save_changes();
   }
 
@@ -775,7 +797,7 @@ class JupyterScatterView extends widgets.DOMWidgetView {
     });
   }
 
-  selectionHandler(newSelection) {
+  selectionHandler(pointIdxs) {
     // Avoid calling `this.scatterplot.select()` twice when the selection was
     // triggered by the JavaScript (i.e., the user interactively selected points)
     if (this.selectionChangedByJs) {
@@ -783,16 +805,29 @@ class JupyterScatterView extends widgets.DOMWidgetView {
       return;
     }
 
-    const selection = newSelection?.length > 0
-      ? newSelection
+    const selection = pointIdxs?.length > 0
+      ? pointIdxs
       : undefined;
 
     const options = { preventEvent: true };
 
-    if (selection) this.scatterplot.select(newSelection, options);
+    if (selection) this.scatterplot.select(selection, options);
     else this.scatterplot.deselect(options);
 
     if (this.model.get('zoom_on_selection')) this.zoomToHandler(selection);
+  }
+
+  filterHandler(pointIdxs) {
+    // Avoid calling `this.scatterplot.select()` twice when the selection was
+    // triggered by the JavaScript (i.e., the user interactively selected points)
+    if (this.filterChangedByJs) {
+      this.filterChangedByJs = undefined;
+      return;
+    }
+
+    this.scatterplot.filter(pointIdxs, { preventEvent: true });
+
+    if (this.model.get('zoom_on_filter')) this.zoomToHandler(pointIdxs);
   }
 
   hoveringHandler(newHovering) {
@@ -939,6 +974,10 @@ class JupyterScatterView extends widgets.DOMWidgetView {
     this.withPropertyChangeHandler('lassoInitiator', newValue);
   }
 
+  lassoOnLongPressHandler(newValue) {
+    this.withPropertyChangeHandler('lassoOnLongPress', newValue);
+  }
+
   mouseModeHandler(newValue) {
     this.withPropertyChangeHandler('mouseMode', newValue);
   }
@@ -997,7 +1036,7 @@ class JupyterScatterView extends widgets.DOMWidgetView {
       ? { padding, transition, transitionDuration }
       : { padding };
 
-    if (points) {
+    if (points && points.length) {
       this.scatterplot.zoomToPoints(points, options);
     } else {
       this.scatterplot.zoomToOrigin(options);
