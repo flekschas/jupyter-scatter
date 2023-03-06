@@ -1,6 +1,7 @@
 ## v0.11.0
 
 - Add `scatter.filter([0, 1, 2])` for filtering down points. Filtering down to a specific subset of points is much faster than than updating the underlying data ([#61](https://github.com/flekschas/jupyter-scatter/issues/61))
+- Add `scatter.data(df)` to allow rendering new data points without having to re-initialize the scatter instance ([#61](https://github.com/flekschas/jupyter-scatter/issues/61))
 - Add the ability to automatically zoom to filtered points via `Scatter(zoom_on_filter=True)` or `scatter.zoom(on_filter=True)`
 - Add lasso on long press and make it the default. The behavior can be changed via `Scatter(lasso_on_long_press=False)` or `scatter.lasso(on_long_press=False)`
 - Updated `regl-scatterplot` to `v1.6`

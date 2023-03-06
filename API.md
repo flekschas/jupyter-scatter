@@ -2,7 +2,7 @@
 
 - [Scatter](#scatter)
   - [Methods](#methods)
-    - [x()](#scatter.x), [y()](#scatter.x), and [xy()](#scatter.xy)
+    - [x()](#scatter.x), [y()](#scatter.x), [xy()](#scatter.xy), and [data()](#scatter.data)
     - [selection()](#scatter.selection), [filter()](#scatter.filter)
     - [color()](#scatter.color), [opacity()](#scatter.opacity), and [size()](#scatter.size)
     - [connect()](#scatter.connect), [connection_color()](#scatter.connection_color), [connection_opacity()](#scatter.connection_opacity), and [connection_size()](#scatter.connection_size)
@@ -96,6 +96,24 @@ Get or set the x and y coordinate. This is just a convenience function to animat
 
 ```python
 scatter.xy('size', 'speed') # Mirror plot along the diagonal
+```
+
+<h3><a name="scatter.data" href="#scatter.data">#</a> scatter.<b>data</b>(<i>data=Undefined</i>, <i>**kwargs</i>)</h3>
+
+Get or set the referenced Pandas DataFrame. This is just a convenience function to animate a change in the x and y coordinate at the same time.
+
+**Arguments:**
+
+- `data` is a Pandas DataFrame.
+- `kwargs`:
+  - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
+
+**Returns:** either the DataFrame `data` is `Undefined` or `self`.
+
+**Examples:**
+
+```python
+scatter.data(df)
 ```
 
 <h3><a name="scatter.selection" href="#scatter.selection">#</a> scatter.<b>selection</b>(<i>point_idxs=Undefined</i>)</h3>

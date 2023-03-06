@@ -790,11 +790,18 @@ class JupyterScatterView extends widgets.DOMWidgetView {
 
   // Event handlers for Python-triggered events
   pointsHandler(newPoints) {
-    this.scatterplot.draw(newPoints, {
-      transition: true,
-      transitionDuration: 3000,
-      transitionEasing: 'quadInOut',
-    });
+    if (newPoints.length === this.scatterplot.get('points').length) {
+      // We assume point correspondence
+      this.scatterplot.draw(newPoints, {
+        transition: true,
+        transitionDuration: 3000,
+        transitionEasing: 'quadInOut',
+      });
+    } else {
+      this.scatterplot.deselect();
+      this.scatterplot.unfilter();
+      this.scatterplot.draw(newPoints);
+    }
   }
 
   selectionHandler(pointIdxs) {

@@ -345,6 +345,61 @@ class Scatter():
 
         return view.copy()
 
+    def data(
+        self,
+        data: Optional[pd.DataFrame] = None,
+        **kwargs
+    ) -> Union[Scatter, dict]:
+        """
+        Set or get the referenced Pandas DataFrame
+
+        Parameters
+        ----------
+        data : pd.DataFrame, optional
+            The data frame that holds the x and y coordinates as well as other
+            possible dimensions that can be used for color, size, or opacity
+            encoding.
+
+        Returns
+        -------
+        self or dict
+            If no parameter was provided a dictionary with the current `data`
+            is returned. Otherwise, `self` is returned.
+
+        See Also
+        --------
+        x : Set or get the x coordinates.
+        y : Set or get the y coordinates.
+        xy : Set or get the x and y coordinates.
+
+        Examples
+        --------
+        >>> scatter.data(df)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.data()
+        {'data': <pandas.DataFrame>}
+        """
+        if data is not None:
+            try:
+                self._n = len(data)
+                self._data = data
+            except TypeError:
+                return self
+
+            self._points = np.zeros((self._n, 6))
+
+            self.x(self._x, skip_widget_update=True)
+            self.y(self._y, skip_widget_update=True)
+
+            if 'skip_widget_update' not in kwargs:
+                self.update_widget('points', self.get_point_list())
+
+        if any_not([data], UNDEF):
+            return self
+
+        return dict(data = self._data)
+
     def x(
         self,
         x: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
