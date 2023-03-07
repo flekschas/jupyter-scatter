@@ -317,32 +317,19 @@ Get or set the x and y axes.
 
 **Example:**
 
-<<<<<<< HEAD
 ```python
 scatter = Scatter(data=df, x='speed', y='weight')
 scatter.axes(axes=True, labels=['Speed (km/h)', 'Weight (tons)'])
 ```
-=======
-<h3><a name="scatter.lasso" href="#scatter.lasso">#</a> scatter.<b>lasso</b>(<i>color=Undefined</i>, <i>initiator=Undefined</i>, <i>min_delay=Undefined</i>, <i>min_dist=Undefined</i>, <i>on_long_press=Undefined</i>)</h3>
->>>>>>> dda0106 (Add filter function)
-
 
 <h3><a name="scatter.legend" href="#scatter.legend">#</a> scatter.<b>legend</b>(<i>legend=Undefined</i>, <i>position=Undefined</i>, <i>size=Undefined</i>)</h3>
 
 Set or get the legend settings.
 
 **Arguments:**
-<<<<<<< HEAD
 - `legend` is a Boolean specifying if the legend should be shown or not.
 - `position` is a string specifying the legend position. It must be one of `top`, `left`, `right`, `bottom`, `top-left`, `top-right`, `bottom-left`, `bottom-right`, or `center`.
 - `size` is a string specifying the size of the legend. It must be one of `small`, `medium`, or `large`.
-=======
-- `color` is a string referring to a Matplotlib-compatible color.
-- `initiator` is a Boolean value specifying if the click-based lasso initiator should be enabled or not.
-- `min_delay` is an integer specifying the minimal delay in milliseconds before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant. 
-- `min_dist` is an integer specifying the minimal distance in pixels that the mouse has to move before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant.
-- `on_long_press` is a Boolean value specifying if the lasso should be activated upon a long press.
->>>>>>> dda0106 (Add filter function)
 
 **Returns:** either the legend properties when all arguments are `Undefined` or `self`.
 
@@ -411,7 +398,7 @@ scatter.mouse(mode='lasso')
 ```
 
 
-<h3><a name="scatter.lasso" href="#scatter.lasso">#</a> scatter.<b>lasso</b>(<i>color=Undefined</i>, <i>initiator=Undefined</i>, <i>min_delay=Undefined</i>, <i>min_dist=Undefined</i>)</h3>
+<h3><a name="scatter.lasso" href="#scatter.lasso">#</a> scatter.<b>lasso</b>(<i>color=Undefined</i>, <i>initiator=Undefined</i>, <i>min_delay=Undefined</i>, <i>min_dist=Undefined</i>, <i>on_long_press=Undefined</i>)</h3>
 
 Get or set the lasso for selecting multiple points.
 
@@ -420,6 +407,7 @@ Get or set the lasso for selecting multiple points.
 - `initiator` is a Boolean value to specify if the click-based lasso initiator should be enabled or not.
 - `min_delay` is an integer specifying the minimal delay in milliseconds before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant. 
 - `min_dist` is an integer specifying the minimal distance in pixels that the mouse has to move before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant.
+- `on_long_press` is a Boolean value specifying if the lasso should be activated upon a long press.
 
 **Returns:** either the lasso properties when all arguments are `Undefined` or `self`.
 
