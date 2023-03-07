@@ -143,7 +143,7 @@ Get or set the filtered points. When filtering down to a set of points, all othe
 
 **Arguments:**
 
-- `point_idxs` is either an array-like list of point indices.
+- `point_idxs` is a list or an array-like object of point indices.
 
 **Returns:** either the currently filtered point indices when `point_idxs` is `Undefined` or `self`.
 
