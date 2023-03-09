@@ -29,6 +29,8 @@
   jscatter.compose([s1, s2])
   ```
 
+- Avoid unregistering all observers when calling `jscatter.compose()` such that external observers remain registered
+
 ## v0.11.0
 
 - Add `scatter.filter([0, 1, 2])` for filtering down points. Filtering down to a specific subset of points is much faster than than updating the underlying data ([#61](https://github.com/flekschas/jupyter-scatter/issues/61))
