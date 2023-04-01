@@ -1,9 +1,0 @@
-ipywidgets>=7.6,<9
-ipython
-jupyterlab_widgets>=1.0,<4
-jupyter_packaging
-matplotlib
-numpy
-pandas
-traittypes>=0.2.1
-typing_extensions

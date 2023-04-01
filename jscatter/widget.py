@@ -5,6 +5,8 @@ import IPython.display as ipydisplay
 import ipywidgets as widgets
 import matplotlib.pyplot as plt
 import numpy as np
+import anywidget
+import pathlib
 
 from IPython.display import display, update_display
 from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
@@ -49,15 +51,8 @@ def binary_to_array(value, obj=None):
 
 ndarray_serialization = dict(to_json=array_to_binary, from_json=binary_to_array)
 
-@widgets.register
-class JupyterScatter(widgets.DOMWidget):
-    _view_name = Unicode("JupyterScatterView").tag(sync=True)
-    _model_name = Unicode("JupyterScatterModel").tag(sync=True)
-    _view_module = Unicode("jupyter-scatter").tag(sync=True)
-    _model_module = Unicode("jupyter-scatter").tag(sync=True)
-    _view_module_version = Unicode(__version__).tag(sync=True)
-    _model_module_version = Unicode(__version__).tag(sync=True)
-    _model_data = List([]).tag(sync=True)
+class JupyterScatter(anywidget.AnyWidget):
+    _esm = pathlib.Path(__file__).parent / "bundle.js"
 
     # For debugging
     dom_element_id = Unicode(read_only=True).tag(sync=True)
