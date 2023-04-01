@@ -122,7 +122,7 @@ function createEncoding() {
   return element;
 }
 
-function createLegend(encodings, fontColor, backgroundColor, size) {
+export function createLegend(encodings, fontColor, backgroundColor, size) {
   const f = fontColor ? fontColor[0] * 255 : 0;
   const b = backgroundColor ? backgroundColor[0] * 255 : 255;
 
@@ -187,5 +187,3 @@ function createLegend(encodings, fontColor, backgroundColor, size) {
 
   return root;
 }
-
-module.exports = createLegend;

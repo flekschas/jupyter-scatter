@@ -1,44 +1,16 @@
-const widgets = require('@jupyter-widgets/base');
-const reglScatterplot = require('regl-scatterplot/dist/regl-scatterplot.js');
-const pubSub = require('pub-sub-es');
-const d3Axis = require('d3-axis');
-const d3Scale = require('d3-scale');
-const d3Selection = require('d3-selection');
-const codecs = require('./codecs');
-const createLegend = require('./legend');
-const packageJson = require('../package.json');
+import * as reglScatterplot from 'regl-scatterplot';
+import * as pubSub from 'pub-sub-es';
+
+import * as d3Axis from 'd3-axis';
+import * as d3Scale from 'd3-scale';
+import * as d3Selection from 'd3-selection';
+
+import * as codecs from "./codecs.js";
+import { createLegend } from "./legend.js";
+import { version } from "../package.json";
 
 const createScatterplot = reglScatterplot.default;
 const createRenderer = reglScatterplot.createRenderer;
-
-class JupyterScatterModel extends widgets.DOMWidgetModel {
-  defaults() {
-    return Object.assign(
-      {},
-      super.defaults(),
-      {
-        _model_name: 'JupyterScatterModel',
-        _view_name: 'JupyterScatterView',
-        _model_module: packageJson.name,
-        _view_module: packageJson.name,
-        _model_module_version: packageJson.version,
-        _view_module_version: packageJson.version,
-      }
-    );
-  }
-}
-
-JupyterScatterModel.serializers = Object.assign(
-  {},
-  widgets.DOMWidgetModel.serializers,
-  {
-    points: new codecs.Numpy2D('float32'),
-    selection: new codecs.Numpy1D('uint32'),
-    filter: new codecs.Numpy1D('uint32'),
-    view_data: new codecs.Numpy1D('uint8'),
-    zoom_to: new codecs.Numpy1D('uint32'),
-  }
-);
 
 const AXES_LABEL_SIZE = 16;
 const AXES_PADDING_X = 40;
@@ -188,7 +160,13 @@ const reglScatterplotProperty = new Set([
 ]);
 
 // Custom View. Renders the widget model.
-class JupyterScatterView extends widgets.DOMWidgetView {
+class JupyterScatterView {
+
+  constructor({ el, model }) {
+    this.el = el;
+    this.model = model;
+  }
+
   render() {
     const self = this;
 
@@ -257,7 +235,7 @@ class JupyterScatterView extends widgets.DOMWidgetView {
       if (!window.jupyterScatter.versionLog) {
         // eslint-disable-next-line
         console.log(
-          'jupyter-scatter v' + packageJson.version +
+          'jupyter-scatter v' + version +
           ' with regl-scatterplot v' + self.scatterplot.get('version')
         );
         window.jupyterScatter.versionLog = true;
@@ -695,10 +673,6 @@ class JupyterScatterView extends widgets.DOMWidgetView {
     this.scatterplot.destroy();
   }
 
-  remove() {
-    this.destroy();
-  }
-
   // Helper
   colorCanvas() {
     if (Array.isArray(this.backgroundColor)) {
@@ -1111,7 +1085,35 @@ class JupyterScatterView extends widgets.DOMWidgetView {
   }
 };
 
-module.exports = {
-  JupyterScatterModel: JupyterScatterModel,
-  JupyterScatterView: JupyterScatterView
-};
+function modelWithSerializers(model, serializers) {
+  return {
+    get(key) {
+      const value = model.get(key);
+      const serializer = serializers[key];
+      if (serializer) return serializer.deserialize(value);
+      return value;
+    },
+    set(key, value) {
+      const serializer = serializers[key];
+      if (serializer) value = serializer.serialize(value);
+      model.set(key, value);
+    },
+    on: model.on,
+    save_changes: model.save_changes,
+  }
+}
+
+export async function render({ model, el }) {
+  const view = new JupyterScatterView({
+    el: el,
+    model: modelWithSerializers(model, {
+      points: codecs.Numpy2D('float32'),
+      selection: codecs.Numpy1D('uint32'),
+      filter: codecs.Numpy1D('uint32'),
+      view_data: codecs.Numpy1D('uint8'),
+      zoom_to: codecs.Numpy1D('uint32'),
+    }),
+  });
+  view.render();
+  return () => view.destroy();
+}
