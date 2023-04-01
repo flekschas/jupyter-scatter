@@ -50,4 +50,5 @@ test = [
     "jupyter",
     "jupyterlab>=3.0",
     "pytest",
+    "flake8",
 ]
