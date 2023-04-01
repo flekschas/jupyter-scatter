@@ -41,6 +41,7 @@ dependencies = [
     "traittypes>=0.2.1",
     "typing_extensions",
 ]
+dynamic = ["version"]
 
 [project.urls]
 homepage = "https://github.com/flekschas/jscatter"
@@ -52,3 +53,7 @@ test = [
     "pytest",
     "flake8",
 ]
+
+[tool.hatch.version]
+path = "js/package.json"
+pattern = "\"version\": \"(?P<version>.+?)\""

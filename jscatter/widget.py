@@ -12,7 +12,6 @@ from IPython.display import display, update_display
 from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
 from traittypes import Array
 
-from ._version import __version__
 from .utils import to_hex, with_left_label
 
 SELECTION_DTYPE = 'uint32'
