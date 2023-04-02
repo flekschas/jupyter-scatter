@@ -54,6 +54,8 @@ test = [
     "flake8",
 ]
 
+# Configures hatchling build system to use the verison
+# found in the package.json file for the python package.
 [tool.hatch.version]
 path = "js/package.json"
 pattern = "\"version\": \"(?P<version>.+?)\""
