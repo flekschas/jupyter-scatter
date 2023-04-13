@@ -30,6 +30,7 @@
   ```
 
 - Avoid unregistering all observers when calling `jscatter.compose()` such that external observers remain registered
+- Fix undefined `this` in codec preventing the `scatter.selection()` from working correctly ([#66](https://github.com/flekschas/jupyter-scatter/pull/66))
 
 ## v0.11.0
 
