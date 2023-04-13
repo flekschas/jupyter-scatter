@@ -29,6 +29,8 @@
   jscatter.compose([s1, s2])
   ```
 
+  https://user-images.githubusercontent.com/932103/223899982-d2837c4d-f486-4f33-af22-cf3866c4983e.mp4
+
 - Avoid unregistering all observers when calling `jscatter.compose()` such that external observers remain registered
 - Fix undefined `this` in codec preventing the `scatter.selection()` from working correctly ([#66](https://github.com/flekschas/jupyter-scatter/pull/66))
 
