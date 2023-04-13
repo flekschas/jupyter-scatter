@@ -113,6 +113,8 @@ def compose(
                 # Re-subscribe to listen to changes coming from the JS kernel
                 scatter.widget.observe(scatter_select_handlers[i], names='selection')
 
+        select_handler.__jscatter_compose_observer__ = True
+
         return select_handler
 
     def create_hover_handler(index: int):
@@ -139,11 +141,21 @@ def compose(
                 # Re-subscribe to listen to changes coming from the JS kernel
                 scatter.widget.observe(scatter_hover_handlers[i], names='hovering')
 
+        hover_handler.__jscatter_compose_observer__ = True
+
         return hover_handler
 
     for index, scatter in enumerate(scatters):
         scatter.height(row_height)
-        scatter.widget.unobserve_all() # Clear previous observers
+
+        trait_notifiers = scatter.widget._trait_notifiers
+
+        # Clear previous `selection` and `hovering` observers
+        for name in ['selection', 'hovering']:
+            if name in trait_notifiers and 'change' in trait_notifiers[name]:
+                for observer in trait_notifiers[name]['change']:
+                    if hasattr(observer, '__jscatter_compose_observer__'):
+                        trait_notifiers[name]['change'].remove(observer)
 
         select_handler = create_select_handler(index)
         hover_handler = create_hover_handler(index)

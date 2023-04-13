@@ -1,3 +1,39 @@
+## v0.12.0
+
+- Add support for referencing points by the Pandas DataFrame's index via `Scatter(data_use_index=True)` or `scatter.data(use_index=True)`. This is useful for synchronizing the selection or filtering of two Scatter instances that operate on different data frames with point correspondences. ([#62](https://github.com/flekschas/jupyter-scatter/issues/62)
+
+  ```py
+  import jscatter
+  import numpy as np
+  import pandas as pd
+
+  df1 = pd.DataFrame(
+      data=np.random.rand(16, 2),
+      index=[chr(65 + x) for x in range(16)],
+      columns=['x', 'y']
+  )
+  df2 = pd.DataFrame(
+      data=np.random.rand(8, 2),
+      index=[chr(76 - x) for x in range(8)],
+      columns=['x', 'y']
+  )
+
+  s1 = jscatter.Scatter(data=df1, data_use_index=True, x='x', y='y', x_scale=[0, 2], y_scale=[0, 1])
+  s2 = jscatter.Scatter(data=df2, data_use_index=True, x='x', y='y', x_scale=[-1, 1], y_scale=[0, 1])
+
+  def on_selection_change(change):
+      s2.selection(s1.selection())
+
+  s1.widget.observe(on_selection_change, names='selection')
+
+  jscatter.compose([s1, s2])
+  ```
+
+  https://user-images.githubusercontent.com/932103/223899982-d2837c4d-f486-4f33-af22-cf3866c4983e.mp4
+
+- Avoid unregistering all observers when calling `jscatter.compose()` such that external observers remain registered
+- Fix undefined `this` in codec preventing the `scatter.selection()` from working correctly ([#66](https://github.com/flekschas/jupyter-scatter/pull/66))
+
 ## v0.11.0
 
 - Add `scatter.filter([0, 1, 2])` for filtering down points. Filtering down to a specific subset of points is much faster than than updating the underlying data ([#61](https://github.com/flekschas/jupyter-scatter/issues/61))

@@ -132,6 +132,7 @@ class Scatter():
         <jscatter.jscatter.Scatter>
         """
         self._data = data
+        self._data_use_index = kwargs.get('data_use_index', False)
 
         try:
             self._n = len(self._data)
@@ -144,8 +145,10 @@ class Scatter():
         self._widget = None
         self._pixels = None
         self._encodings = Encodings()
-        self._selection = np.asarray([], dtype=SELECTION_DTYPE)
-        self._filter = np.asarray([], dtype=SELECTION_DTYPE)
+        self._selected_points_ids = []
+        self._selected_points_idxs = np.asarray([], dtype=SELECTION_DTYPE)
+        self._filtered_points_ids = []
+        self._filtered_points_idxs = np.asarray([], dtype=SELECTION_DTYPE)
         self._background_color = to_rgba(default_background_color)
         self._background_color_luminance = 1
         self._background_image = None
@@ -348,6 +351,7 @@ class Scatter():
     def data(
         self,
         data: Optional[pd.DataFrame] = None,
+        use_index: Optional[Union[bool, Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -359,12 +363,17 @@ class Scatter():
             The data frame that holds the x and y coordinates as well as other
             possible dimensions that can be used for color, size, or opacity
             encoding.
+        label_index : bool, optional
+            If `True` and if the data frame's index is not an instance of
+            `RangeIndex` then the selection and filter methods will reference
+            points by the data frame's label index instead of the row index.
 
         Returns
         -------
         self or dict
             If no parameter was provided a dictionary with the current `data`
-            is returned. Otherwise, `self` is returned.
+            and `use_label_index` setting is returned. Otherwise, `self` is
+            returned.
 
         See Also
         --------
@@ -377,8 +386,11 @@ class Scatter():
         >>> scatter.data(df)
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.data(use_label_index=True)
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.data()
-        {'data': <pandas.DataFrame>}
+        {'data': <pandas.DataFrame>, 'use_label_index': False}
         """
         if data is not None:
             try:
@@ -395,7 +407,11 @@ class Scatter():
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('points', self.get_point_list())
 
-        if any_not([data], UNDEF):
+        if use_index is not UNDEF:
+            self._data_use_index = use_index
+
+
+        if any_not([data, use_index], UNDEF):
             return self
 
         return dict(data = self._data)
@@ -646,21 +662,24 @@ class Scatter():
 
     def selection(
         self,
-        point_idxs: Optional[Union[List[int], np.ndarray, Undefined]] = UNDEF
+        point_ids: Optional[Union[List[int], np.ndarray, Undefined]] = UNDEF
     ) -> Union[Scatter, np.ndarray]:
         """
         Set or get selected points.
 
         Parameters
         ----------
-        point_idxs : array_like, optional
-            The point indices to be selected.
+        point_ids : array_like, optional
+            The point IDs to be filtered. Depending on `data` and
+            `data_use_index`, the IDs can either be the Pandas DataFrame indices
+            or the points row indices.
+
 
         Returns
         -------
         self or array_like
-            If no `point_idxs` was provided the indices of the currently
-            selected points are returned. Otherwise, `self` is returned.
+            If no parameters were provided the IDs of the currently selected \
+            points are returned. Otherwise, `self` is returned.
 
         Examples
         --------
@@ -670,25 +689,39 @@ class Scatter():
         >>> scatter.selection()
         array([0, 4, 12], dtype=uint32)
         """
-        if point_idxs is not UNDEF:
+        if point_ids is not UNDEF:
             try:
-                self._selection = np.asarray(point_idxs, dtype=SELECTION_DTYPE)
+                if self._data is not None and self._data_use_index:
+                    row_idxs = self._data.index.get_indexer(point_ids)
+                    self._selected_points_idxs = np.asarray(
+                        row_idxs[row_idxs >= 0],
+                        dtype=SELECTION_DTYPE
+                    )
+                    self._selected_points_ids = self._data.iloc[self._selected_points_idxs].index
+                else:
+                    self._selected_points_idxs = np.asarray(point_ids, dtype=SELECTION_DTYPE)
+                    self._selected_points_ids = self._selected_points_idxs
             except:
-                if point_idxs is None:
-                    self._selection = np.asarray([], dtype=SELECTION_DTYPE)
+                if point_ids is None:
+                    self._filtered_points_idxs = np.asarray([], dtype=SELECTION_DTYPE)
+                    self._filtered_points_ids = self._filtered_points_idxs
                 pass
-            self.update_widget('selection', self._selection)
+
+            self.update_widget('selection', self._selected_points_idxs)
 
             return self
 
         if self._widget is not None:
-            return self._widget.selection.astype(SELECTION_DTYPE)
+            row_idxs = self._widget.selection.astype(SELECTION_DTYPE)
+            if self._data is not None and self._data_use_index:
+                return self._data.iloc[row_idxs].index
+            return row_idxs
 
-        return self._selection
+        return self._selected_points_ids
 
     def filter(
         self,
-        point_idxs: Optional[Union[List[int], np.ndarray, Undefined]] = UNDEF
+        point_ids: Optional[Union[List[int], np.ndarray, Undefined]] = UNDEF
     ) -> Union[Scatter, np.ndarray]:
         """
         Set or get filtered points. When filtering down to a set of points, all
@@ -696,13 +729,15 @@ class Scatter():
 
         Parameters
         ----------
-        point_idxs : array_like, optional
-            The point indices to be filtered.
+        point_ids : array_like, optional
+            The point IDs to be filtered. Depending on `data` and
+            `data_use_index`, the IDs can either be the Pandas DataFrame indices
+            or the points row indices.
 
         Returns
         -------
         self or array_like
-            If no `point_idxs` was provided the indices of the currently
+            If no `point_ids` was provided the indices of the currently
             filtered points are returned. Otherwise, `self` is returned.
 
         Examples
@@ -713,21 +748,35 @@ class Scatter():
         >>> scatter.filter()
         array([0, 4, 12], dtype=uint32)
         """
-        if point_idxs is not UNDEF:
+        if point_ids is not UNDEF:
             try:
-                self._filter = np.asarray(point_idxs, dtype=SELECTION_DTYPE)
+                if self._data is not None and self._data_use_index:
+                    row_idxs = self._data.index.get_indexer(point_ids)
+                    self._filtered_points_idxs = np.asarray(
+                        row_idxs[row_idxs >= 0],
+                        dtype=SELECTION_DTYPE
+                    )
+                    self._filtered_points_ids = self._data.iloc[self._filtered_points_idxs].index
+                else:
+                    self._filtered_points_idxs = np.asarray(point_ids, dtype=SELECTION_DTYPE)
+                    self._filtered_points_ids = self._filtered_points_idxs
             except:
-                if point_idxs is None:
-                    self._filter = np.asarray([], dtype=SELECTION_DTYPE)
+                if point_ids is None:
+                    self._filtered_points_idxs = np.asarray([], dtype=SELECTION_DTYPE)
+                    self._filtered_points_ids = self._filtered_points_idxs
                 pass
-            self.update_widget('filter', self._filter)
+
+            self.update_widget('filter', self._filtered_points_idxs)
 
             return self
 
         if self._widget is not None:
-            return self._widget.filter.astype(SELECTION_DTYPE)
+            row_idxs = self._widget.filter.astype(SELECTION_DTYPE)
+            if self._data is not None and self._data_use_index:
+                return self._data.iloc[row_idxs].index
+            return row_idxs
 
-        return self._filter
+        return self._filtered_points_ids
 
     def color(
         self,
@@ -3079,8 +3128,8 @@ class Scatter():
             x_scale=to_scale_type(self._x_scale),
             y_scale=to_scale_type(self._y_scale),
             points=self.get_point_list(),
-            selection=self._selection,
-            filter=self._filter,
+            selection=self._selected_points_idxs,
+            filter=self._filtered_points_idxs,
             width=self._width,
             height=self._height,
             background_color=self._background_color,
