@@ -59,3 +59,15 @@ test = [
 [tool.hatch.version]
 path = "js/package.json"
 pattern = "\"version\": \"(?P<version>.+?)\""
+
+
+[tool.hatch.build.hooks.jupyter-builder]
+build-function = "hatch_jupyter_builder.npm_builder"
+ensured-targets = ["jscatter/bundle.js"]
+skip-if-exists = ["jscatter/bundle.js"]
+dependencies = ["hatch-jupyter-builder>=0.5.0"]
+
+[tool.hatch.build.hooks.jupyter-builder.build-kwargs]
+npm = "npm"
+build_cmd = "build"
+path = "js"
