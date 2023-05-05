@@ -1,3 +1,7 @@
+## v0.12.1
+
+- Fix the ordering of the legend's value labels for continuous encodings such that high to low values are order top to bottom ([#70](https://github.com/flekschas/jupyter-scatter/issues/70))
+
 ## v0.12.0
 
 - Add support for referencing points by the Pandas DataFrame's index via `Scatter(data_use_index=True)` or `scatter.data(use_index=True)`. This is useful for synchronizing the selection or filtering of two Scatter instances that operate on different data frames with point correspondences. ([#62](https://github.com/flekschas/jupyter-scatter/issues/62)
