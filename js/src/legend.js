@@ -164,7 +164,11 @@ function createLegend(encodings, fontColor, backgroundColor, size) {
 
       const formatter = createLabelFormatter(valueRange);
 
-      visualEncoding.values.forEach(([value, encodedValue, label]) => {
+      const values = typeof visualEncoding.values[0][0] === 'number'
+        ? [...visualEncoding.values].reverse()
+        : visualEncoding.values;
+
+      values.forEach(([value, encodedValue, label]) => {
         encoding.appendChild(
           createEntry(
             visualChannel,
