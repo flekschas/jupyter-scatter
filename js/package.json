@@ -1,6 +1,6 @@
 {
   "name": "jupyter-scatter",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "description": "A scatter plot extension for Jupyter Notebook and Lab",
   "author": "Fritz Lekschas",
   "main": "src/index.js",
@@ -41,16 +41,15 @@
   },
   "dependencies": {
     "@jupyter-widgets/base": "^1.1 || ^2 || ^3 || ^4 || ^5 || ^6",
-    "camera-2d-simple": "~2.2.1",
     "d3-axis": "~3.0.0",
     "d3-scale": "~4.0.2",
     "d3-selection": "~3.0.0",
-    "dom-2d-camera": "~2.2.3",
+    "dom-2d-camera": "~2.2.5",
     "gl-matrix": "~3.3.0",
     "lodash": "~4.17.21",
     "pub-sub-es": "~2.0.1",
     "regl": "~2.1.0",
-    "regl-scatterplot": "~1.6.3"
+    "regl-scatterplot": "~1.6.9"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.5.2",
