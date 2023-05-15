@@ -1,3 +1,7 @@
+## v0.12.2
+
+- Update `regl-scatterplot` to `v1.6.9`
+
 ## v0.12.1
 
 - Fix the ordering of the legend's value labels for continuous encodings such that high to low values are order top to bottom ([#70](https://github.com/flekschas/jupyter-scatter/issues/70))
