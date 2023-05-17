@@ -1,6 +1,6 @@
 {
   "name": "jupyter-scatter",
-  "version": "0.12.2",
+  "version": "0.12.3",
   "description": "A scatter plot extension for Jupyter Notebook and Lab",
   "author": "Fritz Lekschas",
   "main": "src/index.js",
