@@ -82,6 +82,11 @@ def order_limit_map(map, order, categories):
 
     return final_map
 
+def get_map_order(map, categories):
+    map_keys = list(map.keys())
+    cat_by_idx = { catIdx: cat for cat, catIdx in categories.items() }
+    return [map_keys.index(cat_by_idx[i]) for i in range(len(categories))]
+
 
 class Scatter():
     def __init__(
@@ -965,7 +970,7 @@ class Scatter():
                 elif isinstance(map, dict):
                     # Assiming `map` is a dictionary of colors
                     self._color_map = [to_rgba(c) for c in map.values()]
-                    self._color_order = [self._color_categories[cat] for cat in map.keys()]
+                    self._color_order = get_map_order(map, self._color_categories)
                 else:
                     # Assuming `map` is a list of colors
                     self._color_map = [to_rgba(c) for c in map]
@@ -1190,7 +1195,7 @@ class Scatter():
             elif isinstance(map, dict):
                 # Assiming `map` is a dictionary of opacities
                 self._opacity_map = list(map.values())
-                self._opacity_order = [self._opacity_categories[cat] for cat in map.keys()]
+                self._opacity_order = get_map_order(map, self._opacity_categories)
             else:
                 self._opacity_map = np.asarray(map)
 
@@ -1398,7 +1403,7 @@ class Scatter():
             elif isinstance(map, dict):
                 # Assiming `map` is a dictionary of sizes
                 self._size_map = list(map.values())
-                self._size_order = [self._size_categories[cat] for cat in map.keys()]
+                self._size_order = get_map_order(map, self._size_categories)
             else:
                 self._size_map = np.asarray(map)
 
@@ -1739,7 +1744,7 @@ class Scatter():
                 elif isinstance(map, dict):
                     # Assiming `map` is a dictionary of colors
                     self._connection_color_map = [to_rgba(c) for c in map.values()]
-                    self._connection_color_order = [self._connection_color_categories[cat] for cat in map.keys()]
+                    self._connection_color_order = get_map_order(map, self._connection_color_categories)
                 else:
                     # Assuming `map` is a list of colors
                     self._connection_color_map = [to_rgba(c) for c in map]
@@ -1954,9 +1959,7 @@ class Scatter():
             elif isinstance(map, dict):
                 # Assiming `map` is a dictionary of opacities
                 self._connection_opacity_map = list(map.values())
-                self._connection_opacity_order = [
-                    self._connection_opacity_categories[cat] for cat in map.keys()
-                ]
+                self._connection_opacity_order = get_map_order(map, self._connection_opacity_categories)
             else:
                 self._connection_opacity_map = np.asarray(map)
 
@@ -2166,7 +2169,7 @@ class Scatter():
             elif isinstance(map, dict):
                 # Assiming `map` is a dictionary of sizes
                 self._connection_size_map = list(map.values())
-                self._connection_size_order = [self._connection_size_categories[cat] for cat in map.keys()]
+                self._connection_size_order = get_map_order(map, self._connection_size_categories)
             else:
                 self._connection_size_map = np.asarray(map)
 
