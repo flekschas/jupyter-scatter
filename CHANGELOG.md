@@ -1,3 +1,7 @@
+## v0.12.3
+
+- Fix incorrect legend for categorical coloring
+
 ## v0.12.2
 
 - Update `regl-scatterplot` to `v1.6.9`
