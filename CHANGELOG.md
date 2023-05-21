@@ -1,3 +1,14 @@
+## v0.12.4
+
+- Respect the dictionary key-value order of categorical encoding maps in the legend. E.g., the following categorical color map legend will read `C`, then `B`, and finally `A`:
+
+  ```py
+  scatter.legend(True)
+  scatter.color(map=dict(C='red', B='blue', A='pink'))
+  ```
+
+- Update third-party JS libraries
+
 ## v0.12.3
 
 - Fix incorrect legend for categorical coloring
