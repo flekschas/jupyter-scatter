@@ -5,14 +5,19 @@ from functools import reduce
 from math import floor
 from typing import List, Tuple, Union
 
-def create_legend(encoding, norm, categories, labeling=None, linspace_num=5):
+def create_legend(encoding, norm, categories, labeling=None, linspace_num=5, category_order=None):
     variable = labeling.get('variable') if labeling else None
     values = []
 
     if categories:
         assert len(categories) == len(encoding), 'The categories and encoding need to be of the same size'
         cat_by_idx = { catIdx: cat for cat, catIdx in categories.items() }
-        values = [(cat_by_idx[i], encoding[i], None) for i in range(len(cat_by_idx))]
+        idxs = (
+            range(len(cat_by_idx))
+            if category_order is None
+            else [categories.get(cat, None) for cat in category_order]
+        )
+        values = [(cat_by_idx[i], encoding[i], None) for i in idxs]
     else:
         values = [
             (norm.inverse(s), encoding[floor((len(encoding) - 1) * s)], None)
@@ -139,7 +144,8 @@ class Encodings():
         norm,
         categories,
         labeling = None,
-        linspace_num = 5
+        linspace_num = 5,
+        category_order = None,
     ):
         if visual_enc in self.visual:
             self.visual[visual_enc].legend = create_legend(
@@ -147,7 +153,8 @@ class Encodings():
                 norm,
                 categories,
                 labeling,
-                linspace_num
+                linspace_num,
+                category_order,
             )
 
     def delete(self, visual_enc):
