@@ -15,7 +15,7 @@ def create_legend(encoding, norm, categories, labeling=None, linspace_num=5, cat
         idxs = (
             range(len(cat_by_idx))
             if category_order is None
-            else [categories.get(cat, None) for cat in category_order]
+            else map(categories.get, category_order)
         )
         values = [(cat_by_idx[i], encoding[i], None) for i in idxs]
     else:
