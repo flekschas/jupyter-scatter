@@ -50,8 +50,7 @@ homepage = "https://github.com/flekschas/jscatter"
 dev = [
     "anywidget[dev]",
     "black[jupyter]",
-    "jupyter",
-    "jupyterlab>=3.0",
+    "jupyterlab>=3.0,<4",
     "pytest",
     "ruff",
 ]
