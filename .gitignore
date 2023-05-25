@@ -28,3 +28,5 @@ jscatter/labextension
 jscatter/nbextension
 
 notebooks/data
+
+pyrightconfig.json
