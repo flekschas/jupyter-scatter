@@ -167,6 +167,7 @@ class Scatter():
         self._color_hover = (0, 0, 0, 1)
         self._color_by = None
         self._color_map = None
+        self._color_map_order = None
         self._color_norm = create_default_norm()
         self._color_order = None
         self._color_categories = None
@@ -175,6 +176,7 @@ class Scatter():
         self._opacity_unselected = 0.5
         self._opacity_by = 'density'
         self._opacity_map = None
+        self._opacity_map_order = None
         self._opacity_norm = create_default_norm()
         self._opacity_order = None
         self._opacity_categories = None
@@ -182,6 +184,7 @@ class Scatter():
         self._size = 3
         self._size_by = None
         self._size_map = None
+        self._size_map_order = None
         self._size_norm = create_default_norm()
         self._size_order = None
         self._size_categories = None
@@ -193,6 +196,7 @@ class Scatter():
         self._connection_color_hover = (0, 0, 0, 0.66)
         self._connection_color_by = None
         self._connection_color_map = None
+        self._connection_color_map_order = None
         self._connection_color_norm = create_default_norm()
         self._connection_color_order = None
         self._connection_color_categories = None
@@ -200,6 +204,7 @@ class Scatter():
         self._connection_opacity = 0.1
         self._connection_opacity_by = None
         self._connection_opacity_map = None
+        self._connection_opacity_map_order = None
         self._connection_opacity_norm = create_default_norm()
         self._connection_opacity_order = None
         self._connection_opacity_categories = None
@@ -207,6 +212,7 @@ class Scatter():
         self._connection_size = 2
         self._connection_size_by = None
         self._connection_size_map = None
+        self._connection_size_map_order = None
         self._connection_size_norm = create_default_norm()
         self._connection_size_order = None
         self._connection_size_categories = None
@@ -961,6 +967,7 @@ class Scatter():
                     # Assuming `map` is a list of colors
                     self._color_map = [to_rgba(c) for c in map]
             else:
+                self._color_map_order = None
                 if callable(map):
                     # Assuming `map` is a Matplotlib ListedColormap
                     self._color_map = [to_rgba(c) for c in map.colors]
@@ -970,6 +977,7 @@ class Scatter():
                 elif isinstance(map, dict):
                     # Assiming `map` is a dictionary of colors
                     self._color_map = [to_rgba(c) for c in map.values()]
+                    self._color_map_order = list(map.keys())
                     self._color_order = get_map_order(map, self._color_categories)
                 else:
                     # Assuming `map` is a list of colors
@@ -1008,6 +1016,7 @@ class Scatter():
                 self._color_norm,
                 self._color_categories,
                 self._color_labeling,
+                category_order=self._color_map_order,
             )
         else:
             self.update_widget('color', self._color)
@@ -1189,12 +1198,14 @@ class Scatter():
                 self._opacity_order = [self._opacity_categories[cat] for cat in order]
 
         if map is not UNDEF and map != 'auto':
+            self._opacity_map_order = None
             if isinstance(map, tuple):
                 # Assuming `map` is a triple specifying a linear space
                 self._opacity_map = np.linspace(*map)
             elif isinstance(map, dict):
                 # Assiming `map` is a dictionary of opacities
                 self._opacity_map = list(map.values())
+                self._opacity_map_order = list(map.keys())
                 self._opacity_order = get_map_order(map, self._opacity_categories)
             else:
                 self._opacity_map = np.asarray(map)
@@ -1230,6 +1241,7 @@ class Scatter():
                     self._opacity_norm,
                     self._opacity_categories,
                     self._opacity_labeling,
+                    category_order=self._opacity_map_order,
                 )
         else:
             self.update_widget('opacity', self._opacity)
@@ -1397,12 +1409,14 @@ class Scatter():
                 self._size_order = [self._size_categories[cat] for cat in self._size_order]
 
         if map is not UNDEF and map != 'auto':
+            self._size_map_order = None
             if isinstance(map, tuple):
                 # Assuming `map` is a triple specifying a linear space
                 self._size_map = np.linspace(*map)
             elif isinstance(map, dict):
                 # Assiming `map` is a dictionary of sizes
                 self._size_map = list(map.values())
+                self._size_map_order = list(map.keys())
                 self._size_order = get_map_order(map, self._size_categories)
             else:
                 self._size_map = np.asarray(map)
@@ -1437,6 +1451,7 @@ class Scatter():
                 self._size_norm,
                 self._size_categories,
                 self._size_labeling,
+                category_order=self._size_map_order,
             )
         else:
             self.update_widget('size', self._size)
@@ -1735,6 +1750,7 @@ class Scatter():
                     # Assuming `map` is a list of colors
                     self._connection_color_map = [to_rgba(c) for c in map]
             else:
+                self._connection_color_map_order = None
                 if callable(map):
                     # Assuming `map` is a Matplotlib ListedColormap
                     self._connection_color_map = [to_rgba(c) for c in map.colors]
@@ -1744,6 +1760,7 @@ class Scatter():
                 elif isinstance(map, dict):
                     # Assiming `map` is a dictionary of colors
                     self._connection_color_map = [to_rgba(c) for c in map.values()]
+                    self._connection_color_map_order = list(map.keys())
                     self._connection_color_order = get_map_order(map, self._connection_color_categories)
                 else:
                     # Assuming `map` is a list of colors
@@ -1782,6 +1799,7 @@ class Scatter():
                 self._connection_color_norm,
                 self._connection_color_categories,
                 self._connection_color_labeling,
+                category_order=self._connection_color_map_order,
             )
         else:
             self.update_widget('connection_color', self._connection_color)
@@ -1953,12 +1971,14 @@ class Scatter():
                 ]
 
         if map is not UNDEF and map != 'auto':
+            self._connection_opacity_map_order = None
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
                 self._connection_opacity_map = np.linspace(*map)
             elif isinstance(map, dict):
                 # Assiming `map` is a dictionary of opacities
                 self._connection_opacity_map = list(map.values())
+                self._connection_opacity_map_order = list(map.keys())
                 self._connection_opacity_order = get_map_order(map, self._connection_opacity_categories)
             else:
                 self._connection_opacity_map = np.asarray(map)
@@ -1997,6 +2017,7 @@ class Scatter():
                 self._connection_opacity_norm,
                 self._connection_opacity_categories,
                 self._connection_opacity_labeling,
+                category_order=self._connection_opacity_map_order,
             )
         else:
             self.update_widget('connection_opacity', self._connection_opacity)
@@ -2163,12 +2184,14 @@ class Scatter():
                 self._connection_size_order = [self._connection_size_categories[cat] for cat in order]
 
         if map is not UNDEF and map != 'auto':
+            self._connection_size_map_order = None
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
                 self._connection_size_map = np.linspace(*map)
             elif isinstance(map, dict):
                 # Assiming `map` is a dictionary of sizes
                 self._connection_size_map = list(map.values())
+                self._connection_size_map_order = list(map.keys())
                 self._connection_size_order = get_map_order(map, self._connection_size_categories)
             else:
                 self._connection_size_map = np.asarray(map)
@@ -2200,6 +2223,7 @@ class Scatter():
                 self._connection_size_norm,
                 self._connection_size_categories,
                 self._connection_size_labeling,
+                category_order=self._connection_size_map_order,
             )
         else:
             self.update_widget('connection_size', self._connection_size)
