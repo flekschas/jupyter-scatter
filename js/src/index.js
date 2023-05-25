@@ -19,9 +19,7 @@ const AXES_PADDING_Y = 20;
 const AXES_PADDING_Y_WITH_LABEL = AXES_PADDING_Y + AXES_LABEL_SIZE;
 
 function camelToSnake(string) {
-  return string.replace(/[\w]([A-Z])/g, function(m) {
-    return m[0] + "_" + m[1];
-  }).toLowerCase();
+  return string.replace(/[\w]([A-Z])/g, (m) => m[0] + "_" + m[1]).toLowerCase();
 }
 
 function downloadBlob(blob, name) {
@@ -168,8 +166,6 @@ class JupyterScatterView {
   }
 
   render() {
-    const self = this;
-
     if (!window.jupyterScatter) {
       window.jupyterScatter = {
         renderer: createRenderer(),
@@ -177,8 +173,8 @@ class JupyterScatterView {
       }
     }
 
-    Object.keys(properties).forEach(function(propertyName) {
-      self[propertyName] = self.model.get(camelToSnake(propertyName));
+    Object.keys(properties).forEach((propertyName) => {
+      this[propertyName] = this.model.get(camelToSnake(propertyName));
     });
 
     this.width = !Number.isNaN(+this.model.get('width')) && +this.model.get('width') > 0
@@ -215,97 +211,96 @@ class JupyterScatterView {
     this.canvas.style.height = '100%';
     this.canvasWrapper.appendChild(this.canvas);
 
-    window.requestAnimationFrame(function init() {
+    window.requestAnimationFrame(() => {
       const initialOptions = {
         renderer: window.jupyterScatter.renderer,
-        canvas: self.canvas,
+        canvas: this.canvas,
       }
 
-      if (self.width !== 'auto') initialOptions.width = self.width;
+      if (this.width !== 'auto') initialOptions.width = this.width;
 
-      Object.entries(properties).forEach(function(property) {
+      Object.entries(properties).forEach((property) => {
         const pyName = property[0];
         const jsName = property[1];
-        if (self[pyName] !== null && reglScatterplotProperty.has(jsName))
-          initialOptions[jsName] = self[pyName];
+        if (this[pyName] !== null && reglScatterplotProperty.has(jsName))
+          initialOptions[jsName] = this[pyName];
       });
 
-      self.scatterplot = createScatterplot(initialOptions);
+      this.scatterplot = createScatterplot(initialOptions);
 
       if (!window.jupyterScatter.versionLog) {
         // eslint-disable-next-line
         console.log(
           'jupyter-scatter v' + version +
-          ' with regl-scatterplot v' + self.scatterplot.get('version')
+          ' with regl-scatterplot v' + this.scatterplot.get('version')
         );
         window.jupyterScatter.versionLog = true;
       }
 
-      self.container.api = self.scatterplot;
+      this.container.api = this.scatterplot;
 
-      if (self.model.get('axes')) self.createAxes();
-      if (self.model.get('axes_grid')) self.createAxesGrid();
-      if (self.model.get('legend')) self.showLegend();
+      if (this.model.get('axes')) this.createAxes();
+      if (this.model.get('axes_grid')) this.createAxesGrid();
+      if (this.model.get('legend')) this.showLegend();
 
       // Listen to events from the JavaScript world
-      self.pointoverHandlerBound = self.pointoverHandler.bind(self);
-      self.pointoutHandlerBound = self.pointoutHandler.bind(self);
-      self.selectHandlerBound = self.selectHandler.bind(self);
-      self.deselectHandlerBound = self.deselectHandler.bind(self);
-      self.filterEventHandlerBound = self.filterEventHandler.bind(self);
-      self.externalViewChangeHandlerBound = self.externalViewChangeHandler.bind(self);
-      self.viewChangeHandlerBound = self.viewChangeHandler.bind(self);
-      self.resizeHandlerBound = self.resizeHandler.bind(self);
+      this.pointoverHandlerBound = this.pointoverHandler.bind(this);
+      this.pointoutHandlerBound = this.pointoutHandler.bind(this);
+      this.selectHandlerBound = this.selectHandler.bind(this);
+      this.deselectHandlerBound = this.deselectHandler.bind(this);
+      this.filterEventHandlerBound = this.filterEventHandler.bind(this);
+      this.externalViewChangeHandlerBound = this.externalViewChangeHandler.bind(this);
+      this.viewChangeHandlerBound = this.viewChangeHandler.bind(this);
+      this.resizeHandlerBound = this.resizeHandler.bind(this);
 
-      self.scatterplot.subscribe('pointover', self.pointoverHandlerBound);
-      self.scatterplot.subscribe('pointout', self.pointoutHandlerBound);
-      self.scatterplot.subscribe('select', self.selectHandlerBound);
-      self.scatterplot.subscribe('deselect', self.deselectHandlerBound);
-      self.scatterplot.subscribe('filter', self.filterEventHandlerBound);
-      self.scatterplot.subscribe('view', self.viewChangeHandlerBound);
+      this.scatterplot.subscribe('pointover', this.pointoverHandlerBound);
+      this.scatterplot.subscribe('pointout', this.pointoutHandlerBound);
+      this.scatterplot.subscribe('select', this.selectHandlerBound);
+      this.scatterplot.subscribe('deselect', this.deselectHandlerBound);
+      this.scatterplot.subscribe('filter', this.filterEventHandlerBound);
+      this.scatterplot.subscribe('view', this.viewChangeHandlerBound);
 
       pubSub.globalPubSub.subscribe(
-        'jscatter::view', self.externalViewChangeHandlerBound
+        'jscatter::view', this.externalViewChangeHandlerBound
       );
 
       if ('ResizeObserver' in window) {
-        self.canvasObserver = new ResizeObserver(self.resizeHandlerBound);
-        self.canvasObserver.observe(self.canvas);
+        this.canvasObserver = new ResizeObserver(this.resizeHandlerBound);
+        this.canvasObserver.observe(this.canvas);
       } else {
-        window.addEventListener('resize', self.resizeHandlerBound);
-        window.addEventListener('orientationchange', self.resizeHandlerBound);
+        window.addEventListener('resize', this.resizeHandlerBound);
+        window.addEventListener('orientationchange', this.resizeHandlerBound);
       }
 
       // Listen to messages from the Python world
-      Object.keys(properties).forEach(function(propertyName) {
-        if (self[propertyName + 'Handler']) {
-          self.model.on(
+      Object.keys(properties).forEach((propertyName) => {
+        if (this[propertyName + 'Handler']) {
+          this.model.on(
             'change:' + camelToSnake(propertyName),
-            self.withModelChangeHandler(
-              propertyName,
-              self[propertyName + 'Handler'].bind(self)
+            this.withModelChangeHandler(
+              propertyName, this[propertyName + 'Handler'].bind(this),
             ),
-            self
+            this
           );
         }
       });
 
-      self.colorCanvas();
+      this.colorCanvas();
 
-      if (self.points.length) {
-        self.scatterplot
-          .draw(self.points)
-          .then(function onInitialDraw() {
-            if (self.filter.length) {
-              self.scatterplot.filter(self.filter, { preventEvent: true });
-              if (self.model.get('zoom_on_filter')) {
-                self.zoomToHandler(self.filter);
+      if (this.points.length) {
+        this.scatterplot
+          .draw(this.points)
+          .then(() => {
+            if (this.filter.length) {
+              this.scatterplot.filter(this.filter, { preventEvent: true });
+              if (this.model.get('zoom_on_filter')) {
+                this.zoomToHandler(this.filter);
               }
             }
-            if (self.selection.length) {
-              self.scatterplot.select(self.selection, { preventEvent: true });
-              if (self.model.get('zoom_on_selection')) {
-                self.zoomToHandler(self.selection);
+            if (this.selection.length) {
+              this.scatterplot.select(this.selection, { preventEvent: true });
+              if (this.model.get('zoom_on_selection')) {
+                this.zoomToHandler(this.selection);
               }
             }
           });
@@ -344,8 +339,7 @@ class JupyterScatterView {
     this.axesSvg.style('height', '100%');
     this.axesSvg.style('pointer-events', 'none');
     this.axesSvg.style('user-select', 'none');
-    const color = this.model.get('axes_color')
-      .map(function (c) { return Math.round(c * 255); });
+    const color = this.model.get('axes_color').map((c) => Math.round(c * 255));
     this.axesSvg.style('color', `rgba(${color[0]}, ${color[1]}, ${color[2]}, 1)`);
 
     const [width, height] = this.getOuterDimensions();
@@ -677,8 +671,7 @@ class JupyterScatterView {
   colorCanvas() {
     if (Array.isArray(this.backgroundColor)) {
       this.container.style.backgroundColor = 'rgb(' +
-        this.backgroundColor.slice(0, 3).map(function (x) { return x * 255 }).join(',') +
-        ')';
+        this.backgroundColor.slice(0, 3).map((x) => x * 255).join(',') + ')';
     } else {
       this.container.style.backgroundColor = this.backgroundColor;
     }
@@ -1064,43 +1057,38 @@ class JupyterScatterView {
   }
 
   withModelChangeHandler(property, handler) {
-    const self = this;
-
-    return function modelChangeHandler() {
-      const changes = self.model.changedAttributes();
-      const pyPropertyName = camelToSnake(property);
-
-      if (
-        changes[pyPropertyName] === undefined ||
-        self[property + 'Changed'] === true
-      ) {
-        self[property + 'Changed'] = false;
-        return;
-      };
-
-      self[property] = changes[camelToSnake(property)];
-
-      if (handler) handler(self[property]);
+    return () => {
+      this[property] = this.model.get(camelToSnake(property));
+      if (handler) handler(this[property]);
     }
   }
 };
 
 function modelWithSerializers(model, serializers) {
-  return {
-    get(key) {
-      const value = model.get(key);
-      const serializer = serializers[key];
-      if (serializer) return serializer.deserialize(value);
-      return value;
+  return new Proxy(model, {
+    get(target, prop) {
+      if (prop === "get") {
+        return new Proxy(target.get, {
+          apply(target, thisArg, [key]) {
+            const value = target.call(thisArg, key);
+            const serializer = serializers[key];
+            if (serializer) return serializer.deserialize(value);
+            return value;
+          }
+        });
+      }
+      if (prop === "set") {
+        return new Proxy(target.set, {
+          apply(target, thisArg, [key, value]) {
+            const serializer = serializers[key];
+            if (serializer) value = serializer.serialize(value);
+            target.call(thisArg, key, value);
+          }
+        });
+      }
+      return Reflect.get(...arguments);
     },
-    set(key, value) {
-      const serializer = serializers[key];
-      if (serializer) value = serializer.serialize(value);
-      model.set(key, value);
-    },
-    on: model.on,
-    save_changes: model.save_changes,
-  }
+  });
 }
 
 export async function render({ model, el }) {
