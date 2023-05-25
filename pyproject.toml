@@ -47,11 +47,13 @@ dynamic = ["version"]
 homepage = "https://github.com/flekschas/jscatter"
 
 [project.optional-dependencies]
-test = [
+dev = [
+    "anywidget[dev]",
+    "black[jupyter]",
     "jupyter",
     "jupyterlab>=3.0",
     "pytest",
-    "flake8",
+    "ruff",
 ]
 
 # Configures hatchling build system to use the verison
@@ -71,3 +73,6 @@ dependencies = ["hatch-jupyter-builder>=0.5.0"]
 npm = "npm"
 build_cmd = "build"
 path = "js"
+
+[tool.hatch.envs.default]
+features = ["dev"]
