@@ -98,6 +98,7 @@ const properties = {
   connectionSizeBy: 'pointConnectionSizeBy',
   viewDownload: 'viewDownload',
   viewReset: 'viewReset',
+  viewSync: 'viewSync',
   hovering: 'hovering',
   axes: 'axes',
   axesColor: 'axesColor',
@@ -260,9 +261,9 @@ class JupyterScatterView {
       this.scatterplot.subscribe('filter', this.filterEventHandlerBound);
       this.scatterplot.subscribe('view', this.viewChangeHandlerBound);
 
-      pubSub.globalPubSub.subscribe(
-        'jscatter::view', this.externalViewChangeHandlerBound
-      );
+      window.pubSub = pubSub;
+
+      this.viewSyncHandler(this.model.get('view_sync'));
 
       if ('ResizeObserver' in window) {
         this.canvasObserver = new ResizeObserver(this.resizeHandlerBound);
@@ -711,25 +712,34 @@ class JupyterScatterView {
     this.model.save_changes();
   }
 
+  viewSyncHandler(viewSync) {
+    if (viewSync) {
+      pubSub.globalPubSub.subscribe(
+        'jscatter::view', this.externalViewChangeHandlerBound
+      );
+    } else {
+      pubSub.globalPubSub.unsubscribe(
+        'jscatter::view', this.externalViewChangeHandlerBound
+      );
+    }
+  }
+
   externalViewChangeHandler(event) {
-    if (
-      event.uuid === this.model.get('view_sync') &&
-      event.src !== this.randomStr
-    ) {
+    if (event.uuid === this.viewSync && event.src !== this.randomStr) {
       this.scatterplot.view(event.view, { preventEvent: true });
     }
   }
 
   viewChangeHandler(event) {
-    const viewSync = this.model.get('view_sync');
-    if (viewSync) {
+    if (this.viewSync) {
       pubSub.globalPubSub.publish(
         'jscatter::view',
         {
           src: this.randomStr,
-          uuid: viewSync,
+          uuid: this.viewSync,
           view: event.view,
-        }
+        },
+        { async: true }
       );
     }
     if (this.model.get('axes')) {
