@@ -275,15 +275,12 @@ class JupyterScatterView {
 
       // Listen to messages from the Python world
       Object.keys(properties).forEach((propertyName) => {
-        if (this[propertyName + 'Handler']) {
-          this.model.on(
-            'change:' + camelToSnake(propertyName),
-            this.withModelChangeHandler(
-              propertyName, this[propertyName + 'Handler'].bind(this),
-            ),
-            this
-          );
-        }
+        const handler = this[propertyName + 'Handler'];
+        if (!handler) return;
+        this.model.on(`change:${camelToSnake(propertyName)}`, () => {
+          this[propertyName] = this.model.get(camelToSnake(propertyName));
+          handler.call(this, this[propertyName]);
+        }, this);
       });
 
       this.colorCanvas();
@@ -1065,40 +1062,24 @@ class JupyterScatterView {
     p[property] = changedValue;
     this.scatterplot.set(p);
   }
-
-  withModelChangeHandler(property, handler) {
-    return () => {
-      this[property] = this.model.get(camelToSnake(property));
-      if (handler) handler(this[property]);
-    }
-  }
 };
 
 function modelWithSerializers(model, serializers) {
-  return new Proxy(model, {
-    get(target, prop) {
-      if (prop === "get") {
-        return new Proxy(target.get, {
-          apply(target, thisArg, [key]) {
-            const value = target.call(thisArg, key);
-            const serializer = serializers[key];
-            if (serializer) return serializer.deserialize(value);
-            return value;
-          }
-        });
-      }
-      if (prop === "set") {
-        return new Proxy(target.set, {
-          apply(target, thisArg, [key, value]) {
-            const serializer = serializers[key];
-            if (serializer) value = serializer.serialize(value);
-            target.call(thisArg, key, value);
-          }
-        });
-      }
-      return Reflect.get(...arguments);
+  return {
+    get(key) {
+      const value = model.get(key);
+      const serializer = serializers[key];
+      if (serializer) return serializer.deserialize(value);
+      return value;
     },
-  });
+    set(key, value) {
+      const serializer = serializers[key];
+      if (serializer) value = serializer.serialize(value);
+      model.set(key, value);
+    },
+    on: model.on.bind(model),
+    save_changes: model.save_changes.bind(model),
+  }
 }
 
 export async function render({ model, el }) {
