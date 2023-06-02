@@ -9,6 +9,7 @@ coverage
 *.DS_cache
 *.ipynb_checkpoints
 *.egg-info
+.venv
 
 __pycache__
 
@@ -26,6 +27,7 @@ js/dist
 
 jscatter/labextension
 jscatter/nbextension
+jscatter/bundle.js
 
 notebooks/data
 

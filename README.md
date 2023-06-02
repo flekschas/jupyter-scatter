@@ -204,28 +204,13 @@ While jscatter is primarily developed for Jupyter Lab and Notebook, it also runs
 ```bash
 git clone https://github.com/flekschas/jupyter-scatter/ jscatter && cd jscatter
 conda env create -f environment.yml && conda activate jscatter
-pip install -e .
-```
-
-**Enable the Notebook Extension:**
-
-```bash
-jupyter nbextension install --py --symlink --sys-prefix jscatter
-jupyter nbextension enable --py --sys-prefix jscatter
-```
-
-Note for developers: the `--symlink` argument on Linux or macOS allows one to modify
-the JavaScript code in-place. This feature is not available with Windows.
-
-**Enable the Lab Extension:**
-
-```bash
-jupyter labextension develop . --overwrite
+pip install -e ".[test]"
 ```
 
 **After Changing Python code:** simply restart the kernel.
 
-**After Changing JavaScript code:** do `cd js && npm run build` and reload the browser tab.
+**After Changing JavaScript code:** do `cd js && npm run build`.
+Alternatively you can run `npm run watch` and rebundle the code on the fly.
 
 </p>
 </details>

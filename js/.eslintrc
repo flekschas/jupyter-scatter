@@ -3,16 +3,13 @@
     "browser": true,
     "es6": true
   },
-  "globals": {
-    "require": false,
-    "module": false,
-  },
   "extends": [
     "eslint:recommended",
     "prettier"
   ],
   "parserOptions": {
-    "ecmaVersion": 2020
+    "ecmaVersion": 2020,
+    "sourceType": "module"
   },
   "plugins": [
     "prettier"
