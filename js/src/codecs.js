@@ -17,7 +17,7 @@ const DTYPES = {
  * @prop {Shape} shape
  */
 
-function Numpy2D(dtype) {
+export function Numpy2D(dtype) {
   if (!(dtype in DTYPES)) {
     throw Error(`Dtype not supported, got ${JSON.stringify(dtype)}.`);
   }
@@ -58,7 +58,7 @@ function Numpy2D(dtype) {
   }
 }
 
-function Numpy1D(dtype) {
+export function Numpy1D(dtype) {
   if (!(dtype in DTYPES)) {
     throw Error(`Dtype not supported, got ${JSON.stringify(dtype)}.`);
   }
@@ -86,5 +86,3 @@ function Numpy1D(dtype) {
     }
   }
 }
-
-module.exports = { Numpy1D, Numpy2D };
