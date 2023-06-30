@@ -49,7 +49,7 @@ If you are using JupyterLab <=2:
 jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-scatter
 ```
 
-For a minimal working example, take a look at [test-environment](test-environment).
+For a minimal working example, take a look at [test-environments](test-environments).
 
 ## Get Started
 
