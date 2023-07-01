@@ -154,17 +154,26 @@ class Scatter():
         self._selected_points_idxs = np.asarray([], dtype=SELECTION_DTYPE)
         self._filtered_points_ids = []
         self._filtered_points_idxs = np.asarray([], dtype=SELECTION_DTYPE)
+
+        # We need to set the background first in order to choose sensible
+        # default colors
         self._background_color = to_rgba(default_background_color)
         self._background_color_luminance = 1
         self._background_image = None
+        self._reticle_color = 'auto'
+        self.background(
+            kwargs.get('background_color', UNDEF),
+            kwargs.get('background_image', UNDEF),
+        )
+
         self._lasso_color = (0, 0.666666667, 1, 1)
         self._lasso_on_long_press = True
         self._lasso_initiator = False
         self._lasso_min_delay = 10
         self._lasso_min_dist = 3
-        self._color = (0, 0, 0, 0.66)
+        self._color = (0, 0, 0, 0.66) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.66)
         self._color_selected = (0, 0.55, 1, 1)
-        self._color_hover = (0, 0, 0, 1)
+        self._color_hover = (0, 0, 0, 1) if self._background_color_luminance > 0.5 else (1, 1, 1, 1)
         self._color_by = None
         self._color_map = None
         self._color_map_order = None
@@ -191,9 +200,9 @@ class Scatter():
         self._size_labeling = None
         self._connect_by = None
         self._connect_order = None
-        self._connection_color = (0, 0, 0, 0.1)
+        self._connection_color = (0, 0, 0, 0.1) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.1)
         self._connection_color_selected = (0, 0.55, 1, 1)
-        self._connection_color_hover = (0, 0, 0, 0.66)
+        self._connection_color_hover = (0, 0, 0, 0.66) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.66)
         self._connection_color_by = None
         self._connection_color_map = None
         self._connection_color_map_order = None
@@ -220,7 +229,6 @@ class Scatter():
         self._width = 'auto'
         self._height = 240
         self._reticle = True
-        self._reticle_color = 'auto'
         self._camera_target = [0, 0]
         self._camera_distance = 1.0
         self._camera_rotation = 0.0
@@ -312,10 +320,6 @@ class Scatter():
         self.reticle(
             kwargs.get('reticle', UNDEF),
             kwargs.get('reticle_color', UNDEF)
-        )
-        self.background(
-            kwargs.get('background_color', UNDEF),
-            kwargs.get('background_image', UNDEF),
         )
         self.mouse(kwargs.get('mouse_mode', UNDEF))
         self.camera(

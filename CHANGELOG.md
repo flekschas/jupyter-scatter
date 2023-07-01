@@ -1,3 +1,12 @@
+## v0.12.5
+
+- Ensure that the default point colors respect the background when setting both at the same time during initialization. I.e., in the following scenario, the point color will be set to _white_ by default as the background color was set to _black_:
+
+  ```py
+  jscatter.plot(data=df, background_color='black')
+  ```
+  
+
 ## v0.12.4
 
 - Respect the dictionary key-value order of categorical encoding maps in the legend. E.g., the following categorical color map legend will read `C`, then `B`, and finally `A`:
