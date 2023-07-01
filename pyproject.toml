@@ -61,6 +61,9 @@ dev = [
 path = "js/package.json"
 pattern = "\"version\": \"(?P<version>.+?)\""
 
+[tool.hatch.build]
+artifacts = ["jscatter/bundle.js"]
+
 
 [tool.hatch.build.hooks.jupyter-builder]
 build-function = "hatch_jupyter_builder.npm_builder"

@@ -1,4 +1,10 @@
+## v0.12.6
+
+- Fix distributed build by ensuring that `jscatter/bundle.js` is included in the build
+
 ## v0.12.5
+
+> **Warning**: do not use this version! The disitributed build is broken. Use `v0.12.6` instead. :pray:
 
 - Ensure that the default point colors respect the background when setting both at the same time during initialization. I.e., in the following scenario, the point color will be set to _white_ by default as the background color was set to _black_:
 
