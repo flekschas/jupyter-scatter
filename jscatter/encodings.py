@@ -11,13 +11,14 @@ def create_legend(encoding, norm, categories, labeling=None, linspace_num=5, cat
 
     if categories:
         assert len(categories) == len(encoding), 'The categories and encoding need to be of the same size'
-        cat_by_idx = { catIdx: cat for cat, catIdx in categories.items() }
+        cat_by_idx = { cat_idx: cat for cat, cat_idx in categories.items() }
+        cat_idxs = list(cat_by_idx.keys())
         idxs = (
             range(len(cat_by_idx))
             if category_order is None
             else map(categories.get, category_order)
         )
-        values = [(cat_by_idx[i], encoding[i], None) for i in idxs]
+        values = [(cat_by_idx[cat_idxs[i]], encoding[i], None) for i in idxs]
     else:
         values = [
             (norm.inverse(s), encoding[floor((len(encoding) - 1) * s)], None)

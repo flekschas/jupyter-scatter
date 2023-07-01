@@ -5,6 +5,8 @@
   ```py
   jscatter.plot(data=df, background_color='black')
   ```
+
+- Fix an issue when working with views of a pandas DataFrame where not all categorical data is present
   
 
 ## v0.12.4
