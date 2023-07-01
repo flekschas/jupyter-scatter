@@ -11,18 +11,16 @@ def compose(
     sync_selection: bool = False,
     sync_hover: bool = False,
     match_by: Union[str, List[str]] = 'index',
-    rows: Optional[int] = 1,
+    rows: Optional[int] = None,
     row_height: int = 320,
     cols: Optional[int] = None,
 ):
     if rows is not None and cols is not None:
-        assert len(scatters) == rows * cols
+        assert len(scatters) <= rows * cols
     elif cols is not None:
-        assert len(scatters) % cols == 0
-        rows = len(scatters) // cols
+        rows = max(1, len(scatters) // cols)
     elif rows is not None:
-        assert len(scatters) % rows == 0
-        cols = len(scatters) // rows
+        cols = max(1, len(scatters) // rows)
     else:
         cols = len(scatters)
         rows = 1

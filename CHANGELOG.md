@@ -7,6 +7,8 @@
   ```
 
 - Fix an issue when working with views of a pandas DataFrame where not all categorical data is present
+
+- Loosen strictness of `rows` and `cols` of `compose()` to allow having empty cells in the grid
   
 
 ## v0.12.4
