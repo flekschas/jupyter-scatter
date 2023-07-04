@@ -1,6 +1,7 @@
 ## v0.12.6
 
 - Fix distributed build by ensuring that `jscatter/bundle.js` is included in the build
+- Fix categorical encoding for partial data
 
 ## v0.12.5
 
