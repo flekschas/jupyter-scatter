@@ -65,27 +65,15 @@ def order_map(map, order):
 
     return ordered_map[::(1 + (-2 * (order == 'reverse')))]
 
-def order_limit_map(map, order, categories):
-    final_map = order_map(map, order)
-
-    # tl/dr: Regl-scatterplot uses linear and continuous *maps the
-    # same way. It create a texture and based on the point value
-    # accesses a color. The point values are first normalized to [0, 1]
-    # given the value range and then mapped to the range of colors.
-    # E.g., if you have data values in [0, 10] and 5 colors,
-    # 6.7 maps to the color with index floor(5 * 6.7/10) = 3. The same
-    # principle is applied to categorical data! This means we need to
-    # ensure that the number of map values is the same as the number of
-    # categories otherwise weird mapping glitches can happen.
-    if categories is not None:
-        return final_map[:len(categories)]
-
-    return final_map
-
 def get_map_order(map, categories):
     map_keys = list(map.keys())
-    cat_by_idx = { catIdx: cat for cat, catIdx in categories.items() }
-    return [map_keys.index(cat_by_idx[i]) for i in range(len(categories))]
+
+    order = list(range(len(map)))
+
+    for cat, code in categories.items():
+        order[code] = map_keys.index(cat)
+
+    return order
 
 
 class Scatter():
@@ -1008,15 +996,11 @@ class Scatter():
 
         # Update widget and encoding domain-range
         if self._color_by is not None and self._color_map is not None:
-            final_color_map = order_limit_map(
-                self._color_map,
-                self._color_order,
-                self._color_categories
-            )
+            final_color_map = order_map(self._color_map, self._color_order)
             self.update_widget('color', final_color_map)
             self._encodings.set_legend(
                 'color',
-                final_color_map,
+                self._color_map,
                 self._color_norm,
                 self._color_categories,
                 self._color_labeling,
@@ -1232,11 +1216,7 @@ class Scatter():
 
         # Update widget
         if self._opacity_by is not None and self._opacity_map is not None:
-            final_opacity_map = order_limit_map(
-                self._opacity_map,
-                self._opacity_order,
-                self._opacity_categories
-            )
+            final_opacity_map = order_map(self._opacity_map, self._opacity_order)
             self.update_widget('opacity', final_opacity_map)
             if self._opacity_by != 'density':
                 self._encodings.set_legend(
@@ -1443,11 +1423,7 @@ class Scatter():
 
         # Update widget and encoding domain-range
         if self._size_by is not None and self._size_map is not None:
-            final_size_map = order_limit_map(
-                self._size_map,
-                self._size_order,
-                self._size_categories
-            )
+            final_size_map = order_map(self._size_map, self._size_order)
             self.update_widget('size', final_size_map)
             self._encodings.set_legend(
                 'size',
@@ -1791,10 +1767,9 @@ class Scatter():
 
         # Update widget and legend encoding
         if self._connection_color_by is not None and self._connection_color_map is not None:
-            final_connection_color_map = order_limit_map(
+            final_connection_color_map = order_map(
                 self._connection_color_map,
                 self._connection_color_order,
-                self._connection_color_categories,
             )
             self.update_widget('connection_color', final_connection_color_map)
             self._encodings.set_legend(
@@ -2009,10 +1984,9 @@ class Scatter():
 
         # Update widget and legend encoding
         if self._connection_opacity_by is not None and self._connection_opacity_map is not None:
-            final_opacity_map = order_limit_map(
+            final_opacity_map = order_map(
                 self._connection_opacity_map,
                 self._connection_opacity_order,
-                self._connection_opacity_categories
             )
             self.update_widget('connection_opacity', final_opacity_map)
             self._encodings.set_legend(
@@ -2215,11 +2189,8 @@ class Scatter():
 
         # Update widget and legend encoding
         if self._connection_size_by is not None and self._connection_size_map is not None:
-            final_connection_size_map = order_limit_map(
-                self._connection_size_map,
-                self._connection_size_order,
-                self._connection_size_categories,
-            )
+            final_connection_size_map = order_map(
+                self._connection_size_map,)
             self.update_widget('connection_size', final_connection_size_map)
             self._encodings.set_legend(
                 'connection_size',
@@ -3170,23 +3141,23 @@ class Scatter():
             lasso_min_delay=self._lasso_min_delay,
             lasso_min_dist=self._lasso_min_dist,
             lasso_on_long_press=self._lasso_on_long_press,
-            color=order_limit_map(self._color_map, self._color_order, self._color_categories) if self._color_map else self._color,
+            color=order_map(self._color_map, self._color_order) if self._color_map else self._color,
             color_selected=self._color_selected,
             color_hover=self._color_hover,
             color_by=self.js_color_by,
-            opacity=order_limit_map(self._opacity_map, self._opacity_order, self._opacity_categories) if self._opacity_map else self._opacity,
+            opacity=order_map(self._opacity_map, self._opacity_order) if self._opacity_map else self._opacity,
             opacity_by=self.js_opacity_by,
             opacity_unselected=self._opacity_unselected,
-            size=order_limit_map(self._size_map, self._size_order, self._size_categories) if self._size_map else self._size,
+            size=order_map(self._size_map, self._size_order) if self._size_map else self._size,
             size_by=self.js_size_by,
             connect=bool(self._connect_by),
-            connection_color=order_limit_map(self._connection_color_map, self._connection_color_order, self._connection_color_categories) if self._connection_color_map else self._connection_color,
+            connection_color=order_map(self._connection_color_map, self._connection_color_order) if self._connection_color_map else self._connection_color,
             connection_color_selected=self._connection_color_selected,
             connection_color_hover=self._connection_color_hover,
             connection_color_by=self.js_connection_color_by,
-            connection_opacity=order_limit_map(self._connection_opacity_map, self._connection_opacity_order, self._connection_opacity_categories) if self._connection_opacity_map else self._connection_opacity,
+            connection_opacity=order_map(self._connection_opacity_map, self._connection_opacity_order) if self._connection_opacity_map else self._connection_opacity,
             connection_opacity_by=self.js_connection_opacity_by,
-            connection_size=order_limit_map(self._connection_size_map, self._connection_size_order, self._connection_size_categories) if self._connection_size_map else self._connection_size,
+            connection_size=order_map(self._connection_size_map, self._connection_size_order) if self._connection_size_map else self._connection_size,
             connection_size_by=self.js_connection_size_by,
             reticle=self._reticle,
             reticle_color=self.get_reticle_color(),

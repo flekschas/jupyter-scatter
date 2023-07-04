@@ -25,7 +25,7 @@
     "gl-matrix": "~3.3.0",
     "pub-sub-es": "~2.0.2",
     "regl": "~2.1.0",
-    "regl-scatterplot": "~1.6.9"
+    "regl-scatterplot": "~1.7.1"
   },
   "devDependencies": {
     "esbuild": "^0.17.14",
