@@ -118,6 +118,7 @@ function createEncoding() {
   element.style.display = 'grid';
   element.style.gridTemplateColumns = 'max-content max-content';
   element.style.gap = '0 0.2rem';
+  element.style.height = 'min-content';
 
   return element;
 }

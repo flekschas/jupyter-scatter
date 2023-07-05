@@ -1,3 +1,7 @@
+## v0.12.7
+
+- Optimize height of the legend
+
 ## v0.12.6
 
 - Fix distributed build by ensuring that `jscatter/bundle.js` is included in the build
