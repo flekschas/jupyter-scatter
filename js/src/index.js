@@ -216,6 +216,7 @@ class JupyterScatterView {
       const initialOptions = {
         renderer: window.jupyterScatter.renderer,
         canvas: this.canvas,
+        keyMap: { shift: 'merge' },
       }
 
       if (this.width !== 'auto') initialOptions.width = this.width;
@@ -755,11 +756,11 @@ class JupyterScatterView {
   }
 
   xScaleHandler() {
-    this.createAxes();
+    if (this.model.get('axes')) this.createAxes();
   }
 
   yScaleHandler() {
-    this.createAxes();
+    if (this.model.get('axes')) this.createAxes();
   }
 
   // Event handlers for Python-triggered events
