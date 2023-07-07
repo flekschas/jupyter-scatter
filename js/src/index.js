@@ -112,6 +112,7 @@ const properties = {
   xScale: 'xScale',
   yScale: 'yScale',
   zoomTo: 'zoomTo',
+  zoomToCallIdx: 'zoomToCallIdx',
   zoomAnimation: 'zoomAnimation',
   zoomPadding: 'zoomPadding',
   zoomOnSelection: 'zoomOnSelection',
@@ -1023,6 +1024,10 @@ class JupyterScatterView {
     } else {
       this.scatterplot.zoomToOrigin(options);
     }
+  }
+
+  zoomToCallIdxHandler() {
+    this.zoomToHandler(this.model.get('zoom_to'));
   }
 
   otherOptionsHandler(newOptions) {

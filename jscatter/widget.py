@@ -74,6 +74,7 @@ class JupyterScatter(anywidget.AnyWidget):
 
     # Zoom properties
     zoom_to = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
+    zoom_to_call_idx = Int(0).tag(sync=True)
     zoom_animation = Int(1000).tag(sync=True)
     zoom_padding = Float(0.333).tag(sync=True)
     zoom_on_selection = Bool(False).tag(sync=True)

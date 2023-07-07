@@ -229,6 +229,7 @@ class Scatter():
         self._legend_position = 'top-left'
         self._legend_size = 'small'
         self._zoom_to = None
+        self._zoom_to_call_idx = 0
         self._zoom_animation = 500
         self._zoom_padding = 0.33
         self._zoom_on_selection = False
@@ -2968,6 +2969,8 @@ class Scatter():
         if to is not UNDEF:
             self._zoom_to = to
             self.update_widget('zoom_to', to)
+            self._zoom_to_call_idx += 1
+            self.update_widget('zoom_to_call_idx', self._zoom_to_call_idx)
 
         if any_not([to, animation, padding, on_selection], UNDEF):
             return self
