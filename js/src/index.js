@@ -808,9 +808,13 @@ class JupyterScatterView {
       return;
     }
 
-    this.scatterplot.filter(pointIdxs, { preventEvent: true });
-
-    if (this.model.get('zoom_on_filter')) this.zoomToHandler(pointIdxs);
+    if (pointIdxs) {
+      this.scatterplot.filter(pointIdxs, { preventEvent: true });
+      if (this.model.get('zoom_on_filter')) this.zoomToHandler(pointIdxs);
+    } else {
+      this.scatterplot.unfilter({ preventEvent: true });
+      if (this.model.get('zoom_on_filter')) this.zoomToHandler();
+    }
   }
 
   hoveringHandler(newHovering) {

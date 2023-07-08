@@ -133,6 +133,9 @@ Get or set the selected points.
 # Select all points corresponding to cars with a speed of less than 50
 scatter.selection(cars.query('speed < 50').index)
 
+# To unset the selection
+scatter.selection(None) # or scatter.selection([])
+
 # Retrieve the point indices of the currently selected points
 scatter.selection()
 # => array([0, 42, 1337], dtype=uint32)
@@ -144,7 +147,7 @@ Get or set the filtered points. When filtering down to a set of points, all othe
 
 **Arguments:**
 
-- `point_idxs` is a list or an array-like object of point indices.
+- `point_idxs` is a list or an array-like object of point indices or `None`.
 
 **Returns:** either the currently filtered point indices when `point_idxs` is `Undefined` or `self`.
 
@@ -152,6 +155,7 @@ Get or set the filtered points. When filtering down to a set of points, all othe
 
 ```python
 scatter.filter(cars.query('speed < 50').index)
+scatter.filter(None) # To unset filter
 ```
 
 <h3><a name="scatter.color" href="#scatter.color">#</a> scatter.<b>color</b>(<i>default=Undefined</i>, <i>selected=Undefined</i>, <i>hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>

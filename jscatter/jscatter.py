@@ -140,8 +140,8 @@ class Scatter():
         self._encodings = Encodings()
         self._selected_points_ids = []
         self._selected_points_idxs = np.asarray([], dtype=SELECTION_DTYPE)
-        self._filtered_points_ids = []
-        self._filtered_points_idxs = np.asarray([], dtype=SELECTION_DTYPE)
+        self._filtered_points_ids = None
+        self._filtered_points_idxs = None
 
         # We need to set the background first in order to choose sensible
         # default colors
@@ -666,7 +666,7 @@ class Scatter():
 
     def selection(
         self,
-        point_ids: Optional[Union[List[int], np.ndarray, Undefined]] = UNDEF
+        point_ids: Optional[Union[List[int], np.ndarray, None, Undefined]] = UNDEF
     ) -> Union[Scatter, np.ndarray]:
         """
         Set or get selected points.
@@ -676,8 +676,8 @@ class Scatter():
         point_ids : array_like, optional
             The point IDs to be filtered. Depending on `data` and
             `data_use_index`, the IDs can either be the Pandas DataFrame indices
-            or the points row indices.
-
+            or the points row indices. When set to `None` the selection is
+            unset.
 
         Returns
         -------
@@ -690,6 +690,9 @@ class Scatter():
         >>> scatter.selection(df.query('mass < 0.5').index)')
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.selection(None)
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.selection()
         array([0, 4, 12], dtype=uint32)
         """
@@ -697,18 +700,15 @@ class Scatter():
             try:
                 if self._data is not None and self._data_use_index:
                     row_idxs = self._data.index.get_indexer(point_ids)
-                    self._selected_points_idxs = np.asarray(
-                        row_idxs[row_idxs >= 0],
-                        dtype=SELECTION_DTYPE
-                    )
+                    self._selected_points_idxs = np.asarray(row_idxs[row_idxs >= 0], dtype=SELECTION_DTYPE)
                     self._selected_points_ids = self._data.iloc[self._selected_points_idxs].index
                 else:
                     self._selected_points_idxs = np.asarray(point_ids, dtype=SELECTION_DTYPE)
                     self._selected_points_ids = self._selected_points_idxs
             except:
                 if point_ids is None:
-                    self._filtered_points_idxs = np.asarray([], dtype=SELECTION_DTYPE)
-                    self._filtered_points_ids = self._filtered_points_idxs
+                    self._selected_points_idxs = np.asarray([], dtype=SELECTION_DTYPE)
+                    self._selected_points_ids = self._selected_points_idxs
                 pass
 
             self.update_widget('selection', self._selected_points_idxs)
@@ -725,18 +725,18 @@ class Scatter():
 
     def filter(
         self,
-        point_ids: Optional[Union[List[int], np.ndarray, Undefined]] = UNDEF
-    ) -> Union[Scatter, np.ndarray]:
+        point_ids: Optional[Union[List[int], np.ndarray, None, Undefined]] = UNDEF
+    ) -> Union[Scatter, np.ndarray, None]:
         """
         Set or get filtered points. When filtering down to a set of points, all
         other points will be hidden from the view.
 
         Parameters
         ----------
-        point_ids : array_like, optional
+        point_ids : array_like or None, optional
             The point IDs to be filtered. Depending on `data` and
             `data_use_index`, the IDs can either be the Pandas DataFrame indices
-            or the points row indices.
+            or the points row indices. When set to `None` the filter is unset.
 
         Returns
         -------
@@ -766,8 +766,8 @@ class Scatter():
                     self._filtered_points_ids = self._filtered_points_idxs
             except:
                 if point_ids is None:
-                    self._filtered_points_idxs = np.asarray([], dtype=SELECTION_DTYPE)
-                    self._filtered_points_ids = self._filtered_points_idxs
+                    self._filtered_points_idxs = None
+                    self._filtered_points_ids = None
                 pass
 
             self.update_widget('filter', self._filtered_points_idxs)
