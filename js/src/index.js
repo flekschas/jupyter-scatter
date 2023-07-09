@@ -285,13 +285,18 @@ class JupyterScatterView {
         }, this);
       });
 
+      this.model.on('change:other_options', () => {
+        this.options = this.model.get('other_options');
+        this.optionsHandler.call(this, this.options);
+      }, this);
+
       this.colorCanvas();
 
       if (this.points.length) {
         this.scatterplot
           .draw(this.points)
           .then(() => {
-            if (this.filter.length) {
+            if (this.filter && this.filter.length) {
               this.scatterplot.filter(this.filter, { preventEvent: true });
               if (this.model.get('zoom_on_filter')) {
                 this.zoomToHandler(this.filter);
@@ -1034,10 +1039,6 @@ class JupyterScatterView {
     this.zoomToHandler(this.model.get('zoom_to'));
   }
 
-  otherOptionsHandler(newOptions) {
-    this.scatterplot.set(newOptions);
-  }
-
   viewDownloadHandler(target) {
     if (!target) return;
 
@@ -1065,6 +1066,10 @@ class JupyterScatterView {
       this.model.set('view_reset', false);
       this.model.save_changes();
     }, 0);
+  }
+
+  optionsHandler(newOptions) {
+    this.scatterplot.set(newOptions);
   }
 
   withPropertyChangeHandler(property, changedValue) {

@@ -6,6 +6,7 @@
 - Fix: Merge point selections on `SHIFT` instead of activating the lasso as `SHIFT` interfers with Jupyter Lab
 - Fix: Allow to call `scatter.zoomTo()` with the same points multiple times
 - Fix: Unfilter when calling `scatter.filter(None)`
+- Fix: Properly listen to changes when setting custom `regl-scatterplot` options via `scatter.options()`
 
 ## v0.12.6
 

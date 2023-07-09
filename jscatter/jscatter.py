@@ -2991,16 +2991,14 @@ class Scatter():
 
         Parameters
         ----------
-        axes : bool, optional
-            When set to `True`, an x and y axis will be shown.
-        grid : bool, optional
-            When set to `True`, the x and y tick marks are extended into a grid.
+        options : dict, optional
+            A dictionary for specifying any kinds of custom options
 
         Returns
         -------
         self or dict
-            If no parameters are provided the current axes settings are
-            returned as a dictionary. Otherwise, `self` is returned.
+            If no parameters are provided the current options are returned as a
+            dictionary. Otherwise, `self` is returned.
 
         Notes
         -----
@@ -3014,7 +3012,7 @@ class Scatter():
         <jscatter.jscatter.Scatter>
 
         >>> scatter.options()
-        {}
+        {deselectOnEscape=False}
         """
         if options is not UNDEF:
             try:
