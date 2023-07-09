@@ -1,12 +1,12 @@
 from uuid import uuid4
-from ipywidgets.widgets import GridBox, Layout
+from ipywidgets.widgets import GridBox, HTML, Layout, VBox
 from itertools import zip_longest
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 
 from .jscatter import Scatter
 
 def compose(
-    scatters: List[Scatter],
+    scatters: Union[List[Scatter], List[Tuple[Scatter, str]]],
     sync_view: bool = False,
     sync_selection: bool = False,
     sync_hover: bool = False,
@@ -15,6 +15,44 @@ def compose(
     row_height: int = 320,
     cols: Optional[int] = None,
 ):
+    """
+    Compose multiple `Scatter` instances and optionally synchronize their view,
+    selection, and hover state.
+
+    Parameters
+    ----------
+    scatters : list of Scatter, optional
+        A list of `Scatter` instances
+    sync_view : boolean, optional
+        If `True` the views of all `Scatter` instances are synchronized
+    sync_selection : boolean, optional
+        If `True` the selection of all `Scatter` instances are synchronized
+    sync_hover : boolean, optional
+        If `True` the hover state of all `Scatter` instances are synchronized
+    match_by : str, optional
+        A string referencing a categorical column in `data` that specifies the
+        point correspondences. Defaults to the DataFrame's index.
+    rows : int, optional
+        The number of rows. Defaults to `1` when unspecified.
+    row_height: int, optional
+        The row height in pixels. Defaults to `320`.
+    cols : int, optional
+        The number of columns. Defaults to `len(scatters)` when unspecified
+
+    Returns
+    -------
+    GridBox
+        An `ipywidget.GridBox` widget
+
+    See Also
+    --------
+    link : Compose and link multiple scatter plot instances
+
+    Examples
+    --------
+    >>> compose([scatter_a, scatter_b], cols=1, sync_selection=True)
+    <ipywidget.ipywidget.GridBox>
+    """
     if rows is not None and cols is not None:
         assert len(scatters) <= rows * cols
     elif cols is not None:
@@ -30,8 +68,16 @@ def compose(
     elif match_by != 'index':
         match_by = [match_by] * len(scatters)
 
+    has_titles = len(scatters) > 0 and isinstance(scatters[0], tuple)
+
+    def get_scatter(i):
+        return scatters[i][0] if has_titles else scatters[i]
+
+    def get_title(i):
+        return scatters[i][1] if has_titles else str(i)
+
     if isinstance(match_by, list):
-        assert all([match_by[i] in sc._data for i, sc in enumerate(scatters)])
+        assert all([match_by[i] in get_scatter(i)._data for i, _ in enumerate(scatters)])
 
     # We need to store the specific handlers created by called
     # `create_select_handler(index)` and `create_hover_handler(index)` to
@@ -90,13 +136,15 @@ def compose(
         match_mapper = create_match_mapper(index, multiple=True)
 
         def select_handler(change):
-            matched_ids = idx_matcher(scatters[index], change)
+            matched_ids = idx_matcher(get_scatter(index), change)
 
-            for i, scatter in enumerate(scatters):
+            for i, _ in enumerate(scatters):
                 if i == index:
                     # Hover event was triggered by this widget, hence we
                     # don't need to update it
                     continue
+
+                scatter = get_scatter(i)
 
                 # Unsubscribe to avoid cyclic updates
                 scatter.widget.unobserve(scatter_select_handlers[i], names='selection')
@@ -120,11 +168,13 @@ def compose(
         match_mapper = create_match_mapper(index)
 
         def hover_handler(change):
-            matched_id = idx_matcher(scatters[index], change)
+            matched_id = idx_matcher(get_scatter(index), change)
 
-            for i, scatter in enumerate(scatters):
+            for i, _ in enumerate(scatters):
                 if i == index:
                     continue
+
+                scatter = get_scatter(i)
 
                 # Unsubscribe to avoid cyclic updates
                 scatter.widget.unobserve(scatter_hover_handlers[i], names='hovering')
@@ -143,7 +193,8 @@ def compose(
 
         return hover_handler
 
-    for index, scatter in enumerate(scatters):
+    for i, _ in enumerate(scatters):
+        scatter = get_scatter(i)
         scatter.height(row_height)
 
         trait_notifiers = scatter.widget._trait_notifiers
@@ -155,8 +206,8 @@ def compose(
                     if hasattr(observer, '__jscatter_compose_observer__'):
                         trait_notifiers[name]['change'].remove(observer)
 
-        select_handler = create_select_handler(index)
-        hover_handler = create_hover_handler(index)
+        select_handler = create_select_handler(i)
+        hover_handler = create_hover_handler(i)
 
         scatter_select_handlers.append(select_handler)
         scatter_hover_handlers.append(hover_handler)
@@ -168,11 +219,20 @@ def compose(
 
     if sync_view:
         uuid = uuid4().hex
-        for scatter in scatters:
-            scatter.widget.view_sync = uuid
+        for i, _ in enumerate(scatters):
+            get_scatter(i).widget.view_sync = uuid
+
+    def get_scatter_widget(i):
+        scatter_widget = get_scatter(i).widget.show()
+        if has_titles:
+            title = HTML(
+                value=f'<b style="display: flex; justify-content: center; margin: 0 0 0 38px;">{get_title(i)}</b>',
+            )
+            return VBox([title, scatter_widget])
+        return scatter_widget
 
     return GridBox(
-        children=[scatter.widget.show() for scatter in scatters],
+        children=[get_scatter_widget(i) for i, _ in enumerate(scatters)],
         layout=Layout(
             grid_template_columns=' '.join(['1fr' for x in range(cols)]),
             grid_template_rows=' '.join([f'{row_height}px' for x in range(rows)]),
@@ -181,12 +241,45 @@ def compose(
     )
 
 def link(
-    scatters: List[Scatter],
+    scatters: Union[List[Scatter], List[Tuple[Scatter, str]]],
     match_by: Union[str, List[str]] = 'index',
     rows: Optional[int] = 1,
     row_height: int = 320,
     cols: Optional[int] = None
 ):
+    """
+    A short-hand function for `compose` that composes multiple `Scatter`
+    instances and automatically synchronizes their view, selection, and hover
+    state.
+
+    Parameters
+    ----------
+    scatters : list of Scatter, optional
+        A list of `Scatter` instances
+    match_by : str, optional
+        A string referencing a categorical column in `data` that specifies the
+        point correspondences. Defaults to the DataFrame's index.
+    rows : int, optional
+        The number of rows. Defaults to `1` when unspecified.
+    row_height: int, optional
+        The row height in pixels. Defaults to `320`.
+    cols : int, optional
+        The number of columns. Defaults to `len(scatters)` when unspecified
+
+    Returns
+    -------
+    GridBox
+        An `ipywidget.GridBox` widget
+
+    See Also
+    --------
+    compose : Compose multiple scatter plot instances
+
+    Examples
+    --------
+    >>> link([Scatter(data=df_a, x='x', y='y'), Scatter(data=df_a, x='x', y='y')])
+    <ipywidget.ipywidget.GridBox>
+    """
     return compose(
         scatters,
         match_by=match_by,

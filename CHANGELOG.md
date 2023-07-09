@@ -1,6 +1,7 @@
 ## v0.13.0
 
 - Add ability to specify titles when composing multiple scatter plots by passing tuples of `(Scatter, title)` to `compose()` or `link()`
+- Fix: Add docstrings to `compose()` and `link()`
 - Fix: Optimize height of the legend
 - Fix: Check if axes are enabled before updating them when the x or y scale changes
 - Fix: Merge point selections on `SHIFT` instead of activating the lasso as `SHIFT` interfers with Jupyter Lab
