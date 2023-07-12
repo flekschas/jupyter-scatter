@@ -405,10 +405,18 @@ class Scatter():
 
             self._points = np.zeros((self._n, 6))
 
-            self.x(self._x, skip_widget_update=True)
-            self.y(self._y, skip_widget_update=True)
+            self.x(skip_widget_update=True, **self.x())
+            self.y(skip_widget_update=True, **self.y())
+            self.color(skip_widget_update=True, **self.color())
+            self.opacity(skip_widget_update=True, **self.opacity())
+            self.size(skip_widget_update=True, **self.size())
+            self.connect(skip_widget_update=True, **self.connect())
+            self.connection_color(skip_widget_update=True, **self.connection_color())
+            self.connection_opacity(skip_widget_update=True, **self.connection_opacity())
+            self.connection_size(skip_widget_update=True, **self.connection_size())
 
             if 'skip_widget_update' not in kwargs:
+                self.update_widget('prevent_filter_reset', False)
                 self.update_widget('points', self.get_point_list())
 
         if use_index is not UNDEF:
@@ -484,9 +492,14 @@ class Scatter():
 
         if x is not UNDEF or scale is not UNDEF:
             try:
+                self.update_widget('prevent_filter_reset', True)
                 self._points[:, 0] = self._data[self._x].values
             except TypeError:
-                self._points[:, 0] = np.asarray(self._x)
+                _x = np.asarray(self._x)
+                self.update_widget(
+                    'prevent_filter_reset', len(_x) == len(self._points[:, 0])
+                )
+                self._points[:, 0] = _x
 
             self._x_min = np.min(self._points[:, 0])
             self._x_max = np.max(self._points[:, 0])
@@ -570,9 +583,14 @@ class Scatter():
 
         if y is not UNDEF or scale is not UNDEF:
             try:
+                self.update_widget('prevent_filter_reset', True)
                 self._points[:, 1] = self._data[self._y].values
             except TypeError:
-                self._points[:, 1] = np.asarray(self._y)
+                _y = np.asarray(self._y)
+                self.update_widget(
+                    'prevent_filter_reset', len(_y) == len(self._points[:, 0])
+                )
+                self._points[:, 1] = _y
 
             self._y_min = np.min(self._points[:, 1])
             self._y_max = np.max(self._points[:, 1])
@@ -948,7 +966,7 @@ class Scatter():
                 # Define order of the colors instead of changing `points[:, component_idx]`
                 self._color_order = [self._color_categories[cat] for cat in order]
 
-        if map is not UNDEF and map != 'auto':
+        if map is not UNDEF and map != 'auto' and map is not None:
             if self._color_categories is None:
                 if callable(map):
                     # Assuming `map` is a Matplotlib LinearSegmentedColormap
@@ -992,8 +1010,11 @@ class Scatter():
             assert len(self._color_categories) <= len(self._color_map), 'More categories than colors'
 
         if labeling is not UNDEF:
-            column = self._color_by if isinstance(self._color_by, str) else None
-            self._color_labeling = create_labeling(labeling, column)
+            if labeling is None:
+                self._color_labeling = None
+            else:
+                column = self._color_by if isinstance(self._color_by, str) else None
+                self._color_labeling = create_labeling(labeling, column)
 
         # Update widget and encoding domain-range
         if self._color_by is not None and self._color_map is not None:
@@ -1013,6 +1034,7 @@ class Scatter():
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
+            self.update_widget('prevent_filter_reset', True)
             self.update_widget('points', self.get_point_list())
 
         if any_not([default, selected, hover, by, map, norm, order], UNDEF):
@@ -1186,7 +1208,7 @@ class Scatter():
                 # Define order of the opacities instead of changing `points[:, component_idx]`
                 self._opacity_order = [self._opacity_categories[cat] for cat in order]
 
-        if map is not UNDEF and map != 'auto':
+        if map is not UNDEF and map != 'auto' and map is not None:
             self._opacity_map_order = None
             if isinstance(map, tuple):
                 # Assuming `map` is a triple specifying a linear space
@@ -1212,8 +1234,11 @@ class Scatter():
             assert len(self._opacity_categories) <= len(self._opacity_map), 'More categories than opacities'
 
         if labeling is not UNDEF:
-            column = self._opacity_by if isinstance(self._opacity_by, str) else None
-            self._opacity_labeling = create_labeling(labeling, column)
+            if labeling is None:
+                self._opacity_labeling = None
+            else:
+                column = self._opacity_by if isinstance(self._opacity_by, str) else None
+                self._opacity_labeling = create_labeling(labeling, column)
 
         # Update widget
         if self._opacity_by is not None and self._opacity_map is not None:
@@ -1234,6 +1259,7 @@ class Scatter():
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
+            self.update_widget('prevent_filter_reset', True)
             self.update_widget('points', self.get_point_list())
 
         if any_not([default, unselected, by, map, norm, order], UNDEF):
@@ -1393,7 +1419,7 @@ class Scatter():
                 # Define order of the sizes instead of changing `points[:, component_idx]`
                 self._size_order = [self._size_categories[cat] for cat in self._size_order]
 
-        if map is not UNDEF and map != 'auto':
+        if map is not UNDEF and map != 'auto' and map is not None:
             self._size_map_order = None
             if isinstance(map, tuple):
                 # Assuming `map` is a triple specifying a linear space
@@ -1419,8 +1445,11 @@ class Scatter():
             assert len(self._size_categories) <= len(self._size_map), 'More categories than sizes'
 
         if labeling is not UNDEF:
-            column = self._size_by if isinstance(self._size_by, str) else None
-            self._size_labeling = create_labeling(labeling, column)
+            if labeling is None:
+                self._size_labeling = None
+            else:
+                column = self._size_by if isinstance(self._size_by, str) else None
+                self._size_labeling = create_labeling(labeling, column)
 
         # Update widget and encoding domain-range
         if self._size_by is not None and self._size_map is not None:
@@ -1440,6 +1469,7 @@ class Scatter():
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
+            self.update_widget('prevent_filter_reset', True)
             self.update_widget('points', self.get_point_list())
 
         if any_not([default, by, map, norm, order], UNDEF):
@@ -1456,8 +1486,8 @@ class Scatter():
 
     def connect(
         self,
-        by: Optional[Union[str, List[int], np.ndarray[int], Undefined]] = UNDEF,
-        order: Optional[Union[List[int], np.ndarray[int], Undefined]] = UNDEF,
+        by: Optional[Union[str, List[int], np.ndarray[int], None, Undefined]] = UNDEF,
+        order: Optional[Union[List[int], np.ndarray[int], None, Undefined]] = UNDEF,
         **kwargs
     ):
         """
@@ -1521,17 +1551,19 @@ class Scatter():
         if order is not UNDEF:
             self._connect_order = order
 
-            try:
-                if pd.api.types.is_integer_dtype(self._data[order].dtype):
-                    self._points[:, COMPONENT_CONNECT_ORDER] = self._data[order]
-                else:
-                    raise ValueError('connect order must be an integer type')
-            except TypeError:
-                self._points[:, COMPONENT_CONNECT_ORDER] = np.asarray(order).astype(int)
+            if by is not None:
+                try:
+                    if pd.api.types.is_integer_dtype(self._data[order].dtype):
+                        self._points[:, COMPONENT_CONNECT_ORDER] = self._data[order]
+                    else:
+                        raise ValueError('connect order must be an integer type')
+                except TypeError:
+                    self._points[:, COMPONENT_CONNECT_ORDER] = np.asarray(order).astype(int)
 
-            data_updated = True
+                data_updated = True
 
         if data_updated and 'skip_widget_update' not in kwargs:
+            self.update_widget('prevent_filter_reset', True)
             self.update_widget('points', self.get_point_list())
 
         self.update_widget('connect', bool(self._connect_by))
@@ -1719,7 +1751,7 @@ class Scatter():
                 # Define order of the colors instead of changing `points[:, component_idx]`
                 self._connection_color_order = [self._connection_color_categories[cat] for cat in order]
 
-        if map is not UNDEF and map != 'auto':
+        if map is not UNDEF and map != 'auto' and map is not None:
             if self._connection_color_categories is None:
                 if callable(map):
                     # Assuming `map` is a Matplotlib LinearSegmentedColormap
@@ -1763,8 +1795,11 @@ class Scatter():
             assert len(self._connection_color_categories) <= len(self._connection_color_map), 'More categories than connection colors'
 
         if labeling is not UNDEF:
-            column = self._connection_color_by if isinstance(self._connection_color_by, str) else None
-            self._connection_color_labeling = create_labeling(labeling, column)
+            if labeling is None:
+                self._connection_color_labeling = None
+            else:
+                column = self._connection_color_by if isinstance(self._connection_color_by, str) else None
+                self._connection_color_labeling = create_labeling(labeling, column)
 
         # Update widget and legend encoding
         if self._connection_color_by is not None and self._connection_color_map is not None:
@@ -1787,6 +1822,7 @@ class Scatter():
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
+            self.update_widget('prevent_filter_reset', True)
             self.update_widget('points', self.get_point_list())
 
         if any_not([default, selected, hover, by, map, norm, order], UNDEF):
@@ -1950,7 +1986,7 @@ class Scatter():
                     self._connection_opacity_categories[cat] for cat in order
                 ]
 
-        if map is not UNDEF and map != 'auto':
+        if map is not UNDEF and map != 'auto' and map is not None:
             self._connection_opacity_map_order = None
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
@@ -1980,8 +2016,11 @@ class Scatter():
             assert len(self._connection_opacity_categories) <= len(self._connection_opacity_map), 'More categories than connection opacities'
 
         if labeling is not UNDEF:
-            column = self._connection_opacity_by if isinstance(self._connection_opacity_by, str) else None
-            self._connection_opacity_labeling = create_labeling(labeling, column)
+            if labeling is None:
+                self._connection_opacity_labeling = None
+            else:
+                column = self._connection_opacity_by if isinstance(self._connection_opacity_by, str) else None
+                self._connection_opacity_labeling = create_labeling(labeling, column)
 
         # Update widget and legend encoding
         if self._connection_opacity_by is not None and self._connection_opacity_map is not None:
@@ -2004,6 +2043,7 @@ class Scatter():
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
+            self.update_widget('prevent_filter_reset', True)
             self.update_widget('points', self.get_point_list())
 
         if any_not([default, by, map, norm, order], UNDEF):
@@ -2162,7 +2202,7 @@ class Scatter():
                 # Define order of the sizes instead of changing `points[:, component_idx]`
                 self._connection_size_order = [self._connection_size_categories[cat] for cat in order]
 
-        if map is not UNDEF and map != 'auto':
+        if map is not UNDEF and map != 'auto' and map is not None:
             self._connection_size_map_order = None
             if type(map) == tuple:
                 # Assuming `map` is a triple specifying a linear space
@@ -2185,13 +2225,18 @@ class Scatter():
         self._connection_size_map = tolist(self._connection_size_map)
 
         if labeling is not UNDEF:
-            column = self._connection_size_by if isinstance(self._connection_size_by, str) else None
-            self._connection_size_labeling = create_labeling(labeling, column)
+            if labeling is None:
+                self._connection_size_labeling = None
+            else:
+                column = self._connection_size_by if isinstance(self._connection_size_by, str) else None
+                self._connection_size_labeling = create_labeling(labeling, column)
 
         # Update widget and legend encoding
         if self._connection_size_by is not None and self._connection_size_map is not None:
             final_connection_size_map = order_map(
-                self._connection_size_map,)
+                self._connection_size_map,
+                self._connection_size_order
+            )
             self.update_widget('connection_size', final_connection_size_map)
             self._encodings.set_legend(
                 'connection_size',
@@ -2207,6 +2252,7 @@ class Scatter():
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
+            self.update_widget('prevent_filter_reset', True)
             self.update_widget('points', self.get_point_list())
 
         if self._connection_size_categories is not None:

@@ -1,3 +1,8 @@
+## v0.13.1
+
+- Fix: Prevent resetting the filter upon color, size, or opacity changes
+- Fix: Upon changing the associated data frame via `scatter.data(new_df)`, reapply color, size, and opacity settings
+
 ## v0.13.0
 
 - Add ability to specify titles when composing multiple scatter plots by passing tuples of `(Scatter, title)` to `compose()` or `link()`
