@@ -293,20 +293,18 @@ class JupyterScatterView {
       this.colorCanvas();
 
       if (this.points.length) {
+        const options = {}
+        if (this.filter && this.filter.length) options.filter = this.filter;
+        if (this.selection.length) options.select = this.selection;
+
         this.scatterplot
-          .draw(this.points)
+          .draw(this.points, options)
           .then(() => {
-            if (this.filter && this.filter.length) {
-              this.scatterplot.filter(this.filter, { preventEvent: true });
-              if (this.model.get('zoom_on_filter')) {
-                this.zoomToHandler(this.filter);
-              }
+            if (this.filter?.length && this.model.get('zoom_on_filter')) {
+              this.zoomToHandler(this.filter);
             }
-            if (this.selection.length) {
-              this.scatterplot.select(this.selection, { preventEvent: true });
-              if (this.model.get('zoom_on_selection')) {
-                this.zoomToHandler(this.selection);
-              }
+            if (this.selection.length && this.model.get('zoom_on_selection')) {
+              this.zoomToHandler(this.selection);
             }
           });
       }
@@ -777,10 +775,10 @@ class JupyterScatterView {
         transition: true,
         transitionDuration: 3000,
         transitionEasing: 'quadInOut',
+        preventFilterReset: this.model.get('prevent_filter_reset'),
       });
     } else {
       this.scatterplot.deselect();
-      this.scatterplot.unfilter();
       this.scatterplot.draw(newPoints);
     }
   }

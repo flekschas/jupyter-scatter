@@ -58,6 +58,7 @@ class JupyterScatter(anywidget.AnyWidget):
 
     # Data
     points = Array(default_value=None).tag(sync=True, **ndarray_serialization)
+    prevent_filter_reset = Bool(False).tag(sync=True)
     x_domain = List(minlen=2, maxlen=2).tag(sync=True)
     y_domain = List(minlen=2, maxlen=2).tag(sync=True)
     x_scale = Unicode(None, allow_none=True).tag(sync=True)
