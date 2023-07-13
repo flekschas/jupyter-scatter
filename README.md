@@ -8,6 +8,7 @@
   [![build status](https://img.shields.io/github/actions/workflow/status/flekschas/jupyter-scatter/build.yml?branch=master&color=139ce9&style=flat-square)](https://github.com/flekschas/jupyter-scatter/actions?query=workflow%3A%22Build+Python+%26+JavaScript%22)
   [![API docs](https://img.shields.io/badge/API-docs-139ce9.svg?style=flat-square)](API.md)
   [![notebook examples](https://img.shields.io/badge/notebook-examples-139ce9.svg?style=flat-square)](notebooks/get-started.ipynb)
+  [![tutorial](https://img.shields.io/badge/SciPy_'23-tutorial-139ce9.svg?style=flat-square)]([notebooks/get-started.ipynb](https://github.com/flekschas/jupyter-scatter-tutorial))
   
 </div>
 
@@ -54,6 +55,10 @@ For a minimal working example, take a look at [test-environments](test-environme
 ## Get Started
 
 To play with the following examples yourself, open [notebooks/get-started.ipynb](notebooks/get-started.ipynb).
+
+> **Note**
+> 
+> Also check out our [full-blown tutorial](https://github.com/flekschas/jupyter-scatter-tutorial) that we first presented at the SciPy '23 conference.
 
 #### Simplest Example
 
