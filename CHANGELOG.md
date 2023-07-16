@@ -1,3 +1,7 @@
+## v0.13.2
+
+- Fix a type in the return value of `scatter.xy()`
+
 ## v0.13.1
 
 - Fix: Prevent resetting the filter upon color, size, or opacity changes
