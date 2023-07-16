@@ -676,7 +676,7 @@ class Scatter():
             return self
 
         return dict(
-            x = self._y,
+            x = self._x,
             y = self._y,
             x_scale = self._x_scale,
             y_scale = self._y_scale,
