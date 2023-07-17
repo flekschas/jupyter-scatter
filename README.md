@@ -8,7 +8,7 @@
   [![build status](https://img.shields.io/github/actions/workflow/status/flekschas/jupyter-scatter/build.yml?branch=master&color=139ce9&style=flat-square)](https://github.com/flekschas/jupyter-scatter/actions?query=workflow%3A%22Build+Python+%26+JavaScript%22)
   [![API docs](https://img.shields.io/badge/API-docs-139ce9.svg?style=flat-square)](API.md)
   [![notebook examples](https://img.shields.io/badge/notebook-examples-139ce9.svg?style=flat-square)](notebooks/get-started.ipynb)
-  [![tutorial](https://img.shields.io/badge/SciPy_'23-tutorial-139ce9.svg?style=flat-square)]([notebooks/get-started.ipynb](https://github.com/flekschas/jupyter-scatter-tutorial))
+  [![tutorial](https://img.shields.io/badge/SciPy_'23-tutorial-139ce9.svg?style=flat-square)](https://github.com/flekschas/jupyter-scatter-tutorial)
   
 </div>
 
