@@ -104,8 +104,8 @@ class Components():
 
 @dataclass
 class VisualEncoding():
-    channel: str
-    data: str
+    channel: str  # Visual channel. E.g., color
+    dimension: str  # Data dimension E.g., column name
     legend: List[Tuple[float, Union[float, int, str]]] = None
 
 
@@ -116,30 +116,30 @@ class Encodings():
         self.max = total_components - reserved_components
         self.components = Components(total_components, reserved_components)
 
-    def set(self, visual_enc: str, data_enc: str):
-        # Remove previous `visual_enc` encoding
-        if self.is_unique(visual_enc):
-            self.delete(visual_enc)
+    def set(self, channel: str, dimension: str):
+        # Remove previous `channel` encoding
+        if self.is_unique(channel):
+            self.delete(channel)
 
-        if data_enc not in self.data:
+        if dimension not in self.data:
             assert not self.components.full, f'Only {self.max} data encodings are supported'
             # The first value specifies the component
             # The second value
-            self.data[data_enc] = self.components.add(data_enc)
+            self.data[dimension] = self.components.add(dimension)
 
-        self.visual[visual_enc] = VisualEncoding(visual_enc, data_enc)
+        self.visual[channel] = VisualEncoding(channel, dimension)
 
-    def get(self, visual_enc):
-        if visual_enc in self.visual:
-            return self.data[self.visual[visual_enc].data]
+    def get(self, channel):
+        if channel in self.visual:
+            return self.data[self.visual[channel].dimension]
 
-    def get_legend(self, visual_enc):
-        if visual_enc in self.visual:
-            return self.visual[visual_enc].legend
+    def get_legend(self, channel):
+        if channel in self.visual:
+            return self.visual[channel].legend
 
     def set_legend(
         self,
-        visual_enc,
+        channel,
         encoding,
         norm,
         categories,
@@ -147,8 +147,8 @@ class Encodings():
         linspace_num = 5,
         category_order = None,
     ):
-        if visual_enc in self.visual:
-            self.visual[visual_enc].legend = create_legend(
+        if channel in self.visual:
+            self.visual[channel].legend = create_legend(
                 encoding,
                 norm,
                 categories,
@@ -157,20 +157,20 @@ class Encodings():
                 category_order,
             )
 
-    def delete(self, visual_enc):
-        if visual_enc in self.visual:
-            data_enc = self.visual[visual_enc].data
+    def delete(self, channel):
+        if channel in self.visual:
+            dimension = self.visual[channel].dimension
 
-            del self.visual[visual_enc]
+            del self.visual[channel]
 
-            if sum([v == data_enc for v in self.visual.values()]) == 0:
-                self.components.delete(data_enc)
-                del self.data[data_enc]
+            if sum([v == dimension for v in self.visual.values()]) == 0:
+                self.components.delete(dimension)
+                del self.data[dimension]
 
-    def is_unique(self, visual_enc):
-        if visual_enc not in self.visual:
+    def is_unique(self, channel):
+        if channel not in self.visual:
             return False
 
         return sum(
-            [v.data == self.visual[visual_enc].data for v in self.visual.values()]
+            [v.dimension == self.visual[channel].dimension for v in self.visual.values()]
         ) == 1
