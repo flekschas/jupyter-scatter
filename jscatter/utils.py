@@ -53,14 +53,17 @@ def create_default_norm():
 def to_ndc(X, norm):
     return (norm(X).data * 2) - 1
 
-def to_scale_type(norm):
+def to_scale_type(norm = None):
     if (isinstance(norm, LogNorm)):
         return 'log_10'
 
     if (isinstance(norm, PowerNorm)):
         return f'pow_{norm.gamma}'
 
-    return 'linear'
+    if (isinstance(norm, Normalize)):
+        return 'linear'
+
+    return 'categorical'
 
 def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeling:
     labeling: Labeling = {}

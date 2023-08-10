@@ -6,13 +6,13 @@ import numpy as np
 import pandas as pd
 
 from matplotlib.colors import to_rgba, Normalize, LogNorm, PowerNorm, LinearSegmentedColormap, ListedColormap
-from typing import Optional, Union, List, Tuple
+from typing import Optional, Union, List, Tuple, Set
 
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
 from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, create_default_norm, create_labeling
-from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Size, Position, Labeling, Undefined
+from .types import Color, Scales, MouseModes, All, Auto, Reverse, Segment, Size, LegendPosition, TooltipPosition, TooltipContent, Labeling, Undefined
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -27,6 +27,14 @@ VALID_ENCODING_TYPES = [
 UNDEF = Undefined()
 
 default_background_color = 'white'
+
+all_tooltip_contents = {
+    'x',
+    'y',
+    'color',
+    'opacity',
+    'size',
+}
 
 def check_encoding_dtype(series):
     if not any([check(series.dtype) for check in VALID_ENCODING_TYPES]):
@@ -159,6 +167,8 @@ class Scatter():
         self._lasso_initiator = False
         self._lasso_min_delay = 10
         self._lasso_min_dist = 3
+        self._x_by = None
+        self._y_by = None
         self._color = (0, 0, 0, 0.66) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.66)
         self._color_selected = (0, 0.55, 1, 1)
         self._color_hover = (0, 0, 0, 1) if self._background_color_luminance > 0.5 else (1, 1, 1, 1)
@@ -228,6 +238,10 @@ class Scatter():
         self._legend = False
         self._legend_position = 'top-left'
         self._legend_size = 'small'
+        self._tooltip = False
+        self._tooltip_contents = all_tooltip_contents.copy()
+        self._tooltip_position = 'top'
+        self._tooltip_size = 'small'
         self._zoom_to = None
         self._zoom_to_call_idx = 0
         self._zoom_animation = 500
@@ -326,6 +340,12 @@ class Scatter():
             kwargs.get('legend', UNDEF),
             kwargs.get('legend_position', UNDEF),
             kwargs.get('legend_size', UNDEF),
+        )
+        self.tooltip(
+            kwargs.get('tooltip', UNDEF),
+            kwargs.get('tooltip_contents', UNDEF),
+            kwargs.get('tooltip_position', UNDEF),
+            kwargs.get('tooltip_size', UNDEF),
         )
         self.zoom(
             kwargs.get('zoom_to', UNDEF),
@@ -489,11 +509,13 @@ class Scatter():
 
         if x is not UNDEF:
             self._x = x
+            self._x_by = x if isinstance(x, str) else None
 
         if x is not UNDEF or scale is not UNDEF:
             try:
                 self.update_widget('prevent_filter_reset', True)
                 self._points[:, 0] = self._data[self._x].values
+
             except TypeError:
                 _x = np.asarray(self._x)
                 self.update_widget(
@@ -509,6 +531,8 @@ class Scatter():
             self._points[:, 0] = to_ndc(self._points[:, 0], self._x_scale)
 
             if 'skip_widget_update' not in kwargs:
+                self.update_widget('x_title', self._x_by)
+                self.update_widget('x_domain', self._x_domain)
                 self.update_widget('points', self.get_point_list())
 
         if any_not([x, scale], UNDEF):
@@ -580,6 +604,7 @@ class Scatter():
 
         if y is not UNDEF:
             self._y = y
+            self._y_by = y if isinstance(y, str) else None
 
         if y is not UNDEF or scale is not UNDEF:
             try:
@@ -600,6 +625,8 @@ class Scatter():
             self._points[:, 1] = to_ndc(self._points[:, 1], self._y_scale)
 
             if 'skip_widget_update' not in kwargs:
+                self.update_widget('y_title', self._y_by)
+                self.update_widget('y_domain', self._y_domain)
                 self.update_widget('points', self.get_point_list())
 
         if any_not([y, scale], UNDEF):
@@ -671,7 +698,11 @@ class Scatter():
         if any_not([x, y, x_scale, y_scale], UNDEF):
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('x_scale', to_scale_type(self._x_scale))
+                self.update_widget('x_domain', self._x_domain)
+                self.update_widget('x_title', self._x_by)
                 self.update_widget('y_scale', to_scale_type(self._y_scale))
+                self.update_widget('y_domain', self._y_domain)
+                self.update_widget('y_title', self._y_by)
                 self.update_widget('points', self.get_point_list())
             return self
 
@@ -835,14 +866,14 @@ class Scatter():
             choose an appropriate color map.
         norm : array_like, optional
             The normalization method for data-driven color encoding. It can
-            either a tuple defining a value range that maps to `[0, 1]` with
-            `matplotlib.colors.Normalize` or a matplotlib normalizer instance.
+            either be a tuple defining a value range that maps to `[0, 1]` with
+            `matplotlib.colors.N ormalize` or a matplotlib normalizer instance.
         order : array_like, optional
             The order of the color map. It can either be a list of values (for
             categorical coloring) or `reverse` to reverse the color map.
         labeling : array_like, optional
             The labeling of the minimum and maximum value as well as the data
-            variable. If defined, labels are shown with the legend. THe labeling
+            variable. If defined, labels are shown with the legend. The labeling
             can either be a list of strings (`[minValue, maxValue, variable]`)
             or a dictionary (`{ min: label, max: label, variable: label }`).
         kwargs : optional
@@ -945,7 +976,6 @@ class Scatter():
                 except TypeError:
                     self._points[:, component] = self._color_norm(np.asarray(by))
 
-
                 if not self._encodings.data[by].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
@@ -972,7 +1002,7 @@ class Scatter():
                     # Assuming `map` is a Matplotlib LinearSegmentedColormap
                     self._color_map = map(range(256)).tolist()
                 elif isinstance(map, str):
-                    # Assiming `map` is the name of a Matplotlib LinearSegmentedColormap
+                    # Assuming `map` is the name of a Matplotlib LinearSegmentedColormap
                     self._color_map = plt.get_cmap(map)(range(256)).tolist()
                 else:
                     # Assuming `map` is a list of colors
@@ -983,10 +1013,10 @@ class Scatter():
                     # Assuming `map` is a Matplotlib ListedColormap
                     self._color_map = [to_rgba(c) for c in map.colors]
                 elif isinstance(map, str):
-                    # Assiming `map` is the name of a Matplotlib ListedColormap
+                    # Assuming `map` is the name of a Matplotlib ListedColormap
                     self._color_map = [to_rgba(c) for c in plt.get_cmap(map).colors]
                 elif isinstance(map, dict):
-                    # Assiming `map` is a dictionary of colors
+                    # Assuming `map` is a dictionary of colors
                     self._color_map = [to_rgba(c) for c in map.values()]
                     self._color_map_order = list(map.keys())
                     self._color_order = get_map_order(map, self._color_categories)
@@ -1027,6 +1057,13 @@ class Scatter():
                 self._color_categories,
                 self._color_labeling,
                 category_order=self._color_map_order,
+            )
+            self.update_widget('color_scale', to_scale_type(self._color_norm if self._color_categories is None else None))
+            self.update_widget(
+                'color_domain',
+                (self._color_norm.vmin, self._color_norm.vmax)
+                if self._color_categories is None
+                else self._color_categories
             )
         else:
             self.update_widget('color', self._color)
@@ -1091,7 +1128,7 @@ class Scatter():
             categorical opacity values) or `reverse` to reverse the opacity map.
         labeling : array_like, optional
             The labeling of the minimum and maximum value as well as the data
-            variable. If defined, labels are shown with the legend. THe labeling
+            variable. If defined, labels are shown with the legend. The labeling
             can either be a list of strings (`[minValue, maxValue, variable]`)
             or a dictionary (`{ min: label, max: label, variable: label }`).
         kwargs : optional
@@ -1214,7 +1251,7 @@ class Scatter():
                 # Assuming `map` is a triple specifying a linear space
                 self._opacity_map = np.linspace(*map)
             elif isinstance(map, dict):
-                # Assiming `map` is a dictionary of opacities
+                # Assuming `map` is a dictionary of opacities
                 self._opacity_map = list(map.values())
                 self._opacity_map_order = list(map.keys())
                 self._opacity_order = get_map_order(map, self._opacity_categories)
@@ -1253,6 +1290,13 @@ class Scatter():
                     self._opacity_labeling,
                     category_order=self._opacity_map_order,
                 )
+            self.update_widget('opacity_scale', to_scale_type(self._opacity_norm if self._opacity_categories is None else None))
+            self.update_widget(
+                'opacity_domain',
+                (self._opacity_norm.vmin, self._opacity_norm.vmax)
+                if self._opacity_categories is None
+                else self._opacity_categories
+            )
         else:
             self.update_widget('opacity', self._opacity)
 
@@ -1310,7 +1354,7 @@ class Scatter():
             categorical size values) or `reverse` to reverse the size map.
         labeling : array_like, optional
             The labeling of the minimum and maximum value as well as the data
-            variable. If defined, labels are shown with the legend. THe labeling
+            variable. If defined, labels are shown with the legend. The labeling
             can either be a list of strings (`[minValue, maxValue, variable]`)
             or a dictionary (`{ min: label, max: label, variable: label }`).
         kwargs : optional
@@ -1425,7 +1469,7 @@ class Scatter():
                 # Assuming `map` is a triple specifying a linear space
                 self._size_map = np.linspace(*map)
             elif isinstance(map, dict):
-                # Assiming `map` is a dictionary of sizes
+                # Assuming `map` is a dictionary of sizes
                 self._size_map = list(map.values())
                 self._size_map_order = list(map.keys())
                 self._size_order = get_map_order(map, self._size_categories)
@@ -1462,6 +1506,13 @@ class Scatter():
                 self._size_categories,
                 self._size_labeling,
                 category_order=self._size_map_order,
+            )
+            self.update_widget('size_scale', to_scale_type(self._size_norm if self._size_categories is None else None))
+            self.update_widget(
+                'size_domain',
+                (self._size_norm.vmin, self._size_norm.vmax)
+                if self._size_categories is None
+                else self._size_categories
             )
         else:
             self.update_widget('size', self._size)
@@ -1624,7 +1675,7 @@ class Scatter():
             categorical coloring) or `reverse` to reverse the color map.
         labeling : array_like, optional
             The labeling of the minimum and maximum value as well as the data
-            variable. If defined, labels are shown with the legend. THe labeling
+            variable. If defined, labels are shown with the legend. The labeling
             can either be a list of strings (`[minValue, maxValue, variable]`)
             or a dictionary (`{ min: label, max: label, variable: label }`).
         kwargs : optional
@@ -1757,7 +1808,7 @@ class Scatter():
                     # Assuming `map` is a Matplotlib LinearSegmentedColormap
                     self._connection_color_map = map(range(256)).tolist()
                 elif isinstance(map, str):
-                    # Assiming `map` is the name of a Matplotlib LinearSegmentedColormap
+                    # Assuming `map` is the name of a Matplotlib LinearSegmentedColormap
                     self._connection_color_map = plt.get_cmap(map)(range(256)).tolist()
                 else:
                     # Assuming `map` is a list of colors
@@ -1768,10 +1819,10 @@ class Scatter():
                     # Assuming `map` is a Matplotlib ListedColormap
                     self._connection_color_map = [to_rgba(c) for c in map.colors]
                 elif isinstance(map, str):
-                    # Assiming `map` is the name of a Matplotlib ListedColormap
+                    # Assuming `map` is the name of a Matplotlib ListedColormap
                     self._connection_color_map = [to_rgba(c) for c in plt.get_cmap(map).colors]
                 elif isinstance(map, dict):
-                    # Assiming `map` is a dictionary of colors
+                    # Assuming `map` is a dictionary of colors
                     self._connection_color_map = [to_rgba(c) for c in map.values()]
                     self._connection_color_map_order = list(map.keys())
                     self._connection_color_order = get_map_order(map, self._connection_color_categories)
@@ -1874,7 +1925,7 @@ class Scatter():
             categorical opacity values) or `reverse` to reverse the opacity map.
         labeling : array_like, optional
             The labeling of the minimum and maximum value as well as the data
-            variable. If defined, labels are shown with the legend. THe labeling
+            variable. If defined, labels are shown with the legend. The labeling
             can either be a list of strings (`[minValue, maxValue, variable]`)
             or a dictionary (`{ min: label, max: label, variable: label }`).
         kwargs : optional
@@ -1992,7 +2043,7 @@ class Scatter():
                 # Assuming `map` is a triple specifying a linear space
                 self._connection_opacity_map = np.linspace(*map)
             elif isinstance(map, dict):
-                # Assiming `map` is a dictionary of opacities
+                # Assuming `map` is a dictionary of opacities
                 self._connection_opacity_map = list(map.values())
                 self._connection_opacity_map_order = list(map.keys())
                 self._connection_opacity_order = get_map_order(map, self._connection_opacity_categories)
@@ -2093,7 +2144,7 @@ class Scatter():
             categorical size values) or `reverse` to reverse the size map.
         labeling : array_like, optional
             The labeling of the minimum and maximum value as well as the data
-            variable. If defined, labels are shown with the legend. THe labeling
+            variable. If defined, labels are shown with the legend. The labeling
             can either be a list of strings (`[minValue, maxValue, variable]`)
             or a dictionary (`{ min: label, max: label, variable: label }`).
         kwargs : optional
@@ -2208,7 +2259,7 @@ class Scatter():
                 # Assuming `map` is a triple specifying a linear space
                 self._connection_size_map = np.linspace(*map)
             elif isinstance(map, dict):
-                # Assiming `map` is a dictionary of sizes
+                # Assuming `map` is a dictionary of sizes
                 self._connection_size_map = list(map.values())
                 self._connection_size_map_order = list(map.keys())
                 self._connection_size_order = get_map_order(map, self._connection_size_categories)
@@ -2339,6 +2390,7 @@ class Scatter():
             self.update_widget('reticle_color', self.get_reticle_color())
             self.update_widget('axes_color', self.get_axes_color())
             self.update_widget('legend_color', self.get_legend_color())
+            self.update_widget('tooltip_color', self.get_tooltip_color())
 
         if image is not UNDEF:
             if uri_validator(image):
@@ -2684,6 +2736,12 @@ class Scatter():
 
         return (0, 0, 0, 1)
 
+    def get_tooltip_color(self):
+        if self._background_color_luminance < 0.5:
+            return (0.2, 0.2, 0.2, 1)
+
+        return (1, 1, 1, 1)
+
     def get_legend_encoding(self):
         return {
             channel: self._encodings.get_legend(channel)
@@ -2873,7 +2931,7 @@ class Scatter():
     def legend(
         self,
         legend: Optional[Union[bool, Undefined]] = UNDEF,
-        position: Optional[Union[Position, Undefined]] = UNDEF,
+        position: Optional[Union[LegendPosition, Undefined]] = UNDEF,
         size: Optional[Union[Size, Undefined]] = UNDEF,
     ):
         """
@@ -2940,7 +2998,78 @@ class Scatter():
         return dict(
             legend = self._legend,
             position = self._legend_position,
+            size = self._legend_size,
         )
+
+    def tooltip(
+        self,
+        tooltip: Optional[Union[bool, Undefined]] = UNDEF,
+        contents: Optional[Union[All, Set[TooltipContent], Undefined]] = UNDEF,
+        position: Optional[Union[TooltipPosition, Undefined]] = UNDEF,
+        size: Optional[Union[Size, Undefined]] = UNDEF,
+    ):
+        """
+        Set or get the tooltip settings.
+
+        Parameters
+        ----------
+        tooltip : bool, optional
+            When set to `True`, a tooltip will be shown upon hovering a point.
+        contents : all or set(str), optional
+            The tooltip position. Must be one of top, left, right, bottom.
+        position : str, optional
+            The tooltip position. Must be one of top, left, right, bottom.
+        size : small or medium or large, optional
+            The size of the tooltip. Must be one of small, medium, or large
+
+        Returns
+        -------
+        self or dict
+            If no parameters are provided the current tooltip settings are
+            returned as a dictionary. Otherwise, `self` is returned.
+
+        Examples
+        --------
+        >>> scatter.tooltip(True)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(position='right')
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(size='large')
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip()
+        {'tooltip': True, 'position': 'right', size: 'large'}
+        """
+        if tooltip is not UNDEF:
+            self._tooltip = tooltip
+            self.update_widget('tooltip_enable', tooltip)
+
+        if contents is not UNDEF:
+            if contents == 'all':
+                contents = all_tooltip_contents.copy()
+            self._tooltip_contents = contents
+            self.update_widget('tooltip_contents', contents)
+
+        if position is not UNDEF:
+            self._tooltip_position = position
+            self.update_widget('tooltip_position', position)
+
+        if size is not UNDEF:
+            self._tooltip_size = size
+            self.update_widget('tooltip_size', size)
+
+        if any_not([tooltip, position, size], UNDEF):
+            return self
+
+        return dict(
+            legend = self._tooltip,
+            contents = self._tooltip_contents,
+            position = self._tooltip_position,
+            size = self._tooltip_size,
+        )
+
 
     def zoom(
         self,
@@ -3176,6 +3305,14 @@ class Scatter():
         self._widget = JupyterScatter(
             x_scale=to_scale_type(self._x_scale),
             y_scale=to_scale_type(self._y_scale),
+            color_scale=to_scale_type(self._color_norm if self._color_categories is None else None),
+            opacity_scale=to_scale_type(self._opacity_norm if self._opacity_categories is None else None),
+            size_scale=to_scale_type(self._size_norm if self._size_categories is None else None),
+            x_title=self._x_by,
+            y_title=self._y_by,
+            color_title=self._color_by,
+            opacity_title=self._opacity_by,
+            size_title=self._size_by,
             points=self.get_point_list(),
             selection=self._selected_points_idxs,
             filter=self._filtered_points_idxs,
@@ -3215,6 +3352,9 @@ class Scatter():
             mouse_mode=self._mouse_mode,
             x_domain=self._x_domain,
             y_domain=self._y_domain,
+            color_domain=self._color_categories,
+            opacity_domain=self._opacity_categories,
+            size_domain=self._size_categories,
             axes=self._axes,
             axes_grid=self._axes_grid,
             axes_labels=self._axes_labels,
@@ -3224,6 +3364,11 @@ class Scatter():
             legend_position=self._legend_position,
             legend_color=self.get_legend_color(),
             legend_encoding=self.get_legend_encoding(),
+            tooltip_enable=self._tooltip,
+            tooltip_contents=self._tooltip_contents,
+            tooltip_size=self._tooltip_size,
+            tooltip_position=self._tooltip_position,
+            tooltip_color=self.get_tooltip_color(),
             zoom_to=self._zoom_to,
             zoom_animation=self._zoom_animation,
             zoom_on_selection=self._zoom_on_selection,

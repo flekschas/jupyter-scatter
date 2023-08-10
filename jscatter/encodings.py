@@ -3,7 +3,7 @@ import pandas as pd
 from dataclasses import dataclass
 from functools import reduce
 from math import floor
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Optional
 
 def create_legend(encoding, norm, categories, labeling=None, linspace_num=5, category_order=None):
     variable = labeling.get('variable') if labeling else None
@@ -106,7 +106,7 @@ class Components():
 class VisualEncoding():
     channel: str  # Visual channel. E.g., color
     dimension: str  # Data dimension E.g., column name
-    legend: List[Tuple[float, Union[float, int, str]]] = None
+    legend: Optional[List[Tuple[float, Union[float, int, str]]]] = None
 
 
 class Encodings():

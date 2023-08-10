@@ -1,56 +1,30 @@
-import * as reglScatterplot from 'regl-scatterplot';
+import createScatterplot, { createRenderer } from 'regl-scatterplot';
 import * as pubSub from 'pub-sub-es';
+import { getD3FormatSpecifier } from '@flekschas/utils';
 
-import * as d3Axis from 'd3-axis';
-import * as d3Scale from 'd3-scale';
-import * as d3Selection from 'd3-selection';
+import { axisBottom, axisRight } from 'd3-axis';
+import { format } from 'd3-format';
+import { scaleLinear } from 'd3-scale';
+import { select } from 'd3-selection';
 
-import * as codecs from "./codecs.js";
-import { createLegend } from "./legend.js";
+import { Numpy1D, Numpy2D } from "./codecs";
+import { createLegend } from "./legend";
+import {
+  camelToSnake,
+  toCapitalCase,
+  downloadBlob,
+  getScale,
+  createOrdinalScaleInverter,
+} from "./utils";
+
 import { version } from "../package.json";
-
-const createScatterplot = reglScatterplot.default;
-const createRenderer = reglScatterplot.createRenderer;
 
 const AXES_LABEL_SIZE = 16;
 const AXES_PADDING_X = 40;
 const AXES_PADDING_X_WITH_LABEL = AXES_PADDING_X + AXES_LABEL_SIZE;
 const AXES_PADDING_Y = 20;
 const AXES_PADDING_Y_WITH_LABEL = AXES_PADDING_Y + AXES_LABEL_SIZE;
-
-function camelToSnake(string) {
-  return string.replace(/[\w]([A-Z])/g, (m) => m[0] + "_" + m[1]).toLowerCase();
-}
-
-function downloadBlob(blob, name) {
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = name || 'jscatter.png';
-
-  document.body.appendChild(link);
-
-  link.dispatchEvent(
-    new MouseEvent('click', {
-      bubbles: true,
-      cancelable: true,
-      view: window,
-    })
-  );
-
-  document.body.removeChild(link);
-}
-
-function getScale(scaleType) {
-  if (scaleType.startsWith('log')) {
-    return d3Scale.scaleLog().base(scaleType.split('_')[1] || 10);
-  }
-
-  if (scaleType.startsWith('pow')) {
-    return d3Scale.scalePow().exponent(scaleType.split('_')[1] || 2);
-  }
-
-  return d3Scale.scaleLinear();
-}
+const TOOLTIP_CONTENTS = ['x', 'y', 'color', 'opacity', 'size'];
 
 /**
  * This dictionary maps between the camelCased Python property names and their
@@ -109,8 +83,26 @@ const properties = {
   legendColor: 'legendColor',
   legendPosition: 'legendPosition',
   legendEncoding: 'legendEncoding',
+  tooltipEnable: 'tooltipEnable',
+  tooltipSize: 'tooltipSize',
+  tooltipColor: 'tooltipColor',
+  tooltipPosition: 'tooltipPosition',
+  tooltipContents: 'tooltipContents',
   xScale: 'xScale',
   yScale: 'yScale',
+  colorScale: 'colorScale',
+  opacityScale: 'opacityScale',
+  sizeScale: 'sizeScale',
+  xDomain: 'xDomain',
+  yDomain: 'yDomain',
+  colorDomain: 'colorDomain',
+  opacityDomain: 'opacityDomain',
+  sizeDomain: 'sizeDomain',
+  xTitle: 'xTitle',
+  yTitle: 'yTitle',
+  colorTitle: 'colorTitle',
+  opacityTitle: 'opacityTitle',
+  sizeTitle: 'sizeTitle',
   zoomTo: 'zoomTo',
   zoomToCallIdx: 'zoomToCallIdx',
   zoomAnimation: 'zoomAnimation',
@@ -292,6 +284,19 @@ class JupyterScatterView {
 
       this.colorCanvas();
 
+      this.getOuterDimensions();
+      this.createXScale();
+      this.createYScale();
+      this.createColorScale();
+      this.createOpacityScale();
+      this.createSizeScale();
+      this.createXGetter();
+      this.createYGetter();
+      this.createColorGetter();
+      this.createOpacityGetter();
+      this.createSizeGetter();
+      this.createTooltip();
+
       if (this.points.length) {
         const options = {}
         if (this.filter && this.filter.length) options.filter = this.filter;
@@ -329,13 +334,16 @@ class JupyterScatterView {
 
     const outerHeight = this.model.get('height') + yPadding;
 
+    this.outerWidth = outerWidth;
+    this.outerHeight = outerHeight;
+
     return [outerWidth, outerHeight]
   }
 
   createAxes() {
-    this.axesSvg = d3Selection.select(this.container).select('svg').node()
-      ? d3Selection.select(this.container).select('svg')
-      : d3Selection.select(this.container).append('svg');
+    this.axesSvg = select(this.container).select('svg').node()
+      ? select(this.container).select('svg')
+      : select(this.container).append('svg');
     this.axesSvg.style('top', 0);
     this.axesSvg.style('left', 0);
     this.axesSvg.style('width', '100%');
@@ -357,7 +365,7 @@ class JupyterScatterView {
     // Regl-Scatterplot's gl-space is always linear, hence we have to pass a
     // linear scale to regl-scatterplot.
     // In the future we might integrate this into regl-scatterplot directly
-    this.xScaleRegl = d3Scale.scaleLinear()
+    this.xScaleRegl = scaleLinear()
       .domain(this.model.get('x_domain'))
       .range([0, width - xPadding]);
     // This scale is used for the D3 axis
@@ -370,7 +378,7 @@ class JupyterScatterView {
       .domain(this.model.get('x_domain'))
       .range(this.model.get('x_domain'));
 
-    this.yScaleRegl = d3Scale.scaleLinear()
+    this.yScaleRegl = scaleLinear()
       .domain(this.model.get('y_domain'))
       .range([height - yPadding, 0]);
     this.yScaleAxis = getScale(this.model.get('y_scale'))
@@ -392,8 +400,8 @@ class JupyterScatterView {
       );
     }
 
-    this.xAxis = d3Axis.axisBottom(this.xScaleAxis);
-    this.yAxis = d3Axis.axisRight(this.yScaleAxis);
+    this.xAxis = axisBottom(this.xScaleAxis);
+    this.yAxis = axisRight(this.yScaleAxis);
 
     this.xAxisContainer = this.axesSvg.select('.x-axis').node()
       ? this.axesSvg.select('.x-axis')
@@ -541,6 +549,426 @@ class JupyterScatterView {
     this.legend = undefined;
   }
 
+  createTooltip() {
+    this.tooltip = document.createElement('div');
+    this.tooltip.style.position = 'absolute';
+    this.tooltip.style.top = 0;
+    this.tooltip.style.left = 0;
+    this.tooltip.style.pointerEvents = 'none';
+    this.tooltip.style.userSelect = 'none';
+    this.tooltip.style.borderRadius = '0.2rem';
+    this.tooltip.style.opacity = 0;
+    this.tooltip.style.transition = 'opacity 0.2s ease-in-out';
+
+    this.tooltipArrow = document.createElement('div');
+    this.tooltipArrow.style.position = 'absolute';
+    this.tooltipArrow.style.width = '0.5rem';
+    this.tooltipArrow.style.height = '0.5rem';
+    this.tooltipArrow.style.transformOrigin = 'center';
+    this.tooltip.appendChild(this.tooltipArrow);
+
+    this.tooltipContent = document.createElement('div');
+    this.tooltipContent.style.position = 'relative';
+    this.tooltipContent.style.display = 'grid';
+    this.tooltipContent.style.gridTemplateColumns = 'max-content max-content max-content';
+    this.tooltipContent.style.gap = '0.25rem 0.2rem';
+    this.tooltipContent.style.userSelect = 'none';
+    this.tooltipContent.style.borderRadius = '0.2rem';
+    this.tooltipContent.style.padding = '0.2rem 0.25rem';
+    this.tooltipContent.style.fontSize = '0.675rem';
+    this.tooltip.appendChild(this.tooltipContent);
+
+    this.tooltipContentXChannel = document.createElement('div');
+    this.tooltipContentXTitle = document.createElement('div');
+    this.tooltipContentXValue = document.createElement('div');
+
+    this.tooltipContentYChannel = document.createElement('div');
+    this.tooltipContentYTitle = document.createElement('div');
+    this.tooltipContentYValue = document.createElement('div');
+
+    this.tooltipContentColorChannel = document.createElement('div');
+    this.tooltipContentColorTitle = document.createElement('div');
+    this.tooltipContentColorValue = document.createElement('div');
+    this.tooltipContentColorValueBadge = document.createElement('div');
+    this.tooltipContentColorValueText = document.createElement('div');
+    this.tooltipContentColorValue.appendChild(this.tooltipContentColorValueBadge);
+    this.tooltipContentColorValue.appendChild(this.tooltipContentColorValueText);
+
+    this.tooltipContentOpacityChannel = document.createElement('div');
+    this.tooltipContentOpacityTitle = document.createElement('div');
+    this.tooltipContentOpacityValue = document.createElement('div');
+
+    this.tooltipContentSizeChannel = document.createElement('div');
+    this.tooltipContentSizeTitle = document.createElement('div');
+    this.tooltipContentSizeValue = document.createElement('div');
+
+    this.tooltipContentXChannel.textContent = 'X';
+    this.tooltipContentYChannel.textContent = 'Y';
+    this.tooltipContentColorChannel.textContent = 'Col';
+    this.tooltipContentOpacityChannel.textContent = 'Opa';
+    this.tooltipContentSizeChannel.textContent = 'Size';
+
+    this.tooltipContentXTitle.textContent = toCapitalCase(this.model.get('x_title') || '');
+    this.tooltipContentYTitle.textContent = toCapitalCase(this.model.get('y_title') || '');
+    this.tooltipContentColorTitle.textContent = toCapitalCase(this.model.get('color_title') || '');
+    this.tooltipContentOpacityTitle.textContent = toCapitalCase(this.model.get('opacity_title') || '');
+    this.tooltipContentSizeTitle.textContent = toCapitalCase(this.model.get('size_title') || '');
+
+    [
+      this.tooltipContentXChannel,
+      this.tooltipContentXTitle,
+      this.tooltipContentXValue,
+      this.tooltipContentYChannel,
+      this.tooltipContentYTitle,
+      this.tooltipContentYValue,
+      this.tooltipContentColorChannel,
+      this.tooltipContentColorTitle,
+      this.tooltipContentColorValue,
+      this.tooltipContentOpacityChannel,
+      this.tooltipContentOpacityTitle,
+      this.tooltipContentOpacityValue,
+      this.tooltipContentSizeChannel,
+      this.tooltipContentSizeTitle,
+      this.tooltipContentSizeValue,
+    ].forEach((el) => this.tooltipContent.appendChild(el));
+
+    this.styleTooltip();
+    this.enableTooltipContents();
+    this.createTooltipContentUpdater();
+
+    this.container.appendChild(this.tooltip);
+  }
+
+  positionTooltipTopCenter() {
+    this.tooltipArrow.style.removeProperty('top');
+    this.tooltipArrow.style.removeProperty('right');
+    this.tooltipArrow.style.bottom = 0;
+    this.tooltipArrow.style.left = '50%';
+    this.tooltipArrow.style.transform = 'translate(-50%, calc(50% - 1px)) rotate(-45deg)';
+    this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
+
+    this.moveTooltip = (x, y) => {
+      this.tooltip.style.transform = `translate(calc(${x}px - 50%), calc(${y}px - 0.5rem - 100%))`;
+    }
+  }
+
+  positionTooltipTopLeft() {
+    this.tooltipArrow.style.removeProperty('top');
+    this.tooltipArrow.style.right = '0.125rem';
+    this.tooltipArrow.style.bottom = 0;
+    this.tooltipArrow.style.removeProperty('left');
+    this.tooltipArrow.style.transform = 'translate(-50%, calc(50% - 1px)) rotate(-45deg)';
+    this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
+
+    this.moveTooltip = (x, y) => {
+      this.tooltip.style.transform = `translate(calc(${x}px - 100% + 0.625rem), calc(${y}px - 0.5rem - 100%))`;
+    }
+  }
+
+  positionTooltipTopRight() {
+    this.tooltipArrow.style.removeProperty('top');
+    this.tooltipArrow.style.removeProperty('right');
+    this.tooltipArrow.style.bottom = 0;
+    this.tooltipArrow.style.left = '0.5rem';
+    this.tooltipArrow.style.transform = 'translate(-50%, calc(50% - 1px)) rotate(-45deg)';
+    this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
+
+    this.moveTooltip = (x, y) => {
+      this.tooltip.style.transform = `translate(calc(${x}px - 0.5rem), calc(${y}px - 0.5rem - 100%))`;
+    }
+  }
+
+  positionTooltipBottomCenter() {
+    this.tooltipArrow.style.top = 0;
+    this.tooltipArrow.style.removeProperty('right');
+    this.tooltipArrow.style.removeProperty('bottom');
+    this.tooltipArrow.style.left = '50%';
+    this.tooltipArrow.style.transform = 'translate(-50%, calc(-50% + 1px)) rotate(-45deg)';
+    this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px -1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
+
+    this.moveTooltip = (x, y) => {
+      this.tooltip.style.transform = `translate(calc(${x}px - 50%), calc(${y}px + 0.5rem))`;
+    }
+  }
+
+  positionTooltipBottomLeft() {
+    this.tooltipArrow.style.top = 0;
+    this.tooltipArrow.style.right = '0.125rem';
+    this.tooltipArrow.style.removeProperty('bottom');
+    this.tooltipArrow.style.removeProperty('left');
+    this.tooltipArrow.style.transform = 'translate(-50%, calc(-50% + 1px)) rotate(-45deg)';
+    this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px -1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
+
+    this.moveTooltip = (x, y) => {
+      this.tooltip.style.transform = `translate(calc(${x}px - 100% + 0.625rem), calc(${y}px + 0.5rem))`;
+    }
+  }
+
+  positionTooltipBottomRight() {
+    this.tooltipArrow.style.top = 0;
+    this.tooltipArrow.style.removeProperty('right');
+    this.tooltipArrow.style.removeProperty('bottom');
+    this.tooltipArrow.style.left = '0.5rem';
+    this.tooltipArrow.style.transform = 'translate(-50%, calc(-50% + 1px)) rotate(-45deg)';
+    this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px -1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
+
+    this.moveTooltip = (x, y) => {
+      this.tooltip.style.transform = `translate(calc(${x}px - 0.5rem), calc(${y}px + 0.5rem))`;
+    }
+  }
+
+  positionTooltipLeftCenter() {
+    this.tooltipArrow.style.top = '50%';
+    this.tooltipArrow.style.right = 0;
+    this.tooltipArrow.style.removeProperty('bottom');
+    this.tooltipArrow.style.removeProperty('left');
+    this.tooltipArrow.style.transform = 'translate(calc(50% - 1px), -50%) rotate(-45deg)';
+    this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px -1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
+
+    this.moveTooltip = (x, y) => {
+      this.tooltip.style.transform = `translate(calc(${x}px - 0.5rem - 100%), calc(${y}px - 50%))`;
+    }
+  }
+
+  positionTooltipRightCenter() {
+    this.tooltipArrow.style.top = '50%';
+    this.tooltipArrow.style.removeProperty('right');
+    this.tooltipArrow.style.removeProperty('bottom');
+    this.tooltipArrow.style.left = 0;
+    this.tooltipArrow.style.transform = 'translate(calc(-50% + 1px), -50%) rotate(-45deg)';
+    this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), 1px 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
+    this.moveTooltip = (x, y) => {
+      this.tooltip.style.transform = `translate(calc(${x}px + 0.5rem), calc(${y}px - 50%))`;
+    }
+  }
+
+  positionTooltip(position) {
+    switch (position) {
+      case 'bottom-center':
+        return this.positionTooltipBottomCenter();
+      case 'bottom-left':
+        return this.positionTooltipBottomLeft();
+      case 'bottom-right':
+        return this.positionTooltipBottomRight();
+      case 'left-center':
+        return this.positionTooltipLeftCenter();
+      case 'right-center':
+        return this.positionTooltipRightCenter();
+      case 'top-left':
+        return this.positionTooltipTopLeft();
+      case 'top-right':
+        return this.positionTooltipTopRight();
+      default:
+        this.positionTooltipTopCenter();
+    }
+  }
+
+  getTooltipPosition(x, y) {
+    if (x < 120) {
+      if (y < 120) return 'bottom-right';
+      if (y > this.outerHeight - 120) return 'top-right';
+      return 'right-center';
+    }
+
+    if (x > this.outerWidth - 120) {
+      if (y < 120) return 'bottom-left';
+      if (y > this.outerHeight - 120) return 'top-left';
+      return 'left-center';
+    }
+
+    if (y < 120) return 'bottom-center';
+
+    return 'top-center';
+  }
+
+  isTooltipContentShown(content) {
+    if (!this.tooltipContents.has(content)) return false;
+    if (content === 'x') return true;
+    if (content === 'y') return true;
+    if (content === 'color') return Boolean(this.model.get('color_by'));
+    if (content === 'opacity') return this.model.get('opacity_by') && this.model.get('opacity_by') !== 'density';
+    if (content === 'size') return Boolean(this.model.get('size_by'));
+  }
+
+  enableTooltipContents() {
+    this.tooltipContents = new Set(this.model.get('tooltip_contents'));
+    for (const content of TOOLTIP_CONTENTS) {
+      const title = toCapitalCase(content);
+      const display = this.isTooltipContentShown(content) ? 'flex' : 'none';
+
+      this[`tooltipContent${title}Channel`].style.display = display;
+      this[`tooltipContent${title}Title`].style.display = display;
+      this[`tooltipContent${title}Value`].style.display = display;
+    }
+  }
+
+  styleTooltip() {
+    if (!this.tooltip) this.createTooltip();
+    const color = this.model.get('tooltip_color').map((c) => Math.round(c * 255));
+
+    const isDark = color[0] <= 127;
+    const contrast = isDark ? 255 : 0;
+    const bg = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+
+    this.tooltipOpacity = isDark ? 0.33 : 0.2;
+
+    this.tooltip.style.opacity = 0;
+    this.tooltip.style.color = `rgb(${contrast}, ${contrast}, ${contrast})`;
+    this.tooltip.style.backgroundColor = bg;
+    this.tooltip.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), 0 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
+    this.tooltipArrow.style.backgroundColor = bg;
+    this.tooltipContent.style.backgroundColor = bg;
+
+    this.tooltipContentColorValue.style.alignItems = 'center';
+    this.tooltipContentColorValueBadge.style.width = '0.5em';
+    this.tooltipContentColorValueBadge.style.height = '1em';
+    this.tooltipContentColorValueBadge.style.marginRight = '0.125rem';
+    this.tooltipContentColorValueBadge.style.borderRadius = '0.125rem';
+
+    const channelBg = `rgba(${contrast}, ${contrast}, ${contrast}, 0.075)`;
+    const channelColor = `rgba(${contrast}, ${contrast}, ${contrast}, 0.5)`;
+
+    [
+      this.tooltipContentXChannel,
+      this.tooltipContentYChannel,
+      this.tooltipContentColorChannel,
+      this.tooltipContentOpacityChannel,
+      this.tooltipContentSizeChannel,
+    ].forEach((el) => {
+      el.style.display = 'flex';
+      el.style.justifyContent = 'center';
+      el.style.alignItems = 'center';
+      el.style.padding = '0 0.125rem';
+      el.style.borderRadius = '0.125rem';
+      el.style.color = channelColor;
+      el.style.fontSize = '0.8em';
+      el.style.fontWeight = 'bold';
+      el.style.textTransform = 'uppercase';
+      el.style.background = channelBg;
+    });
+
+    [
+      this.tooltipContentXValue,
+      this.tooltipContentYValue,
+      this.tooltipContentColorValue,
+      this.tooltipContentOpacityValue,
+      this.tooltipContentSizeValue,
+    ].forEach((el) => {
+      el.style.fontWeight = 'bold';
+    });
+
+
+  }
+
+  getPoint(i) {
+    return this.scatterplot.get('points')[i];
+  }
+
+  getPoints() {
+    return this.scatterplot.get('points');
+  }
+
+  createXGetter() {
+    if (!this.xScale) this.createXScale();
+    this.getX = (i) => this.xFormat(this.xScale.invert(this.getPoint(i)[0]));
+  }
+
+  createYGetter() {
+    if (!this.yScale) this.createYScale();
+    this.getY = (i) => this.yFormat(this.yScale.invert(this.getPoint(i)[1]));
+  }
+
+  createColorGetter() {
+    if (!this.colorScale) this.createColorScale();
+    const dim = this.model.get('color_by') === 'valueA' ? 2 : 3;
+    const colors = this.model.get('color').map((color) => `rgb(${color.slice(0, 3).map((v) => Math.round(v * 255)).join(', ')})`);
+    this.getColor = this.colorScale
+      ? (i) => {
+        const value = this.getPoint(i)[dim];
+        return [
+          colors[value] || '#808080',
+          this.colorFormat(this.colorScale.invert(value)),
+        ]
+      }
+      : () => undefined;
+  }
+
+  createOpacityGetter() {
+    if (!this.opacityScale) this.createOpacityScale();
+    const dim = this.model.get('color_by') === 'valueA' ? 2 : 3;
+    this.getOpacity = this.opacityScale
+      ? (i) => this.opacityFormat(this.opacityScale.invert(this.getPoint(i)[dim]))
+      : () => undefined;
+  }
+
+  createSizeGetter() {
+    if (!this.sizeScale) this.createSizeScale();
+    const dim = this.model.get('color_by') === 'valueA' ? 2 : 3;
+    this.getSize = this.sizeScale
+      ? (i) => this.sizeFormat(this.sizeScale.invert(this.getPoint(i)[dim]))
+      : () => undefined;
+  }
+
+  createTooltipContentUpdater() {
+    const contents = new Set(this.model.get('tooltip_contents'));
+    const updaters = Array.from(contents).map((content) => {
+      const contentTitle = toCapitalCase(content);
+      const get = this[`get${contentTitle}`];
+
+      if (content === 'color') {
+        const badgeElement = this[`tooltipContent${contentTitle}ValueBadge`];
+        const textElement = this[`tooltipContent${contentTitle}ValueText`];
+        return (pointIdx) => {
+          const [color, text] = get(pointIdx);
+          badgeElement.style.background = color;
+          textElement.textContent = text;
+        }
+      }
+
+      const element = this[`tooltipContent${contentTitle}Value`];
+
+      return (pointIdx) => element.textContent = get(pointIdx);
+    });
+    this.tooltipContentsUpdater = (pointIdx) => {
+      updaters.forEach((updater) => { updater(pointIdx); });
+    }
+  }
+
+  showToolip(pointIdx) {
+    const [x, y] = this.scatterplot.getScreenPosition(pointIdx);
+
+    const newTooltipPosition = this.getTooltipPosition(x, y);
+    if (newTooltipPosition !== this.tooltipPosition) {
+      this.tooltipPosition = newTooltipPosition;
+      this.positionTooltip(this.tooltipPosition);
+    }
+
+    this.moveTooltip(x, y);
+    this.tooltip.style.opacity = 1;
+    this.tooltipContentsUpdater(pointIdx);
+  }
+
+  hideToolip() {
+    this.tooltip.style.opacity = 0;
+  }
+
+  tooltipEnableHandler(tooltip) {
+    if (!tooltip) this.hideToolip;
+  }
+
+  tooltipSizeHandler() {
+    this.styleTooltip();
+  }
+
+  tooltipColorHandler() {
+    this.styleTooltip();
+  }
+
+  tooltipContentsHandler() {
+    this.enableTooltipContents();
+    this.createTooltipContentUpdater();
+  }
+
   updateLegendWrapperPosition() {
     if (!this.legendWrapper) return;
 
@@ -683,12 +1111,14 @@ class JupyterScatterView {
   // Event handlers for JS-triggered events
   pointoverHandler(pointIndex) {
     this.hoveringChangedByJs = true;
+    if (this.model.get('tooltip_enable')) this.showToolip(pointIndex);
     this.model.set('hovering', pointIndex);
     this.model.save_changes();
   }
 
   pointoutHandler() {
     this.hoveringChangedByJs = true;
+    this.hideToolip();
     this.model.set('hovering', null);
     this.model.save_changes();
   }
@@ -759,11 +1189,120 @@ class JupyterScatterView {
     }
   }
 
+  createXScale() {
+    this.xScale = getScale(this.model.get('x_scale'))
+      .domain(this.model.get('x_domain'))
+      .range([-1, 1]);
+    this.xFormat = format(getD3FormatSpecifier(this.model.get('x_domain')));
+  }
+
+  createYScale() {
+    this.yScale = getScale(this.model.get('y_scale'))
+      .domain(this.model.get('y_domain'))
+      .range([-1, 1]);
+    this.yFormat = format(getD3FormatSpecifier(this.model.get('y_domain')));
+  }
+
+  createColorScale() {
+    if (this.model.get('color_by')) {
+      const scaleType = this.model.get('color_scale');
+      const scale = getScale(scaleType);
+      const domain = this.model.get('color_domain');
+
+      if (scaleType === 'categorical') {
+        this.colorScale = scale
+          .domain(Object.keys(domain))
+          .range(Object.values(domain));
+        this.colorScale.invert = createOrdinalScaleInverter(domain);
+        this.colorFormat = (s) => s;
+      } else {
+        this.colorScale = scale
+          .domain(domain)
+          .range([0, 1]);
+        this.colorFormat = format(getD3FormatSpecifier(domain));
+      }
+    } else {
+      this.colorScale = undefined;
+      this.colorFormat = undefined;
+    }
+  }
+
+  createOpacityScale() {
+    const opacityBy = this.model.get('opacity_by');
+    if (opacityBy && opacityBy !== 'density') {
+      const scaleType = this.model.get('opacity_scale');
+      const scale = getScale(scaleType);
+      const domain = this.model.get('opacity_domain');
+
+      if (scaleType === 'categorical') {
+        this.opacityScale = scale
+          .domain(Object.keys(domain))
+          .range(Object.values(domain));
+        this.opacityScale.invert = createOrdinalScaleInverter(domain);
+        this.opacityFormat = (s) => s;
+      } else {
+        this.opacityScale = scale
+          .domain(domain)
+          .range([0, 1]);
+        this.opacityFormat = format(getD3FormatSpecifier(domain));
+      }
+    } else {
+      this.opacityScale = undefined;
+      this.opacityFormat = undefined;
+    }
+  }
+
+  createSizeScale() {
+    if (this.model.get('size_by')) {
+      const scaleType = this.model.get('size_scale');
+      const scale = getScale(scaleType);
+      const domain = this.model.get('size_domain');
+
+      if (scaleType === 'categorical') {
+        this.sizeScale = scale
+          .domain(Object.keys(domain))
+          .range(Object.values(domain));
+        this.sizeScale.invert = createOrdinalScaleInverter(domain);
+        this.sizeFormat = (s) => s;
+      } else {
+        this.sizeScale = scale
+          .domain(domain)
+          .range([0, 1]);
+        this.sizeFormat = format(getD3FormatSpecifier(domain));
+      }
+    } else {
+      this.sizeScale = undefined;
+      this.sizeFormat = undefined;
+    }
+  }
+
   xScaleHandler() {
+    this.createXScale();
     if (this.model.get('axes')) this.createAxes();
   }
 
   yScaleHandler() {
+    if (this.model.get('axes')) this.createAxes();
+  }
+
+  xDomainHandler() {
+    this.createXScale();
+    if (this.model.get('axes')) this.createAxes();
+  }
+
+  yDomainHandler() {
+    if (this.model.get('axes')) this.createAxes();
+  }
+
+  colorDomainHandler() {
+    if (this.model.get('axes')) this.createAxes();
+  }
+
+  opacityDomainHandler() {
+    if (this.model.get('axes')) this.createAxes();
+  }
+
+  sizeDomainHandler() {
     if (this.model.get('axes')) this.createAxes();
   }
 
@@ -864,7 +1403,17 @@ class JupyterScatterView {
     this.withPropertyChangeHandler('lassoMinDist', newValue);
   }
 
+  xTitleHandler(newTitle) {
+    this.tooltipContentXTitle.textContent = toCapitalCase(newTitle || '');
+  }
+
+  yTitleHandler(newTitle) {
+    this.tooltipContentYTitle.textContent = toCapitalCase(newTitle || '');
+  }
+
   colorHandler(newValue) {
+    this.createColorScale();
+    this.createColorGetter();
     this.withPropertyChangeHandler('pointColor', newValue);
   }
 
@@ -877,10 +1426,18 @@ class JupyterScatterView {
   }
 
   colorByHandler(newValue) {
+    this.createColorScale();
+    this.createColorGetter();
     this.withPropertyChangeHandler('colorBy', newValue);
   }
 
+  colorTitleHandler(newTitle) {
+    this.tooltipContentColorTitle.textContent = toCapitalCase(newTitle || '');
+  }
+
   opacityHandler(newValue) {
+    this.createOpacityScale();
+    this.createOpacityGetter();
     this.withPropertyChangeHandler('opacity', newValue);
   }
 
@@ -889,15 +1446,29 @@ class JupyterScatterView {
   }
 
   opacityByHandler(newValue) {
+    // this.createOpacityScale();
+    // this.createOpacityGetter();
     this.withPropertyChangeHandler('opacityBy', newValue);
   }
 
+  opacityTitleHandler(newTitle) {
+    this.tooltipContentOpacityTitle.textContent = toCapitalCase(newTitle || '');
+  }
+
   sizeHandler(newValue) {
+    this.createSizeScale();
+    this.createSizeGetter();
     this.withPropertyChangeHandler('pointSize', newValue);
   }
 
   sizeByHandler(newValue) {
+    this.createSizeScale();
+    this.createSizeGetter();
     this.withPropertyChangeHandler('sizeBy', newValue);
+  }
+
+  sizeTitleHandler(newTitle) {
+    this.tooltipContentSizeTitle.textContent = toCapitalCase(newTitle || '');
   }
 
   connectHandler(newValue) {
@@ -1099,11 +1670,11 @@ export async function render({ model, el }) {
   const view = new JupyterScatterView({
     el: el,
     model: modelWithSerializers(model, {
-      points: codecs.Numpy2D('float32'),
-      selection: codecs.Numpy1D('uint32'),
-      filter: codecs.Numpy1D('uint32'),
-      view_data: codecs.Numpy1D('uint8'),
-      zoom_to: codecs.Numpy1D('uint32'),
+      points: Numpy2D('float32'),
+      selection: Numpy1D('uint32'),
+      filter: Numpy1D('uint32'),
+      view_data: Numpy1D('uint8'),
+      zoom_to: Numpy1D('uint32'),
     }),
   });
   view.render();

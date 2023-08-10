@@ -29,6 +29,9 @@ class MouseModes(Enum):
     LASSO = 'lasso'
     ROTATE = 'rotate'
 
+class All(Enum):
+    ALL = 'all'
+
 class Auto(Enum):
     AUTO = 'auto'
 
@@ -38,7 +41,7 @@ class Reverse(Enum):
 class Segment(Enum):
     SEGMENT = 'segment'
 
-class Position(Enum):
+class LegendPosition(Enum):
     TOP = 'top'
     TOP_RIGHT = 'top-right'
     TOP_LEFT = 'top-left'
@@ -48,6 +51,19 @@ class Position(Enum):
     RIGHT = 'right'
     LEFT = 'left'
     CENTER = 'center'
+
+class TooltipPosition(Enum):
+    TOP = 'top'
+    BOTTOM = 'bottom'
+    RIGHT = 'right'
+    LEFT = 'left'
+
+class TooltipContent(Enum):
+    X = 'x'
+    Y = 'y'
+    COLOR = 'color'
+    OPACITY = 'opacity'
+    SIZE = 'size'
 
 class Labeling(TypedDict):
     variable: NotRequired[str]

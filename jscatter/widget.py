@@ -1,6 +1,4 @@
-import io
 import base64
-import uuid
 import IPython.display as ipydisplay
 import ipywidgets as widgets
 import matplotlib.pyplot as plt
@@ -8,8 +6,7 @@ import numpy as np
 import anywidget
 import pathlib
 
-from IPython.display import display, update_display
-from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
+from traitlets import Bool, Dict, Enum, Float, Int, List, Set, Unicode, Union
 from traittypes import Array
 
 from .utils import to_hex, with_left_label
@@ -59,13 +56,30 @@ class JupyterScatter(anywidget.AnyWidget):
     # Data
     points = Array(default_value=None).tag(sync=True, **ndarray_serialization)
     prevent_filter_reset = Bool(False).tag(sync=True)
-    x_domain = List(minlen=2, maxlen=2).tag(sync=True)
-    y_domain = List(minlen=2, maxlen=2).tag(sync=True)
-    x_scale = Unicode(None, allow_none=True).tag(sync=True)
-    y_scale = Unicode(None, allow_none=True).tag(sync=True)
     selection = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
     filter = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
     hovering = Int(None, allow_none=True).tag(sync=True)
+
+    # Channel titles
+    x_title = Unicode(None, allow_none=True).tag(sync=True)
+    y_title = Unicode(None, allow_none=True).tag(sync=True)
+    color_title = Unicode(None, allow_none=True).tag(sync=True)
+    opacity_title = Unicode(None, allow_none=True).tag(sync=True)
+    size_title = Unicode(None, allow_none=True).tag(sync=True)
+
+    # Scales
+    x_scale = Unicode(None, allow_none=True).tag(sync=True)
+    y_scale = Unicode(None, allow_none=True).tag(sync=True)
+    color_scale = Unicode(None, allow_none=True).tag(sync=True)
+    opacity_scale = Unicode(None, allow_none=True).tag(sync=True)
+    size_scale = Unicode(None, allow_none=True).tag(sync=True)
+
+    # Domains
+    x_domain = List(minlen=2, maxlen=2).tag(sync=True)
+    y_domain = List(minlen=2, maxlen=2).tag(sync=True)
+    color_domain = Union([Dict(), List(minlen=2, maxlen=2)], allow_none=True).tag(sync=True)
+    opacity_domain = Union([Dict(), List(minlen=2, maxlen=2)], allow_none=True).tag(sync=True)
+    size_domain = Union([Dict(), List(minlen=2, maxlen=2)], allow_none=True).tag(sync=True)
 
     # View properties
     camera_target = List([0, 0]).tag(sync=True)
@@ -115,6 +129,18 @@ class JupyterScatter(anywidget.AnyWidget):
         default_value=[0, 0, 0, 1], minlen=4, maxlen=4
     ).tag(sync=True)
     legend_encoding = Dict(dict()).tag(sync=True)
+
+    # Tooltip
+    tooltip_enable = Bool().tag(sync=True)
+    tooltip_size = Enum(
+        ['small', 'medium', 'large'], default_value='small'
+    ).tag(sync=True)
+    tooltip_color = List(
+        default_value=[0, 0, 0, 1], minlen=4, maxlen=4
+    ).tag(sync=True)
+    tooltip_contents = Set(
+        default_value={'x', 'y', 'color', 'opacity', 'size'}
+    ).tag(sync=True)
 
     # Options
     color = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
