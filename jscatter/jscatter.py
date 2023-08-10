@@ -12,7 +12,7 @@ from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
 from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, create_default_norm, create_labeling
-from .types import Color, Scales, MouseModes, All, Auto, Reverse, Segment, Size, LegendPosition, TooltipPosition, TooltipContent, Labeling, Undefined
+from .types import Color, Scales, MouseModes, All, Auto, Reverse, Segment, Size, LegendPosition, TooltipContent, Labeling, Undefined
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -240,7 +240,6 @@ class Scatter():
         self._legend_size = 'small'
         self._tooltip = False
         self._tooltip_contents = all_tooltip_contents.copy()
-        self._tooltip_position = 'top'
         self._tooltip_size = 'small'
         self._zoom_to = None
         self._zoom_to_call_idx = 0
@@ -344,7 +343,6 @@ class Scatter():
         self.tooltip(
             kwargs.get('tooltip', UNDEF),
             kwargs.get('tooltip_contents', UNDEF),
-            kwargs.get('tooltip_position', UNDEF),
             kwargs.get('tooltip_size', UNDEF),
         )
         self.zoom(
@@ -3005,7 +3003,6 @@ class Scatter():
         self,
         tooltip: Optional[Union[bool, Undefined]] = UNDEF,
         contents: Optional[Union[All, Set[TooltipContent], Undefined]] = UNDEF,
-        position: Optional[Union[TooltipPosition, Undefined]] = UNDEF,
         size: Optional[Union[Size, Undefined]] = UNDEF,
     ):
         """
@@ -3016,9 +3013,10 @@ class Scatter():
         tooltip : bool, optional
             When set to `True`, a tooltip will be shown upon hovering a point.
         contents : all or set(str), optional
-            The tooltip position. Must be one of top, left, right, bottom.
-        position : str, optional
-            The tooltip position. Must be one of top, left, right, bottom.
+            The channels that should be shown in the tooltip. Note, that only
+            the visual channels that are actually used for encoding will be
+            shown in the tooltip eventually. Can be either `all` (default) or
+            some of `x`, `y`, `color`, `opacity`, and `size`.
         size : small or medium or large, optional
             The size of the tooltip. Must be one of small, medium, or large
 
@@ -3033,14 +3031,14 @@ class Scatter():
         >>> scatter.tooltip(True)
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.tooltip(position='right')
+        >>> scatter.tooltip(contents={'color', 'opacity'})
         <jscatter.jscatter.Scatter>
 
         >>> scatter.tooltip(size='large')
         <jscatter.jscatter.Scatter>
 
         >>> scatter.tooltip()
-        {'tooltip': True, 'position': 'right', size: 'large'}
+        {'tooltip': True, 'contents': {'color', 'opacity'}, size: 'large'}
         """
         if tooltip is not UNDEF:
             self._tooltip = tooltip
@@ -3052,10 +3050,6 @@ class Scatter():
             self._tooltip_contents = contents
             self.update_widget('tooltip_contents', contents)
 
-        if position is not UNDEF:
-            self._tooltip_position = position
-            self.update_widget('tooltip_position', position)
-
         if size is not UNDEF:
             self._tooltip_size = size
             self.update_widget('tooltip_size', size)
@@ -3066,7 +3060,6 @@ class Scatter():
         return dict(
             legend = self._tooltip,
             contents = self._tooltip_contents,
-            position = self._tooltip_position,
             size = self._tooltip_size,
         )
 
@@ -3367,7 +3360,6 @@ class Scatter():
             tooltip_enable=self._tooltip,
             tooltip_contents=self._tooltip_contents,
             tooltip_size=self._tooltip_size,
-            tooltip_position=self._tooltip_position,
             tooltip_color=self.get_tooltip_color(),
             zoom_to=self._zoom_to,
             zoom_animation=self._zoom_animation,

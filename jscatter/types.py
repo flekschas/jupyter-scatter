@@ -52,12 +52,6 @@ class LegendPosition(Enum):
     LEFT = 'left'
     CENTER = 'center'
 
-class TooltipPosition(Enum):
-    TOP = 'top'
-    BOTTOM = 'bottom'
-    RIGHT = 'right'
-    LEFT = 'left'
-
 class TooltipContent(Enum):
     X = 'x'
     Y = 'y'
