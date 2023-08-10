@@ -1,3 +1,7 @@
+## v0.14.0
+
+- Add the ability to show a tooltip upon hovering over a point via `scatter.tooltip(true)` ([#86](https://github.com/flekschas/jupyter-scatter/pull/86))
+
 ## v0.13.2
 
 - Fix a type in the return value of `scatter.xy()`
@@ -13,7 +17,7 @@
 - Fix: Add docstrings to `compose()` and `link()`
 - Fix: Optimize height of the legend
 - Fix: Check if axes are enabled before updating them when the x or y scale changes
-- Fix: Merge point selections on `SHIFT` instead of activating the lasso as `SHIFT` interfers with Jupyter Lab
+- Fix: Merge point selections on `SHIFT` instead of activating the lasso as `SHIFT` interferes with Jupyter Lab
 - Fix: Allow to call `scatter.zoomTo()` with the same points multiple times
 - Fix: Unfilter when calling `scatter.filter(None)`
 - Fix: Properly listen to changes when setting custom `regl-scatterplot` options via `scatter.options()`
@@ -25,7 +29,7 @@
 
 ## v0.12.5
 
-> **Warning**: do not use this version! The disitributed build is broken. Use `v0.12.6` instead. :pray:
+> **Warning**: do not use this version! The distributed build is broken. Use `v0.12.6` instead. :pray:
 
 - Ensure that the default point colors respect the background when setting both at the same time during initialization. I.e., in the following scenario, the point color will be set to _white_ by default as the background color was set to _black_:
 
@@ -108,7 +112,7 @@
 ## v0.10.0
 
 - Add support for automatic zooming to selected points via `scatter.zoom(on_selection=True)`
-- Fix view sychronization issue
+- Fix view synchronization issue
 - Add `remove()` to the JS widget to ensure that the scatterplot is destroyed in ipywidgets `v8`.
 
 ## v0.9.0
@@ -116,7 +120,7 @@
 - Add support for animated zooming to a set of points via `scatter.zoom(pointIndices)` ([#49](https://github.com/flekschas/jupyter-scatter/issues/49))
 - Bump regl-scatterplot to `v1.4.1`
 - Add support for VSCode and Colab ([#37](https://github.com/flekschas/jupyter-scatter/issues/37))
-- Fix serde of numpy data for JS client. Use consistent serialization object between JS and Python.
+- Fix serving of numpy data for JS client. Use consistent serialization object between JS and Python.
 
 ## v0.8.0
 
