@@ -83,6 +83,21 @@ def get_map_order(map, categories):
 
     return order
 
+def get_scale(scatter: Scatter, channel: str):
+    return to_scale_type(
+        getattr(scatter, f'_{channel}_norm')
+        if getattr(scatter, f'_{channel}_categories') is None
+        else None
+    )
+
+def get_domain(scatter: Scatter, channel: str):
+    if getattr(scatter, f'_{channel}_categories') is None:
+        return (
+            getattr(scatter, f'_{channel}_norm').vmin,
+            getattr(scatter, f'_{channel}_norm').vmax
+        )
+    return getattr(scatter, f'_{channel}_categories')
+
 
 class Scatter():
     def __init__(
@@ -1056,13 +1071,8 @@ class Scatter():
                 self._color_labeling,
                 category_order=self._color_map_order,
             )
-            self.update_widget('color_scale', to_scale_type(self._color_norm if self._color_categories is None else None))
-            self.update_widget(
-                'color_domain',
-                (self._color_norm.vmin, self._color_norm.vmax)
-                if self._color_categories is None
-                else self._color_categories
-            )
+            self.update_widget('color_scale', get_scale(self, 'color'))
+            self.update_widget('color_domain', get_domain(self, 'color'))
         else:
             self.update_widget('color', self._color)
 
@@ -1288,13 +1298,8 @@ class Scatter():
                     self._opacity_labeling,
                     category_order=self._opacity_map_order,
                 )
-            self.update_widget('opacity_scale', to_scale_type(self._opacity_norm if self._opacity_categories is None else None))
-            self.update_widget(
-                'opacity_domain',
-                (self._opacity_norm.vmin, self._opacity_norm.vmax)
-                if self._opacity_categories is None
-                else self._opacity_categories
-            )
+            self.update_widget('opacity_scale', get_scale(self, 'opacity'))
+            self.update_widget('opacity_domain', get_domain(self, 'opacity'))
         else:
             self.update_widget('opacity', self._opacity)
 
@@ -1505,13 +1510,8 @@ class Scatter():
                 self._size_labeling,
                 category_order=self._size_map_order,
             )
-            self.update_widget('size_scale', to_scale_type(self._size_norm if self._size_categories is None else None))
-            self.update_widget(
-                'size_domain',
-                (self._size_norm.vmin, self._size_norm.vmax)
-                if self._size_categories is None
-                else self._size_categories
-            )
+            self.update_widget('size_scale', get_scale(self, 'size'))
+            self.update_widget('size_domain', get_domain(self, 'size'))
         else:
             self.update_widget('size', self._size)
 
@@ -3054,7 +3054,7 @@ class Scatter():
             self._tooltip_size = size
             self.update_widget('tooltip_size', size)
 
-        if any_not([tooltip, position, size], UNDEF):
+        if any_not([tooltip, contents, size], UNDEF):
             return self
 
         return dict(
@@ -3296,76 +3296,76 @@ class Scatter():
             return self._widget
 
         self._widget = JupyterScatter(
-            x_scale=to_scale_type(self._x_scale),
-            y_scale=to_scale_type(self._y_scale),
-            color_scale=to_scale_type(self._color_norm if self._color_categories is None else None),
-            opacity_scale=to_scale_type(self._opacity_norm if self._opacity_categories is None else None),
-            size_scale=to_scale_type(self._size_norm if self._size_categories is None else None),
-            x_title=self._x_by,
-            y_title=self._y_by,
-            color_title=self._color_by,
-            opacity_title=self._opacity_by,
-            size_title=self._size_by,
-            points=self.get_point_list(),
-            selection=self._selected_points_idxs,
-            filter=self._filtered_points_idxs,
-            width=self._width,
-            height=self._height,
+            axes=self._axes,
+            axes_color=self.get_axes_color(),
+            axes_grid=self._axes_grid,
+            axes_labels=self._axes_labels,
             background_color=self._background_color,
             background_image=self._background_image,
+            camera_distance=self._camera_distance,
+            camera_rotation=self._camera_rotation,
+            camera_target=self._camera_target,
+            camera_view=self._camera_view,
+            color=order_map(self._color_map, self._color_order) if self._color_map else self._color,
+            color_by=self.js_color_by,
+            color_domain=get_domain(self, 'color'),
+            color_hover=self._color_hover,
+            color_scale=get_scale(self, 'color'),
+            color_selected=self._color_selected,
+            color_title=self._color_by,
+            connect=bool(self._connect_by),
+            connection_color=order_map(self._connection_color_map, self._connection_color_order) if self._connection_color_map else self._connection_color,
+            connection_color_by=self.js_connection_color_by,
+            connection_color_hover=self._connection_color_hover,
+            connection_color_selected=self._connection_color_selected,
+            connection_opacity=order_map(self._connection_opacity_map, self._connection_opacity_order) if self._connection_opacity_map else self._connection_opacity,
+            connection_opacity_by=self.js_connection_opacity_by,
+            connection_size=order_map(self._connection_size_map, self._connection_size_order) if self._connection_size_map else self._connection_size,
+            connection_size_by=self.js_connection_size_by,
+            filter=self._filtered_points_idxs,
+            height=self._height,
             lasso_color=self._lasso_color,
             lasso_initiator=self._lasso_initiator,
             lasso_min_delay=self._lasso_min_delay,
             lasso_min_dist=self._lasso_min_dist,
             lasso_on_long_press=self._lasso_on_long_press,
-            color=order_map(self._color_map, self._color_order) if self._color_map else self._color,
-            color_selected=self._color_selected,
-            color_hover=self._color_hover,
-            color_by=self.js_color_by,
-            opacity=order_map(self._opacity_map, self._opacity_order) if self._opacity_map else self._opacity,
-            opacity_by=self.js_opacity_by,
-            opacity_unselected=self._opacity_unselected,
-            size=order_map(self._size_map, self._size_order) if self._size_map else self._size,
-            size_by=self.js_size_by,
-            connect=bool(self._connect_by),
-            connection_color=order_map(self._connection_color_map, self._connection_color_order) if self._connection_color_map else self._connection_color,
-            connection_color_selected=self._connection_color_selected,
-            connection_color_hover=self._connection_color_hover,
-            connection_color_by=self.js_connection_color_by,
-            connection_opacity=order_map(self._connection_opacity_map, self._connection_opacity_order) if self._connection_opacity_map else self._connection_opacity,
-            connection_opacity_by=self.js_connection_opacity_by,
-            connection_size=order_map(self._connection_size_map, self._connection_size_order) if self._connection_size_map else self._connection_size,
-            connection_size_by=self.js_connection_size_by,
-            reticle=self._reticle,
-            reticle_color=self.get_reticle_color(),
-            camera_target=self._camera_target,
-            camera_distance=self._camera_distance,
-            camera_rotation=self._camera_rotation,
-            camera_view=self._camera_view,
-            mouse_mode=self._mouse_mode,
-            x_domain=self._x_domain,
-            y_domain=self._y_domain,
-            color_domain=self._color_categories,
-            opacity_domain=self._opacity_categories,
-            size_domain=self._size_categories,
-            axes=self._axes,
-            axes_grid=self._axes_grid,
-            axes_labels=self._axes_labels,
-            axes_color=self.get_axes_color(),
             legend=self._legend,
-            legend_size=self._legend_size,
-            legend_position=self._legend_position,
             legend_color=self.get_legend_color(),
             legend_encoding=self.get_legend_encoding(),
-            tooltip_enable=self._tooltip,
-            tooltip_contents=self._tooltip_contents,
-            tooltip_size=self._tooltip_size,
+            legend_position=self._legend_position,
+            legend_size=self._legend_size,
+            mouse_mode=self._mouse_mode,
+            opacity=order_map(self._opacity_map, self._opacity_order) if self._opacity_map else self._opacity,
+            opacity_by=self.js_opacity_by,
+            opacity_domain=get_domain(self, 'opacity'),
+            opacity_scale=get_scale(self, 'opacity'),
+            opacity_title=self._opacity_by,
+            opacity_unselected=self._opacity_unselected,
+            points=self.get_point_list(),
+            reticle=self._reticle,
+            reticle_color=self.get_reticle_color(),
+            selection=self._selected_points_idxs,
+            size=order_map(self._size_map, self._size_order) if self._size_map else self._size,
+            size_by=self.js_size_by,
+            size_domain=get_domain(self, 'size'),
+            size_scale=get_scale(self, 'size'),
+            size_title=self._size_by,
             tooltip_color=self.get_tooltip_color(),
-            zoom_to=self._zoom_to,
+            tooltip_contents=self._tooltip_contents,
+            tooltip_enable=self._tooltip,
+            tooltip_size=self._tooltip_size,
+            width=self._width,
+            x_domain=self._x_domain,
+            x_scale=to_scale_type(self._x_scale),
+            x_title=self._x_by,
+            y_domain=self._y_domain,
+            y_scale=to_scale_type(self._y_scale),
+            y_title=self._y_by,
             zoom_animation=self._zoom_animation,
-            zoom_on_selection=self._zoom_on_selection,
             zoom_on_filter=self._zoom_on_filter,
+            zoom_on_selection=self._zoom_on_selection,
             zoom_padding=self._zoom_padding,
+            zoom_to=self._zoom_to,
             other_options=self._options
         )
 
