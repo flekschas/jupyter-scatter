@@ -6,7 +6,7 @@
     - [selection()](#scatter.selection), [filter()](#scatter.filter)
     - [color()](#scatter.color), [opacity()](#scatter.opacity), and [size()](#scatter.size)
     - [connect()](#scatter.connect), [connection_color()](#scatter.connection_color), [connection_opacity()](#scatter.connection_opacity), and [connection_size()](#scatter.connection_size)
-    - [axes()](#scatter.axes) and [legend()](#scatter.legend)
+    - [axes()](#scatter.axes) [legend()](#scatter.legend),  and [tooltip()](#scatter.tooltip)
     - [zoom()](#scatter.zoom) and [camera()](#scatter.camera)
     - [lasso()](#scatter.lasso), [reticle()](#scatter.reticle), and [mouse()](#scatter.mouse),
     - [background()](#scatter.background) and [options()](scatter.options)
@@ -342,6 +342,24 @@ Set or get the legend settings.
 
 ```python
 scatter.legend(true, 'top-right', 'small')
+```
+
+
+<h3><a name="scatter.legend" href="#scatter.tooltip">#</a> scatter.<b>tooltip</b>(<i>enable=Undefined</i>, <i>contents=Undefined</i>, <i>size=Undefined</i>)</h3>
+
+Set or get the tooltip settings.
+
+**Arguments:**
+- `enable` is a Boolean specifying if the tooltip should be enabled or disabled.
+- `contents` is either `"all"` or a set of string specifying for which visual channels the data should be shown in the tooltip. It can be some of `x`, `y`, `color`, `opacity`, and `size`.
+- `size` is a string specifying the size of the legend. It must be one of `small`, `medium`, or `large`.
+
+**Returns:** either the legend properties when all arguments are `Undefined` or `self`.
+
+**Example:**
+
+```python
+scatter.tooltip(true, 'all', 'small')
 ```
 
 
