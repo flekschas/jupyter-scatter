@@ -880,22 +880,38 @@ class JupyterScatterView {
 
   createColorGetter() {
     if (!this.colorScale) this.createColorScale();
+    if (!this.colorScale) {
+      this.getColor = () => ['#808080', 'Unknown'];
+      return;
+    }
+
     const dim = this.model.get('color_by') === 'valueA' ? 2 : 3;
     const colors = this.model.get('color').map((color) => `rgb(${color.slice(0, 3).map((v) => Math.round(v * 255)).join(', ')})`);
-    this.getColor = this.colorScale
-      ? (i) => {
+
+    if (this.model.get('color_scale') === 'categorical') {
+      this.getColor = (i) => {
         const value = this.getPoint(i)[dim];
         return [
           colors[value] || '#808080',
           this.colorFormat(this.colorScale.invert(value)),
         ]
       }
-      : () => undefined;
+    } else {
+      const numColors = colors.length;
+      this.getColor = (i) => {
+        const value = this.getPoint(i)[dim];
+        const colorIdx = Math.min(numColors - 1, Math.floor(numColors * value));
+        return [
+          colors[colorIdx] || '#808080',
+          this.colorFormat(this.colorScale.invert(value)),
+        ]
+      }
+    }
   }
 
   createOpacityGetter() {
     if (!this.opacityScale) this.createOpacityScale();
-    const dim = this.model.get('color_by') === 'valueA' ? 2 : 3;
+    const dim = this.model.get('opacity_by') === 'valueA' ? 2 : 3;
     this.getOpacity = this.opacityScale
       ? (i) => this.opacityFormat(this.opacityScale.invert(this.getPoint(i)[dim]))
       : () => undefined;
@@ -903,7 +919,7 @@ class JupyterScatterView {
 
   createSizeGetter() {
     if (!this.sizeScale) this.createSizeScale();
-    const dim = this.model.get('color_by') === 'valueA' ? 2 : 3;
+    const dim = this.model.get('size_by') === 'valueA' ? 2 : 3;
     this.getSize = this.sizeScale
       ? (i) => this.sizeFormat(this.sizeScale.invert(this.getPoint(i)[dim]))
       : () => undefined;
