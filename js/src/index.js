@@ -15,6 +15,7 @@ import {
   downloadBlob,
   getScale,
   createOrdinalScaleInverter,
+  getTooltipFontSize,
 } from "./utils";
 
 import { version } from "../package.json";
@@ -571,11 +572,11 @@ class JupyterScatterView {
     this.tooltipContent.style.position = 'relative';
     this.tooltipContent.style.display = 'grid';
     this.tooltipContent.style.gridTemplateColumns = 'max-content max-content max-content';
-    this.tooltipContent.style.gap = '0.25rem 0.2rem';
+    this.tooltipContent.style.gap = '0.3em 0.25em';
     this.tooltipContent.style.userSelect = 'none';
     this.tooltipContent.style.borderRadius = '0.2rem';
-    this.tooltipContent.style.padding = '0.2rem 0.25rem';
-    this.tooltipContent.style.fontSize = '0.675rem';
+    this.tooltipContent.style.padding = '0.25em';
+    this.tooltipContent.style.fontSize = getTooltipFontSize(this.model.get('tooltip_size'));
     this.tooltip.appendChild(this.tooltipContent);
 
     this.tooltipContentXChannel = document.createElement('div');
@@ -1176,8 +1177,8 @@ class JupyterScatterView {
     if (!tooltip) this.hideToolip;
   }
 
-  tooltipSizeHandler() {
-    this.styleTooltip();
+  tooltipSizeHandler(newSize) {
+    this.tooltipContent.style.fontSize = getTooltipFontSize(newSize);
   }
 
   tooltipColorHandler() {

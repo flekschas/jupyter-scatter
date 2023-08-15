@@ -51,3 +51,9 @@ export function createOrdinalScaleInverter(domain) {
   const invertedDomainMap = invertObjToMap(domain);
   return (value) => invertedDomainMap.get(value);
 }
+
+export function getTooltipFontSize(size) {
+  if (size === 'large') return '1rem';
+  if (size === 'medium') return '0.85rem';
+  return '0.675rem';
+}
