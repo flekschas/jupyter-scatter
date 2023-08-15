@@ -5,6 +5,10 @@ from typing import List, Optional, Union, Tuple
 
 from .jscatter import Scatter
 
+AXES_LABEL_SIZE = 16;
+AXES_PADDING_Y = 20;
+AXES_PADDING_Y_WITH_LABEL = AXES_PADDING_Y + AXES_LABEL_SIZE;
+
 def compose(
     scatters: Union[List[Scatter], List[Tuple[Scatter, str]]],
     sync_view: bool = False,
@@ -193,9 +197,12 @@ def compose(
 
         return hover_handler
 
+    has_labels = any([get_scatter(i)._axes_labels != False for i, _ in enumerate(scatters)])
+    y_padding = AXES_PADDING_Y_WITH_LABEL if has_labels else  AXES_PADDING_Y
+
     for i, _ in enumerate(scatters):
         scatter = get_scatter(i)
-        scatter.height(row_height)
+        scatter.height(row_height - y_padding)
 
         trait_notifiers = scatter.widget._trait_notifiers
 
