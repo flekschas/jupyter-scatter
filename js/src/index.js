@@ -1377,9 +1377,28 @@ class JupyterScatterView {
     }
   }
 
+  updateAxes(xScaleDomain, yScaleDomain) {
+    if (!this.model.get('axes')) return;
+
+    this.xScaleAxis.domain(xScaleDomain.map(this.xScaleRegl2Axis.invert));
+    this.yScaleAxis.domain(yScaleDomain.map(this.yScaleRegl2Axis.invert));
+
+    this.xAxisContainer.call(this.xAxis.scale(this.xScaleAxis));
+    this.yAxisContainer.call(this.yAxis.scale(this.yScaleAxis));
+
+    if (this.model.get('axes_grid')) {
+      this.axesSvg.selectAll('line')
+        .attr('stroke-opacity', 0.2)
+        .attr('stroke-dasharray', 2);
+    }
+  }
+
   externalViewChangeHandler(event) {
     if (event.uuid === this.viewSync && event.src !== this.randomStr) {
       this.scatterplot.view(event.view, { preventEvent: true });
+      if (this.model.get('axes')) {
+        this.updateAxes(event.xScaleDomain, event.yScaleDomain);
+      }
     }
   }
 
@@ -1391,22 +1410,14 @@ class JupyterScatterView {
           src: this.randomStr,
           uuid: this.viewSync,
           view: event.view,
+          xScaleDomain: event.xScale.domain(),
+          yScaleDomain: event.yScale.domain(),
         },
         { async: true }
       );
     }
     if (this.model.get('axes')) {
-      this.xScaleAxis.domain(event.xScale.domain().map(this.xScaleRegl2Axis.invert));
-      this.yScaleAxis.domain(event.yScale.domain().map(this.yScaleRegl2Axis.invert));
-
-      this.xAxisContainer.call(this.xAxis.scale(this.xScaleAxis));
-      this.yAxisContainer.call(this.yAxis.scale(this.yScaleAxis));
-
-      if (this.model.get('axes_grid')) {
-        this.axesSvg.selectAll('line')
-          .attr('stroke-opacity', 0.2)
-          .attr('stroke-dasharray', 2);
-      }
+      this.updateAxes(event.xScale.domain(), event.yScale.domain());
     }
   }
 
