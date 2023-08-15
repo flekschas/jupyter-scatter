@@ -1,6 +1,8 @@
 ## v0.14.0
 
 - Add the ability to show a tooltip upon hovering over a point via `scatter.tooltip(true)` ([#86](https://github.com/flekschas/jupyter-scatter/pull/86))
+- Fix axes updating of linked scatter plots when panning and zooming ([#87](https://github.com/flekschas/jupyter-scatter/issues/87))
+- Fix missing x-axes of linked scatter plots ([#84](https://github.com/flekschas/jupyter-scatter/issues/84))
 
 ## v0.13.2
 
