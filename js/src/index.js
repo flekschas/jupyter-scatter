@@ -996,7 +996,6 @@ class JupyterScatterView {
     if (!this.yScale) this.createYScale();
     this.getY = (i) => {
       const yNdc = this.getPoint(i)[1];
-      console.log('yNDC', yNdc);
       return [(yNdc + 1) / 2, this.yFormat(this.yScale.invert(yNdc))];
     }
   }
