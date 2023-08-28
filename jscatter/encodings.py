@@ -28,7 +28,11 @@ def create_legend(encoding, norm, categories, labeling=None, linspace_num=5, cat
             values[0] = (*values[0][0:2], labeling.get('minValue'))
             values[-1] = (*values[-1][0:2], labeling.get('maxValue'))
 
-    return dict(variable=variable, values=values)
+    return dict(
+        variable=variable,
+        values=values,
+        categorical=categories is not None
+    )
 
 
 class Component():

@@ -1,3 +1,6 @@
+import { getD3FormatSpecifier } from '@flekschas/utils';
+import { format } from 'd3-format';
+
 const sortOrder = {
   'color': 0,
   'opacity': 1,
@@ -7,21 +10,15 @@ const sortOrder = {
   'connection_size': 5,
 }
 
-function createLabelFormatter(valueRange) {
+function createLabelFormatter(valueRange, isCategorical) {
   const min = valueRange[0];
   const max = valueRange[1];
 
-  if (Number.isNaN(Number(min)) || Number.isNaN(Number(max))) {
+  if (isCategorical || Number.isNaN(Number(min)) || Number.isNaN(Number(max))) {
     return function (value) { return value };
   }
 
-  const extent = max - min;
-
-  const i = Math.floor(Math.log10(extent));
-  const k = Math.max(0, i >= 0 ? 2 - i : 1 - i);
-  const l = Math.pow(10, k);
-
-  return function (value) { return (Math.round(value * l) / l).toFixed(k); }
+  return format(getD3FormatSpecifier(valueRange));
 }
 
 function createValue(value) {
@@ -154,16 +151,19 @@ export function createLegend(encodings, fontColor, backgroundColor, size) {
       encoding.appendChild(createLabel(visualEncoding.variable));
 
       const valueRange = [
-        visualEncoding.values[0][0],
-        visualEncoding.values[visualEncoding.values.length - 1][0]
+        visualEncoding.values.at(0).at(0),
+        visualEncoding.values.at(-1).at(0)
       ];
 
       const encodingRange = [
-        visualEncoding.values[0][1],
-        visualEncoding.values[visualEncoding.values.length - 1][1]
+        visualEncoding.values.at(0).at(1),
+        visualEncoding.values.at(-1).at(1)
       ];
 
-      const formatter = createLabelFormatter(valueRange);
+      const formatter = createLabelFormatter(
+        valueRange,
+        visualEncoding.categorical
+      );
 
       const values = typeof visualEncoding.values[0][0] === 'number'
         ? [...visualEncoding.values].reverse()

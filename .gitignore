@@ -25,6 +25,10 @@ js/npm-debug.log
 js/node_modules
 js/dist
 
+docs/npm-debug.log
+docs/node_modules
+docs/dist
+
 jscatter/labextension
 jscatter/nbextension
 jscatter/bundle.js
