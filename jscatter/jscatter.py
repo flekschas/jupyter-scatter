@@ -544,7 +544,6 @@ class Scatter():
                 try:
                     self._x_scale.vmin = self._x_min
                     self._x_scale.vmax = self._x_max
-                    print(self._x_scale.vmin, self._x_scale.vmax)
                 except ValueError:
                     pass
 
