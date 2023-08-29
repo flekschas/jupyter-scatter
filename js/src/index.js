@@ -1513,6 +1513,7 @@ class JupyterScatterView {
   }
 
   yScaleHandler() {
+    this.createYScale();
     if (this.model.get('axes')) this.createAxes();
   }
 
@@ -1522,19 +1523,20 @@ class JupyterScatterView {
   }
 
   yDomainHandler() {
+    this.createYScale();
     if (this.model.get('axes')) this.createAxes();
   }
 
   colorDomainHandler() {
-    if (this.model.get('axes')) this.createAxes();
+    this.createColorScale();
   }
 
   opacityDomainHandler() {
-    if (this.model.get('axes')) this.createAxes();
+    this.createOpacityScale();
   }
 
   sizeDomainHandler() {
-    if (this.model.get('axes')) this.createAxes();
+    this.createSizeScale();
   }
 
   // Event handlers for Python-triggered events

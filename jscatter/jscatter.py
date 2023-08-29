@@ -1,7 +1,6 @@
 from __future__ import annotations
 import math
 import matplotlib.pyplot as plt
-import matplotlib
 import numpy as np
 import pandas as pd
 
@@ -540,6 +539,14 @@ class Scatter():
             self._x_max = np.max(self._points[:, 0])
             self._x_domain = [self._x_min, self._x_max]
 
+            # Reset scale to new domain
+            if scale is UNDEF:
+                try:
+                    self._x_scale.vmin = self._x_min
+                    self._x_scale.vmax = self._x_max
+                except ValueError:
+                    pass
+
             # Normalize x coordinate to [-1,1]
             self._points[:, 0] = to_ndc(self._points[:, 0], self._x_scale)
 
@@ -633,6 +640,14 @@ class Scatter():
             self._y_min = np.min(self._points[:, 1])
             self._y_max = np.max(self._points[:, 1])
             self._y_domain = [self._y_min, self._y_max]
+
+            # Reset scale to new domain
+            if scale is UNDEF:
+                try:
+                    self._y_scale.vmin = self._y_min
+                    self._y_scale.vmax = self._y_max
+                except ValueError:
+                    pass
 
             # Normalize y coordinate to [-1,1]
             self._points[:, 1] = to_ndc(self._points[:, 1], self._y_scale)
