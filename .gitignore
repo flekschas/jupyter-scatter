@@ -10,6 +10,10 @@ coverage
 *.ipynb_checkpoints
 *.egg-info
 .venv
+.vite_opt_cache
+.vscode
+.idea
+.temp
 
 __pycache__
 
@@ -28,6 +32,7 @@ js/dist
 docs/npm-debug.log
 docs/node_modules
 docs/dist
+docs/.vitepress/cache
 
 jscatter/labextension
 jscatter/nbextension
