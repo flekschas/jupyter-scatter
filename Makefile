@@ -49,14 +49,17 @@ labext-uninstall:
 # Publishing tools
 bump-patch:
 	cd js && npm version patch
+	git add js/package.json js/package-lock.json
 	git commit -m "Bump to v`node -p "require('./js/package.json').version"`"
 
 bump-minor:
 	cd js && npm version minor
+	git add js/package.json js/package-lock.json
 	git commit -m "Bump to v`node -p "require('./js/package.json').version"`"
 
 bump-major:
 	cd js && npm version major
+	git add js/package.json js/package-lock.json
 	git commit -m "Bump to v`node -p "require('./js/package.json').version"`"
 
 publish:
