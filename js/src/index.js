@@ -20,7 +20,7 @@ import {
 
 import { version } from "../package.json";
 
-const AXES_LABEL_SIZE = 16;
+const AXES_LABEL_SIZE = 12;
 const AXES_PADDING_X = 40;
 const AXES_PADDING_X_WITH_LABEL = AXES_PADDING_X + AXES_LABEL_SIZE;
 const AXES_PADDING_Y = 20;
@@ -258,7 +258,8 @@ class JupyterScatterView {
 
       window.pubSub = pubSub;
 
-      this.viewSyncHandler(this.model.get('view_sync'));
+      this.viewSync = this.model.get('view_sync');
+      this.viewSyncHandler(this.viewSync);
 
       if ('ResizeObserver' in window) {
         this.canvasObserver = new ResizeObserver(this.resizeHandlerBound);
@@ -972,8 +973,6 @@ class JupyterScatterView {
     ].forEach((el) => {
       el.style.fontWeight = 'bold';
     });
-
-
   }
 
   getPoint(i) {
@@ -1102,7 +1101,7 @@ class JupyterScatterView {
     const contents = new Set(this.model.get('tooltip_contents'));
     const updaters = Array.from(contents).map((content) => {
       const contentTitle = toCapitalCase(content);
-      const get = this[`get${contentTitle}`];
+      const get = (pointIdx) => this[`get${contentTitle}`](pointIdx);
 
       const textElement = this[`tooltipContent${contentTitle}ValueText`];
       const badgeElement = this[`tooltipContent${contentTitle}ValueBadgeMark`];
@@ -1395,7 +1394,7 @@ class JupyterScatterView {
   externalViewChangeHandler(event) {
     if (event.uuid === this.viewSync && event.src !== this.randomStr) {
       this.scatterplot.view(event.view, { preventEvent: true });
-      if (this.model.get('axes')) {
+      if (this.model.get('axes') && event.xScaleDomain && event.yScaleDomain) {
         this.updateAxes(event.xScaleDomain, event.yScaleDomain);
       }
     }
@@ -1409,8 +1408,8 @@ class JupyterScatterView {
           src: this.randomStr,
           uuid: this.viewSync,
           view: event.view,
-          xScaleDomain: event.xScale.domain(),
-          yScaleDomain: event.yScale.domain(),
+          xScaleDomain: event.xScale?.domain(),
+          yScaleDomain: event.yScale?.domain(),
         },
         { async: true }
       );
