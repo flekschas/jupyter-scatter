@@ -75,10 +75,14 @@ def compose(
     has_titles = any([isinstance(scatter, tuple) for scatter in scatters])
 
     def get_scatter(i: int) -> Scatter:
-        return scatters[i][0] if has_titles else scatters[i]
+        if has_titles and isinstance(scatters[i], tuple):
+            return scatters[i][0]
+        return scatters[i]
 
     def get_title(i: int) -> str:
-        return scatters[i][1] if has_titles else str(i)
+        if has_titles and isinstance(scatters[i], tuple):
+            return scatters[i][1]
+        return "&nbsp;"
 
     if isinstance(match_by, list):
         assert all([match_by[i] in get_scatter(i)._data for i, _ in enumerate(scatters)])
