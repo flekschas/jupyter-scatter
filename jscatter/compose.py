@@ -214,8 +214,6 @@ def compose(
 
     y_padding = y_padding + TITLE_HEIGHT if has_titles else y_padding
 
-    print("y_padding", y_padding, row_height - y_padding)
-
     for i, _ in enumerate(scatters):
         scatter = get_scatter(i)
         scatter.height(row_height - y_padding)
