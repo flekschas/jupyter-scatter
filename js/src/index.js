@@ -258,7 +258,8 @@ class JupyterScatterView {
 
       window.pubSub = pubSub;
 
-      this.viewSyncHandler(this.model.get('view_sync'));
+      this.viewSync = this.model.get('view_sync');
+      this.viewSyncHandler(this.viewSync);
 
       if ('ResizeObserver' in window) {
         this.canvasObserver = new ResizeObserver(this.resizeHandlerBound);
@@ -972,8 +973,6 @@ class JupyterScatterView {
     ].forEach((el) => {
       el.style.fontWeight = 'bold';
     });
-
-
   }
 
   getPoint(i) {
@@ -1395,7 +1394,7 @@ class JupyterScatterView {
   externalViewChangeHandler(event) {
     if (event.uuid === this.viewSync && event.src !== this.randomStr) {
       this.scatterplot.view(event.view, { preventEvent: true });
-      if (this.model.get('axes')) {
+      if (this.model.get('axes') && event.xScaleDomain && event.yScaleDomain) {
         this.updateAxes(event.xScaleDomain, event.yScaleDomain);
       }
     }
@@ -1409,8 +1408,8 @@ class JupyterScatterView {
           src: this.randomStr,
           uuid: this.viewSync,
           view: event.view,
-          xScaleDomain: event.xScale.domain(),
-          yScaleDomain: event.yScale.domain(),
+          xScaleDomain: event.xScale?.domain(),
+          yScaleDomain: event.yScale?.domain(),
         },
         { async: true }
       );

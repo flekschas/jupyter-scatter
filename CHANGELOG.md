@@ -1,3 +1,7 @@
+## v0.14.2
+
+- Fix view synchronization when axes are _not_ shown
+
 ## v0.14.1
 
 - Fix: update `color`, `opacity`, and `size` scales as the domains update
