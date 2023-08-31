@@ -20,7 +20,7 @@ import {
 
 import { version } from "../package.json";
 
-const AXES_LABEL_SIZE = 16;
+const AXES_LABEL_SIZE = 12;
 const AXES_PADDING_X = 40;
 const AXES_PADDING_X_WITH_LABEL = AXES_PADDING_X + AXES_LABEL_SIZE;
 const AXES_PADDING_Y = 20;

@@ -1,6 +1,7 @@
 ## v0.14.2
 
 - Fix view synchronization when axes are _not_ shown
+- Fix y-padding size determination
 
 ## v0.14.1
 
