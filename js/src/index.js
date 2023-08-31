@@ -1101,7 +1101,7 @@ class JupyterScatterView {
     const contents = new Set(this.model.get('tooltip_contents'));
     const updaters = Array.from(contents).map((content) => {
       const contentTitle = toCapitalCase(content);
-      const get = this[`get${contentTitle}`];
+      const get = (pointIdx) => this[`get${contentTitle}`](pointIdx);
 
       const textElement = this[`tooltipContent${contentTitle}ValueText`];
       const badgeElement = this[`tooltipContent${contentTitle}ValueBadgeMark`];

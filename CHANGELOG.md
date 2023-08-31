@@ -2,6 +2,7 @@
 
 - Fix view synchronization when axes are _not_ shown
 - Fix y-padding size determination
+- Fix stale channel value getter for the tooltip
 
 ## v0.14.1
 
