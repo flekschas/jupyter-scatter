@@ -1097,7 +1097,7 @@ class Scatter():
             self.update_widget('prevent_filter_reset', True)
             self.update_widget('points', self.get_point_list())
 
-        if any_not([default, selected, hover, by, map, norm, order], UNDEF):
+        if any_not([default, selected, hover, by, map, norm, order, labeling], UNDEF):
             return self
 
         return dict(
@@ -1324,7 +1324,7 @@ class Scatter():
             self.update_widget('prevent_filter_reset', True)
             self.update_widget('points', self.get_point_list())
 
-        if any_not([default, unselected, by, map, norm, order], UNDEF):
+        if any_not([default, unselected, by, map, norm, order, labeling], UNDEF):
             return self
 
         return dict(
@@ -1536,7 +1536,7 @@ class Scatter():
             self.update_widget('prevent_filter_reset', True)
             self.update_widget('points', self.get_point_list())
 
-        if any_not([default, by, map, norm, order], UNDEF):
+        if any_not([default, by, map, norm, order, labeling], UNDEF):
             return self
 
         return dict(
@@ -1889,7 +1889,7 @@ class Scatter():
             self.update_widget('prevent_filter_reset', True)
             self.update_widget('points', self.get_point_list())
 
-        if any_not([default, selected, hover, by, map, norm, order], UNDEF):
+        if any_not([default, selected, hover, by, map, norm, order, labeling], UNDEF):
             return self
 
         return dict(
@@ -2110,7 +2110,7 @@ class Scatter():
             self.update_widget('prevent_filter_reset', True)
             self.update_widget('points', self.get_point_list())
 
-        if any_not([default, by, map, norm, order], UNDEF):
+        if any_not([default, by, map, norm, order, labeling], UNDEF):
             return self
 
         return dict(
@@ -2322,7 +2322,7 @@ class Scatter():
         if self._connection_size_categories is not None:
             assert len(self._connection_size_categories) <= len(self._connection_size_map), 'More categories than connection sizes'
 
-        if any_not([default, by, map, norm, order], UNDEF):
+        if any_not([default, by, map, norm, order, labeling], UNDEF):
             return self
 
         return dict(
