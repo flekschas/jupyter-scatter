@@ -1,24 +1,25 @@
-# API Docs
+# API Reference
 
 - [Scatter](#scatter)
   - [Methods](#methods)
     - [x()](#scatter.x), [y()](#scatter.x), [xy()](#scatter.xy), and [data()](#scatter.data)
-    - [selection()](#scatter.selection), [filter()](#scatter.filter)
+    - [selection()](#scatter.selection) anda [filter()](#scatter.filter)
     - [color()](#scatter.color), [opacity()](#scatter.opacity), and [size()](#scatter.size)
     - [connect()](#scatter.connect), [connection_color()](#scatter.connection_color), [connection_opacity()](#scatter.connection_opacity), and [connection_size()](#scatter.connection_size)
-    - [axes()](#scatter.axes) [legend()](#scatter.legend),  and [tooltip()](#scatter.tooltip)
+    - [axes()](#scatter.axes), [legend()](#scatter.legend), and [tooltip()](#scatter.tooltip)
     - [zoom()](#scatter.zoom) and [camera()](#scatter.camera)
     - [lasso()](#scatter.lasso), [reticle()](#scatter.reticle), and [mouse()](#scatter.mouse),
     - [background()](#scatter.background) and [options()](scatter.options)
   - [Properties](#properties)
   - [Widget](#widget)
-- [Plotting](#plotting)
-- [Composing \& Linking](#composing--linking)
+- [Plotting Shorthand](#plotting)
+- [Composing \& Linking](#composing-linking)
 - [Color Maps](#color-maps)
 
-# Scatter
 
-<h3><a name="Scatter" href="#Scatter">#</a> <b>Scatter</b>(<i>x</i>, <i>y</i>, <i>data = None</i>, <i>**kwargs</i>)</h3>
+## Scatter
+
+### Scatter(_x_, _y_, _data=None_, _\*\*kwargs_) {#Scatter}
 
 **Arguments:**
 
@@ -37,9 +38,10 @@ scatter = Scatter(x='speed', y='weight', data=cars)
 scatter.show()
 ```
 
-## Methods
 
-<h3><a name="scatter.x" href="#scatter.x">#</a> scatter.<b>x</b>(<i>x=Undefined</i>, <i>scale=Undefined</i>, <i>**kwargs</i>)</h3>
+## Scatter Methods {#methods}
+
+### scatter.x(_x=Undefined_, _scale=Undefined_, _\*\*kwargs_) {#scatter.x}
 
 Get or set the x coordinate.
 
@@ -58,7 +60,8 @@ Get or set the x coordinate.
 scatter.x('price') # Triggers and animated transition of the x coordinates
 ```
 
-<h3><a name="scatter.y" href="#scatter.y">#</a> scatter.<b>y</b>(<i>y=Undefined</i>, <i>scale=Undefined</i>, <i>**kwargs</i>)</h3>
+
+### scatter.y(_y=Undefined_, _scale=Undefined_, _\*\*kwargs_) {#scatter.y}
 
 Get or set the y coordinate.
 
@@ -77,7 +80,8 @@ Get or set the y coordinate.
 scatter.y('price') # Triggers and animated transition of the y coordinates
 ```
 
-<h3><a name="scatter.xy" href="#scatter.xy">#</a> scatter.<b>xy</b>(<i>x=Undefined</i>, <i>y=Undefined</i>, <i>x_scale=Undefined</i>, <i>y_scale=Undefined</i>, <i>**kwargs</i>)</h3>
+
+### scatter.xy(_x=Undefined_, _y=Undefined_, _x_scale=Undefined_, _y_scale=Undefined_, _\*\*kwargs_) {#scatter.xy}
 
 Get or set the x and y coordinate. This is just a convenience function to animate a change in the x and y coordinate at the same time.
 
@@ -98,7 +102,8 @@ Get or set the x and y coordinate. This is just a convenience function to animat
 scatter.xy('size', 'speed') # Mirror plot along the diagonal
 ```
 
-<h3><a name="scatter.data" href="#scatter.data">#</a> scatter.<b>data</b>(<i>data=Undefined</i>, <i>use_index=Undefined</i>, <i>**kwargs</i>)</h3>
+
+### scatter.data(_data=Undefined_, _use_index=Undefined_, _\*\*kwargs_) {#scatter.data}
 
 Get or set the referenced Pandas DataFrame. This is just a convenience function to animate a change in the x and y coordinate at the same time.
 
@@ -117,7 +122,8 @@ Get or set the referenced Pandas DataFrame. This is just a convenience function 
 scatter.data(df)
 ```
 
-<h3><a name="scatter.selection" href="#scatter.selection">#</a> scatter.<b>selection</b>(<i>point_idxs=Undefined</i>)</h3>
+
+### scatter.selection(_point_idxs=Undefined_) {#scatter.selection}
 
 Get or set the selected points.
 
@@ -141,7 +147,8 @@ scatter.selection()
 # => array([0, 42, 1337], dtype=uint32)
 ```
 
-<h3><a name="scatter.filter" href="#scatter.filter">#</a> scatter.<b>filter</b>(<i>point_idxs=Undefined</i>)</h3>
+
+### scatter.filter(_point_idxs=Undefined_) {#scatter.filter}
 
 Get or set the filtered points. When filtering down to a set of points, all other points will be hidden from the view.
 
@@ -158,7 +165,8 @@ scatter.filter(cars.query('speed < 50').index)
 scatter.filter(None) # To unset filter
 ```
 
-<h3><a name="scatter.color" href="#scatter.color">#</a> scatter.<b>color</b>(<i>default=Undefined</i>, <i>selected=Undefined</i>, <i>hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
+
+### scatter.color(_default=Undefined_, _selected=Undefined_, _hover=Undefined_, _by=Undefined_, _map=Undefined_, _norm=Undefined_, _order=Undefined_, _labeling=Undefined_, _\*\*kwargs_) {#scatter.color}
 
 Get or set the point color.
 
@@ -199,7 +207,8 @@ scatter.color(
 scatter.color(by='gpd', map='viridis')
 ```
 
-<h3><a name="scatter.opacity" href="#scatter.opacity">#</a> scatter.<b>opacity</b>(<i>default=Undefined</i>, <i>unselected=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
+
+### scatter.opacity(_default=Undefined_, _unselected=Undefined_, _by=Undefined_, _map=Undefined_, _norm=Undefined_, _order=Undefined_, _labeling=Undefined_, _\*\*kwargs_) {#scatter.opacity}
 
 Get or set the point opacity.
 
@@ -228,7 +237,8 @@ scatter.opacity(by='price', map=(1, 0.25, 10))
 scatter.opacity(by='density')
 ```
 
-<h3><a name="scatter.size" href="#scatter.size">#</a> scatter.<b>size</b>(<i>default=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
+
+### scatter.size(_default=Undefined_, _by=Undefined_, _map=Undefined_, _norm=Undefined_, _order=Undefined_, _labeling=Undefined_, _\*\*kwargs_) {#scatter.size}
 
 Get or set the point size.
 
@@ -251,7 +261,8 @@ Get or set the point size.
 scatter.size(by='price', map=(1, 0.25, 10))
 ```
 
-<h3><a name="scatter.connect" href="#scatter.connect">#</a> scatter.<b>connect</b>(<i>by=Undefined</i>, <i>order=Undefined</i>, <i>**kwargs</i>)</h3>
+
+### scatter.connect(_by=Undefined_, _order=Undefined_, _\*\*kwargs_) {#scatter.connect}
 
 Get or set the point connection.
 
@@ -294,22 +305,22 @@ scatter.connect(by='group', order='order')
 ```
 
 
-<h3><a name="scatter.connection_color" href="#scatter.connection_color">#</a> scatter.<b>connection_color</b>(<i>default=Undefined</i>, <i>selected=Undefined</i>, <i>hover=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
+### scatter.connection_color(_default=Undefined_, _selected=Undefined_, _hover=Undefined_, _by=Undefined_, _map=Undefined_, _norm=Undefined_, _order=Undefined_, _labeling=Undefined_, _\*\*kwargs_) {#scatter.connection_color}
 
-Get or set the point connection color. This function behaves identical to [scatter.color()][scatter.color].
-
-
-<h3><a name="scatter.connection_opacity" href="#scatter.connection_opacity">#</a> scatter.<b>connection_opacity</b>(<i>default=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
-
-Get or set the point connection opacity. This function behaves identical to [scatter.opacity()][scatter.opacity].
+Get or set the point connection color. This function behaves identical to [scatter.color()][#scatter.color].
 
 
-<h3><a name="scatter.connection_size" href="#scatter.connection_size">#</a> scatter.<b>connection_size</b>(<i>default=Undefined</i>, <i>by=Undefined</i>, <i>map=Undefined</i>, <i>norm=Undefined</i>, <i>order=Undefined</i>, <i>labeling=Undefined</i>, <i>**kwargs</i>)</h3>
+### scatter.connection_opacity(_default=Undefined_, _by=Undefined_, _map=Undefined_, _norm=Undefined_, _order=Undefined_, _labeling=Undefined_, _\*\*kwargs_) {#scatter.connection_opacity}
 
-Get or set the point connection size. This function behaves identical to [scatter.size()][scatter.size].
+Get or set the point connection opacity. This function behaves identical to [scatter.opacity()][#scatter.opacity].
 
 
-<h3><a name="scatter.axes" href="#scatter.axes">#</a> scatter.<b>axes</b>(<i>axes=Undefined</i>, <i>grid=Undefined</i>, <i>labels=Undefined</i>)</h3>
+### scatter.connection_size(_default=Undefined_, _by=Undefined_, _map=Undefined_, _norm=Undefined_, _order=Undefined_, _labeling=Undefined_, _\*\*kwargs_) {#scatter.connection_size}
+
+Get or set the point connection size. This function behaves identical to [scatter.size()]#[scatter.size].
+
+
+### scatter.axes(_axes=Undefined_, _grid=Undefined_, _labels=Undefined_) {#scatter.axes}
 
 Get or set the x and y axes.
 
@@ -327,7 +338,8 @@ scatter = Scatter(data=df, x='speed', y='weight')
 scatter.axes(axes=True, labels=['Speed (km/h)', 'Weight (tons)'])
 ```
 
-<h3><a name="scatter.legend" href="#scatter.legend">#</a> scatter.<b>legend</b>(<i>legend=Undefined</i>, <i>position=Undefined</i>, <i>size=Undefined</i>)</h3>
+
+### scatter.legend(_legend=Undefined_, _position=Undefined_, _size=Undefined_) {#scatter.legend}
 
 Set or get the legend settings.
 
@@ -345,7 +357,7 @@ scatter.legend(true, 'top-right', 'small')
 ```
 
 
-<h3><a name="scatter.legend" href="#scatter.tooltip">#</a> scatter.<b>tooltip</b>(<i>enable=Undefined</i>, <i>contents=Undefined</i>, <i>size=Undefined</i>)</h3>
+### scatter.tooltip(_enable=Undefined_, _contents=Undefined_, _size=Undefined_) {#scatter.tooltip}
 
 Set or get the tooltip settings.
 
@@ -363,7 +375,7 @@ scatter.tooltip(true, 'all', 'small')
 ```
 
 
-<h3><a name="scatter.zoom" href="#scatter.zoom">#</a> scatter.<b>zoom</b>(<i>target=Undefined</i>, <i>animation=Undefined</i>, <i>padding=Undefined</i>, <i>on_selection=Undefined</i>, <i>on_filter=Undefined</i>)</h3>
+### scatter.zoom(_to=Undefined_, _animation=Undefined_, _padding=Undefined_, _on_selection=Undefined_, _on_filter=Undefined_) {#scatter.zoom}
 
 Zoom to a set of points.
 
@@ -386,7 +398,7 @@ scatter.zoom(to=scatter.selection(), animation=2000, padding=0.1)
 ```
 
 
-<h3><a name="scatter.camera" href="#scatter.camera">#</a> scatter.<b>camera</b>(<i>target=Undefined</i>, <i>distance=Undefined</i>, <i>rotation=Undefined</i>, <i>view=Undefined</i>)</h3>
+### scatter.camera(_target=Undefined_, _distance=Undefined_, _rotation=Undefined_, _view=Undefined_) {#scatter.camera}
 
 Get or set the camera view.
 
@@ -405,7 +417,7 @@ scatter.camera(target=[0.5, 0.5])
 ```
 
 
-<h3><a name="scatter.mouse" href="#scatter.mouse">#</a> scatter.<b>mouse</b>(<i>mode=Undefined</i>)</h3>
+### scatter.mouse(_mode=Undefined_) {#scatter.mouse}
 
 Get or set the mouse mode.
 
@@ -421,7 +433,7 @@ scatter.mouse(mode='lasso')
 ```
 
 
-<h3><a name="scatter.lasso" href="#scatter.lasso">#</a> scatter.<b>lasso</b>(<i>color=Undefined</i>, <i>initiator=Undefined</i>, <i>min_delay=Undefined</i>, <i>min_dist=Undefined</i>, <i>on_long_press=Undefined</i>)</h3>
+### scatter.lasso(_color=Undefined_, _initiator=Undefined_, _min_delay=Undefined_, _min_dist=Undefined_, _on_long_press=Undefined_) {#scatter.lasso}
 
 Get or set the lasso for selecting multiple points.
 
@@ -441,7 +453,7 @@ scatter.lasso(initiator=True)
 ```
 
 
-<h3><a name="scatter.reticle" href="#scatter.reticle">#</a> scatter.<b>reticle</b>(<i>show=Undefined</i>, <i>color=Undefined</i>)</h3>
+### scatter.reticle(_show=Undefined_, _color=Undefined_) {#scatter.reticle}
 
 Get or set the reticle for the point hover interaction.
 
@@ -458,7 +470,7 @@ scatter.reticle(show=True, color="red")
 ```
 
 
-<h3><a name="scatter.background" href="#scatter.background">#</a> scatter.<b>background</b>(<i>color=Undefined</i>, <i>image=Undefined</i>)</h3>
+### scatter.background(_color=Undefined_, _image=Undefined_) {#scatter.background}
 
 Get or set a background color or image.
 
@@ -477,7 +489,7 @@ scatter.background(image='https://picsum.photos/640/640?random')
 ```
 
 
-<h3><a name="scatter.options" href="#scatter.options">#</a> scatter.<b>options</b>(<i>options=Undefined</i>)</h3>
+### scatter.options(_options=Undefined_) {#scatter.options}
 
 Get or set other [regl-scatterplot](https://github.com/flekschas/regl-scatterplot) options.
 
@@ -487,7 +499,7 @@ Get or set other [regl-scatterplot](https://github.com/flekschas/regl-scatterplo
 **Returns:** either the options when options are `Undefined` or `self`.
 
 
-<h3><a name="scatter.pixels" href="#scatter.pixels">#</a> scatter.<b>pixels</b>()</h3>
+### scatter.pixels() {#scatter.pixels}
 
 Gets the pixels of the current scatter plot view. Make sure to first download
 the pixels first by clicking on the button with the camera icon.
@@ -495,7 +507,7 @@ the pixels first by clicking on the button with the camera icon.
 **Returns:** a Numpy array with the pixels in RGBA format.
 
 
-## Properties
+### Properties
 
 The following is a list of all _settable_ properties of a `Scatter` instance.
 You can define those property when creating a `Scatter` instance. For example,
@@ -576,14 +588,14 @@ You can define those property when creating a `Scatter` instance. For example,
 [LinNorm]: https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Normalize.html
 [Colormap]: https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Colormap.html
 
-## Widget
+### Widget
 
 _So sorry, I haven't had a chance to document the widget properties yet._
 
 
-# Plotting
+## Plotting Shorthand {#plotting}
 
-<h3><a name="plot" href="#plot">#</a> jscatter.<b>plot</b>(<i>x</i>, <i>y</i>, <i>data = None</i>, <i>**kwargs</i>)</h3>
+### plot(_x=Undefined_, _y=Undefined_, _data=Undefined_, _\*\*kwargs_) {#plot}
 
 A shorthand function that creates a new scatter instance and immediately returns its widget.
 
@@ -598,9 +610,9 @@ from jscatter import plot
 plot(data=cars, x='speed', y='weight', color='black', opacity_by='density', size=4)
 ```
 
-# Composing & Linking
+## Composing & Linking
 
-<h3><a name="compose" href="#compose">#</a> jscatter.<b>compose</b>(<i>scatters</i>, <i>sync_views = False</i>, <i>sync_selection = False</i>, <i>sync_hover = False</i>, <i></h3>match_by = 'index'</i>,  <i>cols = None</i>, <i>rows = 1</i>, <i>row_height = 320</i>)
+### compose(_scatters_, _sync_views=False_, _sync_selection=False_, _sync_hover=False_, _match_by="index"_, _cols=None_, _rows=1_, _row_height=320_) {#compose}
 
 A function to compose multiple scatter plot instances in a grid and allow synchronized view, selection, and hover interactions.
 
@@ -631,7 +643,8 @@ compose(
 )
 ```
 
-<h3><a name="link" href="#link">#</a> jscatter.<b>link</b>(<i>scatters</i>, <i>match_by = 'index'</i>, <i>cols = None</i>, <i>rows = 1</i>, <i>row_height = 320</i>)</h3>
+
+### link(_scatters_, _match_by="index"_, _cols=None_, _rows=1_, _row_height=320_) {#link}
 
 A shorthand function to compose multiple scatter plot instances in a grid and synchronize their view, selection, and hover interactions.
 
@@ -647,9 +660,9 @@ from numpy.random import rand
 link([Scatter(x=rand(500), y=rand(500)) for i in range(4)], rows=2)
 ```
 
-# Color Maps
+## Color Maps
 
-<h3><a name="okabe-ito" href="#okabe-ito">#</a> jscatter.<b>okabe_ito</b></h3>
+### okabe_ito {okabe-ito}
 
 A colorblind safe categorical color map consisting of eight colors created by Okabe & Ito.
 
@@ -662,10 +675,10 @@ A colorblind safe categorical color map consisting of eight colors created by Ok
 - ![#CC79A7](https://via.placeholder.com/15/CC79A7/000000?text=+) `Reddish Purple (#CC79A7)`
 - ![#000000](https://via.placeholder.com/15/000000/000000?text=+) `Black (#000000)`
 
-<h3><a name="glasbey-light" href="#glasbey-light">#</a> jscatter.<b>glasbey_light</b></h3>
+### glasbey_light {glasbey-light}
 
 A categorical color map consisting of 256 maximally distinct colors optimized for a _bright_ background. The colors were generated with the fantastic [Colorcet](https://colorcet.holoviz.org) package, which employs an algorithm developed by [Glasbey et al., 2007](https://strathprints.strath.ac.uk/30312/1/colorpaper_2006.pdf).
 
-<h3><a name="glasbey-dark" href="#glasbey-dark">#</a> jscatter.<b>glasbey_dark</b></h3>
+### glasbey_dark {glasbey-dark}
 
 A categorical color map consisting of 256 maximally distinct colors optimized for a _dark_ background. The colors were generated with the fantastic [Colorcet](https://colorcet.holoviz.org) package, which employs an algorithm developed by [Glasbey et al., 2007](https://strathprints.strath.ac.uk/30312/1/colorpaper_2006.pdf).
