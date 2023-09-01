@@ -1,3 +1,7 @@
+## v0.14.3
+
+- Fix: don't return color, opacity, or size settings when `labeling` is defined
+
 ## v0.14.2
 
 - Fix view synchronization when axes are _not_ shown
