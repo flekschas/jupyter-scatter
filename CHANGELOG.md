@@ -1,6 +1,8 @@
 ## v0.14.3
 
 - Fix: don't return color, opacity, or size settings when `labeling` is defined
+- Fix: prevent x-axis label to be cut off at the bottom
+- Fix: axes label color in dark mode
 
 ## v0.14.2
 

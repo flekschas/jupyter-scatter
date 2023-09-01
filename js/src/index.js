@@ -430,6 +430,7 @@ class JupyterScatterView {
 
       this.xAxisLabel
         .text(labels[0])
+        .attr('fill', 'currentColor')
         .attr('text-anchor', 'middle')
         .attr('font-size', '12px')
         .attr('font-weight', 'bold')
@@ -442,6 +443,7 @@ class JupyterScatterView {
 
       this.yAxisLabel
         .text(labels[1])
+        .attr('fill', 'currentColor')
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'hanging')
         .attr('x', (height - yPadding) / 2)
@@ -1292,7 +1294,7 @@ class JupyterScatterView {
     }
 
     if (labels) {
-      this.xAxisLabel.attr('x', (width - xPadding) / 2).attr('y', height);
+      this.xAxisLabel.attr('x', (width - xPadding) / 2).attr('y', height - 4);
       this.yAxisLabel.attr('x', (height - yPadding) / 2).attr('y', -width);
     }
   }
