@@ -31,8 +31,8 @@ js/dist
 
 docs/npm-debug.log
 docs/node_modules
-docs/dist
 docs/.vitepress/cache
+docs/.vitepress/dist
 
 jscatter/labextension
 jscatter/nbextension
