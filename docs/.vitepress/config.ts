@@ -6,7 +6,7 @@ import pkg from '../../js/package.json';
 export default defineConfig({
   lang: 'en-US',
   title: 'Jupyter Scatter',
-  description: 'An interactive scatter plot widget for Jupyter Notebook, Lab, and Google Colab that can handle millions of points and supports view linking',
+  description: 'An interactive scatter plot widget for exploring datasets with millions of data points in Jupyter Notebook, Lab, and Google Colab.',
   lastUpdated: true,
   cleanUrls: true,
   head: [

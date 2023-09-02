@@ -2,9 +2,12 @@
 # https://vitepress.dev/reference/default-theme-home-page
 layout: home
 
+title: Jupyter Scatter
+titleTemplate: An Interactive Scatter Plot Widget
+
 hero:
   name: "Jupyter Scatter"
-  text: "An interactive scatter plot widget"
+  text: "An Interactive Scatter Plot Widget"
   tagline: "Explore datasets with millions of data points with ease in Jupyter Notebook, Lab, and Google Colab."
   image:
     src: /teaser.jpg
