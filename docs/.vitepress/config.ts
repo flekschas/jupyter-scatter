@@ -17,13 +17,13 @@ export default defineConfig({
     ['meta', { name: 'og:site_name', content: 'Jupyter Scatter' }],
     [
       'meta',
-      { name: 'og:image', content: 'https://jupyter-scatter.dev/jupyter-scatter-og.jpg' }
+      { name: 'og:image', content: 'https://jupyter-scatter.dev/images/jupyter-scatter-og.jpg' }
     ],
     [
       'meta',
       {
         name: 'twitter:image',
-        content: 'https://jupyter-scatter.dev/jupyter-scatter-og.jpg'
+        content: 'https://jupyter-scatter.dev/images/jupyter-scatter-og.jpg'
       }
     ],
   ],
