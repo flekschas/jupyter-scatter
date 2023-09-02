@@ -662,7 +662,7 @@ link([Scatter(x=rand(500), y=rand(500)) for i in range(4)], rows=2)
 
 ## Color Maps
 
-### okabe_ito {okabe-ito}
+### okabe_ito {#okabe-ito}
 
 A colorblind safe categorical color map consisting of eight colors created by Okabe & Ito.
 
@@ -675,10 +675,10 @@ A colorblind safe categorical color map consisting of eight colors created by Ok
 - ![#CC79A7](https://via.placeholder.com/15/CC79A7/000000?text=+) `Reddish Purple (#CC79A7)`
 - ![#000000](https://via.placeholder.com/15/000000/000000?text=+) `Black (#000000)`
 
-### glasbey_light {glasbey-light}
+### glasbey_light {#glasbey-light}
 
 A categorical color map consisting of 256 maximally distinct colors optimized for a _bright_ background. The colors were generated with the fantastic [Colorcet](https://colorcet.holoviz.org) package, which employs an algorithm developed by [Glasbey et al., 2007](https://strathprints.strath.ac.uk/30312/1/colorpaper_2006.pdf).
 
-### glasbey_dark {glasbey-dark}
+### glasbey_dark {#glasbey-dark}
 
 A categorical color map consisting of 256 maximally distinct colors optimized for a _dark_ background. The colors were generated with the fantastic [Colorcet](https://colorcet.holoviz.org) package, which employs an algorithm developed by [Glasbey et al., 2007](https://strathprints.strath.ac.uk/30312/1/colorpaper_2006.pdf).
