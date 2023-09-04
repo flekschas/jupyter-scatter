@@ -26,6 +26,15 @@ export default defineConfig({
         content: 'https://jupyter-scatter.dev/images/jupyter-scatter-og.jpg'
       }
     ],
+    [
+      'script',
+      {
+        'async': '',
+        src: 'https://cdn.counter.dev/script.js',
+        'data-id': 'c0cd84ef-1b57-4616-a6db-c26306f866b7',
+        'data-utcoffset': '-4',
+      }
+    ],
   ],
   themeConfig: {
     logo: {
