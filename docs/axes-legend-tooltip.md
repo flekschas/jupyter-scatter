@@ -210,8 +210,3 @@ scatter.tooltip(contents=["color", "opacity"])
     background-image: url(/images/tooltip-2-dark.png)
   }
 </style>
-
-<script setup>
-  import { videoColorModeSrcSwitcher } from './utils';
-  videoColorModeSrcSwitcher();
-</script>
