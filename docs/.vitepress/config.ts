@@ -23,7 +23,7 @@ export default defineConfig({
       'meta',
       {
         name: 'twitter:image',
-        content: 'https://jupyter-scatter.dev/images/jupyter-scatter-og.jpg'
+        content: 'https://jupyter-scatter.dev/images/jupyter-scatter-twitter.jpg'
       }
     ],
     [
