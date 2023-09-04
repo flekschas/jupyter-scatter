@@ -62,7 +62,7 @@ jscatter.compose(
 )
 ```
 
-<video autoplay loop muted data-name="link-multiple-plots-synced" width="1000">
+<video autoplay loop muted playsinline data-name="link-multiple-plots-synced" width="1000">
   <source
     src="/videos/link-multiple-plots-synced-light.mp4"
     type="video/mp4"
