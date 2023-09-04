@@ -201,7 +201,7 @@ point location.
 For instance, try calling [`scatter.xy('speed', 'mass')`](./api#scatter.xy) and
 you will see how the points are mirrored along the diagonal.
 
-<video autoplay loop muted width="458" data-name="get-started-xy-animation">
+<video autoplay loop muted playsinline width="458" data-name="get-started-xy-animation">
   <source
     src="/videos/get-started-xy-animation-light.mp4"
     type="video/mp4"

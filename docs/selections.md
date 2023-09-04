@@ -71,7 +71,7 @@ Alternatively, if you're binding a DataFrame to a `Scatter` instance via
 As you might have seen already in the [interactions guide](./interactions), we
 can also select points interactively using the lasso tool.
 
-<video autoplay loop muted width="1256" data-name="interactions-lasso">
+<video autoplay loop muted playsinline width="1256" data-name="interactions-lasso">
   <source
     src="/videos/interactions-lasso-dark.mp4"
     type="video/mp4"
@@ -139,7 +139,7 @@ scatter.widget.observe(selection_change_handler, names=["selection"])
 ipywidgets.HBox([scatter.show(), output])
 ````
 
-<video autoplay loop muted width="1258" data-name="selections-observe">
+<video autoplay loop muted playsinline width="1258" data-name="selections-observe">
   <source
     src="/videos/selections-observe-dark.mp4"
     type="video/mp4"

@@ -12,7 +12,7 @@ different areas of the scatter plot in detail.
 To pan, click and hold the primary mouse button and drag your mouse.
 
 <div class="video">
-  <video loop muted width="1256" data-name="interactions-pan">
+  <video loop muted playsinline width="1256" data-name="interactions-pan">
     <source
       src="/videos/interactions-pan-light.mp4"
       type="video/mp4"
@@ -24,7 +24,7 @@ To pan, click and hold the primary mouse button and drag your mouse.
 To zoom, simply engage your mouse's scroll wheel.
 
 <div class="video">
-  <video loop muted width="1256" data-name="interactions-zoom">
+  <video loop muted playsinline width="1256" data-name="interactions-zoom">
     <source
       src="/videos/interactions-zoom-light.mp4"
       type="video/mp4"
@@ -39,7 +39,7 @@ To help locate a point and where it's located, when you mouse over a point, a
 reticle will appear.
 
 <div class="video">
-  <video loop muted width="1256" data-name="interactions-hover">
+  <video loop muted playsinline width="1256" data-name="interactions-hover">
     <source
       src="/videos/interactions-hover-light.mp4"
       type="video/mp4"
@@ -53,7 +53,7 @@ reticle will appear.
 In order to select a point you can click on it.
 
 <div class="video">
-  <video loop muted width="1256" data-name="interactions-click">
+  <video loop muted playsinline width="1256" data-name="interactions-click">
     <source
       src="/videos/interactions-click-light.mp4"
       type="video/mp4"
@@ -67,7 +67,7 @@ In order to select a point you can click on it.
 To deselect points, simply double click into the background.
 
 <div class="video">
-  <video loop muted width="1256" data-name="interactions-double-click">
+  <video loop muted playsinline width="1256" data-name="interactions-double-click">
     <source
       src="/videos/interactions-double-click-light.mp4"
       type="video/mp4"
@@ -85,7 +85,7 @@ circle will appear and slowly close in clockwise order. Once the circle is fully
 closed it'll turn blue. At this point the lasso is active.
 
 <div class="video">
-  <video loop muted width="1256" data-name="interactions-lasso">
+  <video loop muted playsinline width="1256" data-name="interactions-lasso">
     <source
       src="/videos/interactions-lasso-light.mp4"
       type="video/mp4"
@@ -118,7 +118,7 @@ scatter.filter(None)
 ```
 
 <div class="video">
-  <video loop muted width="1256" data-name="interactions-filter">
+  <video loop muted playsinline width="1256" data-name="interactions-filter">
     <source
       src="/videos/interactions-filter-light.mp4"
       type="video/mp4"
@@ -138,7 +138,7 @@ scatter.zoom([0, 1, 2])
 ```
 
 <div class="video">
-  <video loop muted width="1256" data-name="interactions-zoom-to-points">
+  <video loop muted playsinline width="1256" data-name="interactions-zoom-to-points">
     <source
       src="/videos/interactions-zoom-to-points-light.mp4"
       type="video/mp4"
@@ -195,7 +195,7 @@ compose(
 ```
 
 <div class="video">
-  <video loop muted width="826" data-name="interactions-overview-and-details">
+  <video loop muted playsinline width="826" data-name="interactions-overview-and-details">
     <source
       src="/videos/interactions-overview-and-details-light.mp4"
       type="video/mp4"

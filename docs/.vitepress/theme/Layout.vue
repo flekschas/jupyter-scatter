@@ -13,6 +13,7 @@
         autoplay
         loop
         muted
+        playsinline
         data-name="teaser"
         poster="/images/teaser-dark.jpg"
       >
