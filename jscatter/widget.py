@@ -81,6 +81,13 @@ class JupyterScatter(anywidget.AnyWidget):
     opacity_domain = Union([Dict(), List(minlen=2, maxlen=2)], allow_none=True).tag(sync=True)
     size_domain = Union([Dict(), List(minlen=2, maxlen=2)], allow_none=True).tag(sync=True)
 
+    # Histograms
+    x_histogram = List(None, allow_none=True).tag(sync=True)
+    y_histogram = List(None, allow_none=True).tag(sync=True)
+    color_histogram = List(None, allow_none=True).tag(sync=True)
+    opacity_histogram = List(None, allow_none=True).tag(sync=True)
+    size_histogram = List(None, allow_none=True).tag(sync=True)
+
     # View properties
     camera_target = List([0, 0]).tag(sync=True)
     camera_distance = Float(1).tag(sync=True)
@@ -141,6 +148,7 @@ class JupyterScatter(anywidget.AnyWidget):
     tooltip_contents = Set(
         default_value={'x', 'y', 'color', 'opacity', 'size'}
     ).tag(sync=True)
+    tooltip_histograms = Bool().tag(sync=True)
 
     # Options
     color = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)

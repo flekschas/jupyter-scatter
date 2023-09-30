@@ -10,7 +10,7 @@ from typing import Optional, Union, List, Tuple, Set
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, create_default_norm, create_labeling
+from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, create_default_norm, create_labeling, get_histogram
 from .types import Color, Scales, MouseModes, All, Auto, Reverse, Segment, Size, LegendPosition, TooltipContent, Labeling, Undefined
 
 COMPONENT_CONNECT = 4
@@ -182,7 +182,9 @@ class Scatter():
         self._lasso_min_delay = 10
         self._lasso_min_dist = 3
         self._x_by = None
+        self._x_histogram = None
         self._y_by = None
+        self._y_histogram = None
         self._color = (0, 0, 0, 0.66) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.66)
         self._color_selected = (0, 0.55, 1, 1)
         self._color_hover = (0, 0, 0, 1) if self._background_color_luminance > 0.5 else (1, 1, 1, 1)
@@ -193,6 +195,7 @@ class Scatter():
         self._color_order = None
         self._color_categories = None
         self._color_labeling = None
+        self._color_histogram = None
         self._opacity = 0.66
         self._opacity_unselected = 0.5
         self._opacity_by = 'density'
@@ -202,6 +205,7 @@ class Scatter():
         self._opacity_order = None
         self._opacity_categories = None
         self._opacity_labeling = None
+        self._opacity_histogram = None
         self._size = 3
         self._size_by = None
         self._size_map = None
@@ -210,6 +214,7 @@ class Scatter():
         self._size_order = None
         self._size_categories = None
         self._size_labeling = None
+        self._size_histogram = None
         self._connect_by = None
         self._connect_order = None
         self._connection_color = (0, 0, 0, 0.1) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.1)
@@ -255,6 +260,7 @@ class Scatter():
         self._tooltip = False
         self._tooltip_contents = all_tooltip_contents.copy()
         self._tooltip_size = 'small'
+        self._tooltip_histograms = True
         self._zoom_to = None
         self._zoom_to_call_idx = 0
         self._zoom_animation = 500
@@ -358,6 +364,7 @@ class Scatter():
             kwargs.get('tooltip', UNDEF),
             kwargs.get('tooltip_contents', UNDEF),
             kwargs.get('tooltip_size', UNDEF),
+            kwargs.get('tooltip_histograms', UNDEF),
         )
         self.zoom(
             kwargs.get('zoom_to', UNDEF),
@@ -538,6 +545,7 @@ class Scatter():
             self._x_min = np.min(self._points[:, 0])
             self._x_max = np.max(self._points[:, 0])
             self._x_domain = [self._x_min, self._x_max]
+            self._x_histogram = get_histogram(self._points[:, 0])
 
             # Reset scale to new domain
             if scale is UNDEF:
@@ -640,6 +648,7 @@ class Scatter():
             self._y_min = np.min(self._points[:, 1])
             self._y_max = np.max(self._points[:, 1])
             self._y_domain = [self._y_min, self._y_max]
+            self._y_histogram = get_histogram(self._points[:, 1])
 
             # Reset scale to new domain
             if scale is UNDEF:
@@ -986,6 +995,7 @@ class Scatter():
 
             if by is None:
                 self._encodings.delete('color')
+                self._color_histogram = None
 
             else:
                 self._encodings.set('color', by)
@@ -998,11 +1008,14 @@ class Scatter():
                     if categorical_data is not None:
                         self._color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                         self._points[:, component] = categorical_data.cat.codes
+                        self._color_histogram = get_histogram(categorical_data)
                     else:
                         self._color_categories = None
                         self._points[:, component] = self._color_norm(self._data[by].values)
+                        self._color_histogram = get_histogram(self._points[:, component])
                 except TypeError:
                     self._points[:, component] = self._color_norm(np.asarray(by))
+                    self._color_histogram = get_histogram(self._points[:, component])
 
                 if not self._encodings.data[by].prepared:
                     data_updated = True
@@ -1014,6 +1027,7 @@ class Scatter():
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
             self._color_by = None
+            self._color_histogram = None
             self._encodings.delete('color')
             self.update_widget('color_by', self.js_color_by)
 
@@ -1230,6 +1244,7 @@ class Scatter():
 
             if by is None or by == 'density':
                 self._encodings.delete('opacity')
+                self._opacity_histogram = None
 
             else:
                 self._encodings.set('opacity', by)
@@ -1242,11 +1257,14 @@ class Scatter():
                     if categorical_data is not None:
                         self._points[:, component] = categorical_data.cat.codes
                         self._opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                        self._opacity_histogram = get_histogram(categorical_data)
                     else:
                         self._points[:, component] = self._opacity_norm(self._data[by].values)
+                        self._opacity_histogram = get_histogram(self._points[:, component])
                         self._opacity_categories = None
                 except TypeError:
                     self._points[:, component] = self._opacity_norm(np.asarray(by))
+                    self._opacity_histogram = get_histogram(self._points[:, component])
 
                 if not self._encodings.data[by].prepared:
                     data_updated = True
@@ -1258,6 +1276,7 @@ class Scatter():
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static opacity encoding
             self._opacity_by = None
+            self._opacity_histogram = None
             self._encodings.delete('opacity')
             self.update_widget('opacity_by', self.js_opacity_by)
 
@@ -1443,6 +1462,7 @@ class Scatter():
 
             if by is None:
                 self._encodings.delete('size')
+                self._size_histogram = None
 
             else:
                 self._encodings.set('size', by)
@@ -1455,11 +1475,14 @@ class Scatter():
                     if categorical_data is not None:
                         self._points[:, component] = categorical_data.cat.codes
                         self._size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                        self._size_histogram = get_histogram(categorical_data)
                     else:
                         self._points[:, component] = self._size_norm(self._data[by].values)
+                        self._size_histogram = get_histogram(self._points[:, component])
                         self._size_categories = None
                 except TypeError:
                     self._points[:, component] = self._size_norm(np.asarray(by))
+                    self._size_histogram = get_histogram(self._points[:, component])
 
                 if not self._encodings.data[by].prepared:
                     data_updated = True
@@ -1471,6 +1494,7 @@ class Scatter():
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
             self._size_by = None
+            self._size_histogram = None
             self._encodings.delete('size')
             self.update_widget('size_by', self.js_size_by)
 
@@ -3019,6 +3043,7 @@ class Scatter():
         tooltip: Optional[Union[bool, Undefined]] = UNDEF,
         contents: Optional[Union[All, Set[TooltipContent], Undefined]] = UNDEF,
         size: Optional[Union[Size, Undefined]] = UNDEF,
+        histograms: Optional[Union[bool, Undefined]] = UNDEF,
     ):
         """
         Set or get the tooltip settings.
@@ -3034,6 +3059,8 @@ class Scatter():
             some of `x`, `y`, `color`, `opacity`, and `size`.
         size : small or medium or large, optional
             The size of the tooltip. Must be one of small, medium, or large
+        histograms : bool, optional
+            When set to `True`, the tooltip will show histograms of the contents
 
         Returns
         -------
@@ -3052,8 +3079,11 @@ class Scatter():
         >>> scatter.tooltip(size='large')
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.tooltip(histograms=False)
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.tooltip()
-        {'tooltip': True, 'contents': {'color', 'opacity'}, size: 'large'}
+        {'tooltip': True, 'contents': {'color', 'opacity'}, size: 'large', histograms=False}
         """
         if tooltip is not UNDEF:
             self._tooltip = tooltip
@@ -3069,13 +3099,18 @@ class Scatter():
             self._tooltip_size = size
             self.update_widget('tooltip_size', size)
 
-        if any_not([tooltip, contents, size], UNDEF):
+        if histograms is not UNDEF:
+            self._tooltip_histograms = histograms
+            self.update_widget('tooltip_histograms', histograms)
+
+        if any_not([tooltip, contents, size, histograms], UNDEF):
             return self
 
         return dict(
             legend = self._tooltip,
             contents = self._tooltip_contents,
             size = self._tooltip_size,
+            histograms = self._tooltip_histograms,
         )
 
 
@@ -3324,6 +3359,7 @@ class Scatter():
             color=order_map(self._color_map, self._color_order) if self._color_map else self._color,
             color_by=self.js_color_by,
             color_domain=get_domain(self, 'color'),
+            color_histogram=self._color_histogram,
             color_hover=self._color_hover,
             color_scale=get_scale(self, 'color'),
             color_selected=self._color_selected,
@@ -3353,6 +3389,7 @@ class Scatter():
             opacity=order_map(self._opacity_map, self._opacity_order) if self._opacity_map else self._opacity,
             opacity_by=self.js_opacity_by,
             opacity_domain=get_domain(self, 'opacity'),
+            opacity_histogram=self._opacity_histogram,
             opacity_scale=get_scale(self, 'opacity'),
             opacity_title=self._opacity_by,
             opacity_unselected=self._opacity_unselected,
@@ -3363,17 +3400,21 @@ class Scatter():
             size=order_map(self._size_map, self._size_order) if self._size_map else self._size,
             size_by=self.js_size_by,
             size_domain=get_domain(self, 'size'),
+            size_histogram=self._size_histogram,
             size_scale=get_scale(self, 'size'),
             size_title=self._size_by,
             tooltip_color=self.get_tooltip_color(),
             tooltip_contents=self._tooltip_contents,
             tooltip_enable=self._tooltip,
+            tooltip_histograms=self._tooltip_histograms,
             tooltip_size=self._tooltip_size,
             width=self._width,
             x_domain=self._x_domain,
+            x_histogram=self._x_histogram,
             x_scale=to_scale_type(self._x_scale),
             x_title=self._x_by,
             y_domain=self._y_domain,
+            y_histogram=self._y_histogram,
             y_scale=to_scale_type(self._y_scale),
             y_title=self._y_by,
             zoom_animation=self._zoom_animation,

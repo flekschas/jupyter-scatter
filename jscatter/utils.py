@@ -1,5 +1,8 @@
-from matplotlib.colors import LogNorm, PowerNorm, Normalize
 import ipywidgets as widgets
+
+from matplotlib.colors import LogNorm, PowerNorm, Normalize
+from numpy import histogram
+from pandas.api.types import is_categorical_dtype
 from urllib.parse import urlparse
 from typing import Union
 
@@ -91,3 +94,10 @@ def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeli
         labeling['variable'] = column
 
     return labeling
+
+def get_histogram(data, bins=20):
+    if is_categorical_dtype(data):
+        value_counts = data.cat.codes.value_counts()
+        return [y for _, y in sorted(dict(value_counts / value_counts.sum()).items())]
+
+    return list(histogram(data, bins=bins)[0] / histogram(data, bins=bins)[0].max())

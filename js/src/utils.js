@@ -57,3 +57,10 @@ export function getTooltipFontSize(size) {
   if (size === 'medium') return '0.85rem';
   return '0.675rem';
 }
+
+export function createNumericalBinGetter(histogram, domain) {
+  const maxBinId = histogram.length - 1;
+  const min = domain[0];
+  const extent = domain[1] - domain[0];
+  return (value) => Math.round(((value - min) / extent) * maxBinId);
+}
