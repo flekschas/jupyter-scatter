@@ -1,3 +1,5 @@
+import { createElementWithClass } from './utils';
+
 const DEFAULT_BACKGROUND_COLOR = '#999999';
 const DEFAULT_HIGHLIGHT_COLOR = '#000000';
 const BIN_SPACE = 1;
@@ -183,8 +185,7 @@ const createNumericalHistogramHighlight = (canvas, data) => {
 }
 
 export const createHistogram = (width, height) => {
-  const element = document.createElement('div');
-  element.classList.add('histogram');
+  const element = createElementWithClass('div', 'histogram');
   element.style.position = 'relative';
   element.style.width = width;
   element.style.height = height;

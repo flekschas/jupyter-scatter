@@ -10,7 +10,7 @@ from typing import Optional, Union, List, Tuple, Set
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, create_default_norm, create_labeling, get_histogram
+from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_scale_type_from_df, get_domain_from_df, create_default_norm, create_labeling, get_histogram_from_df, sanitize_tooltip_contents
 from .types import Color, Scales, MouseModes, All, Auto, Reverse, Segment, Size, LegendPosition, TooltipContent, Labeling, Undefined
 
 COMPONENT_CONNECT = 4
@@ -27,13 +27,16 @@ UNDEF = Undefined()
 
 default_background_color = 'white'
 
-all_tooltip_contents = {
+visual_tooltip_contents = {
     'x',
     'y',
     'color',
     'opacity',
     'size',
 }
+
+def get_non_visual_contents(contents):
+    return [c for c in contents if c not in visual_tooltip_contents]
 
 def check_encoding_dtype(series):
     if not any([check(series.dtype) for check in VALID_ENCODING_TYPES]):
@@ -258,7 +261,8 @@ class Scatter():
         self._legend_position = 'top-left'
         self._legend_size = 'small'
         self._tooltip = False
-        self._tooltip_contents = all_tooltip_contents.copy()
+        self._tooltip_contents = visual_tooltip_contents.copy()
+        self._tooltip_contents_non_visual = None
         self._tooltip_size = 'small'
         self._tooltip_histograms = True
         self._zoom_to = None
@@ -439,6 +443,9 @@ class Scatter():
             try:
                 self._n = len(data)
                 self._data = data
+
+                if self._widget is not None:
+                    self._widget.data = self._data
             except TypeError:
                 return self
 
@@ -545,7 +552,7 @@ class Scatter():
             self._x_min = np.min(self._points[:, 0])
             self._x_max = np.max(self._points[:, 0])
             self._x_domain = [self._x_min, self._x_max]
-            self._x_histogram = get_histogram(self._points[:, 0])
+            self._x_histogram = get_histogram_from_df(self._points[:, 0])
 
             # Reset scale to new domain
             if scale is UNDEF:
@@ -648,7 +655,7 @@ class Scatter():
             self._y_min = np.min(self._points[:, 1])
             self._y_max = np.max(self._points[:, 1])
             self._y_domain = [self._y_min, self._y_max]
-            self._y_histogram = get_histogram(self._points[:, 1])
+            self._y_histogram = get_histogram_from_df(self._points[:, 1])
 
             # Reset scale to new domain
             if scale is UNDEF:
@@ -1008,14 +1015,14 @@ class Scatter():
                     if categorical_data is not None:
                         self._color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                         self._points[:, component] = categorical_data.cat.codes
-                        self._color_histogram = get_histogram(categorical_data)
+                        self._color_histogram = get_histogram_from_df(categorical_data)
                     else:
                         self._color_categories = None
                         self._points[:, component] = self._color_norm(self._data[by].values)
-                        self._color_histogram = get_histogram(self._points[:, component])
+                        self._color_histogram = get_histogram_from_df(self._points[:, component])
                 except TypeError:
                     self._points[:, component] = self._color_norm(np.asarray(by))
-                    self._color_histogram = get_histogram(self._points[:, component])
+                    self._color_histogram = get_histogram_from_df(self._points[:, component])
 
                 if not self._encodings.data[by].prepared:
                     data_updated = True
@@ -1257,14 +1264,14 @@ class Scatter():
                     if categorical_data is not None:
                         self._points[:, component] = categorical_data.cat.codes
                         self._opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                        self._opacity_histogram = get_histogram(categorical_data)
+                        self._opacity_histogram = get_histogram_from_df(categorical_data)
                     else:
                         self._points[:, component] = self._opacity_norm(self._data[by].values)
-                        self._opacity_histogram = get_histogram(self._points[:, component])
+                        self._opacity_histogram = get_histogram_from_df(self._points[:, component])
                         self._opacity_categories = None
                 except TypeError:
                     self._points[:, component] = self._opacity_norm(np.asarray(by))
-                    self._opacity_histogram = get_histogram(self._points[:, component])
+                    self._opacity_histogram = get_histogram_from_df(self._points[:, component])
 
                 if not self._encodings.data[by].prepared:
                     data_updated = True
@@ -1475,14 +1482,14 @@ class Scatter():
                     if categorical_data is not None:
                         self._points[:, component] = categorical_data.cat.codes
                         self._size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                        self._size_histogram = get_histogram(categorical_data)
+                        self._size_histogram = get_histogram_from_df(categorical_data)
                     else:
                         self._points[:, component] = self._size_norm(self._data[by].values)
-                        self._size_histogram = get_histogram(self._points[:, component])
+                        self._size_histogram = get_histogram_from_df(self._points[:, component])
                         self._size_categories = None
                 except TypeError:
                     self._points[:, component] = self._size_norm(np.asarray(by))
-                    self._size_histogram = get_histogram(self._points[:, component])
+                    self._size_histogram = get_histogram_from_df(self._points[:, component])
 
                 if not self._encodings.data[by].prepared:
                     data_updated = True
@@ -3091,9 +3098,13 @@ class Scatter():
 
         if contents is not UNDEF:
             if contents == 'all':
-                contents = all_tooltip_contents.copy()
-            self._tooltip_contents = contents
-            self.update_widget('tooltip_contents', contents)
+                contents = visual_tooltip_contents.copy()
+
+            self._tooltip_contents = sanitize_tooltip_contents(
+                self._data,
+                visual_tooltip_contents,
+                contents
+            )
 
         if size is not UNDEF:
             self._tooltip_size = size
@@ -3102,6 +3113,22 @@ class Scatter():
         if histograms is not UNDEF:
             self._tooltip_histograms = histograms
             self.update_widget('tooltip_histograms', histograms)
+
+        if self._tooltip_contents_non_visual is None or contents is not UNDEF:
+            self._tooltip_contents_non_visual = get_non_visual_contents(
+                self._tooltip_contents
+            )
+
+            self._tooltip_contents_non_visual_info = {}
+            for content in self._tooltip_contents_non_visual:
+                self._tooltip_contents_non_visual_info[content] = dict(
+                    scale = get_scale_type_from_df(self._data[content]),
+                    domain = get_domain_from_df(self._data[content]),
+                    histogram = get_histogram_from_df(self._data[content]),
+                )
+
+            self.update_widget('tooltip_contents_non_visual_info', self._tooltip_contents_non_visual_info)
+            self.update_widget('tooltip_contents', self._tooltip_contents)
 
         if any_not([tooltip, contents, size, histograms], UNDEF):
             return self
@@ -3346,6 +3373,7 @@ class Scatter():
             return self._widget
 
         self._widget = JupyterScatter(
+            data=self._data,
             axes=self._axes,
             axes_color=self.get_axes_color(),
             axes_grid=self._axes_grid,
@@ -3405,6 +3433,7 @@ class Scatter():
             size_title=self._size_by,
             tooltip_color=self.get_tooltip_color(),
             tooltip_contents=self._tooltip_contents,
+            tooltip_contents_non_visual_info=self._tooltip_contents_non_visual_info,
             tooltip_enable=self._tooltip,
             tooltip_histograms=self._tooltip_histograms,
             tooltip_size=self._tooltip_size,

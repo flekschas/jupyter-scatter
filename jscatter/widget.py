@@ -4,6 +4,7 @@ import ipywidgets as widgets
 import matplotlib.pyplot as plt
 import numpy as np
 import anywidget
+import pandas as pd
 import pathlib
 
 from traitlets import Bool, Dict, Enum, Float, Int, List, Set, Unicode, Union
@@ -12,6 +13,7 @@ from traittypes import Array
 from .utils import to_hex, with_left_label
 
 SELECTION_DTYPE = 'uint32'
+TOOLTIP_EVENT_TYPE = 'tooltip';
 
 def component_idx_to_name(idx):
     if idx == 2:
@@ -148,6 +150,7 @@ class JupyterScatter(anywidget.AnyWidget):
     tooltip_contents = Set(
         default_value={'x', 'y', 'color', 'opacity', 'size'}
     ).tag(sync=True)
+    tooltip_contents_non_visual_info = Dict(dict()).tag(sync=True)
     tooltip_histograms = Bool().tag(sync=True)
 
     # Options
@@ -192,6 +195,20 @@ class JupyterScatter(anywidget.AnyWidget):
 
     # For synchronyzing view changes across scatter plot instances
     view_sync = Unicode(None, allow_none=True).tag(sync=True)
+
+    def __init__(self, data, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.data = data
+        self.on_msg(self._handle_custom_msg)
+
+    def _handle_custom_msg(self, data: dict, buffers):
+        if data["type"] == TOOLTIP_EVENT_TYPE and isinstance(self.data, pd.DataFrame):
+            self.send({
+                "type": TOOLTIP_EVENT_TYPE,
+                "index": data["index"],
+                "contents": self.data.iloc[data["index"]][data["contents"]].to_dict()
+            })
 
     @property
     def mouse_mode_widget(self):

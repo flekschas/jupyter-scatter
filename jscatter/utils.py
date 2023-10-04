@@ -2,9 +2,9 @@ import ipywidgets as widgets
 
 from matplotlib.colors import LogNorm, PowerNorm, Normalize
 from numpy import histogram
-from pandas.api.types import is_categorical_dtype
+from pandas.api.types import is_categorical_dtype, is_string_dtype
 from urllib.parse import urlparse
-from typing import Union
+from typing import List, Set, Union
 
 from .types import Labeling
 
@@ -68,6 +68,21 @@ def to_scale_type(norm = None):
 
     return 'categorical'
 
+def get_scale_type_from_df(data):
+    if is_categorical_dtype(data) or is_string_dtype(data):
+        return 'categorical'
+
+    return 'linear'
+
+def get_domain_from_df(data):
+    if is_categorical_dtype(data) or is_string_dtype(data):
+        _data = data
+        if is_string_dtype(data):
+            _data = data.copy().astype('category')
+        return dict(zip(_data, _data.cat.codes))
+
+    return [data.min(), data.max()]
+
 def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeling:
     labeling: Labeling = {}
 
@@ -95,9 +110,27 @@ def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeli
 
     return labeling
 
-def get_histogram(data, bins=20):
-    if is_categorical_dtype(data):
-        value_counts = data.cat.codes.value_counts()
+def get_histogram_from_df(data, bins=20):
+    if is_categorical_dtype(data) or is_string_dtype(data):
+        _data = data
+        if is_string_dtype(data):
+            _data = data.copy().astype('category')
+        value_counts = _data.cat.codes.value_counts()
         return [y for _, y in sorted(dict(value_counts / value_counts.sum()).items())]
 
     return list(histogram(data, bins=bins)[0] / histogram(data, bins=bins)[0].max())
+
+def sanitize_tooltip_contents(
+    df,
+    reserved_contents: Set[str],
+    contents: Union[List[str], Set[str]]
+):
+    sanitized_contents = set()
+
+    for col in contents:
+        if col in reserved_contents or (df is not None and col in df):
+            sanitized_contents.add(col)
+        else:
+            continue
+
+    return sanitized_contents

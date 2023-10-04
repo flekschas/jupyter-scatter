@@ -6,7 +6,11 @@ export function camelToSnake(string) {
 
 export function toCapitalCase(string) {
   if (string.length === 0) return string;
-  return string.at(0).toUpperCase() + string.slice(1).toLowerCase();
+  return string.at(0).toUpperCase() + string.slice(1);
+}
+
+export function toTitleCase(string) {
+  return string.split(/[\s_]/).map((s) => toCapitalCase(s)).join(' ').split('-').map((s) => toCapitalCase(s)).join('-')
 }
 
 export function downloadBlob(blob, name) {
@@ -63,4 +67,18 @@ export function createNumericalBinGetter(histogram, domain) {
   const min = domain[0];
   const extent = domain[1] - domain[0];
   return (value) => Math.round(((value - min) / extent) * maxBinId);
+}
+
+export function createElementWithClass(tagName, className) {
+  const element = document.createElement(tagName);
+
+  if (className) {
+    if (Array.isArray(className)) {
+      className.forEach((name) => element.classList.add(name));
+    } else {
+      element.classList.add(className);
+    }
+  }
+
+  return element;
 }
