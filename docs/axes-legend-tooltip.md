@@ -46,7 +46,7 @@ When you encode data properties with the point color, opacity, or size, it's
 immensly helpful to know how the encoded data properties relate to the visual
 properties by showing a legend.
 
-```py{18-20}
+```py{21-23}
 import jscatter
 import numpy as np
 import pandas as pd
@@ -56,8 +56,11 @@ df = pd.DataFrame({
   "mass": np.random.rand(500),
   "speed": np.random.rand(500),
   "pval": np.random.rand(500),
+  "effect_size": np.random.rand(500),
   # Random letters A, B, C, D, E, F, G, H
   "cat": np.vectorize(lambda x: chr(65 + round(x * 8)))(np.random.rand(500)),
+  # Random letters X, Y, Z
+  "group": np.vectorize(lambda x: chr(88 + round(x * 2)))(np.random.rand(500)),
 })
 
 scatter = jscatter.Scatter(
@@ -103,9 +106,10 @@ scatter.color(labeling={
 ## Tooltip
 
 Having a legend is necessary to understand the mapping of data to visual
-properties but it requires quite a bit of eye movement from the point (you're
-currently focusing on) to the legend and back. To make this more efficient,
-Jupyter Scatter can show a tooltip explaining a point's encoded properties.
+properties but it requires quite a bit of eye movement from the point you're
+currently focusing on to the legend and back. To make this more efficient,
+Jupyter Scatter supports a tooltip to show a point's encoded and other
+properties.
 
 ```py
 scatter.tooltip(True)
@@ -113,14 +117,47 @@ scatter.tooltip(True)
 
 <div class="img tooltip-1"><div /></div>
 
-By default, the tooltip has an entry for all encoded properties. You can limit
-the contents of the tooltip as follows:
+Each row in the tooltip corresponds to a property. From left to right, each
+property features:
+
+1. the visual channel like `x`, `y`, `color`, `opacity`, or `size` (if the property for visual encoding)
+2. the name as specified by the column name in the bound dataframe
+3. the actual value
+4. the histogram of the property
+
+For numerical properties, the histogram is visualized as a bar chart. For
+categorical properties, the histogram is visualized as a horizontal stacked bar.
+In both cases, the highlighted bar indicates how the hovered point compares to
+the other points.
+
+By default, the tooltip shows all properties that are visually encoded but you
+can limit the contents of the tooltip as follows:
 
 ```py
 scatter.tooltip(contents=["color", "opacity"])
 ```
 
 <div class="img tooltip-2"><div /></div>
+
+Importantly, you can also show other properties in the tooltip that are not
+directly visualized with the scatter plot. Other properties have to be
+referenced by their respective column names.
+
+```py{5-6}
+scatter.tooltip(
+  contents=[
+    "color",
+    "opacity",
+    "effect_size",
+    "group"
+  ]
+)
+```
+
+<div class="img tooltip-3"><div /></div>
+
+Here, for instance, we're showing the point's `effect_size` and `group`
+property.
 
 <style scoped>
   .img {
@@ -208,5 +245,15 @@ scatter.tooltip(contents=["color", "opacity"])
 
   :root.dark .img.tooltip-2 {
     background-image: url(/images/tooltip-2-dark.png)
+  }
+
+  .img.tooltip-3 {
+    width: 596px;
+    background-image: url(/images/tooltip-3-light.png)
+  }
+  .img.tooltip-3 div { padding-top: 48.489933% }
+
+  :root.dark .img.tooltip-3 {
+    background-image: url(/images/tooltip-3-dark.png)
   }
 </style>
