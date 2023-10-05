@@ -29,9 +29,6 @@ class MouseModes(Enum):
     LASSO = 'lasso'
     ROTATE = 'rotate'
 
-class All(Enum):
-    ALL = 'all'
-
 class Auto(Enum):
     AUTO = 'auto'
 

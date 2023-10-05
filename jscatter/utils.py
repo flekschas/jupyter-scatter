@@ -122,14 +122,14 @@ def get_histogram_from_df(data, bins=20):
 
 def sanitize_tooltip_contents(
     df,
-    reserved_contents: Set[str],
-    contents: Union[List[str], Set[str]]
+    reserved_contents: List[str],
+    contents: List[str],
 ):
-    sanitized_contents = set()
+    sanitized_contents = []
 
     for col in contents:
         if col in reserved_contents or (df is not None and col in df):
-            sanitized_contents.add(col)
+            sanitized_contents.append(col)
         else:
             continue
 

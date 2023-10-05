@@ -147,8 +147,8 @@ class JupyterScatter(anywidget.AnyWidget):
     tooltip_color = List(
         default_value=[0, 0, 0, 1], minlen=4, maxlen=4
     ).tag(sync=True)
-    tooltip_contents = Set(
-        default_value={'x', 'y', 'color', 'opacity', 'size'}
+    tooltip_contents = List(
+        default_value=['x', 'y', 'color', 'opacity', 'size']
     ).tag(sync=True)
     tooltip_contents_non_visual_info = Dict(dict()).tag(sync=True)
     tooltip_histograms = Bool().tag(sync=True)

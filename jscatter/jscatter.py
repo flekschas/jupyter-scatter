@@ -11,7 +11,7 @@ from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
 from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_scale_type_from_df, get_domain_from_df, create_default_norm, create_labeling, get_histogram_from_df, sanitize_tooltip_contents
-from .types import Color, Scales, MouseModes, All, Auto, Reverse, Segment, Size, LegendPosition, TooltipContent, Labeling, Undefined
+from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Size, LegendPosition, TooltipContent, Labeling, Undefined
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -27,13 +27,13 @@ UNDEF = Undefined()
 
 default_background_color = 'white'
 
-visual_tooltip_contents = {
+visual_tooltip_contents = [
     'x',
     'y',
     'color',
     'opacity',
     'size',
-}
+]
 
 def get_non_visual_contents(contents):
     return [c for c in contents if c not in visual_tooltip_contents]
@@ -3048,7 +3048,7 @@ class Scatter():
     def tooltip(
         self,
         tooltip: Optional[Union[bool, Undefined]] = UNDEF,
-        contents: Optional[Union[All, Set[TooltipContent], Undefined]] = UNDEF,
+        contents: Optional[Union[List[TooltipContent], Undefined]] = UNDEF,
         size: Optional[Union[Size, Undefined]] = UNDEF,
         histograms: Optional[Union[bool, Undefined]] = UNDEF,
     ):
@@ -3059,11 +3059,12 @@ class Scatter():
         ----------
         tooltip : bool, optional
             When set to `True`, a tooltip will be shown upon hovering a point.
-        contents : all or set(str), optional
-            The channels that should be shown in the tooltip. Note, that only
-            the visual channels that are actually used for encoding will be
-            shown in the tooltip eventually. Can be either `all` (default) or
-            some of `x`, `y`, `color`, `opacity`, and `size`.
+        contents : all or list of str, optional
+            The visual channels or columns of the bound dataframe that should be
+            shown in the tooltip. The visual channels can be some of `x`, `y`,
+            `color`, `opacity`, and `size`. Note that visual channels are only
+            shown if they are actually used to encode information. To reference
+            a column specify it's name.
         size : small or medium or large, optional
             The size of the tooltip. Must be one of small, medium, or large
         histograms : bool, optional
@@ -3080,26 +3081,23 @@ class Scatter():
         >>> scatter.tooltip(True)
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.tooltip(contents={'color', 'opacity'})
+        >>> scatter.tooltip(contents=['color', 'opacity', 'my_column'])
         <jscatter.jscatter.Scatter>
 
         >>> scatter.tooltip(size='large')
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.tooltip(histograms=False)
+        >>> scatter.tooltip(histograms=True)
         <jscatter.jscatter.Scatter>
 
         >>> scatter.tooltip()
-        {'tooltip': True, 'contents': {'color', 'opacity'}, size: 'large', histograms=False}
+        {'tooltip': True, 'contents': ['color', 'opacity', 'my_column'], size: 'large', histograms=True}
         """
         if tooltip is not UNDEF:
             self._tooltip = tooltip
             self.update_widget('tooltip_enable', tooltip)
 
         if contents is not UNDEF:
-            if contents == 'all':
-                contents = visual_tooltip_contents.copy()
-
             self._tooltip_contents = sanitize_tooltip_contents(
                 self._data,
                 visual_tooltip_contents,
