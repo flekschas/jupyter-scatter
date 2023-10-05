@@ -748,7 +748,6 @@ class JupyterScatterView {
     this.tooltipContent = document.createElement('div');
     this.tooltipContent.style.position = 'relative';
     this.tooltipContent.style.display = 'grid';
-    this.tooltipContent.style.gridTemplateColumns = 'max-content max-content max-content';
     this.tooltipContent.style.gap = '0.5em';
     this.tooltipContent.style.userSelect = 'none';
     this.tooltipContent.style.borderRadius = '0.2rem';
@@ -928,6 +927,16 @@ class JupyterScatterView {
 
     for (const content of this.tooltipContentsAll) {
       this[`tooltipContent${toCapitalCase(content)}ValueHistogram`]?.style(fg, histogramBg);
+    }
+
+    if (this.tooltipContentsVisual.length) {
+      this.tooltipContent.style.gridTemplateColumns = 'max-content max-content max-content';
+    } else {
+      // Let's hide the channel column since no contents is visually encoded
+      this.tooltipContent.style.gridTemplateColumns = 'max-content max-content';
+      for (const channel of this.tooltipContent.querySelectorAll('.channel')) {
+        channel.style.display = 'none';
+      }
     }
 
     this.tooltipOpacity = isDark ? 0.33 : 0.2;
