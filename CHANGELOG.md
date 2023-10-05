@@ -1,3 +1,8 @@
+## v0.15.0
+
+- Add support for histograms in the tooltip ([#96](https://github.com/flekschas/jupyter-scatter/pull/96))
+- Add support for non-visualized properties in the toolip ([#96](https://github.com/flekschas/jupyter-scatter/pull/96))
+
 ## v0.14.3
 
 - Fix: don't return color, opacity, or size settings when `labeling` is defined
