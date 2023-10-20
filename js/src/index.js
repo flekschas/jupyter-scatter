@@ -329,7 +329,7 @@ class JupyterScatterView {
       this.createSizeGetter();
       this.createTooltip();
 
-      this.showTooltipDb = debounce(
+      this.showTooltipDebounced = debounce(
         this.showTooltip.bind(this),
         TOOLTIP_DEBOUNCE_TIME
       );

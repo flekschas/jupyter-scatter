@@ -120,7 +120,7 @@ scatter.tooltip(True)
 Each row in the tooltip corresponds to a property. From left to right, each
 property features:
 
-1. the visual channel like `x`, `y`, `color`, `opacity`, or `size` (if the property for visual encoding)
+1. the visual channel like `x`, `y`, `color`, `opacity`, or `size` (if the property is for visual encoding)
 2. the name as specified by the column name in the bound dataframe
 3. the actual value
 4. the histogram of the property
