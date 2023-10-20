@@ -105,11 +105,10 @@ scatter.color(labeling={
 
 ## Tooltip
 
-Having a legend is necessary to understand the mapping of data to visual
-properties but it requires quite a bit of eye movement from the point you're
-currently focusing on to the legend and back. To make this more efficient,
-Jupyter Scatter supports a tooltip to show a point's encoded and other
-properties.
+Legends depict how data are mapped to visual properties, yet require repeated
+eye movement between individual points and the legend for accurate
+interpretation. Jupyter Scatter supports a tooltip to show a point's encoded
+properties and related details, alleviating this strain.
 
 ```py
 scatter.tooltip(True)
