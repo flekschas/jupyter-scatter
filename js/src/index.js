@@ -31,19 +31,12 @@ const AXES_PADDING_Y = 20;
 const AXES_PADDING_Y_WITH_LABEL = AXES_PADDING_Y + AXES_LABEL_SIZE;
 const TOOLTIP_EVENT_TYPE = 'tooltip';
 const TOOLTIP_DEBOUNCE_TIME = 250;
-const TOOLTIP_MANDATORY_VISUAL_CONTENTS = new Map([
-  ['x', 'X'],
-  ['y', 'Y']
-]);
-const TOOLTIP_OPTIONAL_VISUAL_CONTENTS = new Map([
-  ['color', 'Col'],
-  ['opacity', 'Opa'],
-  ['size', 'Size']
-]);
-const TOOLTIP_ALL_VISUAL_CONTENTS = new Map([
+const TOOLTIP_MANDATORY_VISUAL_CONTENTS = (/** @type {const} */ ({ x: 'X', y: 'Y' }));
+const TOOLTIP_OPTIONAL_VISUAL_CONTENTS = (/** @type {const} */ ({ color: 'Col', opacity: 'Opa', size: 'Size' }));
+const TOOLTIP_ALL_VISUAL_CONTENTS = (/** @type {const} */ ({
   ...TOOLTIP_MANDATORY_VISUAL_CONTENTS,
-  ...TOOLTIP_OPTIONAL_VISUAL_CONTENTS,
-]);
+  ...TOOLTIP_OPTIONAL_VISUAL_CONTENTS
+}));
 const TOOLTIP_HISTOGRAM_WIDTH = '6em';
 const TOOLTIP_HISTOGRAM_HEIGHT = '1em';
 
@@ -617,12 +610,12 @@ class JupyterScatterView {
       ['channel', `${content}-channel`]
     );
 
-    if (TOOLTIP_ALL_VISUAL_CONTENTS.has(content)) {
+    if (content in TOOLTIP_ALL_VISUAL_CONTENTS) {
       this[`tooltipContent${capitalContent}ChannelName`] = createElementWithClass(
         'div',
         ['channel-name', `${content}-channel-name`]
       );
-      this[`tooltipContent${capitalContent}ChannelName`].textContent = TOOLTIP_ALL_VISUAL_CONTENTS.get(content);
+      this[`tooltipContent${capitalContent}ChannelName`].textContent = TOOLTIP_ALL_VISUAL_CONTENTS[content];
 
       this[`tooltipContent${capitalContent}Channel`].appendChild(
         this[`tooltipContent${capitalContent}ChannelName`]
@@ -685,15 +678,6 @@ class JupyterScatterView {
 
     const contents = new Set(this.tooltipContentsAll);
 
-    // To ensure that visual contents are listed before non-visual contents,
-    // we're first going to iterate over the visual contents.
-    for (const content of TOOLTIP_ALL_VISUAL_CONTENTS) {
-      if (!contents.has(content)) continue;
-      contents.delete(content);
-      this.createTooltipContentDomElements(content);
-    }
-
-    // Next, we're going to iterate over the remaining non-visual contents
     for (const content of contents) {
       this.createTooltipContentDomElements(content);
     }
@@ -704,9 +688,9 @@ class JupyterScatterView {
   createTooltipContents() {
     this.tooltipContentsVisual = new Set(this.model.get('tooltip_contents'));
     for (const content of this.tooltipContentsVisual) {
-      if (TOOLTIP_MANDATORY_VISUAL_CONTENTS.has(content)) continue;
+      if (content in TOOLTIP_MANDATORY_VISUAL_CONTENTS) continue;
       if (
-        TOOLTIP_OPTIONAL_VISUAL_CONTENTS.has(content) &&
+        content in TOOLTIP_OPTIONAL_VISUAL_CONTENTS &&
         this.model.get(`${content}_by`)
       ) continue
       this.tooltipContentsVisual.delete(content);
@@ -714,7 +698,7 @@ class JupyterScatterView {
     this.tooltipContentsVisual = Array.from(this.tooltipContentsVisual);
 
     this.tooltipContentsNonVisual = new Set(this.model.get('tooltip_contents'));
-    for (const content of TOOLTIP_ALL_VISUAL_CONTENTS.keys()) {
+    for (const content of Object.keys(TOOLTIP_ALL_VISUAL_CONTENTS)) {
       this.tooltipContentsNonVisual.delete(content);
     }
     this.tooltipContentsNonVisual = Array.from(this.tooltipContentsNonVisual);
