@@ -117,12 +117,14 @@ scatter.tooltip(True)
 <div class="img tooltip-1"><div /></div>
 
 Each row in the tooltip corresponds to a property. From left to right, each
-property features:
+property features the:
 
-1. the visual channel like `x`, `y`, `color`, `opacity`, or `size` (if the property is for visual encoding)
-2. the name as specified by the column name in the bound dataframe
-3. the actual value
-4. the histogram of the property
+1. visual channel and property like `x`, `y`, `color`, `opacity`, or `size` (if the property is for visual encoding)
+2. name as specified by the column name in the bound DataFrame
+3. actual data value
+4. histogram of the data property
+
+<div class="img tooltip-2"><div /></div>
 
 For numerical properties, the histogram is visualized as a bar chart. For
 categorical properties, the histogram is visualized as a horizontal stacked bar.
@@ -136,7 +138,7 @@ can limit the contents of the tooltip as follows:
 scatter.tooltip(contents=["color", "opacity"])
 ```
 
-<div class="img tooltip-2"><div /></div>
+<div class="img tooltip-3"><div /></div>
 
 Importantly, you can also show other properties in the tooltip that are not
 directly visualized with the scatter plot. Other properties have to be
@@ -153,7 +155,7 @@ scatter.tooltip(
 )
 ```
 
-<div class="img tooltip-3"><div /></div>
+<div class="img tooltip-4"><div /></div>
 
 Here, for instance, we're showing the point's `effect_size` and `group`
 property.
@@ -237,10 +239,10 @@ property.
   }
 
   .img.tooltip-2 {
-    width: 596px;
+    width: 960px;
     background-image: url(/images/tooltip-2-light.png)
   }
-  .img.tooltip-2 div { padding-top: 48.489933% }
+  .img.tooltip-2 div { padding-top: 47.916667% }
 
   :root.dark .img.tooltip-2 {
     background-image: url(/images/tooltip-2-dark.png)
@@ -254,5 +256,15 @@ property.
 
   :root.dark .img.tooltip-3 {
     background-image: url(/images/tooltip-3-dark.png)
+  }
+
+  .img.tooltip-4 {
+    width: 596px;
+    background-image: url(/images/tooltip-4-light.png)
+  }
+  .img.tooltip-4 div { padding-top: 48.489933% }
+
+  :root.dark .img.tooltip-4 {
+    background-image: url(/images/tooltip-4-dark.png)
   }
 </style>
