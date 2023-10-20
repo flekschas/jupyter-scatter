@@ -1497,7 +1497,7 @@ class JupyterScatterView {
     this.scatterplot.unsubscribe('deselect', this.deselectHandlerBound);
     this.scatterplot.unsubscribe('filter', this.filterEventHandlerBound);
     this.scatterplot.unsubscribe('view', this.viewChangeHandlerBound);
-    this.showTooltipDb.cancel();
+    this.showTooltipDebounced.cancel();
     this.scatterplot.destroy();
   }
 
@@ -1514,14 +1514,14 @@ class JupyterScatterView {
   // Event handlers for JS-triggered events
   pointoverHandler(pointIndex) {
     this.hoveringChangedByJs = true;
-    if (this.model.get('tooltip_enable')) this.showTooltipDb(pointIndex);
+    if (this.model.get('tooltip_enable')) this.showTooltipDebounced(pointIndex);
     this.model.set('hovering', pointIndex);
     this.model.save_changes();
   }
 
   pointoutHandler() {
     this.hoveringChangedByJs = true;
-    this.showTooltipDb.cancel();
+    this.showTooltipDebounced.cancel();
     this.hideToolip();
     this.model.set('hovering', null);
     this.model.save_changes();
