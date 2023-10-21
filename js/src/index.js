@@ -1049,13 +1049,18 @@ class JupyterScatterView {
       value.style.display = 'flex';
       value.style.gap = '0 0.25em';
       value.style.fontWeight = 'bold';
-      value.style.alignItems = 'center';
+      value.style.alignItems = 'top';
     }
 
     const valueTexts = this.tooltipContent.querySelectorAll('.value-text');
 
     for (const valueText of valueTexts) {
       valueText.style.flexGrow = '1';
+      valueText.style.maxWidth = '10em';
+      valueText.style.display = '-webkit-box';
+      valueText.style.webkitLineClamp = 2;
+      valueText.style.webkitBoxOrient = 'vertical';
+      valueText.style.overflow = 'hidden';
     }
   }
 
