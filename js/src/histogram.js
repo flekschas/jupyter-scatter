@@ -3,6 +3,10 @@ import { createElementWithClass } from './utils';
 const DEFAULT_BACKGROUND_COLOR = '#999999';
 const DEFAULT_HIGHLIGHT_COLOR = '#000000';
 const BIN_SPACE = 1;
+const COMPARE = (new Intl.Collator(
+  undefined,
+  { numeric: true, sensitivity: 'base' }
+)).compare;
 
 const createCategoricalHistogramBackground = (canvas, data)  => {
   const ctx = canvas.getContext("2d");
@@ -36,14 +40,16 @@ const createCategoricalHistogramBackground = (canvas, data)  => {
     const { lastI, width } = state;
     let cumulativePercentage = 0;
 
-    state.rects = Object.values(data).map((value, i) => {
-      const rect = {
-        x: cumulativePercentage * width,
-        width: i === lastI ? value * width : (value * width) - 1,
-      }
-      cumulativePercentage += value;
-      return rect;
-    });
+    state.rects = Object.entries(data)
+      .sort(([keyA], [keyB]) => COMPARE(keyA, [keyB]))
+      .map(([, value], i) => {
+        const rect = {
+          x: cumulativePercentage * width,
+          width: i === lastI ? value * width : (value * width) - 1,
+        }
+        cumulativePercentage += value;
+        return rect;
+      });
   }
 
   init();
@@ -82,14 +88,16 @@ const createCategoricalHistogramHighlight = (canvas, data)  => {
     const { lastI, width } = state;
     let cumulativePercentage = 0;
 
-    state.rects = Object.entries(data).reduce((acc, [key, value], i) => {
-      acc[key] = {
-        x: cumulativePercentage * width,
-        width: i === lastI ? value * width : (value * width) - 1,
-      }
-      cumulativePercentage += value;
-      return acc;
-    }, {});
+    state.rects = Object.entries(data)
+      .sort(([keyA], [keyB]) => COMPARE(keyA, [keyB]))
+      .reduce((acc, [key, value], i) => {
+        acc[key] = {
+          x: cumulativePercentage * width,
+          width: i === lastI ? value * width : (value * width) - 1,
+        }
+        cumulativePercentage += value;
+        return acc;
+      }, {});
   }
 
   init();
