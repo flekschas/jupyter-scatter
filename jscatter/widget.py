@@ -7,7 +7,7 @@ import anywidget
 import pandas as pd
 import pathlib
 
-from traitlets import Bool, Dict, Enum, Float, Int, List, Set, Unicode, Union
+from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
 from traittypes import Array
 
 from .utils import to_hex, with_left_label
