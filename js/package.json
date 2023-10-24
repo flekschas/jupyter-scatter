@@ -17,7 +17,7 @@
     "test": "npm run lint"
   },
   "dependencies": {
-    "@flekschas/utils": "^0.32.1",
+    "@flekschas/utils": "^0.32.2",
     "@jupyter-widgets/base": "^1.1 || ^2 || ^3 || ^4 || ^5 || ^6",
     "d3-axis": "~3.0.0",
     "d3-format": "~3.1.0",

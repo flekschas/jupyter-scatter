@@ -103,6 +103,7 @@ const properties = {
   tooltipPosition: 'tooltipPosition',
   tooltipContents: 'tooltipContents',
   tooltipHistograms: 'tooltipHistograms',
+  tooltipContentsNonVisualInfo: 'tooltipContentsNonVisualInfo',
   xScale: 'xScale',
   yScale: 'yScale',
   colorScale: 'colorScale',
@@ -657,7 +658,7 @@ class JupyterScatterView {
     );
 
     const histogram = this.model.get(`${content}_histogram`) || this.model.get('tooltip_contents_non_visual_info')[content]?.histogram;
-    const scale = this.model.get(`${content}_scale`) || this.model.get('tooltip_contents_non_visual_info')[content]?.scale
+    const scale = this.model.get(`${content}_scale`) || this.model.get('tooltip_contents_non_visual_info')[content]?.scale;
 
     this[`tooltipContent${capitalContent}ValueHistogram`].init(
       histogram,
@@ -674,6 +675,8 @@ class JupyterScatterView {
   }
 
   createTooltipContentsDomElements() {
+    // Remove existing DOM elements. Not the most efficient approach but it's
+    // error-prone.
     this.tooltipContent.replaceChildren();
 
     const contents = new Set(this.tooltipContentsAll);
@@ -1372,6 +1375,11 @@ class JupyterScatterView {
     this.createTooltipContentUpdater();
   }
 
+  tooltipContentsNonVisualInfoHandler() {
+    this.createTooltipContents();
+    this.createTooltipContentUpdater();
+  }
+
   tooltipHistogramsHandler() {
     this.enableTooltipHistograms();
   }
@@ -1729,32 +1737,37 @@ class JupyterScatterView {
   }
 
   xHistogramHandler() {
-    this.tooltipContentXValueHistogram.init(this.model.get('x_histogram'));
+    this.tooltipContentXValueHistogram?.init(this.model.get('x_histogram'));
+    this.createXGetter();
   }
 
   yHistogramHandler() {
-    this.tooltipContentYValueHistogram.init(this.model.get('y_histogram'));
+    this.tooltipContentYValueHistogram?.init(this.model.get('y_histogram'));
+    this.createYGetter();
   }
 
   colorHistogramHandler() {
-    this.tooltipContentColorValueHistogram.init(
+    this.tooltipContentColorValueHistogram?.init(
       this.model.get('color_histogram'),
       this.model.get('color_scale') === 'categorical',
     );
+    this.createColorGetter();
   }
 
   opacityHistogramHandler() {
-    this.tooltipContentOpacityValueHistogram.init(
+    this.tooltipContentOpacityValueHistogram?.init(
       this.model.get('opacity_histogram'),
       this.model.get('opacity_scale') === 'categorical',
     );
+    this.createOpacityGetter();
   }
 
   sizeHistogramHandler() {
-    this.tooltipContentSizeValueHistogram.init(
+    this.tooltipContentSizeValueHistogram?.init(
       this.model.get('size_histogram'),
       this.model.get('size_scale') === 'categorical',
     );
+    this.createSizeGetter();
   }
 
   // Event handlers for Python-triggered events
