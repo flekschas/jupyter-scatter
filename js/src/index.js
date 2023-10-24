@@ -37,7 +37,11 @@ const TOOLTIP_ALL_VISUAL_CONTENTS = (/** @type {const} */ ({
   ...TOOLTIP_MANDATORY_VISUAL_CONTENTS,
   ...TOOLTIP_OPTIONAL_VISUAL_CONTENTS
 }));
-const TOOLTIP_HISTOGRAM_WIDTH = '6em';
+const TOOLTIP_HISTOGRAM_WIDTH = (/** @type {const} */ ({
+  small: '6em',
+  medium: '10em',
+  large: '14em',
+}));
 const TOOLTIP_HISTOGRAM_HEIGHT = '1em';
 
 /**
@@ -103,6 +107,7 @@ const properties = {
   tooltipPosition: 'tooltipPosition',
   tooltipContents: 'tooltipContents',
   tooltipHistograms: 'tooltipHistograms',
+  tooltipHistogramsWidth: 'tooltipHistogramsWidth',
   tooltipContentsNonVisualInfo: 'tooltipContentsNonVisualInfo',
   xScale: 'xScale',
   yScale: 'yScale',
@@ -650,7 +655,7 @@ class JupyterScatterView {
     );
 
     this[`tooltipContent${capitalContent}ValueHistogram`] = createHistogram(
-      TOOLTIP_HISTOGRAM_WIDTH,
+      TOOLTIP_HISTOGRAM_WIDTH[this.model.get('tooltip_histograms_width')] || TOOLTIP_HISTOGRAM_WIDTH.small,
       TOOLTIP_HISTOGRAM_HEIGHT
     );
     this[`tooltipContent${capitalContent}Value`].appendChild(
@@ -1376,6 +1381,11 @@ class JupyterScatterView {
   }
 
   tooltipContentsNonVisualInfoHandler() {
+    this.createTooltipContents();
+    this.createTooltipContentUpdater();
+  }
+
+  tooltipHistogramsWidthHandler() {
     this.createTooltipContents();
     this.createTooltipContentUpdater();
   }

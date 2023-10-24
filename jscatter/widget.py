@@ -152,6 +152,9 @@ class JupyterScatter(anywidget.AnyWidget):
     ).tag(sync=True)
     tooltip_contents_non_visual_info = Dict(dict()).tag(sync=True)
     tooltip_histograms = Bool().tag(sync=True)
+    tooltip_histograms_width = Enum(
+        ['small', 'medium', 'large'], default_value='small'
+    ).tag(sync=True)
 
     # Options
     color = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)

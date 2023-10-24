@@ -357,23 +357,31 @@ scatter.legend(True, 'top-right', 'small')
 ```
 
 
-### scatter.tooltip(_enable=Undefined_, _contents=Undefined_, _size=Undefined_, _histograms=Undefined_, _histograms_bins=Undefined_) {#scatter.tooltip}
+### scatter.tooltip(_enable=Undefined_, _contents=Undefined_, _size=Undefined_, _histograms=Undefined_, _histograms_bins=Undefined_, _histogram_width=Undefined_) {#scatter.tooltip}
 
 Set or get the tooltip settings.
 
 **Arguments:**
 - `enable` is a Boolean specifying if the tooltip should be enabled or disabled.
 - `contents` is a list of string specifying for which visual channels or columns of the bound DataFrame should be shown in the tooltip. The visual channels can be some of `x`, `y`, `color`, `opacity`, and `size`. Note that visual channels are only shown if they are actually used to encode information. To reference a DataFrame column specify it's name.
-- `size` is a string specifying the size of the legend. It must be one of `small`, `medium`, or `large`.
+- `size` is a string specifying the size of the tooltip. It must be one of `small`, `medium`, or `large`. The default is `"small"`.
 - `histograms` is a Boolean specifying if the tooltip should show histograms of the contents
 - `histograms_bins` is an Integer specifying the number of bins of histograms for numerical data properties. The default is `20`.
+- `histogram_width` is a string specifying the size of the histograms. It must be one of `small`, `medium`, or `large`. The default is `"small"`.
 
 **Returns:** either the legend properties when all arguments are `Undefined` or `self`.
 
 **Example:**
 
 ```python
-scatter.tooltip(True, ['color', 'opacity', 'effect_size'], 'small', True, 12)
+scatter.tooltip(
+  enable=True,
+  contents=['color', 'opacity', 'effect_size'],
+  size='small',
+  histograms=True,
+  histograms_bins=12,
+  histograms_width='medium',
+)
 ```
 
 

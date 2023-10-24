@@ -267,6 +267,7 @@ class Scatter():
         self._tooltip_size = 'small'
         self._tooltip_histograms = True
         self._tooltip_histograms_bins = DEFAULT_HISTOGRAM_BINS
+        self._tooltip_histograms_width = 'small'
         self._zoom_to = None
         self._zoom_to_call_idx = 0
         self._zoom_animation = 500
@@ -3078,6 +3079,7 @@ class Scatter():
         size: Optional[Union[Size, Undefined]] = UNDEF,
         histograms: Optional[Union[bool, Undefined]] = UNDEF,
         histograms_bins: Optional[Union[int, Undefined]] = UNDEF,
+        histograms_width: Optional[Union[Size, Undefined]] = UNDEF,
     ):
         """
         Set or get the tooltip settings.
@@ -3093,11 +3095,15 @@ class Scatter():
             shown if they are actually used to encode information. To reference
             a column specify it's name.
         size : small or medium or large, optional
-            The size of the tooltip. Must be one of small, medium, or large
+            The size of the tooltip. Must be one of small, medium, or large.
+            Defaults to `"small"`.
         histograms : bool, optional
             When set to `True`, the tooltip will show histograms of the contents
         histograms_bins : int, optional
             The number of bins for histograms of numerical data. Defaults to 20.
+        histograms_width : small or medium or large, optional
+            The width of the histograms. Must be one of small, medium, or large.
+            Defaults to `"small"`.
 
         Returns
         -------
@@ -3119,8 +3125,14 @@ class Scatter():
         >>> scatter.tooltip(histograms=True)
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.tooltip(histograms_bins=40)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(histograms_width="medium")
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.tooltip()
-        {'tooltip': True, 'contents': ['color', 'opacity', 'my_column'], size: 'large', histograms=True, histograms_bins=20}
+        {'tooltip': True, 'contents': ['color', 'opacity', 'my_column'], size: 'large', histograms=True, histograms_bins=20, histograms_bins="small"}
         """
         if tooltip is not UNDEF:
             self._tooltip = tooltip
@@ -3140,6 +3152,10 @@ class Scatter():
         if histograms is not UNDEF:
             self._tooltip_histograms = histograms
             self.update_widget('tooltip_histograms', histograms)
+
+        if histograms_width is not UNDEF:
+            self._tooltip_histograms_width = histograms_width
+            self.update_widget('tooltip_histograms_width', histograms_width)
 
         if histograms_bins is not UNDEF:
             bins = histograms_bins or DEFAULT_HISTOGRAM_BINS
@@ -3187,7 +3203,7 @@ class Scatter():
             self.update_widget('tooltip_contents_non_visual_info', self._tooltip_contents_non_visual_info)
             self.update_widget('tooltip_contents', self._tooltip_contents)
 
-        if any_not([tooltip, contents, size, histograms, histograms_bins], UNDEF):
+        if any_not([tooltip, contents, size, histograms, histograms_bins, histograms_width], UNDEF):
             return self
 
         return dict(
@@ -3196,6 +3212,7 @@ class Scatter():
             size = self._tooltip_size,
             histograms = self._tooltip_histograms,
             histograms_bins = self._tooltip_histograms_bins,
+            histograms_width = self._tooltip_histograms_width,
         )
 
 
