@@ -158,7 +158,30 @@ scatter.tooltip(
 <div class="img tooltip-4"><div /></div>
 
 Here, for instance, we're showing the point's `effect_size` and `group`
-property.
+properties, which are two other DataFrame columns we didn't visualized.
+
+### Customizing Numerical Histograms
+
+The histograms of numerical data properties consists of `20` bins, by default,
+and is covering the entire data range, i.e., it starts at the minumum and ends
+at the maximum value. You can adjust the number of bins as follows:
+
+```py
+scatter.tooltip(histogram_bins=40)
+```
+
+<div class="img tooltip-5"><div /></div>
+
+To transform the histogram in some way, use Pandas DataFrame and save the
+transformed data before referencing it. For instance, in the following, we
+log-transform the `effect_size` property as follows:
+
+```py
+df['effect_size_log'] = np.log10(df.effect_size)
+scatter.tooltip(contents=['effect_size_log'])
+```
+
+<div class="img tooltip-6"><div /></div>
 
 <style scoped>
   .img {
@@ -266,5 +289,25 @@ property.
 
   :root.dark .img.tooltip-4 {
     background-image: url(/images/tooltip-4-dark.png)
+  }
+
+  .img.tooltip-5 {
+    width: 754px;
+    background-image: url(/images/tooltip-5-light.png)
+  }
+  .img.tooltip-5 div { padding-top: 42.440318% }
+
+  :root.dark .img.tooltip-5 {
+    background-image: url(/images/tooltip-5-dark.png)
+  }
+
+  .img.tooltip-6 {
+    width: 722px;
+    background-image: url(/images/tooltip-6-light.png)
+  }
+  .img.tooltip-6 div { padding-top: 18.559557% }
+
+  :root.dark .img.tooltip-6 {
+    background-image: url(/images/tooltip-6-dark.png)
   }
 </style>
