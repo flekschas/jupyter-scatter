@@ -167,7 +167,7 @@ and is covering the entire data range, i.e., it starts at the minumum and ends
 at the maximum value. You can adjust the number of bins as follows:
 
 ```py
-scatter.tooltip(histogram_bins=40)
+scatter.tooltip(histograms_bins=40)
 ```
 
 <div class="img tooltip-5"><div /></div>
