@@ -1044,6 +1044,7 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
 
+            self.update_widget('color_histogram', self._color_histogram)
             self.update_widget('color_by', self.js_color_by)
 
         elif default is not UNDEF:
@@ -1299,6 +1300,7 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
 
+            self.update_widget('opacity_histogram', self._opacity_histogram)
             self.update_widget('opacity_by', self.js_opacity_by)
 
         elif default is not UNDEF:
@@ -1523,6 +1525,7 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
 
+            self.update_widget('size_histogram', self._size_histogram)
             self.update_widget('size_by', self.js_size_by)
 
         elif default is not UNDEF:
