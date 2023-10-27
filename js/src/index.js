@@ -944,6 +944,7 @@ class JupyterScatterView {
 
     for (const channelBadge of channelBadges) {
       channelBadge.style.position = 'relative';
+      channelBadge.style.fontSize = '0.75em';
       channelBadge.style.width = '1em';
       channelBadge.style.height = '1em';
       channelBadge.style.marginRight = '0.125rem';
@@ -1032,7 +1033,7 @@ class JupyterScatterView {
       el.style.padding = '0 0.25em';
       el.style.borderRadius = '0.25rem';
       el.style.color = channelColor;
-      el.style.fontSize = '0.75em';
+      el.style.height = '1.3em';
       el.style.fontWeight = 'bold';
       el.style.textTransform = 'uppercase';
       el.style.background = channelBg;
@@ -1049,6 +1050,8 @@ class JupyterScatterView {
       el.style.flexGrow = '1';
       el.style.justifyContent = 'center';
       el.style.alignItems = 'center';
+      el.style.fontSize = '0.75em';
+      el.style.lineHeight = '1em';
     });
 
     const values = this.tooltipContent.querySelectorAll('.value');

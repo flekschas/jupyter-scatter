@@ -4,7 +4,7 @@ from matplotlib.colors import LogNorm, PowerNorm, Normalize
 from numpy import histogram
 from pandas.api.types import is_categorical_dtype, is_string_dtype
 from urllib.parse import urlparse
-from typing import List, Set, Union
+from typing import List, Union
 
 from .types import Labeling
 
@@ -110,7 +110,7 @@ def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeli
 
     return labeling
 
-def get_histogram_from_df(data, bins=20):
+def get_histogram_from_df(data, bins=20, range=None):
     if is_categorical_dtype(data) or is_string_dtype(data):
         _data = data
         if is_string_dtype(data):
@@ -118,7 +118,9 @@ def get_histogram_from_df(data, bins=20):
         value_counts = _data.cat.codes.value_counts()
         return [y for _, y in sorted(dict(value_counts / value_counts.sum()).items())]
 
-    return list(histogram(data, bins=bins)[0] / histogram(data, bins=bins)[0].max())
+    hist = histogram(data, bins=bins, range=range)
+
+    return list(hist[0] / hist[0].max())
 
 def sanitize_tooltip_contents(
     df,
