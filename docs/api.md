@@ -366,8 +366,8 @@ Set or get the tooltip settings.
 - `contents` is a list of string specifying for which visual channels or columns of the bound DataFrame should be shown in the tooltip. The visual channels can be some of `x`, `y`, `color`, `opacity`, and `size`. Note that visual channels are only shown if they are actually used to encode information. To reference a DataFrame column specify it's name.
 - `size` is a string specifying the size of the tooltip. It must be one of `small`, `medium`, or `large`. The default is `"small"`.
 - `histograms` is a Boolean specifying if the tooltip should show histograms of the contents
-- `histograms_bins` is an Integer specifying the number of bins of histograms for numerical data properties. The default is `20`.
-- `histograms_ranges` is either a tuple of the lower and upper range of all bins or a dictionary of content-specific lower upper bin ranges. Defaults to `(min(), max())`.
+- `histograms_bins` is either an Integer specifying the number of bins of all numerical histograms or a dictionary of content-specific number of bins. The default is `20`.
+- `histograms_ranges` is either a tuple of the lower and upper range of all bins or a dictionary of content-specific lower upper bin ranges. The default is `(min(), max())`.
 - `histogram_width` is a string specifying the size of the histograms. It must be one of `small`, `medium`, or `large`. The default is `"small"`.
 
 **Returns:** either the legend properties when all arguments are `Undefined` or `self`.
