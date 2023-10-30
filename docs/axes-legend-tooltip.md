@@ -46,7 +46,7 @@ When you encode data properties with the point color, opacity, or size, it's
 immensly helpful to know how the encoded data properties relate to the visual
 properties by showing a legend.
 
-```py{21-23}
+```py{22-24}
 import jscatter
 import numpy as np
 import pandas as pd
@@ -56,7 +56,8 @@ df = pd.DataFrame({
   "mass": np.random.rand(500),
   "speed": np.random.rand(500),
   "pval": np.random.rand(500),
-  "effect_size": np.random.rand(500),
+  # Gaussian-distributed floats
+  "effect_size": np.random.normal(.5, .2, 500),
   # Random letters A, B, C, D, E, F, G, H
   "cat": np.vectorize(lambda x: chr(65 + round(x * 8)))(np.random.rand(500)),
   # Random letters X, Y, Z
@@ -149,39 +150,84 @@ scatter.tooltip(
   contents=[
     "color",
     "opacity",
+    "group",
     "effect_size",
-    "group"
   ]
 )
 ```
 
 <div class="img tooltip-4"><div /></div>
 
-Here, for instance, we're showing the point's `effect_size` and `group`
-properties, which are two other DataFrame columns we didn't visualized.
+Here, for instance, we're showing the point's `group` and `effect_size`
+properties, which are two other DataFrame columns we didn't visualize.
+
+::: tip
+The order of `contents` defines the order of the tooltip entries.
+:::
 
 ### Customizing Numerical Histograms
 
 The histograms of numerical data properties consists of `20` bins, by default,
 and is covering the entire data range, i.e., it starts at the minumum and ends
-at the maximum value. You can adjust the number of bins as follows:
+at the maximum value. You can adjust both aspects either globally for all
+histograms as follows:
 
 ```py
-scatter.tooltip(histograms_bins=40)
+scatter.tooltip(histograms_bins=40, histograms_ranges=(0, 1))
 ```
 
 <div class="img tooltip-5"><div /></div>
 
-To transform the histogram in some way, use Pandas DataFrame and save the
-transformed data before referencing it. For instance, in the following, we
-log-transform the `effect_size` property as follows:
+To customize the number of bins and the range by content you can do:
 
 ```py
-df['effect_size_log'] = np.log10(df.effect_size)
-scatter.tooltip(contents=['effect_size_log'])
+scatter.tooltip(
+  histograms_bins={"color": 10, "effect_size": 30},
+  histograms_ranges={"color": (0, 1), "effect_size": (0.25, 0.75)}
+)
 ```
 
 <div class="img tooltip-6"><div /></div>
+
+Since an increased number of bins can make it harder to read the histogram, you
+can adjust the width as follows:
+
+```py
+scatter.tooltip(histograms_width="large")
+```
+
+<div class="img tooltip-7"><div /></div>
+
+If you set the histogram range to be smaller than the data extent, some points
+might lie outside the histogram. For instance, previously we restricted the
+`effect_size` to `[0.25, 0.75]`, meaning we disregarded part of the lower and
+upper end of the data.
+
+In this case, hovering a point with an `effect_size` less than `.5` will be
+visualized by a red `]` to the left of the histogram to indicate it's value is
+smaller than the value represented by the left-most bar.
+
+<div class="img tooltip-8"><div /></div>
+
+Likewise, hovering a point with an `effect_size` larger than `0.75` will be
+visualized by a red `[` to the right of the histogram to indicate it's value is
+larger than the value represented by the right-most bar.
+
+<div class="img tooltip-9"><div /></div>
+
+Finally, if you want to transform the histogram in some other way, use your
+favorite method and save the transformed data before referencing it. For
+instance, in the following, we winsorized the `effect_size` to the `[10, 90]`
+percentile:
+
+```py
+from scipy.stats.mstats import winsorize
+
+df['effect_size_winsorized'] = winsorize(df.effect_size, limits=[0.1, 0.1])
+scatter.tooltip(contents=['effect_size_winsorized'])
+```
+
+<div class="img tooltip-10"><div /></div>
 
 <style scoped>
   .img {
@@ -282,32 +328,74 @@ scatter.tooltip(contents=['effect_size_log'])
   }
 
   .img.tooltip-4 {
-    width: 596px;
+    width: 606px;
     background-image: url(/images/tooltip-4-light.png)
   }
-  .img.tooltip-4 div { padding-top: 48.489933% }
+  .img.tooltip-4 div { padding-top: 38.283828% }
 
   :root.dark .img.tooltip-4 {
     background-image: url(/images/tooltip-4-dark.png)
   }
 
   .img.tooltip-5 {
-    width: 754px;
+    width: 616px;
     background-image: url(/images/tooltip-5-light.png)
   }
-  .img.tooltip-5 div { padding-top: 42.440318% }
+  .img.tooltip-5 div { padding-top: 39.61039% }
 
   :root.dark .img.tooltip-5 {
     background-image: url(/images/tooltip-5-dark.png)
   }
 
   .img.tooltip-6 {
-    width: 722px;
+    width: 678px;
     background-image: url(/images/tooltip-6-light.png)
   }
-  .img.tooltip-6 div { padding-top: 18.559557% }
+  .img.tooltip-6 div { padding-top: 33.628319% }
 
   :root.dark .img.tooltip-6 {
     background-image: url(/images/tooltip-6-dark.png)
   }
+
+  .img.tooltip-7 {
+    width: 678px;
+    background-image: url(/images/tooltip-7-light.png)
+  }
+  .img.tooltip-7 div { padding-top: 33.628319% }
+
+  :root.dark .img.tooltip-7 {
+    background-image: url(/images/tooltip-7-dark.png)
+  }
+
+  .img.tooltip-8 {
+    width: 674px;
+    background-image: url(/images/tooltip-8-light.png)
+  }
+  .img.tooltip-8 div { padding-top: 34.124629% }
+
+  :root.dark .img.tooltip-8 {
+    background-image: url(/images/tooltip-8-dark.png)
+  }
+
+  .img.tooltip-9 {
+    width: 692px;
+    background-image: url(/images/tooltip-9-light.png)
+  }
+  .img.tooltip-9 div { padding-top: 33.526012% }
+
+  :root.dark .img.tooltip-9 {
+    background-image: url(/images/tooltip-9-dark.png)
+  }
+
+  .img.tooltip-10 {
+    width: 696px;
+    background-image: url(/images/tooltip-10-light.png)
+  }
+  .img.tooltip-10 div { padding-top: 17.816092% }
+
+  :root.dark .img.tooltip-10 {
+    width: 684px;
+    background-image: url(/images/tooltip-10-dark.png)
+  }
+  :root.dark .img.tooltip-10 div { padding-top: 15.789474% }
 </style>
