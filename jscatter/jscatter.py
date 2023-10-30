@@ -1328,6 +1328,7 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[by].prepared = True
 
+            self.update_widget('opacity_histogram_range', self.get_histogram_range("opacity"))
             self.update_widget('opacity_histogram', self._opacity_histogram)
             self.update_widget('opacity_by', self.js_opacity_by)
 
@@ -3246,6 +3247,7 @@ class Scatter():
                 self.get_histogram_bins("x"),
                 self.get_histogram_range("x"),
             )
+            self.update_widget('x_histogram_range', self.get_histogram_range("x"))
             self.update_widget('x_histogram', self._x_histogram)
 
             self._y_histogram = get_histogram_from_df(
@@ -3253,6 +3255,7 @@ class Scatter():
                 self.get_histogram_bins("y"),
                 self.get_histogram_range("y")
             )
+            self.update_widget('y_histogram_range', self.get_histogram_range("y"))
             self.update_widget('y_histogram', self._y_histogram)
 
             if self._color_by is not None and self._color_categories is None:
@@ -3262,6 +3265,7 @@ class Scatter():
                     self.get_histogram_bins("color"),
                     self.get_histogram_range("color")
                 )
+                self.update_widget('color_histogram_range', self.get_histogram_range("color"))
                 self.update_widget('color_histogram', self._color_histogram)
 
             if self._opacity_by is not None and self._opacity_by != "density" and self._opacity_categories is None:
@@ -3271,6 +3275,7 @@ class Scatter():
                     self.get_histogram_bins("opacity"),
                     self.get_histogram_range("opacity")
                 )
+                self.update_widget('opacity_histogram_range', self.get_histogram_range("opacity"))
                 self.update_widget('opacity_histogram', self._opacity_histogram)
 
             if self._size_by is not None and self._size_categories is None:
@@ -3280,6 +3285,7 @@ class Scatter():
                     self.get_histogram_bins("size"),
                     self.get_histogram_range("size")
                 )
+                self.update_widget('size_histogram_range', self.get_histogram_range("size"))
                 self.update_widget('size_histogram', self._size_histogram)
 
         if (
@@ -3296,13 +3302,11 @@ class Scatter():
                 self._tooltip_contents_non_visual_info[content] = dict(
                     scale = get_scale_type_from_df(self._data[content]),
                     domain = get_domain_from_df(self._data[content]),
+                    range = self.get_histogram_range(content),
                     histogram = get_histogram_from_df(
                         self._data[content],
                         self.get_histogram_bins(content),
-                        get_histogram_range(
-                            self._tooltip_histograms_ranges,
-                            content
-                        )
+                        self.get_histogram_range(content)
                     ),
                 )
 
@@ -3569,6 +3573,7 @@ class Scatter():
             color_by=self.js_color_by,
             color_domain=get_domain(self, 'color'),
             color_histogram=self._color_histogram,
+            color_histogram_range=self.get_histogram_range("color"),
             color_hover=self._color_hover,
             color_scale=get_scale(self, 'color'),
             color_selected=self._color_selected,
@@ -3599,6 +3604,7 @@ class Scatter():
             opacity_by=self.js_opacity_by,
             opacity_domain=get_domain(self, 'opacity'),
             opacity_histogram=self._opacity_histogram,
+            opacity_histogram_range=self.get_histogram_range("opacity"),
             opacity_scale=get_scale(self, 'opacity'),
             opacity_title=self._opacity_by,
             opacity_unselected=self._opacity_unselected,
@@ -3610,6 +3616,7 @@ class Scatter():
             size_by=self.js_size_by,
             size_domain=get_domain(self, 'size'),
             size_histogram=self._size_histogram,
+            size_histogram_range=self.get_histogram_range("size"),
             size_scale=get_scale(self, 'size'),
             size_title=self._size_by,
             tooltip_color=self.get_tooltip_color(),
@@ -3617,14 +3624,17 @@ class Scatter():
             tooltip_contents_non_visual_info=self._tooltip_contents_non_visual_info,
             tooltip_enable=self._tooltip,
             tooltip_histograms=self._tooltip_histograms,
+            tooltip_histograms_width=self._tooltip_histograms_width,
             tooltip_size=self._tooltip_size,
             width=self._width,
             x_domain=self._x_domain,
             x_histogram=self._x_histogram,
+            x_histogram_range=self.get_histogram_range("x"),
             x_scale=to_scale_type(self._x_scale),
             x_title=self._x_by,
             y_domain=self._y_domain,
             y_histogram=self._y_histogram,
+            y_histogram_range=self.get_histogram_range("y"),
             y_scale=to_scale_type(self._y_scale),
             y_title=self._y_by,
             zoom_animation=self._zoom_animation,

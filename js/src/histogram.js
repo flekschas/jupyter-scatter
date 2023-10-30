@@ -7,14 +7,17 @@ const COMPARE = (new Intl.Collator(
   undefined,
   { numeric: true, sensitivity: 'base' }
 )).compare;
+const BORDER_WIDTH = 2;
+const VERMILION = '#D55E00'; // A red color from Okabe Ito's color palette
 
 const createCategoricalHistogramBackground = (canvas, data)  => {
   const ctx = canvas.getContext("2d");
+  const lastI = Object.values(data).length - 1;
 
   const state = {
     width: 100,
     height: 10,
-    lastI: Object.values(data).length - 1,
+    lastI,
     color: DEFAULT_BACKGROUND_COLOR,
   }
 
@@ -38,14 +41,21 @@ const createCategoricalHistogramBackground = (canvas, data)  => {
 
   const init = () => {
     const { lastI, width } = state;
+    const dpr = window.devicePixelRatio
+    const padding = BORDER_WIDTH * dpr + dpr;
+    const histogramWidth = width - padding * 2;
+
     let cumulativePercentage = 0;
+
 
     state.rects = Object.entries(data)
       .sort(([keyA], [keyB]) => COMPARE(keyA, [keyB]))
       .map(([, value], i) => {
         const rect = {
-          x: cumulativePercentage * width,
-          width: i === lastI ? value * width : (value * width) - 1,
+          x: padding + cumulativePercentage * histogramWidth,
+          width: i === lastI
+            ? value * histogramWidth
+            : (value * histogramWidth) - dpr,
         }
         cumulativePercentage += value;
         return rect;
@@ -59,11 +69,12 @@ const createCategoricalHistogramBackground = (canvas, data)  => {
 
 const createCategoricalHistogramHighlight = (canvas, data)  => {
   const ctx = canvas.getContext("2d");
+  const lastI = Object.values(data).length - 1;
 
   const state = {
     width: 100,
     height: 10,
-    lastI: Object.values(data).length - 1,
+    lastI,
     color: DEFAULT_HIGHLIGHT_COLOR,
   }
 
@@ -86,14 +97,20 @@ const createCategoricalHistogramHighlight = (canvas, data)  => {
 
   const init = () => {
     const { lastI, width } = state;
+    const dpr = window.devicePixelRatio
+    const padding = BORDER_WIDTH * dpr + dpr;
+    const histogramWidth = width - padding * 2;
+
     let cumulativePercentage = 0;
 
     state.rects = Object.entries(data)
       .sort(([keyA], [keyB]) => COMPARE(keyA, [keyB]))
       .reduce((acc, [key, value], i) => {
         acc[key] = {
-          x: cumulativePercentage * width,
-          width: i === lastI ? value * width : (value * width) - 1,
+          x: padding + cumulativePercentage * histogramWidth,
+          width: i === lastI
+            ? value * histogramWidth
+            : (value * histogramWidth) - dpr,
         }
         cumulativePercentage += value;
         return acc;
@@ -134,11 +151,14 @@ const createNumericalHistogramBackground = (canvas, data) => {
 
   const init = () => {
     const { width, height } = state;
+    const dpr = window.devicePixelRatio;
+    const padding = BORDER_WIDTH * dpr + dpr;
+    const histogramWidth = width - padding * 2;
 
-    state.binStep = width / data.length;
-    state.binWidth = state.binStep - BIN_SPACE * window.devicePixelRatio;
+    state.binStep = histogramWidth / data.length;
+    state.binWidth = state.binStep - BIN_SPACE * dpr;
     state.rects = data.map((value, i) => ({
-      x: i * state.binStep,
+      x: padding + i * state.binStep,
       y: (1 - value) * height,
       height: value * height,
     }));
@@ -151,6 +171,7 @@ const createNumericalHistogramBackground = (canvas, data) => {
 
 const createNumericalHistogramHighlight = (canvas, data) => {
   const ctx = canvas.getContext("2d");
+  const lastI = Object.values(data).length - 1;
 
   const state = {
     width: 100,
@@ -164,9 +185,25 @@ const createNumericalHistogramHighlight = (canvas, data) => {
 
   const draw = (bin) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = state.color;
-    const rect = state.rects[bin];
-    ctx.fillRect(rect.x, rect.y, state.binWidth, rect.height);
+
+    const dpr = window.devicePixelRatio;
+
+    if (bin < 0) {
+      ctx.fillStyle = VERMILION;
+      ctx.fillRect(0, 0, state.borderWidth, dpr);
+      ctx.fillRect(state.borderWidth - dpr, 0, dpr, state.height);
+      ctx.fillRect(0, state.height - dpr, state.borderWidth, dpr);
+    } else if (bin > lastI) {
+      ctx.fillStyle = VERMILION;
+      const x = state.width - state.borderWidth;
+      ctx.fillRect(x, 0, state.borderWidth, dpr);
+      ctx.fillRect(x, 0, dpr, state.height);
+      ctx.fillRect(x, state.height - dpr, state.borderWidth, dpr);
+    } else {
+      ctx.fillStyle = state.color;
+      const rect = state.rects[bin];
+      ctx.fillRect(rect.x, rect.y, state.binWidth, rect.height);
+    }
   }
 
   const resize = (width, height) => {
@@ -177,11 +214,17 @@ const createNumericalHistogramHighlight = (canvas, data) => {
 
   const init = () => {
     const { width, height } = state;
+    const dpr = window.devicePixelRatio;
 
-    state.binStep = width / data.length;
-    state.binWidth = state.binStep - BIN_SPACE * window.devicePixelRatio;
+    state.borderWidth = BORDER_WIDTH * dpr;
+
+    const padding = state.borderWidth + dpr;
+    const histogramWidth = width - padding * 2;
+    const binStep = histogramWidth / data.length;
+
+    state.binWidth = binStep - BIN_SPACE * dpr;
     state.rects = data.map((value, i) => ({
-      x: i * state.binStep,
+      x: padding + i * binStep,
       y: (1 - value) * height,
       height: value * height,
     }));

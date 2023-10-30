@@ -107,6 +107,7 @@ const properties = {
   tooltipPosition: 'tooltipPosition',
   tooltipContents: 'tooltipContents',
   tooltipHistograms: 'tooltipHistograms',
+  tooltipHistogramsRanges: 'tooltipHistogramsRanges',
   tooltipHistogramsWidth: 'tooltipHistogramsWidth',
   tooltipContentsNonVisualInfo: 'tooltipContentsNonVisualInfo',
   xScale: 'xScale',
@@ -124,6 +125,11 @@ const properties = {
   colorHistogram: 'colorHistogram',
   opacityHistogram: 'opacityHistogram',
   sizeHistogram: 'sizeHistogram',
+  xHistogramRange: 'xHistogramRange',
+  yHistogramRange: 'yHistogramRange',
+  colorHistogramRange: 'colorHistogramRange',
+  opacityHistogramRange: 'opacityHistogramRange',
+  sizeHistogramRange: 'sizeHistogramRange',
   xTitle: 'xTitle',
   yTitle: 'yTitle',
   colorTitle: 'colorTitle',
@@ -1088,7 +1094,8 @@ class JupyterScatterView {
 
     this.getXBin = createNumericalBinGetter(
       this.model.get('x_histogram'),
-      this.model.get('x_domain')
+      this.model.get('x_domain'),
+      this.model.get('x_domain_range'),
     );
 
     this.getX = (i) => {
@@ -1107,7 +1114,8 @@ class JupyterScatterView {
 
     this.getYBin = createNumericalBinGetter(
       this.model.get('y_histogram'),
-      this.model.get('y_domain')
+      this.model.get('y_domain'),
+      this.model.get('y_domain_range'),
     );
 
     this.getY = (i) => {
@@ -1124,7 +1132,7 @@ class JupyterScatterView {
   createColorGetter() {
     if (!this.colorScale) this.createColorScale();
     if (!this.colorScale) {
-      this.getColor = () => ['#808080', 'Unknown'];
+      this.getColor = () => ['#808080', 'Unknown', 0];
       return;
     }
 
@@ -1145,7 +1153,8 @@ class JupyterScatterView {
 
       this.getColorBin = createNumericalBinGetter(
         this.model.get('color_histogram'),
-        this.model.get('color_domain')
+        this.model.get('color_domain'),
+        this.model.get('color_domain_range'),
       );
 
       this.getColor = (i) => {
@@ -1163,7 +1172,7 @@ class JupyterScatterView {
   createOpacityGetter() {
     if (!this.opacityScale) this.createOpacityScale();
     if (!this.opacityScale) {
-      this.getOpacity = () => [0.5, 'Unknown'];
+      this.getOpacity = () => [0.5, 'Unknown', 0];
       return;
     }
 
@@ -1184,7 +1193,8 @@ class JupyterScatterView {
 
       this.getOpacityBin = createNumericalBinGetter(
         this.model.get('opacity_histogram'),
-        this.model.get('opacity_domain')
+        this.model.get('opacity_domain'),
+        this.model.get('opacity_domain_range'),
       );
 
       this.getOpacity = (i) => {
@@ -1202,7 +1212,7 @@ class JupyterScatterView {
   createSizeGetter() {
     if (!this.sizeScale) this.createSizeScale();
     if (!this.sizeScale) {
-      this.getSize = () => [0.5, 'Unknown'];
+      this.getSize = () => [0.5, 'Unknown', 0];
       return;
     }
 
@@ -1228,7 +1238,8 @@ class JupyterScatterView {
 
       this.getSizeBin = createNumericalBinGetter(
         this.model.get('size_histogram'),
-        this.model.get('size_domain')
+        this.model.get('size_domain'),
+        this.model.get('size_domain_range'),
       );
 
       this.getSize = (i) => {
@@ -1316,7 +1327,7 @@ class JupyterScatterView {
         histogram,
         getHistogramKey: info.scale === 'categorical'
           ? (v) => info.domain[v]
-          : createNumericalBinGetter(info.histogram, info.domain),
+          : createNumericalBinGetter(info.histogram, info.domain, info.range),
         format: info.scale === 'categorical'
           ? (s) => s
           : format(getD3FormatSpecifier(info.domain))
@@ -1378,19 +1389,30 @@ class JupyterScatterView {
     this.styleTooltip();
   }
 
-  tooltipContentsHandler() {
+  refreshTooltip() {
     this.createTooltipContents();
     this.createTooltipContentUpdater();
+  }
+
+  tooltipContentsHandler() {
+    this.refreshTooltip();
   }
 
   tooltipContentsNonVisualInfoHandler() {
-    this.createTooltipContents();
-    this.createTooltipContentUpdater();
+    this.refreshTooltip();
   }
 
   tooltipHistogramsWidthHandler() {
-    this.createTooltipContents();
-    this.createTooltipContentUpdater();
+    this.refreshTooltip();
+  }
+
+  tooltipHistogramsRangesHandler() {
+    this.createXGetter();
+    this.createYGetter();
+    this.createColorGetter();
+    this.createOpacityGetter();
+    this.createSizeGetter();
+    this.refreshTooltip();
   }
 
   tooltipHistogramsHandler() {
@@ -1754,8 +1776,16 @@ class JupyterScatterView {
     this.createXGetter();
   }
 
+  xHistogramRangeHandler() {
+    this.createXGetter();
+  }
+
   yHistogramHandler() {
     this.tooltipContentYValueHistogram?.init(this.model.get('y_histogram'));
+    this.createYGetter();
+  }
+
+  yHistogramRangeHandler() {
     this.createYGetter();
   }
 
@@ -1767,6 +1797,10 @@ class JupyterScatterView {
     this.createColorGetter();
   }
 
+  colorHistogramRangeHandler() {
+    this.createColorGetter();
+  }
+
   opacityHistogramHandler() {
     this.tooltipContentOpacityValueHistogram?.init(
       this.model.get('opacity_histogram'),
@@ -1775,11 +1809,19 @@ class JupyterScatterView {
     this.createOpacityGetter();
   }
 
+  opacityHistogramRangeHandler() {
+    this.createOpacityGetter();
+  }
+
   sizeHistogramHandler() {
     this.tooltipContentSizeValueHistogram?.init(
       this.model.get('size_histogram'),
       this.model.get('size_scale') === 'categorical',
     );
+    this.createSizeGetter();
+  }
+
+  sizeHistogramRangeHandler() {
     this.createSizeGetter();
   }
 

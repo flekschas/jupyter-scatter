@@ -90,6 +90,13 @@ class JupyterScatter(anywidget.AnyWidget):
     opacity_histogram = List(None, allow_none=True).tag(sync=True)
     size_histogram = List(None, allow_none=True).tag(sync=True)
 
+    # Histogram ranges
+    x_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
+    y_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
+    color_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
+    opacity_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
+    size_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
+
     # View properties
     camera_target = List([0, 0]).tag(sync=True)
     camera_distance = Float(1).tag(sync=True)
@@ -152,6 +159,7 @@ class JupyterScatter(anywidget.AnyWidget):
     ).tag(sync=True)
     tooltip_contents_non_visual_info = Dict(dict()).tag(sync=True)
     tooltip_histograms = Bool().tag(sync=True)
+    tooltip_histograms_ranges = Dict(dict()).tag(sync=True)
     tooltip_histograms_width = Enum(
         ['small', 'medium', 'large'], default_value='small'
     ).tag(sync=True)
