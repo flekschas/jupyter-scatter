@@ -160,7 +160,7 @@ class JupyterScatter(anywidget.AnyWidget):
     tooltip_contents_non_visual_info = Dict(dict()).tag(sync=True)
     tooltip_histograms = Bool().tag(sync=True)
     tooltip_histograms_ranges = Dict(dict()).tag(sync=True)
-    tooltip_histograms_width = Enum(
+    tooltip_histograms_size = Enum(
         ['small', 'medium', 'large'], default_value='small'
     ).tag(sync=True)
 

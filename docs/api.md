@@ -357,7 +357,7 @@ scatter.legend(True, 'top-right', 'small')
 ```
 
 
-### scatter.tooltip(_enable=Undefined_, _contents=Undefined_, _size=Undefined_, _histograms=Undefined_, _histograms_bins=Undefined_, _histograms_ranges=Undefined_, _histogram_width=Undefined_) {#scatter.tooltip}
+### scatter.tooltip(_enable=Undefined_, _contents=Undefined_, _size=Undefined_, _histograms=Undefined_, _histograms_bins=Undefined_, _histograms_ranges=Undefined_, _histograms_size=Undefined_) {#scatter.tooltip}
 
 Set or get the tooltip settings.
 
@@ -368,7 +368,7 @@ Set or get the tooltip settings.
 - `histograms` is a Boolean specifying if the tooltip should show histograms of the contents
 - `histograms_bins` is either an Integer specifying the number of bins of all numerical histograms or a dictionary of content-specific number of bins. The default is `20`.
 - `histograms_ranges` is either a tuple of the lower and upper range of all bins or a dictionary of content-specific lower upper bin ranges. The default is `(min(), max())`.
-- `histogram_width` is a string specifying the size of the histograms. It must be one of `small`, `medium`, or `large`. The default is `"small"`.
+- `histograms_size` is a string specifying the size of the histograms. It must be one of `small`, `medium`, or `large`. The default is `"small"`.
 
 **Returns:** either the legend properties when all arguments are `Undefined` or `self`.
 

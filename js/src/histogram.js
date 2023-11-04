@@ -1,14 +1,32 @@
+import { hierarchy, treemap, treemapBinary } from 'd3-hierarchy';
+
 import { createElementWithClass } from './utils';
 
-const DEFAULT_BACKGROUND_COLOR = '#999999';
-const DEFAULT_HIGHLIGHT_COLOR = '#000000';
+const DEFAULT_BACKGROUND_COLOR = 'rgb(153, 153, 153)';
+const DEFAULT_HIGHLIGHT_COLOR = 'rgb(0, 0, 0)';
 const BIN_SPACE = 1;
-const COMPARE = (new Intl.Collator(
-  undefined,
-  { numeric: true, sensitivity: 'base' }
-)).compare;
 const BORDER_WIDTH = 2;
 const VERMILION = '#D55E00'; // A red color from Okabe Ito's color palette
+
+const createTreemap = (data, width, height) => {
+  const dpr = window.devicePixelRatio
+  const padding = BORDER_WIDTH * dpr + dpr;
+
+  return (
+    treemap()
+      .tile(treemapBinary)
+      .size([width - padding * 2, height])
+      .padding(dpr)
+      .round(true)
+  )(
+    hierarchy({
+      key: '__root__',
+      children: Object.entries(data).map(([key, value]) => ({ key, value }))
+    })
+      .sum((d) => d.value)
+      .sort((a, b) => b.value - a.value)
+  );
+}
 
 const createCategoricalHistogramBackground = (canvas, data)  => {
   const ctx = canvas.getContext("2d");
@@ -29,7 +47,7 @@ const createCategoricalHistogramBackground = (canvas, data)  => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = state.color;
     state.rects.forEach((rect) => {
-      ctx.fillRect(rect.x, 0, rect.width, state.height);
+      ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
     });
   }
 
@@ -40,26 +58,14 @@ const createCategoricalHistogramBackground = (canvas, data)  => {
   }
 
   const init = () => {
-    const { lastI, width } = state;
-    const dpr = window.devicePixelRatio
-    const padding = BORDER_WIDTH * dpr + dpr;
-    const histogramWidth = width - padding * 2;
+    const tree = createTreemap(data, state.width, state.height);
 
-    let cumulativePercentage = 0;
-
-
-    state.rects = Object.entries(data)
-      .sort(([keyA], [keyB]) => COMPARE(keyA, [keyB]))
-      .map(([, value], i) => {
-        const rect = {
-          x: padding + cumulativePercentage * histogramWidth,
-          width: i === lastI
-            ? value * histogramWidth
-            : (value * histogramWidth) - dpr,
-        }
-        cumulativePercentage += value;
-        return rect;
-      });
+    state.rects = tree.leaves().map((leaf) => ({
+      x: leaf.x0,
+      y: leaf.y0,
+      width: leaf.x1 - leaf.x0,
+      height: leaf.y1 - leaf.y0
+    }));
   }
 
   init();
@@ -86,7 +92,7 @@ const createCategoricalHistogramHighlight = (canvas, data)  => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = state.color;
     const rect = state.rects[key];
-    ctx.fillRect(rect.x, 0, rect.width, state.height);
+    ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
   }
 
   const resize = (width, height) => {
@@ -96,25 +102,17 @@ const createCategoricalHistogramHighlight = (canvas, data)  => {
   }
 
   const init = () => {
-    const { lastI, width } = state;
-    const dpr = window.devicePixelRatio
-    const padding = BORDER_WIDTH * dpr + dpr;
-    const histogramWidth = width - padding * 2;
+    const tree = createTreemap(data, state.width, state.height);
 
-    let cumulativePercentage = 0;
-
-    state.rects = Object.entries(data)
-      .sort(([keyA], [keyB]) => COMPARE(keyA, [keyB]))
-      .reduce((acc, [key, value], i) => {
-        acc[key] = {
-          x: padding + cumulativePercentage * histogramWidth,
-          width: i === lastI
-            ? value * histogramWidth
-            : (value * histogramWidth) - dpr,
-        }
-        cumulativePercentage += value;
-        return acc;
-      }, {});
+    state.rects = tree.leaves().reduce((acc, leaf) => {
+      acc[leaf.data.key] = {
+        x: leaf.x0,
+        y: leaf.y0,
+        width: leaf.x1 - leaf.x0,
+        height: leaf.y1 - leaf.y0
+      }
+      return acc;
+    }, {});
   }
 
   init();
@@ -173,14 +171,18 @@ const createNumericalHistogramHighlight = (canvas, data) => {
   const ctx = canvas.getContext("2d");
   const lastI = Object.values(data).length - 1;
 
+  const toBg = (color) => `rgb(${color.match((/\d+/g)).join(', ')}, 0.1)`;
+
   const state = {
     width: 100,
     height: 10,
     color: DEFAULT_HIGHLIGHT_COLOR,
+    bgColor: toBg(DEFAULT_HIGHLIGHT_COLOR),
   }
 
   const style = (newColor) => {
     state.color = newColor;
+    state.bgColor = toBg(newColor);
   }
 
   const draw = (bin) => {
@@ -200,8 +202,13 @@ const createNumericalHistogramHighlight = (canvas, data) => {
       ctx.fillRect(x, 0, dpr, state.height);
       ctx.fillRect(x, state.height - dpr, state.borderWidth, dpr);
     } else {
-      ctx.fillStyle = state.color;
       const rect = state.rects[bin];
+
+      ctx.lineWidth = dpr;
+      ctx.strokeStyle = state.bgColor
+      ctx.strokeRect(rect.x, 0, state.binWidth, state.height);
+
+      ctx.fillStyle = state.color;
       ctx.fillRect(rect.x, rect.y, state.binWidth, rect.height);
     }
   }

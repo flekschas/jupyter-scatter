@@ -190,10 +190,10 @@ scatter.tooltip(
 <div class="img tooltip-6"><div /></div>
 
 Since an increased number of bins can make it harder to read the histogram, you
-can adjust the width as follows:
+can adjust the size as follows:
 
 ```py
-scatter.tooltip(histograms_width="large")
+scatter.tooltip(histograms_size="large")
 ```
 
 <div class="img tooltip-7"><div /></div>

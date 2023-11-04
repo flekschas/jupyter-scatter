@@ -286,7 +286,7 @@ class Scatter():
         self._tooltip_histograms = True
         self._tooltip_histograms_bins = DEFAULT_HISTOGRAM_BINS
         self._tooltip_histograms_ranges = None
-        self._tooltip_histograms_width = 'small'
+        self._tooltip_histograms_size = 'small'
         self._zoom_to = None
         self._zoom_to_call_idx = 0
         self._zoom_animation = 500
@@ -393,7 +393,7 @@ class Scatter():
             kwargs.get('tooltip_histograms', UNDEF),
             kwargs.get('tooltip_histograms_bins', UNDEF),
             kwargs.get('tooltip_histograms_ranges', UNDEF),
-            kwargs.get('tooltip_histograms_width', UNDEF),
+            kwargs.get('tooltip_histograms_size', UNDEF),
         )
         self.zoom(
             kwargs.get('zoom_to', UNDEF),
@@ -3114,7 +3114,7 @@ class Scatter():
         histograms: Optional[Union[bool, Undefined]] = UNDEF,
         histograms_bins: Optional[Union[int, Dict[str, int], Undefined]] = UNDEF,
         histograms_ranges: Optional[Union[Tuple[float], Dict[str, Tuple[float]], Undefined]] = UNDEF,
-        histograms_width: Optional[Union[Size, Undefined]] = UNDEF,
+        histograms_size: Optional[Union[Size, Undefined]] = UNDEF,
     ):
         """
         Set or get the tooltip settings.
@@ -3141,7 +3141,7 @@ class Scatter():
             The global lower and upper range of all bins. Or a dictionary of
             content-specific lower upper bin ranges. Defaults to
             `(min(), max())`.
-        histograms_width : small or medium or large, optional
+        histograms_size : small or medium or large, optional
             The width of the histograms. Must be one of small, medium, or large.
             Defaults to `"small"`.
 
@@ -3171,7 +3171,7 @@ class Scatter():
         >>> scatter.tooltip(histograms_ranges={"my_column": (1, 2)})
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.tooltip(histograms_width="medium")
+        >>> scatter.tooltip(histograms_size="medium")
         <jscatter.jscatter.Scatter>
 
         >>> scatter.tooltip()
@@ -3182,7 +3182,7 @@ class Scatter():
           histograms=True,
           histograms_bins=20,
           histograms_ranges={"my_column": (1, 2)},
-          histograms_width="small"
+          histograms_size="small"
         }
         """
         if tooltip is not UNDEF:
@@ -3222,9 +3222,9 @@ class Scatter():
             self._tooltip_histograms = histograms
             self.update_widget('tooltip_histograms', histograms)
 
-        if histograms_width is not UNDEF:
-            self._tooltip_histograms_width = histograms_width
-            self.update_widget('tooltip_histograms_width', histograms_width)
+        if histograms_size is not UNDEF:
+            self._tooltip_histograms_size = histograms_size
+            self.update_widget('tooltip_histograms_size', histograms_size)
 
         if histograms_bins is not UNDEF:
             self._tooltip_histograms_bins = {
@@ -3313,7 +3313,7 @@ class Scatter():
             self.update_widget('tooltip_contents_non_visual_info', self._tooltip_contents_non_visual_info)
             self.update_widget('tooltip_contents', self._tooltip_contents)
 
-        if any_not([tooltip, contents, size, histograms, histograms_bins, histograms_width], UNDEF):
+        if any_not([tooltip, contents, size, histograms, histograms_bins, histograms_size], UNDEF):
             return self
 
         return dict(
@@ -3322,7 +3322,7 @@ class Scatter():
             size = self._tooltip_size,
             histograms = self._tooltip_histograms,
             histograms_bins = self._tooltip_histograms_bins,
-            histograms_width = self._tooltip_histograms_width,
+            histograms_size = self._tooltip_histograms_size,
         )
 
 
@@ -3624,7 +3624,7 @@ class Scatter():
             tooltip_contents_non_visual_info=self._tooltip_contents_non_visual_info,
             tooltip_enable=self._tooltip,
             tooltip_histograms=self._tooltip_histograms,
-            tooltip_histograms_width=self._tooltip_histograms_width,
+            tooltip_histograms_size=self._tooltip_histograms_size,
             tooltip_size=self._tooltip_size,
             width=self._width,
             x_domain=self._x_domain,

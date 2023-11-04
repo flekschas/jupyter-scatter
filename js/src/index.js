@@ -42,7 +42,11 @@ const TOOLTIP_HISTOGRAM_WIDTH = (/** @type {const} */ ({
   medium: '10em',
   large: '14em',
 }));
-const TOOLTIP_HISTOGRAM_HEIGHT = '1em';
+const TOOLTIP_HISTOGRAM_HEIGHT = (/** @type {const} */ ({
+  small: '1em',
+  medium: '1.25em',
+  large: '1.5em',
+}));
 
 /**
  * This dictionary maps between the camelCased Python property names and their
@@ -108,7 +112,7 @@ const properties = {
   tooltipContents: 'tooltipContents',
   tooltipHistograms: 'tooltipHistograms',
   tooltipHistogramsRanges: 'tooltipHistogramsRanges',
-  tooltipHistogramsWidth: 'tooltipHistogramsWidth',
+  tooltipHistogramsSize: 'tooltipHistogramsSize',
   tooltipContentsNonVisualInfo: 'tooltipContentsNonVisualInfo',
   xScale: 'xScale',
   yScale: 'yScale',
@@ -661,8 +665,8 @@ class JupyterScatterView {
     );
 
     this[`tooltipContent${capitalContent}ValueHistogram`] = createHistogram(
-      TOOLTIP_HISTOGRAM_WIDTH[this.model.get('tooltip_histograms_width')] || TOOLTIP_HISTOGRAM_WIDTH.small,
-      TOOLTIP_HISTOGRAM_HEIGHT
+      TOOLTIP_HISTOGRAM_WIDTH[this.model.get('tooltip_histograms_size')] || TOOLTIP_HISTOGRAM_WIDTH.small,
+      TOOLTIP_HISTOGRAM_HEIGHT[this.model.get('tooltip_histograms_size')] || TOOLTIP_HISTOGRAM_HEIGHT.small,
     );
     this[`tooltipContent${capitalContent}Value`].appendChild(
       this[`tooltipContent${capitalContent}ValueHistogram`].element
@@ -697,6 +701,7 @@ class JupyterScatterView {
     }
 
     this.styleTooltip();
+    this.tooltipBbox = this.tooltip.getBoundingClientRect();
   }
 
   createTooltipContents() {
@@ -753,9 +758,9 @@ class JupyterScatterView {
     this.tooltipContent.style.fontSize = getTooltipFontSize(this.model.get('tooltip_size'));
     this.tooltip.appendChild(this.tooltipContent);
 
-    this.createTooltipContents();
-
     this.container.appendChild(this.tooltip);
+
+    this.createTooltipContents();
 
     this.enableTooltipHistograms();
     this.createTooltipContentUpdater();
@@ -886,19 +891,22 @@ class JupyterScatterView {
   }
 
   getTooltipPosition(x, y) {
-    if (x < 120) {
-      if (y < 120) return 'bottom-right';
-      if (y > this.outerHeight - 120) return 'top-right';
+    const xCutoff = (this.tooltipBbox?.width / 2) || 120;
+    const yCutoff = this.tooltipBbox?.height || 120;
+
+    if (x < xCutoff) {
+      if (y < yCutoff) return 'bottom-right';
+      if (y > this.outerHeight - yCutoff) return 'top-right';
       return 'right-center';
     }
 
-    if (x > this.outerWidth - 120) {
-      if (y < 120) return 'bottom-left';
-      if (y > this.outerHeight - 120) return 'top-left';
+    if (x > this.outerWidth - xCutoff) {
+      if (y < yCutoff) return 'bottom-left';
+      if (y > this.outerHeight - yCutoff) return 'top-left';
       return 'left-center';
     }
 
-    if (y < 120) return 'bottom-center';
+    if (y < yCutoff) return 'bottom-center';
 
     return 'top-center';
   }
@@ -918,13 +926,14 @@ class JupyterScatterView {
 
     const isDark = color[0] <= 127;
     const contrast = isDark ? 255 : 0;
-    const fg = `rgb(${contrast} ${contrast} ${contrast})`;
-    const bg = `rgb(${color[0]} ${color[1]} ${color[2]})`;
-
-    const histogramBg = `rgba(${contrast}, ${contrast}, ${contrast}, 0.2)`;
+    const fg = `rgb(${contrast}, ${contrast}, ${contrast})`;
+    const bg = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
 
     for (const content of this.tooltipContentsAll) {
-      this[`tooltipContent${toCapitalCase(content)}ValueHistogram`]?.style(fg, histogramBg);
+      this[`tooltipContent${toCapitalCase(content)}ValueHistogram`]?.style(
+        fg,
+        `rgb(${contrast}, ${contrast}, ${contrast}, 0.2)`
+      );
     }
 
     if (this.tooltipContentsVisual.length) {
@@ -1402,7 +1411,7 @@ class JupyterScatterView {
     this.refreshTooltip();
   }
 
-  tooltipHistogramsWidthHandler() {
+  tooltipHistogramsSizeHandler() {
     this.refreshTooltip();
   }
 
