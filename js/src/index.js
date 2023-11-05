@@ -1082,9 +1082,9 @@ class JupyterScatterView {
 
     for (const valueText of valueTexts) {
       valueText.style.flexGrow = '1';
-      valueText.style.maxWidth = '10em';
+      valueText.style.maxWidth = '12em';
       valueText.style.display = '-webkit-box';
-      valueText.style.webkitLineClamp = 2;
+      valueText.style.webkitLineClamp = 3;
       valueText.style.webkitBoxOrient = 'vertical';
       valueText.style.overflow = 'hidden';
     }
