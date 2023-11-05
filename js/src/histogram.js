@@ -89,9 +89,12 @@ const createCategoricalHistogramHighlight = (canvas, data)  => {
   }
 
   const draw = (key) => {
+    const rect = state.rects[key];
+
+    if (rect === undefined) return;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = state.color;
-    const rect = state.rects[key];
     ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
   }
 
