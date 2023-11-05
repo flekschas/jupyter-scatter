@@ -30,7 +30,7 @@ const createTreemap = (data, width, height) => {
 
 const createCategoricalHistogramBackground = (canvas, data)  => {
   const ctx = canvas.getContext("2d");
-  const lastI = Object.values(data).length - 1;
+  const lastI = data.length - 1;
 
   const state = {
     width: 100,
