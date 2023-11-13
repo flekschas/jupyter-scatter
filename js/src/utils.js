@@ -13,6 +13,18 @@ export function toTitleCase(string) {
   return string.split(/[\s_]/).map((s) => toCapitalCase(s)).join(' ').split('-').map((s) => toCapitalCase(s)).join('-')
 }
 
+export function toHtmlClass(string) {
+  return string
+    // Lower case the string for simplicity
+    .toLowerCase()
+    // Replace any leading characters that are not a-z
+    .replace(/^[^a-z]*/g, '')
+    // Replace any white space with a hyphen
+    .replace(/\s/g, '-')
+    // Remove any character other than alphabetical, numerical, underscore, or hyphen
+    .replace( /[^a-z0-9_-]/g, '');
+}
+
 export function downloadBlob(blob, name) {
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);

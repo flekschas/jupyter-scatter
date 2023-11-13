@@ -13,6 +13,7 @@ import { createLegend } from "./legend";
 import {
   camelToSnake,
   toCapitalCase,
+  toHtmlClass,
   toTitleCase,
   downloadBlob,
   getScale,
@@ -606,30 +607,31 @@ class JupyterScatterView {
 
   createTooltipContentDomElements(content) {
     const capitalContent = toCapitalCase(content);
+    const htmlClassContent = toHtmlClass(content);
 
     this[`tooltipContent${capitalContent}Title`] = createElementWithClass(
       'div',
-      ['title', `${content}-title`]
+      ['title', `${htmlClassContent}-title`]
     );
     this[`tooltipContent${capitalContent}Value`] = createElementWithClass(
       'div',
-      ['value', `${content}-value`]
+      ['value', `${htmlClassContent}-value`]
     );
     this[`tooltipContent${capitalContent}ValueText`] = createElementWithClass(
       'div',
-      ['value-text', `${content}-value-text`]
+      ['value-text', `${htmlClassContent}-value-text`]
     );
 
 
     this[`tooltipContent${capitalContent}Channel`] = createElementWithClass(
       'div',
-      ['channel', `${content}-channel`]
+      ['channel', `${htmlClassContent}-channel`]
     );
 
     if (content in TOOLTIP_ALL_VISUAL_CONTENTS) {
       this[`tooltipContent${capitalContent}ChannelName`] = createElementWithClass(
         'div',
-        ['channel-name', `${content}-channel-name`]
+        ['channel-name', `${htmlClassContent}-channel-name`]
       );
       this[`tooltipContent${capitalContent}ChannelName`].textContent = TOOLTIP_ALL_VISUAL_CONTENTS[content];
 
@@ -639,15 +641,15 @@ class JupyterScatterView {
 
       this[`tooltipContent${capitalContent}ChannelBadge`] = createElementWithClass(
         'div',
-        ['channel-badge', `${content}-value-badge`]
+        ['channel-badge', `${htmlClassContent}-value-badge`]
       );
       this[`tooltipContent${capitalContent}ChannelBadgeMark`] = createElementWithClass(
         'div',
-        ['channel-badge-mark', `${content}-channel-badge-mark`]
+        ['channel-badge-mark', `${htmlClassContent}-channel-badge-mark`]
       );
       this[`tooltipContent${capitalContent}ChannelBadgeBg`] = createElementWithClass(
         'div',
-        ['channel-badge-bg', `${content}-channel-badge-bg`]
+        ['channel-badge-bg', `${htmlClassContent}-channel-badge-bg`]
       );
       this[`tooltipContent${capitalContent}ChannelBadge`].appendChild(
         this[`tooltipContent${capitalContent}ChannelBadgeMark`]
