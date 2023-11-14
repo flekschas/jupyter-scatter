@@ -123,12 +123,18 @@ property features the:
 1. visual channel and property like `x`, `y`, `color`, `opacity`, or `size` (if the property is for visual encoding)
 2. name as specified by the column name in the bound DataFrame
 3. actual data value
-4. histogram of the data property
+4. histogram or treemap of the data property's distribution
 
 <div class="img tooltip-2"><div /></div>
 
 For numerical properties, the histogram is visualized as a bar chart. For
-categorical properties, the histogram is visualized as a horizontal stacked bar.
+categorical properties, the histogram is visualized as a
+flat [treemap](https://en.wikipedia.org/wiki/Treemapping) where the rectangles
+represents the proportion of categories compared to the whole. Treemaps are
+useful in scenarios with a lot of categories as shown below.
+
+<div class="img tooltip-treemap"><div /></div>
+
 In both cases, the highlighted bar indicates how the hovered point compares to
 the other points.
 
@@ -316,6 +322,18 @@ scatter.tooltip(contents=['effect_size_winsorized'])
   :root.dark .img.tooltip-2 {
     background-image: url(/images/tooltip-2-dark.png)
   }
+
+  .img.tooltip-treemap {
+    width: 1064px;
+    background-image: url(/images/tooltip-treemap-light.jpg)
+  }
+  .img.tooltip-treemap div { padding-top: 40.225564% }
+
+  :root.dark .img.tooltip-treemap {
+    width: 1050px;
+    background-image: url(/images/tooltip-treemap-dark.jpg)
+  }
+  :root.dark .img.tooltip-treemap div { padding-top: 41.333333% }
 
   .img.tooltip-3 {
     width: 596px;
