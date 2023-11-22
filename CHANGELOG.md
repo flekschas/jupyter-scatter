@@ -1,3 +1,7 @@
+## v0.15.0
+
+- Allow mixing custom and DataFrame-based data ([#89](https://github.com/flekschas/jupyter-scatter/issues/89))
+
 ## v0.14.3
 
 - Fix: don't return color, opacity, or size settings when `labeling` is defined
