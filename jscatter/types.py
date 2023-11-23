@@ -49,7 +49,7 @@ class LegendPosition(Enum):
     LEFT = 'left'
     CENTER = 'center'
 
-class TooltipContent(Enum):
+class VisualProperty(Enum):
     X = 'x'
     Y = 'y'
     COLOR = 'color'

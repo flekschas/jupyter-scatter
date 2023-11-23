@@ -122,17 +122,17 @@ def get_histogram_from_df(data, bins=20, range=None):
 
     return list(hist[0] / hist[0].max())
 
-def sanitize_tooltip_contents(
+def sanitize_tooltip_properties(
     df,
-    reserved_contents: List[str],
-    contents: List[str],
+    reserved_properties: List[str],
+    properties: List[str],
 ):
-    sanitized_contents = []
+    sanitized_properties = []
 
-    for col in contents:
-        if col in reserved_contents or (df is not None and col in df):
-            sanitized_contents.append(col)
+    for col in properties:
+        if col in reserved_properties or (df is not None and col in df):
+            sanitized_properties.append(col)
         else:
             continue
 
-    return sanitized_contents
+    return sanitized_properties

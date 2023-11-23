@@ -357,17 +357,17 @@ scatter.legend(True, 'top-right', 'small')
 ```
 
 
-### scatter.tooltip(_enable=Undefined_, _contents=Undefined_, _size=Undefined_, _histograms=Undefined_, _histograms_bins=Undefined_, _histograms_ranges=Undefined_, _histograms_size=Undefined_) {#scatter.tooltip}
+### scatter.tooltip(_enable=Undefined_, _properties=Undefined_, _size=Undefined_, _histograms=Undefined_, _histograms_bins=Undefined_, _histograms_ranges=Undefined_, _histograms_size=Undefined_) {#scatter.tooltip}
 
 Set or get the tooltip settings.
 
 **Arguments:**
 - `enable` is a Boolean specifying if the tooltip should be enabled or disabled.
-- `contents` is a list of string specifying for which visual channels or columns of the bound DataFrame should be shown in the tooltip. The visual channels can be some of `x`, `y`, `color`, `opacity`, and `size`. Note that visual channels are only shown if they are actually used to encode information. To reference a DataFrame column specify it's name.
+- `properties` is a list of string specifying for which visual or data properties to show in the tooltip. The visual properties can be some of `x`, `y`, `color`, `opacity`, and `size`. Note that visual properties are only shown if they are actually used to data properties. To reference other data properties, specify a column of the bound DataFrame by its name.
 - `size` is a string specifying the size of the tooltip. It must be one of `small`, `medium`, or `large`. The default is `"small"`.
-- `histograms` is a Boolean specifying if the tooltip should show histograms of the contents
-- `histograms_bins` is either an Integer specifying the number of bins of all numerical histograms or a dictionary of content-specific number of bins. The default is `20`.
-- `histograms_ranges` is either a tuple of the lower and upper range of all bins or a dictionary of content-specific lower upper bin ranges. The default is `(min(), max())`.
+- `histograms` is a Boolean specifying if the tooltip should show histograms of the properties
+- `histograms_bins` is either an Integer specifying the number of bins of all numerical histograms or a dictionary of property-specific number of bins. The default is `20`.
+- `histograms_ranges` is either a tuple of the lower and upper range of all bins or a dictionary of property-specific lower upper bin ranges. The default is `(min(), max())`.
 - `histograms_size` is a string specifying the size of the histograms. It must be one of `small`, `medium`, or `large`. The default is `"small"`.
 
 **Returns:** either the legend properties when all arguments are `Undefined` or `self`.
@@ -377,7 +377,7 @@ Set or get the tooltip settings.
 ```python
 scatter.tooltip(
   enable=True,
-  contents=["color", "opacity", "effect_size"],
+  properties=["color", "opacity", "effect_size"],
   size="small",
   histograms=True,
   histograms_bins=12,

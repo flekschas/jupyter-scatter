@@ -1,4 +1,4 @@
-import { hierarchy, treemap, treemapBinary } from 'd3-hierarchy';
+import { hierarchy, treemap, treemapBinary, treemapDice } from 'd3-hierarchy';
 
 import { createElementWithClass } from './utils';
 
@@ -9,12 +9,16 @@ const BORDER_WIDTH = 2;
 const VERMILION = '#D55E00'; // A red color from Okabe Ito's color palette
 
 const createTreemap = (data, width, height) => {
-  const dpr = window.devicePixelRatio
+  const dpr = window.devicePixelRatio;
   const padding = BORDER_WIDTH * dpr + dpr;
+
+  const tiling = Object.keys(data).length > 10
+    ? treemapBinary
+    : treemapDice;
 
   return (
     treemap()
-      .tile(treemapBinary)
+      .tile(tiling)
       .size([width - padding * 2, height])
       .padding(dpr)
       .round(true)
@@ -58,10 +62,12 @@ const createCategoricalHistogramBackground = (canvas, data)  => {
   }
 
   const init = () => {
+    const dpr = window.devicePixelRatio;
+    const padding = BORDER_WIDTH * dpr + dpr;
     const tree = createTreemap(data, state.width, state.height);
 
     state.rects = tree.leaves().map((leaf) => ({
-      x: leaf.x0,
+      x: leaf.x0 + padding,
       y: leaf.y0,
       width: leaf.x1 - leaf.x0,
       height: leaf.y1 - leaf.y0
@@ -105,11 +111,13 @@ const createCategoricalHistogramHighlight = (canvas, data)  => {
   }
 
   const init = () => {
+    const dpr = window.devicePixelRatio;
+    const padding = BORDER_WIDTH * dpr + dpr;
     const tree = createTreemap(data, state.width, state.height);
 
     state.rects = tree.leaves().reduce((acc, leaf) => {
       acc[leaf.data.key] = {
-        x: leaf.x0,
+        x: leaf.x0 + padding,
         y: leaf.y0,
         width: leaf.x1 - leaf.x0,
         height: leaf.y1 - leaf.y0

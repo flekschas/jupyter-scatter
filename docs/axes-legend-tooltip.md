@@ -120,10 +120,10 @@ scatter.tooltip(True)
 Each row in the tooltip corresponds to a property. From left to right, each
 property features the:
 
-1. visual channel and property like `x`, `y`, `color`, `opacity`, or `size` (if the property is for visual encoding)
+1. visual property (like `x`, `y`, `color`, `opacity`, or `size`) or data property
 2. name as specified by the column name in the bound DataFrame
 3. actual data value
-4. histogram or treemap of the data property's distribution
+4. histogram or treemap of the property distribution
 
 <div class="img tooltip-2"><div /></div>
 
@@ -139,10 +139,10 @@ In both cases, the highlighted bar indicates how the hovered point compares to
 the other points.
 
 By default, the tooltip shows all properties that are visually encoded but you
-can limit the contents of the tooltip as follows:
+can limit which properties are shown:
 
 ```py
-scatter.tooltip(contents=["color", "opacity"])
+scatter.tooltip(properties=["color", "opacity"])
 ```
 
 <div class="img tooltip-3"><div /></div>
@@ -153,7 +153,7 @@ referenced by their respective column names.
 
 ```py{5-6}
 scatter.tooltip(
-  contents=[
+  properties=[
     "color",
     "opacity",
     "group",
@@ -168,7 +168,7 @@ Here, for instance, we're showing the point's `group` and `effect_size`
 properties, which are two other DataFrame columns we didn't visualize.
 
 ::: tip
-The order of `contents` defines the order of the tooltip entries.
+The order of `properties` defines the order of the entries.
 :::
 
 ### Customizing Numerical Histograms
@@ -184,7 +184,7 @@ scatter.tooltip(histograms_bins=40, histograms_ranges=(0, 1))
 
 <div class="img tooltip-5"><div /></div>
 
-To customize the number of bins and the range by content you can do:
+To customize the number of bins and the range by property you can do:
 
 ```py
 scatter.tooltip(
@@ -230,7 +230,7 @@ percentile:
 from scipy.stats.mstats import winsorize
 
 df['effect_size_winsorized'] = winsorize(df.effect_size, limits=[0.1, 0.1])
-scatter.tooltip(contents=['effect_size_winsorized'])
+scatter.tooltip(properties=['effect_size_winsorized'])
 ```
 
 <div class="img tooltip-10"><div /></div>

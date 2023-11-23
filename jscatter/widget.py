@@ -154,10 +154,10 @@ class JupyterScatter(anywidget.AnyWidget):
     tooltip_color = List(
         default_value=[0, 0, 0, 1], minlen=4, maxlen=4
     ).tag(sync=True)
-    tooltip_contents = List(
+    tooltip_properties = List(
         default_value=['x', 'y', 'color', 'opacity', 'size']
     ).tag(sync=True)
-    tooltip_contents_non_visual_info = Dict(dict()).tag(sync=True)
+    tooltip_properties_non_visual_info = Dict(dict()).tag(sync=True)
     tooltip_histograms = Bool().tag(sync=True)
     tooltip_histograms_ranges = Dict(dict()).tag(sync=True)
     tooltip_histograms_size = Enum(
@@ -218,7 +218,7 @@ class JupyterScatter(anywidget.AnyWidget):
             self.send({
                 "type": TOOLTIP_EVENT_TYPE,
                 "index": data["index"],
-                "contents": self.data.iloc[data["index"]][data["contents"]].to_dict()
+                "properties": self.data.iloc[data["index"]][data["properties"]].to_dict()
             })
 
     @property

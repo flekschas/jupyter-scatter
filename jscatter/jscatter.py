@@ -10,8 +10,8 @@ from typing import Dict, Optional, Union, List, Tuple
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_scale_type_from_df, get_domain_from_df, create_default_norm, create_labeling, get_histogram_from_df, sanitize_tooltip_contents
-from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Size, LegendPosition, TooltipContent, Labeling, Undefined
+from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_scale_type_from_df, get_domain_from_df, create_default_norm, create_labeling, get_histogram_from_df, sanitize_tooltip_properties
+from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Size, LegendPosition, VisualProperty, Labeling, Undefined
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -28,7 +28,7 @@ UNDEF = Undefined()
 
 default_background_color = 'white'
 
-visual_tooltip_contents = [
+visual_properties = [
     'x',
     'y',
     'color',
@@ -36,8 +36,8 @@ visual_tooltip_contents = [
     'size',
 ]
 
-def get_non_visual_contents(contents):
-    return [c for c in contents if c not in visual_tooltip_contents]
+def get_non_visual_properties(properties):
+    return [c for c in properties if c not in visual_properties]
 
 def check_encoding_dtype(series):
     if not any([check(series.dtype) for check in VALID_ENCODING_TYPES]):
@@ -101,18 +101,18 @@ def get_domain(scatter: Scatter, channel: str):
         )
     return getattr(scatter, f'_{channel}_categories')
 
-def get_histogram_bins(bins: Union[int, Dict[str, int]], content: str):
+def get_histogram_bins(bins: Union[int, Dict[str, int]], property: str):
     if isinstance(bins, dict):
-        return bins.get(content, DEFAULT_HISTOGRAM_BINS)
+        return bins.get(property, DEFAULT_HISTOGRAM_BINS)
 
     if isinstance(bins, int):
         return bins
 
     return DEFAULT_HISTOGRAM_BINS
 
-def get_histogram_range(ranges, content):
+def get_histogram_range(ranges, property):
     if isinstance(ranges, dict):
-        return ranges.get(content)
+        return ranges.get(property)
 
     if isinstance(ranges, tuple):
         return ranges
@@ -280,8 +280,8 @@ class Scatter():
         self._legend_position = 'top-left'
         self._legend_size = 'small'
         self._tooltip = False
-        self._tooltip_contents = visual_tooltip_contents.copy()
-        self._tooltip_contents_non_visual = None
+        self._tooltip_properties = visual_properties.copy()
+        self._tooltip_properties_non_visual = None
         self._tooltip_size = 'small'
         self._tooltip_histograms = True
         self._tooltip_histograms_bins = DEFAULT_HISTOGRAM_BINS
@@ -388,7 +388,7 @@ class Scatter():
         )
         self.tooltip(
             kwargs.get('tooltip', UNDEF),
-            kwargs.get('tooltip_contents', UNDEF),
+            kwargs.get('tooltip_properties', UNDEF),
             kwargs.get('tooltip_size', UNDEF),
             kwargs.get('tooltip_histograms', UNDEF),
             kwargs.get('tooltip_histograms_bins', UNDEF),
@@ -3109,7 +3109,7 @@ class Scatter():
     def tooltip(
         self,
         tooltip: Optional[Union[bool, Undefined]] = UNDEF,
-        contents: Optional[Union[List[TooltipContent], Undefined]] = UNDEF,
+        properties: Optional[Union[List[VisualProperty], Undefined]] = UNDEF,
         size: Optional[Union[Size, Undefined]] = UNDEF,
         histograms: Optional[Union[bool, Undefined]] = UNDEF,
         histograms_bins: Optional[Union[int, Dict[str, int], Undefined]] = UNDEF,
@@ -3123,23 +3123,24 @@ class Scatter():
         ----------
         tooltip : bool, optional
             When set to `True`, a tooltip will be shown upon hovering a point.
-        contents : all or list of str, optional
-            The visual channels or columns of the bound dataframe that should be
-            shown in the tooltip. The visual channels can be some of `x`, `y`,
-            `color`, `opacity`, and `size`. Note that visual channels are only
-            shown if they are actually used to encode information. To reference
-            a column specify it's name.
+        properties : all or list of str, optional
+            The visual or  data properties that should be shown in the tooltip.
+            The visual properties can be some of `x`, `y`, `color`, `opacity`,
+            and `size`. Note that visual properties are only shown if they are
+            actually used to encode data properties. To reference other data
+            properties, specify a column of the bound DataFrame by its name.
         size : small or medium or large, optional
             The size of the tooltip. Must be one of small, medium, or large.
             Defaults to `"small"`.
         histograms : bool, optional
-            When set to `True`, the tooltip will show histograms of the contents
+            When set to `True`, the tooltip will show histograms of the
+            properties
         histograms_bins : int, optional
             The number of bins for all numerical histograms. Or a dictionary of
-            content-specific number of bins. Defaults to 20.
+            property-specific number of bins. Defaults to 20.
         histograms_ranges : (float, float) or dict of (float, float), optional
             The global lower and upper range of all bins. Or a dictionary of
-            content-specific lower upper bin ranges. Defaults to
+            property-specific lower upper bin ranges. Defaults to
             `(min(), max())`.
         histograms_size : small or medium or large, optional
             The width of the histograms. Must be one of small, medium, or large.
@@ -3156,7 +3157,7 @@ class Scatter():
         >>> scatter.tooltip(True)
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.tooltip(contents=["color", "opacity", "my_column"])
+        >>> scatter.tooltip(properties=["color", "opacity", "my_column"])
         <jscatter.jscatter.Scatter>
 
         >>> scatter.tooltip(size="large")
@@ -3177,7 +3178,7 @@ class Scatter():
         >>> scatter.tooltip()
         {
           "tooltip": True,
-          "contents": ["color", "opacity", "my_column"],
+          "properties": ["color", "opacity", "my_column"],
           size: "large",
           histograms=True,
           histograms_bins=20,
@@ -3189,29 +3190,29 @@ class Scatter():
             self._tooltip = tooltip
             self.update_widget('tooltip_enable', tooltip)
 
-        if contents is not UNDEF:
-            self._tooltip_contents = sanitize_tooltip_contents(
+        if properties is not UNDEF:
+            self._tooltip_properties = sanitize_tooltip_properties(
                 self._data,
-                visual_tooltip_contents,
-                contents
+                visual_properties,
+                properties
             )
 
             self._tooltip_histograms_bins = {
-                content: get_histogram_bins(
+                property: get_histogram_bins(
                     self._tooltip_histograms_bins,
-                    content
+                    property
                 )
-                for content
-                in self._tooltip_contents
+                for property
+                in self._tooltip_properties
             }
 
             self._tooltip_histograms_ranges = {
-                content: get_histogram_range(
+                property: get_histogram_range(
                     self._tooltip_histograms_ranges,
-                    content
+                    property
                 )
-                for content
-                in self._tooltip_contents
+                for property
+                in self._tooltip_properties
             }
 
         if size is not UNDEF:
@@ -3228,16 +3229,16 @@ class Scatter():
 
         if histograms_bins is not UNDEF:
             self._tooltip_histograms_bins = {
-                content: get_histogram_bins(histograms_bins, content)
-                for content
-                in self._tooltip_contents
+                property: get_histogram_bins(histograms_bins, property)
+                for property
+                in self._tooltip_properties
             }
 
         if histograms_ranges is not UNDEF:
             self._tooltip_histograms_ranges = {
-                content: get_histogram_range(histograms_ranges, content)
-                for content
-                in self._tooltip_contents
+                property: get_histogram_range(histograms_ranges, property)
+                for property
+                in self._tooltip_properties
             }
 
         if histograms_bins is not UNDEF or histograms_ranges is not UNDEF:
@@ -3289,36 +3290,36 @@ class Scatter():
                 self.update_widget('size_histogram', self._size_histogram)
 
         if (
-            self._tooltip_contents_non_visual is None or
-            contents is not UNDEF or
+            self._tooltip_properties_non_visual is None or
+            properties is not UNDEF or
             histograms_bins is not UNDEF
         ):
-            self._tooltip_contents_non_visual = get_non_visual_contents(
-                self._tooltip_contents
+            self._tooltip_properties_non_visual = get_non_visual_properties(
+                self._tooltip_properties
             )
 
-            self._tooltip_contents_non_visual_info = {}
-            for content in self._tooltip_contents_non_visual:
-                self._tooltip_contents_non_visual_info[content] = dict(
-                    scale = get_scale_type_from_df(self._data[content]),
-                    domain = get_domain_from_df(self._data[content]),
-                    range = self.get_histogram_range(content),
+            self._tooltip_properties_non_visual_info = {}
+            for property in self._tooltip_properties_non_visual:
+                self._tooltip_properties_non_visual_info[property] = dict(
+                    scale = get_scale_type_from_df(self._data[property]),
+                    domain = get_domain_from_df(self._data[property]),
+                    range = self.get_histogram_range(property),
                     histogram = get_histogram_from_df(
-                        self._data[content],
-                        self.get_histogram_bins(content),
-                        self.get_histogram_range(content)
+                        self._data[property],
+                        self.get_histogram_bins(property),
+                        self.get_histogram_range(property)
                     ),
                 )
 
-            self.update_widget('tooltip_contents_non_visual_info', self._tooltip_contents_non_visual_info)
-            self.update_widget('tooltip_contents', self._tooltip_contents)
+            self.update_widget('tooltip_properties_non_visual_info', self._tooltip_properties_non_visual_info)
+            self.update_widget('tooltip_properties', self._tooltip_properties)
 
-        if any_not([tooltip, contents, size, histograms, histograms_bins, histograms_size], UNDEF):
+        if any_not([tooltip, properties, size, histograms, histograms_bins, histograms_size], UNDEF):
             return self
 
         return dict(
             legend = self._tooltip,
-            contents = self._tooltip_contents,
+            properties = self._tooltip_properties,
             size = self._tooltip_size,
             histograms = self._tooltip_histograms,
             histograms_bins = self._tooltip_histograms_bins,
@@ -3620,8 +3621,8 @@ class Scatter():
             size_scale=get_scale(self, 'size'),
             size_title=self._size_by,
             tooltip_color=self.get_tooltip_color(),
-            tooltip_contents=self._tooltip_contents,
-            tooltip_contents_non_visual_info=self._tooltip_contents_non_visual_info,
+            tooltip_properties=self._tooltip_properties,
+            tooltip_properties_non_visual_info=self._tooltip_properties_non_visual_info,
             tooltip_enable=self._tooltip,
             tooltip_histograms=self._tooltip_histograms,
             tooltip_histograms_size=self._tooltip_histograms_size,
@@ -3651,11 +3652,11 @@ class Scatter():
         if self._widget is not None:
             setattr(self._widget, prop, val)
 
-    def get_histogram_bins(self, content):
-        return get_histogram_bins(self._tooltip_histograms_bins, content)
+    def get_histogram_bins(self, property):
+        return get_histogram_bins(self._tooltip_histograms_bins, property)
 
-    def get_histogram_range(self, content):
-        return get_histogram_range(self._tooltip_histograms_ranges, content)
+    def get_histogram_range(self, property):
+        return get_histogram_range(self._tooltip_histograms_ranges, property)
 
     def show(self):
         """
