@@ -3108,7 +3108,7 @@ class Scatter():
 
     def tooltip(
         self,
-        tooltip: Optional[Union[bool, Undefined]] = UNDEF,
+        enable: Optional[Union[bool, Undefined]] = UNDEF,
         properties: Optional[Union[List[VisualProperty], Undefined]] = UNDEF,
         size: Optional[Union[Size, Undefined]] = UNDEF,
         histograms: Optional[Union[bool, Undefined]] = UNDEF,
@@ -3121,14 +3121,15 @@ class Scatter():
 
         Parameters
         ----------
-        tooltip : bool, optional
+        enable : bool, optional
             When set to `True`, a tooltip will be shown upon hovering a point.
         properties : all or list of str, optional
-            The visual or  data properties that should be shown in the tooltip.
+            The visual and data properties that should be shown in the tooltip.
             The visual properties can be some of `x`, `y`, `color`, `opacity`,
             and `size`. Note that visual properties are only shown if they are
             actually used to encode data properties. To reference other data
-            properties, specify a column of the bound DataFrame by its name.
+            properties that are not visually encoded, specify a column of the
+            bound DataFrame by its name.
         size : small or medium or large, optional
             The size of the tooltip. Must be one of small, medium, or large.
             Defaults to `"small"`.
@@ -3186,9 +3187,9 @@ class Scatter():
           histograms_size="small"
         }
         """
-        if tooltip is not UNDEF:
-            self._tooltip = tooltip
-            self.update_widget('tooltip_enable', tooltip)
+        if enable is not UNDEF:
+            self._tooltip = enable
+            self.update_widget('tooltip_enable', enable)
 
         if properties is not UNDEF:
             self._tooltip_properties = sanitize_tooltip_properties(
@@ -3314,15 +3315,16 @@ class Scatter():
             self.update_widget('tooltip_properties_non_visual_info', self._tooltip_properties_non_visual_info)
             self.update_widget('tooltip_properties', self._tooltip_properties)
 
-        if any_not([tooltip, properties, size, histograms, histograms_bins, histograms_size], UNDEF):
+        if any_not([tooltip, properties, size, histograms, histograms_bins, histograms_ranges, histograms_size], UNDEF):
             return self
 
         return dict(
-            legend = self._tooltip,
+            enable = self._tooltip,
             properties = self._tooltip_properties,
             size = self._tooltip_size,
             histograms = self._tooltip_histograms,
             histograms_bins = self._tooltip_histograms_bins,
+            histograms_ranges = self._tooltip_histograms_ranges,
             histograms_size = self._tooltip_histograms_size,
         )
 
