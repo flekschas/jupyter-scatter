@@ -203,13 +203,16 @@ class Scatter():
         self._lasso_initiator = False
         self._lasso_min_delay = 10
         self._lasso_min_dist = 3
+        self._x_data = None
         self._x_by = None
         self._x_histogram = None
+        self._y_data = None
         self._y_by = None
         self._y_histogram = None
         self._color = (0, 0, 0, 0.66) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.66)
         self._color_selected = (0, 0.55, 1, 1)
         self._color_hover = (0, 0, 0, 1) if self._background_color_luminance > 0.5 else (1, 1, 1, 1)
+        self._color_data = None
         self._color_by = None
         self._color_map = None
         self._color_map_order = None
@@ -220,6 +223,7 @@ class Scatter():
         self._color_histogram = None
         self._opacity = 0.66
         self._opacity_unselected = 0.5
+        self._opacity_data = None
         self._opacity_by = 'density'
         self._opacity_map = None
         self._opacity_map_order = None
@@ -229,6 +233,7 @@ class Scatter():
         self._opacity_labeling = None
         self._opacity_histogram = None
         self._size = 3
+        self._size_data = None
         self._size_by = None
         self._size_map = None
         self._size_map_order = None
@@ -238,10 +243,13 @@ class Scatter():
         self._size_labeling = None
         self._size_histogram = None
         self._connect_by = None
+        self._connect_by_data = None
         self._connect_order = None
+        self._connect_order_data = None
         self._connection_color = (0, 0, 0, 0.1) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.1)
         self._connection_color_selected = (0, 0.55, 1, 1)
         self._connection_color_hover = (0, 0, 0, 0.66) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.66)
+        self._connection_color_data = None
         self._connection_color_by = None
         self._connection_color_map = None
         self._connection_color_map_order = None
@@ -250,6 +258,7 @@ class Scatter():
         self._connection_color_categories = None
         self._connection_color_labeling = None
         self._connection_opacity = 0.1
+        self._connection_opacity_data = None
         self._connection_opacity_by = None
         self._connection_opacity_map = None
         self._connection_opacity_map_order = None
@@ -258,6 +267,7 @@ class Scatter():
         self._connection_opacity_categories = None
         self._connection_opacity_labeling = None
         self._connection_size = 2
+        self._connection_size_data = None
         self._connection_size_by = None
         self._connection_size_map = None
         self._connection_size_map_order = None
@@ -499,6 +509,12 @@ class Scatter():
 
         return dict(data = self._data)
 
+    @property
+    def x_data(self):
+        if self._x_data is not None:
+            return self._x_data
+        return self._data[self._x_by]
+
     def x(
         self,
         x: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
@@ -560,19 +576,16 @@ class Scatter():
 
         if x is not UNDEF:
             self._x = x
-            self._x_by = x if isinstance(x, str) else None
+            if isinstance(x, str):
+                self._x_data = None
+                self._x_by = self._x
+            else:
+                self._x_data = pd.Series(x, index=self._data_index)
+                self._x_by = 'Custom X Data'
 
         if x is not UNDEF or scale is not UNDEF:
-            try:
-                self.update_widget('prevent_filter_reset', True)
-                self._points[:, 0] = self._data[self._x].values
-
-            except TypeError:
-                _x = np.asarray(self._x)
-                self.update_widget(
-                    'prevent_filter_reset', len(_x) == len(self._points[:, 0])
-                )
-                self._points[:, 0] = _x
+            self.update_widget('prevent_filter_reset', True)
+            self._points[:, 0] = self.x_data.values
 
             self._x_min = np.min(self._points[:, 0])
             self._x_max = np.max(self._points[:, 0])
@@ -606,6 +619,12 @@ class Scatter():
             x = self._x,
             scale = self._x_scale
         )
+
+    @property
+    def y_data(self):
+        if self._y_data is not None:
+            return self._y_data
+        return self._data[self._y_by]
 
     def y(
         self,
@@ -668,18 +687,16 @@ class Scatter():
 
         if y is not UNDEF:
             self._y = y
-            self._y_by = y if isinstance(y, str) else None
+            if isinstance(y, str):
+                self._y_data = None
+                self._y_by = self._y
+            else:
+                self._y_data = pd.Series(y, index=self._data_index)
+                self._y_by = 'Custom Y Data'
 
         if y is not UNDEF or scale is not UNDEF:
-            try:
-                self.update_widget('prevent_filter_reset', True)
-                self._points[:, 1] = self._data[self._y].values
-            except TypeError:
-                _y = np.asarray(self._y)
-                self.update_widget(
-                    'prevent_filter_reset', len(_y) == len(self._points[:, 0])
-                )
-                self._points[:, 1] = _y
+            self.update_widget('prevent_filter_reset', True)
+            self._points[:, 1] = self.y_data.values
 
             self._y_min = np.min(self._points[:, 1])
             self._y_max = np.max(self._points[:, 1])
@@ -908,6 +925,12 @@ class Scatter():
 
         return self._filtered_points_ids
 
+    @property
+    def color_data(self):
+        if self._color_data is not None:
+            return self._color_data
+        return self._data[self._color_by]
+
     def color(
         self,
         default: Optional[Union[Color, Undefined]] = UNDEF,
@@ -1038,37 +1061,36 @@ class Scatter():
                 self._color_histogram = None
 
             else:
-                self._encodings.set('color', by)
+                if isinstance(by, str):
+                    self._color_data = None
+                else:
+                    self._color_data = pd.Series(by, index=self._data_index)
+                    self._color_by = 'Custom Color Data'
 
-                component = self._encodings.data[by].component
-                try:
-                    check_encoding_dtype(self._data[by])
-                    categorical_data = get_categorical_data(self._data[by])
+                self._encodings.set('color', self._color_by)
 
-                    if categorical_data is not None:
-                        self._color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                        self._points[:, component] = categorical_data.cat.codes
-                        self._color_histogram = get_histogram_from_df(categorical_data)
-                    else:
-                        self._color_categories = None
-                        self._points[:, component] = self._color_norm(self._data[by].values)
-                        self._color_histogram = get_histogram_from_df(
-                            self._points[:, component],
-                            self.get_histogram_bins("color"),
-                            self.get_histogram_range("color")
-                        )
-                except TypeError:
-                    self._points[:, component] = self._color_norm(np.asarray(by))
+                check_encoding_dtype(self.color_data)
+
+                categorical_data = get_categorical_data(self.color_data)
+                component = self._encodings.data[self._color_by].component
+
+                if categorical_data is not None:
+                    self._color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    self._points[:, component] = categorical_data.cat.codes
+                    self._color_histogram = get_histogram_from_df(categorical_data)
+                else:
+                    self._color_categories = None
+                    self._points[:, component] = self._color_norm(self.color_data.values)
                     self._color_histogram = get_histogram_from_df(
                         self._points[:, component],
                         self.get_histogram_bins("color"),
                         self.get_histogram_range("color")
                     )
 
-                if not self._encodings.data[by].prepared:
+                if not self._encodings.data[self._color_by].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[by].prepared = True
+                    self._encodings.data[self._color_by].prepared = True
 
             self.update_widget('color_histogram', self._color_histogram)
             self.update_widget('color_by', self.js_color_by)
@@ -1173,6 +1195,12 @@ class Scatter():
             order = self._color_order,
             labeling = self._color_labeling,
         )
+
+    @property
+    def opacity_data(self):
+        if self._opacity_data is not None:
+            return self._opacity_data
+        return self._data[self._opacity_by]
 
     def opacity(
         self,
@@ -1296,37 +1324,36 @@ class Scatter():
                 self._opacity_histogram = None
 
             else:
-                self._encodings.set('opacity', by)
+                if isinstance(by, str):
+                    self._opacity_data = None
+                else:
+                    self._opacity_data = pd.Series(by, index=self._data_index)
+                    self._opacity_by = 'Custom Opacity Data'
 
-                component = self._encodings.data[by].component
-                try:
-                    check_encoding_dtype(self._data[by])
-                    categorical_data = get_categorical_data(self._data[by])
+                self._encodings.set('opacity', self._opacity_by)
 
-                    if categorical_data is not None:
-                        self._points[:, component] = categorical_data.cat.codes
-                        self._opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                        self._opacity_histogram = get_histogram_from_df(categorical_data)
-                    else:
-                        self._points[:, component] = self._opacity_norm(self._data[by].values)
-                        self._opacity_histogram = get_histogram_from_df(
-                            self._points[:, component],
-                            self.get_histogram_bins("opacity"),
-                            self.get_histogram_range("opacity")
-                        )
-                        self._opacity_categories = None
-                except TypeError:
-                    self._points[:, component] = self._opacity_norm(np.asarray(by))
+                check_encoding_dtype(self.opacity_data)
+
+                component = self._encodings.data[self._opacity_by].component
+                categorical_data = get_categorical_data(self.opacity_data)
+
+                if categorical_data is not None:
+                    self._points[:, component] = categorical_data.cat.codes
+                    self._opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    self._opacity_histogram = get_histogram_from_df(categorical_data)
+                else:
+                    self._points[:, component] = self._opacity_norm(self.opacity_data.values)
                     self._opacity_histogram = get_histogram_from_df(
                         self._points[:, component],
                         self.get_histogram_bins("opacity"),
                         self.get_histogram_range("opacity")
                     )
+                    self._opacity_categories = None
 
-                if not self._encodings.data[by].prepared:
+                if not self._encodings.data[self._opacity_by].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[by].prepared = True
+                    self._encodings.data[self._opacity_by].prepared = True
 
             self.update_widget('opacity_histogram_range', self.get_histogram_range("opacity"))
             self.update_widget('opacity_histogram', self._opacity_histogram)
@@ -1414,6 +1441,12 @@ class Scatter():
             order = self._opacity_order,
             labeling = self._opacity_labeling,
         )
+
+    @property
+    def size_data(self):
+        if self._size_data is not None:
+            return self._size_data
+        return self._data[self._size_by]
 
     def size(
         self,
@@ -1524,37 +1557,36 @@ class Scatter():
                 self._size_histogram = None
 
             else:
-                self._encodings.set('size', by)
+                if isinstance(by, str):
+                    self._size_data = None
+                else:
+                    self._size_data = pd.Series(by, index=self._data_index)
+                    self._size_by = 'Custom Size Data'
+                    
+                self._encodings.set('size', self._size_by)
 
-                component = self._encodings.data[by].component
-                try:
-                    check_encoding_dtype(self._data[by])
-                    categorical_data = get_categorical_data(self._data[by])
+                check_encoding_dtype(self.size_data)
 
-                    if categorical_data is not None:
-                        self._points[:, component] = categorical_data.cat.codes
-                        self._size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                        self._size_histogram = get_histogram_from_df(categorical_data)
-                    else:
-                        self._points[:, component] = self._size_norm(self._data[by].values)
-                        self._size_histogram = get_histogram_from_df(
-                            self._points[:, component],
-                            self.get_histogram_bins("size"),
-                            self.get_histogram_range("size")
-                        )
-                        self._size_categories = None
-                except TypeError:
-                    self._points[:, component] = self._size_norm(np.asarray(by))
+                component = self._encodings.data[self._size_by].component
+                categorical_data = get_categorical_data(self.size_data)
+
+                if categorical_data is not None:
+                    self._points[:, component] = categorical_data.cat.codes
+                    self._size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    self._size_histogram = get_histogram_from_df(categorical_data)
+                else:
+                    self._points[:, component] = self._size_norm(self.size_data.values)
                     self._size_histogram = get_histogram_from_df(
                         self._points[:, component],
                         self.get_histogram_bins("size"),
                         self.get_histogram_range("size")
                     )
+                    self._size_categories = None
 
-                if not self._encodings.data[by].prepared:
+                if not self._encodings.data[self._size_by].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[by].prepared = True
+                    self._encodings.data[self._size_by].prepared = True
 
             self.update_widget('size_histogram', self._size_histogram)
             self.update_widget('size_by', self.js_size_by)
@@ -1640,6 +1672,18 @@ class Scatter():
             labeling = self._size_labeling,
         )
 
+    @property
+    def connect_by_data(self):
+        if self._connect_by_data is not None:
+            return self._connect_by_data
+        return self._data[self._connect_by]
+
+    @property
+    def connect_order_data(self):
+        if self._connect_order_data is not None:
+            return self._connect_order_data
+        return self._data[self._connect_order]
+
     def connect(
         self,
         by: Optional[Union[str, List[int], np.ndarray[int], None, Undefined]] = UNDEF,
@@ -1690,17 +1734,23 @@ class Scatter():
             self._connect_by = by
 
             if by is not None:
-                try:
-                    categorical_data = get_categorical_data(self._data[by])
-                    if categorical_data is not None:
-                        self._points[:, COMPONENT_CONNECT] = categorical_data.cat.codes
-                    elif pd.api.types.is_integer_dtype(self._data[by].dtype):
-                        self._points[:, COMPONENT_CONNECT] = self._data[by].values
-                    else:
-                        raise ValueError('connect by only works with categorical data')
-                except TypeError:
-                    tmp = pd.Series(by, dtype='category')
-                    self._points[:, COMPONENT_CONNECT] = tmp.cat.codes
+                if isinstance(by, str):
+                    self._connect_by_data = None
+                else:
+                    self._connect_by_data = pd.Series(
+                        by,
+                        index=self._data_index,
+                        dtype='category'
+                    )
+                    self._connect_by = 'Custom Connect-By Data'
+
+                categorical_data = get_categorical_data(self.connect_by_data)
+                if categorical_data is not None:
+                    self._points[:, COMPONENT_CONNECT] = categorical_data.cat.codes
+                elif pd.api.types.is_integer_dtype(self.connect_by_data.dtype):
+                    self._points[:, COMPONENT_CONNECT] = self.connect_by_data.values
+                else:
+                    raise ValueError('connect by only works with categorical data')
 
                 data_updated = True
 
@@ -1708,13 +1758,20 @@ class Scatter():
             self._connect_order = order
 
             if by is not None:
-                try:
-                    if pd.api.types.is_integer_dtype(self._data[order].dtype):
-                        self._points[:, COMPONENT_CONNECT_ORDER] = self._data[order]
-                    else:
-                        raise ValueError('connect order must be an integer type')
-                except TypeError:
-                    self._points[:, COMPONENT_CONNECT_ORDER] = np.asarray(order).astype(int)
+                if isinstance(by, str):
+                    self._connect_order_data = None
+                else:
+                    self._connect_order_data = pd.Series(
+                        by,
+                        index=self._data_index,
+                        dtype='category'
+                    )
+                    self._connect_order = 'Custom Connect-Order Data'
+
+                if pd.api.types.is_integer_dtype(self.connect_order_data.dtype):
+                    self._points[:, COMPONENT_CONNECT_ORDER] = self.connect_order_data
+                else:
+                    raise ValueError('connect order must be an integer type')
 
                 data_updated = True
 
@@ -1731,6 +1788,12 @@ class Scatter():
             by = self._connect_by,
             order = self._connect_order,
         )
+
+    @property
+    def connection_color_data(self):
+        if self._connection_color_data is not None:
+            return self._connection_color_data
+        return self._data[self._connection_color_by]
 
     def connection_color(
         self,
@@ -1871,26 +1934,33 @@ class Scatter():
                 pass
 
             else:
-                self._encodings.set('connection_color', by)
+                if isinstance(by, str):
+                    self._connection_color_data = None
+                else:
+                    self._connection_color_data = pd.Series(
+                        by,
+                        index=self._data_index,
+                    )
+                    self._connection_color_by = 'Custom Connection-Color Data'
 
-                component = self._encodings.data[by].component
-                try:
-                    check_encoding_dtype(self._data[by])
-                    categorical_data = get_categorical_data(self._data[by])
+                self._encodings.set('connection_color', self._connection_color_by)
 
-                    if categorical_data is not None:
-                        self._connection_color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                        self._points[:, component] = categorical_data.cat.codes
-                    else:
-                        self._connection_color_categories = None
-                        self._points[:, component] = self._connection_color_norm(self._data[by].values)
-                except TypeError:
-                    self._points[:, component] = self._connection_color_norm(np.asarray(by))
+                check_encoding_dtype(self.connection_color_data)
 
-                if not self._encodings.data[by].prepared:
+                component = self._encodings.data[self._connection_color_by].component
+                categorical_data = get_categorical_data(self.connection_color_data)
+
+                if categorical_data is not None:
+                    self._connection_color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    self._points[:, component] = categorical_data.cat.codes
+                else:
+                    self._connection_color_categories = None
+                    self._points[:, component] = self._connection_color_norm(self.connection_color_data.values)
+
+                if not self._encodings.data[self._connection_color_by].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[by].prepared = True
+                    self._encodings.data[self._connection_color_by].prepared = True
 
             self.update_widget('connection_color_by', self.js_connection_color_by)
 
@@ -1994,6 +2064,12 @@ class Scatter():
             order = self._connection_color_order,
             labeling = self._connection_color_labeling,
         )
+
+    @property
+    def connection_opacity_data(self):
+        if self._connection_opacity_data is not None:
+            return self._connection_opacity_data
+        return self._data[self._connection_opacity_by]
 
     def connection_opacity(
         self,
@@ -2104,26 +2180,33 @@ class Scatter():
                 self._encodings.delete('connection_opacity')
 
             else:
-                self._encodings.set('connection_opacity', by)
+                if isinstance(by, str):
+                    self._connection_opacity_data = None
+                else:
+                    self._connection_opacity_data = pd.Series(
+                        by,
+                        index=self._data_index,
+                    )
+                    self._connection_opacity_by = 'Custom Connection-Opacity Data'
 
-                component = self._encodings.data[by].component
-                try:
-                    check_encoding_dtype(self._data[by])
-                    categorical_data = get_categorical_data(self._data[by])
+                self._encodings.set('connection_opacity', self._connection_opacity_by)
 
-                    if categorical_data is not None:
-                        self._points[:, component] = categorical_data.cat.codes
-                        self._connection_opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                    else:
-                        self._points[:, component] = self._connection_opacity_norm(self._data[by].values)
-                        self._connection_opacity_categories = None
-                except TypeError:
-                    self._points[:, component] = self._connection_opacity_norm(np.asarray(by))
+                check_encoding_dtype(self.connection_opacity_data)
 
-                if not self._encodings.data[by].prepared:
+                component = self._encodings.data[self._connection_opacity_by].component
+                categorical_data = get_categorical_data(self.connection_opacity_data)
+
+                if categorical_data is not None:
+                    self._points[:, component] = categorical_data.cat.codes
+                    self._connection_opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                else:
+                    self._points[:, component] = self._connection_opacity_norm(self.connection_opacity_data.values)
+                    self._connection_opacity_categories = None
+
+                if not self._encodings.data[self._connection_opacity_by].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[by].prepared = True
+                    self._encodings.data[self._connection_opacity_by].prepared = True
 
             self.update_widget('connection_opacity_by', self.js_connection_opacity_by)
 
@@ -2213,6 +2296,12 @@ class Scatter():
             order = self._connection_opacity_order,
             labeling = self._connection_opacity_labeling,
         )
+
+    @property
+    def connection_size_data(self):
+        if self._connection_size_data is not None:
+            return self._connection_size_data
+        return self._data[self._connection_size_by]
 
     def connection_size(
         self,
@@ -2322,26 +2411,33 @@ class Scatter():
                 self._encodings.delete('connection_size')
 
             else:
-                self._encodings.set('connection_size', by)
+                if isinstance(by, str):
+                    self._connection_size_data = None
+                else:
+                    self._connection_size_data = pd.Series(
+                        by,
+                        index=self._data_index,
+                    )
+                    self._connection_size_by = 'Custom Connection-Size Data'
 
-                component = self._encodings.data[by].component
-                try:
-                    check_encoding_dtype(self._data[by])
-                    categorical_data = get_categorical_data(self._data[by])
+                self._encodings.set('connection_size', self._connection_size_by)
 
-                    if categorical_data is not None:
-                        self._points[:, component] = categorical_data.cat.codes
-                        self._connection_size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
-                    else:
-                        self._points[:, component] = self._connection_size_norm(self._data[by].values)
-                        self._connection_size_categories = None
-                except TypeError:
-                    self._points[:, component] = self._connection_size_norm(np.asarray(by))
+                check_encoding_dtype(self.connection_size_data)
 
-                if not self._encodings.data[by].prepared:
+                component = self._encodings.data[self._connection_size_by].component
+                categorical_data = get_categorical_data(self.connection_size_data)
+
+                if categorical_data is not None:
+                    self._points[:, component] = categorical_data.cat.codes
+                    self._connection_size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                else:
+                    self._points[:, component] = self._connection_size_norm(self.connection_size_data.values)
+                    self._connection_size_categories = None
+
+                if not self._encodings.data[self._connection_size_by].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[by].prepared = True
+                    self._encodings.data[self._connection_size_by].prepared = True
 
             self.update_widget('connection_size_by', self.js_connection_size_by)
 
@@ -3494,6 +3590,12 @@ class Scatter():
             self._pixels = self._pixels.reshape([*self._widget.view_shape, 4])
 
         return self._pixels
+
+    @property
+    def _data_index(self):
+        if self._data is None:
+            return np.arange(self._n)
+        return self._data.index
 
     @property
     def js_color_by(self):
