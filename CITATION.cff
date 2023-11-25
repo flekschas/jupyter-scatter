@@ -1,0 +1,19 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Lekschas
+  given-names: Fritz
+  orcid: "https://orcid.org/0000-0001-8432-4835"
+doi: 10.25080/gerudo-f2bc6f59-030
+message: If you use Jupyter Scatter for an academic publication, please cite our SciPy 2023 talk.
+preferred-citation:
+  authors:
+  - family-names: Lekschas
+    given-names: Fritz
+    orcid: "https://orcid.org/0000-0001-8432-4835"
+  date-published: 2023-08-07
+  doi: 10.25080/gerudo-f2bc6f59-030
+  publisher:
+    name: Zenodo
+  title: "Interactive Exploration of Large-Scale Datasets with Jupyter-Scatter"
+  url: "https://doi.org/10.25080/gerudo-f2bc6f59-030"
+title: "Interactive Exploration of Large-Scale Datasets with Jupyter-Scatter"
