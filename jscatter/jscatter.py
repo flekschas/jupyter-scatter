@@ -3411,7 +3411,7 @@ class Scatter():
             self.update_widget('tooltip_properties_non_visual_info', self._tooltip_properties_non_visual_info)
             self.update_widget('tooltip_properties', self._tooltip_properties)
 
-        if any_not([tooltip, properties, size, histograms, histograms_bins, histograms_ranges, histograms_size], UNDEF):
+        if any_not([enable, properties, size, histograms, histograms_bins, histograms_ranges, histograms_size], UNDEF):
             return self
 
         return dict(
