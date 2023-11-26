@@ -29,9 +29,6 @@ class MouseModes(Enum):
     LASSO = 'lasso'
     ROTATE = 'rotate'
 
-class All(Enum):
-    ALL = 'all'
-
 class Auto(Enum):
     AUTO = 'auto'
 
@@ -52,7 +49,7 @@ class LegendPosition(Enum):
     LEFT = 'left'
     CENTER = 'center'
 
-class TooltipContent(Enum):
+class VisualProperty(Enum):
     X = 'x'
     Y = 'y'
     COLOR = 'color'

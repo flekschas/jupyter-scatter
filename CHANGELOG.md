@@ -1,6 +1,8 @@
 ## v0.15.0
 
-- Allow mixing custom and DataFrame-based data ([#89](https://github.com/flekschas/jupyter-scatter/issues/89))
+- Feat: Add support for histograms in the tooltip ([#96](https://github.com/flekschas/jupyter-scatter/pull/96))
+- Feat: Add support for non-visualized properties in the toolip ([#96](https://github.com/flekschas/jupyter-scatter/pull/96))
+- Fix: Allow mixing custom and DataFrame-based data ([#89](https://github.com/flekschas/jupyter-scatter/issues/89))
 
 ## v0.14.3
 

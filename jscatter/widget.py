@@ -4,14 +4,16 @@ import ipywidgets as widgets
 import matplotlib.pyplot as plt
 import numpy as np
 import anywidget
+import pandas as pd
 import pathlib
 
-from traitlets import Bool, Dict, Enum, Float, Int, List, Set, Unicode, Union
+from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
 from traittypes import Array
 
 from .utils import to_hex, with_left_label
 
 SELECTION_DTYPE = 'uint32'
+TOOLTIP_EVENT_TYPE = 'tooltip';
 
 def component_idx_to_name(idx):
     if idx == 2:
@@ -81,6 +83,20 @@ class JupyterScatter(anywidget.AnyWidget):
     opacity_domain = Union([Dict(), List(minlen=2, maxlen=2)], allow_none=True).tag(sync=True)
     size_domain = Union([Dict(), List(minlen=2, maxlen=2)], allow_none=True).tag(sync=True)
 
+    # Histograms
+    x_histogram = List(None, allow_none=True).tag(sync=True)
+    y_histogram = List(None, allow_none=True).tag(sync=True)
+    color_histogram = List(None, allow_none=True).tag(sync=True)
+    opacity_histogram = List(None, allow_none=True).tag(sync=True)
+    size_histogram = List(None, allow_none=True).tag(sync=True)
+
+    # Histogram ranges
+    x_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
+    y_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
+    color_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
+    opacity_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
+    size_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
+
     # View properties
     camera_target = List([0, 0]).tag(sync=True)
     camera_distance = Float(1).tag(sync=True)
@@ -138,8 +154,14 @@ class JupyterScatter(anywidget.AnyWidget):
     tooltip_color = List(
         default_value=[0, 0, 0, 1], minlen=4, maxlen=4
     ).tag(sync=True)
-    tooltip_contents = Set(
-        default_value={'x', 'y', 'color', 'opacity', 'size'}
+    tooltip_properties = List(
+        default_value=['x', 'y', 'color', 'opacity', 'size']
+    ).tag(sync=True)
+    tooltip_properties_non_visual_info = Dict(dict()).tag(sync=True)
+    tooltip_histograms = Bool().tag(sync=True)
+    tooltip_histograms_ranges = Dict(dict()).tag(sync=True)
+    tooltip_histograms_size = Enum(
+        ['small', 'medium', 'large'], default_value='small'
     ).tag(sync=True)
 
     # Options
@@ -184,6 +206,20 @@ class JupyterScatter(anywidget.AnyWidget):
 
     # For synchronyzing view changes across scatter plot instances
     view_sync = Unicode(None, allow_none=True).tag(sync=True)
+
+    def __init__(self, data, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.data = data
+        self.on_msg(self._handle_custom_msg)
+
+    def _handle_custom_msg(self, data: dict, buffers):
+        if data["type"] == TOOLTIP_EVENT_TYPE and isinstance(self.data, pd.DataFrame):
+            self.send({
+                "type": TOOLTIP_EVENT_TYPE,
+                "index": data["index"],
+                "properties": self.data.iloc[data["index"]][data["properties"]].to_dict()
+            })
 
     @property
     def mouse_mode_widget(self):

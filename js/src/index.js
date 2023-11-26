@@ -1,6 +1,6 @@
 import createScatterplot, { createRenderer } from 'regl-scatterplot';
 import * as pubSub from 'pub-sub-es';
-import { min, max, getD3FormatSpecifier } from '@flekschas/utils';
+import { debounce, min, max, getD3FormatSpecifier } from '@flekschas/utils';
 
 import { axisBottom, axisRight } from 'd3-axis';
 import { format } from 'd3-format';
@@ -8,14 +8,19 @@ import { scaleLinear } from 'd3-scale';
 import { select } from 'd3-selection';
 
 import { Numpy1D, Numpy2D } from "./codecs";
+import { createHistogram } from "./histogram";
 import { createLegend } from "./legend";
 import {
   camelToSnake,
   toCapitalCase,
+  toHtmlClass,
+  toTitleCase,
   downloadBlob,
   getScale,
   createOrdinalScaleInverter,
   getTooltipFontSize,
+  createNumericalBinGetter,
+  createElementWithClass,
 } from "./utils";
 
 import { version } from "../package.json";
@@ -25,7 +30,24 @@ const AXES_PADDING_X = 40;
 const AXES_PADDING_X_WITH_LABEL = AXES_PADDING_X + AXES_LABEL_SIZE;
 const AXES_PADDING_Y = 20;
 const AXES_PADDING_Y_WITH_LABEL = AXES_PADDING_Y + AXES_LABEL_SIZE;
-const TOOLTIP_CONTENTS = ['x', 'y', 'color', 'opacity', 'size'];
+const TOOLTIP_EVENT_TYPE = 'tooltip';
+const TOOLTIP_DEBOUNCE_TIME = 250;
+const TOOLTIP_MANDATORY_VISUAL_PROPERTIES = (/** @type {const} */ ({ x: 'X', y: 'Y' }));
+const TOOLTIP_OPTIONAL_VISUAL_PROPERTIES = (/** @type {const} */ ({ color: 'Col', opacity: 'Opa', size: 'Size' }));
+const TOOLTIP_ALL_VISUAL_PROPERTIES = (/** @type {const} */ ({
+  ...TOOLTIP_MANDATORY_VISUAL_PROPERTIES,
+  ...TOOLTIP_OPTIONAL_VISUAL_PROPERTIES
+}));
+const TOOLTIP_HISTOGRAM_WIDTH = (/** @type {const} */ ({
+  small: '6em',
+  medium: '10em',
+  large: '14em',
+}));
+const TOOLTIP_HISTOGRAM_HEIGHT = (/** @type {const} */ ({
+  small: '1em',
+  medium: '1.25em',
+  large: '1.5em',
+}));
 
 /**
  * This dictionary maps between the camelCased Python property names and their
@@ -88,7 +110,11 @@ const properties = {
   tooltipSize: 'tooltipSize',
   tooltipColor: 'tooltipColor',
   tooltipPosition: 'tooltipPosition',
-  tooltipContents: 'tooltipContents',
+  tooltipProperties: 'tooltipProperties',
+  tooltipHistograms: 'tooltipHistograms',
+  tooltipHistogramsRanges: 'tooltipHistogramsRanges',
+  tooltipHistogramsSize: 'tooltipHistogramsSize',
+  tooltipPropertiesNonVisualInfo: 'tooltipPropertiesNonVisualInfo',
   xScale: 'xScale',
   yScale: 'yScale',
   colorScale: 'colorScale',
@@ -99,6 +125,16 @@ const properties = {
   colorDomain: 'colorDomain',
   opacityDomain: 'opacityDomain',
   sizeDomain: 'sizeDomain',
+  xHistogram: 'xHistogram',
+  yHistogram: 'yHistogram',
+  colorHistogram: 'colorHistogram',
+  opacityHistogram: 'opacityHistogram',
+  sizeHistogram: 'sizeHistogram',
+  xHistogramRange: 'xHistogramRange',
+  yHistogramRange: 'yHistogramRange',
+  colorHistogramRange: 'colorHistogramRange',
+  opacityHistogramRange: 'opacityHistogramRange',
+  sizeHistogramRange: 'sizeHistogramRange',
   xTitle: 'xTitle',
   yTitle: 'yTitle',
   colorTitle: 'colorTitle',
@@ -284,6 +320,10 @@ class JupyterScatterView {
         this.optionsHandler.call(this, this.options);
       }, this);
 
+      this.model.on('msg:custom', (event) => {
+        this.customEventHandler.call(this, event);
+      }, this);
+
       this.colorCanvas();
 
       this.getOuterDimensions();
@@ -298,6 +338,11 @@ class JupyterScatterView {
       this.createOpacityGetter();
       this.createSizeGetter();
       this.createTooltip();
+
+      this.showTooltipDebounced = debounce(
+        this.showTooltip.bind(this),
+        TOOLTIP_DEBOUNCE_TIME
+      );
 
       if (this.points.length) {
         const options = {}
@@ -318,6 +363,13 @@ class JupyterScatterView {
     });
 
     this.model.save_changes();
+  }
+
+  customEventHandler(event) {
+    if (event.type === TOOLTIP_EVENT_TYPE) {
+      if (event.index !== this.tooltipPointIdx) return;
+      this.tooltipDataHandlers(event)
+    }
   }
 
   getOuterDimensions() {
@@ -553,6 +605,133 @@ class JupyterScatterView {
     this.legend = undefined;
   }
 
+  createTooltipPropertyDomElements(property) {
+    const capitalProperty = toCapitalCase(property);
+    const htmlClassProperty = toHtmlClass(property);
+
+    this[`tooltipProperty${capitalProperty}Title`] = createElementWithClass(
+      'div',
+      ['title', `${htmlClassProperty}-title`]
+    );
+    this[`tooltipProperty${capitalProperty}Value`] = createElementWithClass(
+      'div',
+      ['value', `${htmlClassProperty}-value`]
+    );
+    this[`tooltipProperty${capitalProperty}ValueText`] = createElementWithClass(
+      'div',
+      ['value-text', `${htmlClassProperty}-value-text`]
+    );
+
+
+    this[`tooltipProperty${capitalProperty}Channel`] = createElementWithClass(
+      'div',
+      ['channel', `${htmlClassProperty}-channel`]
+    );
+
+    if (property in TOOLTIP_ALL_VISUAL_PROPERTIES) {
+      this[`tooltipProperty${capitalProperty}ChannelName`] = createElementWithClass(
+        'div',
+        ['channel-name', `${htmlClassProperty}-channel-name`]
+      );
+      this[`tooltipProperty${capitalProperty}ChannelName`].textContent = TOOLTIP_ALL_VISUAL_PROPERTIES[property];
+
+      this[`tooltipProperty${capitalProperty}Channel`].appendChild(
+        this[`tooltipProperty${capitalProperty}ChannelName`]
+      );
+
+      this[`tooltipProperty${capitalProperty}ChannelBadge`] = createElementWithClass(
+        'div',
+        ['channel-badge', `${htmlClassProperty}-value-badge`]
+      );
+      this[`tooltipProperty${capitalProperty}ChannelBadgeMark`] = createElementWithClass(
+        'div',
+        ['channel-badge-mark', `${htmlClassProperty}-channel-badge-mark`]
+      );
+      this[`tooltipProperty${capitalProperty}ChannelBadgeBg`] = createElementWithClass(
+        'div',
+        ['channel-badge-bg', `${htmlClassProperty}-channel-badge-bg`]
+      );
+      this[`tooltipProperty${capitalProperty}ChannelBadge`].appendChild(
+        this[`tooltipProperty${capitalProperty}ChannelBadgeMark`]
+      );
+      this[`tooltipProperty${capitalProperty}ChannelBadge`].appendChild(
+        this[`tooltipProperty${capitalProperty}ChannelBadgeBg`]
+      );
+      this[`tooltipProperty${capitalProperty}Channel`].appendChild(
+        this[`tooltipProperty${capitalProperty}ChannelBadge`]
+      );
+    }
+
+    this[`tooltipProperty${capitalProperty}Value`].appendChild(
+      this[`tooltipProperty${capitalProperty}ValueText`]
+    );
+
+    this[`tooltipProperty${capitalProperty}ValueHistogram`] = createHistogram(
+      TOOLTIP_HISTOGRAM_WIDTH[this.model.get('tooltip_histograms_size')] || TOOLTIP_HISTOGRAM_WIDTH.small,
+      TOOLTIP_HISTOGRAM_HEIGHT[this.model.get('tooltip_histograms_size')] || TOOLTIP_HISTOGRAM_HEIGHT.small,
+    );
+    this[`tooltipProperty${capitalProperty}Value`].appendChild(
+      this[`tooltipProperty${capitalProperty}ValueHistogram`].element
+    );
+
+    const histogram = this.model.get(`${property}_histogram`) || this.model.get('tooltip_properties_non_visual_info')[property]?.histogram;
+    const scale = this.model.get(`${property}_scale`) || this.model.get('tooltip_properties_non_visual_info')[property]?.scale;
+
+    this[`tooltipProperty${capitalProperty}ValueHistogram`].init(
+      histogram,
+      scale === 'categorical',
+    );
+
+    this[`tooltipProperty${capitalProperty}Title`].textContent = toTitleCase(
+      this.model.get(`${property}_title`) || property || ''
+    );
+
+    this.tooltipContent.appendChild(this[`tooltipProperty${capitalProperty}Channel`]);
+    this.tooltipContent.appendChild(this[`tooltipProperty${capitalProperty}Title`]);
+    this.tooltipContent.appendChild(this[`tooltipProperty${capitalProperty}Value`]);
+  }
+
+  createTooltipContentsDomElements() {
+    // Remove existing DOM elements. Not the most efficient approach but it's
+    // error-prone.
+    this.tooltipContent.replaceChildren();
+
+    const properties = new Set(this.tooltipPropertiesAll);
+
+    for (const property of properties) {
+      this.createTooltipPropertyDomElements(property);
+    }
+
+    this.styleTooltip();
+    this.tooltipBbox = this.tooltip.getBoundingClientRect();
+  }
+
+  createTooltipContents() {
+    this.tooltipPropertiesVisual = new Set(this.model.get('tooltip_properties'));
+    for (const property of this.tooltipPropertiesVisual) {
+      if (property in TOOLTIP_MANDATORY_VISUAL_PROPERTIES) continue;
+      if (
+        property in TOOLTIP_OPTIONAL_VISUAL_PROPERTIES &&
+        this.model.get(`${property}_by`)
+      ) continue
+      this.tooltipPropertiesVisual.delete(property);
+    }
+    this.tooltipPropertiesVisual = Array.from(this.tooltipPropertiesVisual);
+
+    this.tooltipPropertiesNonVisual = new Set(this.model.get('tooltip_properties'));
+    for (const property of Object.keys(TOOLTIP_ALL_VISUAL_PROPERTIES)) {
+      this.tooltipPropertiesNonVisual.delete(property);
+    }
+    this.tooltipPropertiesNonVisual = Array.from(this.tooltipPropertiesNonVisual);
+
+    this.tooltipPropertiesAll = [
+      ...this.tooltipPropertiesVisual,
+      ...this.tooltipPropertiesNonVisual
+    ];
+
+    this.createTooltipContentsDomElements();
+  }
+
   createTooltip() {
     this.tooltip = document.createElement('div');
     this.tooltip.style.position = 'absolute';
@@ -574,109 +753,19 @@ class JupyterScatterView {
     this.tooltipContent = document.createElement('div');
     this.tooltipContent.style.position = 'relative';
     this.tooltipContent.style.display = 'grid';
-    this.tooltipContent.style.gridTemplateColumns = 'max-content max-content max-content';
-    this.tooltipContent.style.gap = '0.3em 0.25em';
+    this.tooltipContent.style.gap = '0.5em';
     this.tooltipContent.style.userSelect = 'none';
     this.tooltipContent.style.borderRadius = '0.2rem';
     this.tooltipContent.style.padding = '0.25em';
     this.tooltipContent.style.fontSize = getTooltipFontSize(this.model.get('tooltip_size'));
     this.tooltip.appendChild(this.tooltipContent);
 
-    this.tooltipContentXChannel = document.createElement('div');
-    this.tooltipContentXTitle = document.createElement('div');
-    this.tooltipContentXValue = document.createElement('div');
-    this.tooltipContentXValueBadge = document.createElement('div');
-    this.tooltipContentXValueBadgeMark = document.createElement('div');
-    this.tooltipContentXValueBadgeBg = document.createElement('div');
-    this.tooltipContentXValueText = document.createElement('div');
-    this.tooltipContentXValueBadge.appendChild(this.tooltipContentXValueBadgeMark);
-    this.tooltipContentXValueBadge.appendChild(this.tooltipContentXValueBadgeBg);
-    this.tooltipContentXValue.appendChild(this.tooltipContentXValueBadge);
-    this.tooltipContentXValue.appendChild(this.tooltipContentXValueText);
-
-    this.tooltipContentYChannel = document.createElement('div');
-    this.tooltipContentYTitle = document.createElement('div');
-    this.tooltipContentYValue = document.createElement('div');
-    this.tooltipContentYValueBadge = document.createElement('div');
-    this.tooltipContentYValueBadgeMark = document.createElement('div');
-    this.tooltipContentYValueBadgeBg = document.createElement('div');
-    this.tooltipContentYValueText = document.createElement('div');
-    this.tooltipContentYValueBadge.appendChild(this.tooltipContentYValueBadgeMark);
-    this.tooltipContentYValueBadge.appendChild(this.tooltipContentYValueBadgeBg);
-    this.tooltipContentYValue.appendChild(this.tooltipContentYValueBadge);
-    this.tooltipContentYValue.appendChild(this.tooltipContentYValueText);
-
-    this.tooltipContentColorChannel = document.createElement('div');
-    this.tooltipContentColorTitle = document.createElement('div');
-    this.tooltipContentColorValue = document.createElement('div');
-    this.tooltipContentColorValueBadge = document.createElement('div');
-    this.tooltipContentColorValueBadgeMark = document.createElement('div');
-    this.tooltipContentColorValueBadgeBg = document.createElement('div');
-    this.tooltipContentColorValueText = document.createElement('div');
-    this.tooltipContentColorValueBadge.appendChild(this.tooltipContentColorValueBadgeMark);
-    this.tooltipContentColorValueBadge.appendChild(this.tooltipContentColorValueBadgeBg);
-    this.tooltipContentColorValue.appendChild(this.tooltipContentColorValueBadge);
-    this.tooltipContentColorValue.appendChild(this.tooltipContentColorValueText);
-
-    this.tooltipContentOpacityChannel = document.createElement('div');
-    this.tooltipContentOpacityTitle = document.createElement('div');
-    this.tooltipContentOpacityValue = document.createElement('div');
-    this.tooltipContentOpacityValueBadge = document.createElement('div');
-    this.tooltipContentOpacityValueBadgeMark = document.createElement('div');
-    this.tooltipContentOpacityValueBadgeBg = document.createElement('div');
-    this.tooltipContentOpacityValueText = document.createElement('div');
-    this.tooltipContentOpacityValueBadge.appendChild(this.tooltipContentOpacityValueBadgeMark);
-    this.tooltipContentOpacityValueBadge.appendChild(this.tooltipContentOpacityValueBadgeBg);
-    this.tooltipContentOpacityValue.appendChild(this.tooltipContentOpacityValueBadge);
-    this.tooltipContentOpacityValue.appendChild(this.tooltipContentOpacityValueText);
-
-    this.tooltipContentSizeChannel = document.createElement('div');
-    this.tooltipContentSizeTitle = document.createElement('div');
-    this.tooltipContentSizeValue = document.createElement('div');
-    this.tooltipContentSizeValueBadge = document.createElement('div');
-    this.tooltipContentSizeValueBadgeMark = document.createElement('div');
-    this.tooltipContentSizeValueBadgeBg = document.createElement('div');
-    this.tooltipContentSizeValueText = document.createElement('div');
-    this.tooltipContentSizeValueBadge.appendChild(this.tooltipContentSizeValueBadgeMark);
-    this.tooltipContentSizeValueBadge.appendChild(this.tooltipContentSizeValueBadgeBg);
-    this.tooltipContentSizeValue.appendChild(this.tooltipContentSizeValueBadge);
-    this.tooltipContentSizeValue.appendChild(this.tooltipContentSizeValueText);
-
-    this.tooltipContentXChannel.textContent = 'X';
-    this.tooltipContentYChannel.textContent = 'Y';
-    this.tooltipContentColorChannel.textContent = 'Col';
-    this.tooltipContentOpacityChannel.textContent = 'Opa';
-    this.tooltipContentSizeChannel.textContent = 'Size';
-
-    this.tooltipContentXTitle.textContent = toCapitalCase(this.model.get('x_title') || '');
-    this.tooltipContentYTitle.textContent = toCapitalCase(this.model.get('y_title') || '');
-    this.tooltipContentColorTitle.textContent = toCapitalCase(this.model.get('color_title') || '');
-    this.tooltipContentOpacityTitle.textContent = toCapitalCase(this.model.get('opacity_title') || '');
-    this.tooltipContentSizeTitle.textContent = toCapitalCase(this.model.get('size_title') || '');
-
-    [
-      this.tooltipContentXChannel,
-      this.tooltipContentXTitle,
-      this.tooltipContentXValue,
-      this.tooltipContentYChannel,
-      this.tooltipContentYTitle,
-      this.tooltipContentYValue,
-      this.tooltipContentColorChannel,
-      this.tooltipContentColorTitle,
-      this.tooltipContentColorValue,
-      this.tooltipContentOpacityChannel,
-      this.tooltipContentOpacityTitle,
-      this.tooltipContentOpacityValue,
-      this.tooltipContentSizeChannel,
-      this.tooltipContentSizeTitle,
-      this.tooltipContentSizeValue,
-    ].forEach((el) => this.tooltipContent.appendChild(el));
-
-    this.styleTooltip();
-    this.enableTooltipContents();
-    this.createTooltipContentUpdater();
-
     this.container.appendChild(this.tooltip);
+
+    this.createTooltipContents();
+
+    this.enableTooltipHistograms();
+    this.createTooltipContentUpdater();
   }
 
   positionTooltipTopCenter() {
@@ -804,41 +893,32 @@ class JupyterScatterView {
   }
 
   getTooltipPosition(x, y) {
-    if (x < 120) {
-      if (y < 120) return 'bottom-right';
-      if (y > this.outerHeight - 120) return 'top-right';
+    const xCutoff = (this.tooltipBbox?.width / 2) || 120;
+    const yCutoff = this.tooltipBbox?.height || 120;
+
+    if (x < xCutoff) {
+      if (y < yCutoff) return 'bottom-right';
+      if (y > this.outerHeight - yCutoff) return 'top-right';
       return 'right-center';
     }
 
-    if (x > this.outerWidth - 120) {
-      if (y < 120) return 'bottom-left';
-      if (y > this.outerHeight - 120) return 'top-left';
+    if (x > this.outerWidth - xCutoff) {
+      if (y < yCutoff) return 'bottom-left';
+      if (y > this.outerHeight - yCutoff) return 'top-left';
       return 'left-center';
     }
 
-    if (y < 120) return 'bottom-center';
+    if (y < yCutoff) return 'bottom-center';
 
     return 'top-center';
   }
 
-  isTooltipContentShown(content) {
-    if (!this.tooltipContents.has(content)) return false;
-    if (content === 'x') return true;
-    if (content === 'y') return true;
-    if (content === 'color') return Boolean(this.model.get('color_by'));
-    if (content === 'opacity') return this.model.get('opacity_by') && this.model.get('opacity_by') !== 'density';
-    if (content === 'size') return Boolean(this.model.get('size_by'));
-  }
+  enableTooltipHistograms() {
+    const display = this.model.get('tooltip_histograms') ? 'block' : 'none';
+    const histograms = this.tooltipContent.querySelectorAll('.histogram');
 
-  enableTooltipContents() {
-    this.tooltipContents = new Set(this.model.get('tooltip_contents'));
-    for (const content of TOOLTIP_CONTENTS) {
-      const title = toCapitalCase(content);
-      const display = this.isTooltipContentShown(content) ? 'flex' : 'none';
-
-      this[`tooltipContent${title}Channel`].style.display = display;
-      this[`tooltipContent${title}Title`].style.display = display;
-      this[`tooltipContent${title}Value`].style.display = display;
+    for (const histogram of histograms) {
+      histogram.style.display = display;
     }
   }
 
@@ -848,99 +928,108 @@ class JupyterScatterView {
 
     const isDark = color[0] <= 127;
     const contrast = isDark ? 255 : 0;
+    const fg = `rgb(${contrast}, ${contrast}, ${contrast})`;
     const bg = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+
+    for (const property of this.tooltipPropertiesAll) {
+      this[`tooltipProperty${toCapitalCase(property)}ValueHistogram`]?.style(
+        fg,
+        `rgb(${contrast}, ${contrast}, ${contrast}, 0.2)`
+      );
+    }
+
+    if (this.tooltipPropertiesVisual.length) {
+      this.tooltipContent.style.gridTemplateColumns = 'max-content max-content max-content';
+    } else {
+      // Let's hide the channel column since no properties is visually encoded
+      this.tooltipContent.style.gridTemplateColumns = 'max-content max-content';
+      for (const channel of this.tooltipContent.querySelectorAll('.channel')) {
+        channel.style.display = 'none';
+      }
+    }
 
     this.tooltipOpacity = isDark ? 0.33 : 0.2;
 
     this.tooltip.style.opacity = 0;
-    this.tooltip.style.color = `rgb(${contrast}, ${contrast}, ${contrast})`;
+    this.tooltip.style.color = fg;
     this.tooltip.style.backgroundColor = bg;
     this.tooltip.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), 0 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
     this.tooltipArrow.style.backgroundColor = bg;
     this.tooltipContent.style.backgroundColor = bg;
 
-    this.tooltipContentXValue.style.alignItems = 'center';
-    this.tooltipContentYValue.style.alignItems = 'center';
-    this.tooltipContentColorValue.style.alignItems = 'center';
-    this.tooltipContentOpacityValue.style.alignItems = 'center';
-    this.tooltipContentSizeValue.style.alignItems = 'center';
+    const channelBadges = this.tooltipContent.querySelectorAll('.channel-badge');
+
+    for (const channelBadge of channelBadges) {
+      channelBadge.style.position = 'relative';
+      channelBadge.style.fontSize = '0.75em';
+      channelBadge.style.width = '1em';
+      channelBadge.style.height = '1em';
+      channelBadge.style.marginRight = '0.125rem';
+    }
+
+    const channelBadgeBgs = this.tooltipContent.querySelectorAll('.channel-badge-bg');
+
+    for (const channelBadgeBg of channelBadgeBgs) {
+      channelBadgeBg.style.position = 'absolute';
+      channelBadgeBg.style.zIndex = 2;
+      channelBadgeBg.style.top = 0;
+      channelBadgeBg.style.left = 0;
+      channelBadgeBg.style.width = '1em';
+      channelBadgeBg.style.height = '1em';
+    }
+
+    if (this.tooltipPropertyXChannelBadgeBg) {
+      this.tooltipPropertyXChannelBadgeBg.style.zIndex = 0;
+      this.tooltipPropertyXChannelBadgeBg.style.top = '50%';
+      this.tooltipPropertyXChannelBadgeBg.style.transform = 'translate(0, -50%)';
+      this.tooltipPropertyXChannelBadgeBg.style.height = '2px';
+      this.tooltipPropertyXChannelBadgeBg.style.background = `rgba(${contrast}, ${contrast}, ${contrast}, 0.2)`;
+
+      this.tooltipPropertyXChannelBadgeMark.style.position = 'absolute';
+      this.tooltipPropertyXChannelBadgeMark.style.zIndex = 1;
+      this.tooltipPropertyXChannelBadgeMark.style.top = '50%';
+      this.tooltipPropertyXChannelBadgeMark.style.width = '2px';
+      this.tooltipPropertyXChannelBadgeMark.style.height = '6px';
+      this.tooltipPropertyXChannelBadgeMark.style.background = `rgb(${contrast}, ${contrast}, ${contrast})`;
+    }
+
+    if (this.tooltipPropertyYChannelBadgeBg) {
+      this.tooltipPropertyYChannelBadgeBg.style.zIndex = 0;
+      this.tooltipPropertyYChannelBadgeBg.style.left = '50%';
+      this.tooltipPropertyYChannelBadgeBg.style.transform = 'translate(-50%, 0)';
+      this.tooltipPropertyYChannelBadgeBg.style.width = '2px';
+      this.tooltipPropertyYChannelBadgeBg.style.background = `rgba(${contrast}, ${contrast}, ${contrast}, 0.2)`;
+
+      this.tooltipPropertyYChannelBadgeMark.style.position = 'absolute';
+      this.tooltipPropertyYChannelBadgeMark.style.zIndex = 1;
+      this.tooltipPropertyYChannelBadgeMark.style.left = '50%';
+      this.tooltipPropertyYChannelBadgeMark.style.width = '6px';
+      this.tooltipPropertyYChannelBadgeMark.style.height = '2px';
+      this.tooltipPropertyYChannelBadgeMark.style.background = `rgb(${contrast}, ${contrast}, ${contrast})`;
+    }
 
     [
-      this.tooltipContentXValueBadge,
-      this.tooltipContentYValueBadge,
-      this.tooltipContentColorValueBadge,
-      this.tooltipContentOpacityValueBadge,
-      this.tooltipContentSizeValueBadge,
-    ].forEach((element) => {
-      element.style.position = 'relative';
-      element.style.width = '1em';
-      element.style.height = '1em';
-      element.style.marginRight = '0.125rem';
-    });
-
-    [
-      this.tooltipContentXValueBadgeBg,
-      this.tooltipContentYValueBadgeBg,
-      this.tooltipContentColorValueBadgeBg,
-      this.tooltipContentOpacityValueBadgeBg,
-      this.tooltipContentSizeValueBadgeBg,
-    ].forEach((element) => {
-      element.style.position = 'absolute';
-      element.style.zIndex = 2;
-      element.style.top = 0;
-      element.style.left = 0;
-      element.style.width = '1em';
-      element.style.height = '1em';
-    });
-
-    this.tooltipContentXValueBadgeBg.style.zIndex = 0;
-    this.tooltipContentXValueBadgeBg.style.top = '50%';
-    this.tooltipContentXValueBadgeBg.style.transform = 'translate(0, -50%)';
-    this.tooltipContentXValueBadgeBg.style.height = '2px';
-    this.tooltipContentXValueBadgeBg.style.background = `rgba(${contrast}, ${contrast}, ${contrast}, 0.2)`;
-
-    this.tooltipContentXValueBadgeMark.style.position = 'absolute';
-    this.tooltipContentXValueBadgeMark.style.zIndex = 1;
-    this.tooltipContentXValueBadgeMark.style.top = '50%';
-    this.tooltipContentXValueBadgeMark.style.width = '2px';
-    this.tooltipContentXValueBadgeMark.style.height = '6px';
-    this.tooltipContentXValueBadgeMark.style.background = `rgb(${contrast}, ${contrast}, ${contrast})`;
-
-    this.tooltipContentYValueBadgeBg.style.zIndex = 0;
-    this.tooltipContentYValueBadgeBg.style.left = '50%';
-    this.tooltipContentYValueBadgeBg.style.transform = 'translate(-50%, 0)';
-    this.tooltipContentYValueBadgeBg.style.width = '2px';
-    this.tooltipContentYValueBadgeBg.style.background = `rgba(${contrast}, ${contrast}, ${contrast}, 0.2)`;
-
-    this.tooltipContentYValueBadgeMark.style.position = 'absolute';
-    this.tooltipContentYValueBadgeMark.style.zIndex = 1;
-    this.tooltipContentYValueBadgeMark.style.left = '50%';
-    this.tooltipContentYValueBadgeMark.style.width = '6px';
-    this.tooltipContentYValueBadgeMark.style.height = '2px';
-    this.tooltipContentYValueBadgeMark.style.background = `rgb(${contrast}, ${contrast}, ${contrast})`;
-
-    [
-      this.tooltipContentOpacityValueBadgeBg,
-      this.tooltipContentSizeValueBadgeBg,
-    ].forEach((element) => {
+      this.tooltipPropertyOpacityChannelBadgeBg,
+      this.tooltipPropertySizeChannelBadgeBg,
+    ].filter((x) => x).forEach((element) => {
       element.style.borderRadius = '1em';
       element.style.boxShadow = `inset 0 0 0 1px rgba(${contrast}, ${contrast}, ${contrast}, 0.2)`;
     });
 
     [
-      this.tooltipContentColorValueBadgeMark,
-      this.tooltipContentOpacityValueBadgeMark,
-      this.tooltipContentSizeValueBadgeMark,
-    ].forEach((element) => {
+      this.tooltipPropertyColorChannelBadgeMark,
+      this.tooltipPropertyOpacityChannelBadgeMark,
+      this.tooltipPropertySizeChannelBadgeMark,
+    ].filter((x) => x).forEach((element) => {
       element.style.width = '1em';
       element.style.height = '1em';
       element.style.borderRadius = '1em';
     });
 
     [
-      this.tooltipContentOpacityValueBadgeMark,
-      this.tooltipContentSizeValueBadgeMark,
-    ].forEach((element) => {
+      this.tooltipPropertyOpacityChannelBadgeMark,
+      this.tooltipPropertySizeChannelBadgeMark,
+    ].filter((x) => x).forEach((element) => {
       element.style.background = `rgb(${contrast}, ${contrast}, ${contrast})`;
     });
 
@@ -948,33 +1037,59 @@ class JupyterScatterView {
     const channelColor = `rgba(${contrast}, ${contrast}, ${contrast}, 0.5)`;
 
     [
-      this.tooltipContentXChannel,
-      this.tooltipContentYChannel,
-      this.tooltipContentColorChannel,
-      this.tooltipContentOpacityChannel,
-      this.tooltipContentSizeChannel,
-    ].forEach((el) => {
+      this.tooltipPropertyXChannel,
+      this.tooltipPropertyYChannel,
+      this.tooltipPropertyColorChannel,
+      this.tooltipPropertyOpacityChannel,
+      this.tooltipPropertySizeChannel,
+    ].filter((x) => x).forEach((el) => {
       el.style.display = 'flex';
+      el.style.gap = '0 0.33em';
       el.style.justifyContent = 'center';
       el.style.alignItems = 'center';
-      el.style.padding = '0 0.125rem';
-      el.style.borderRadius = '0.125rem';
+      el.style.padding = '0 0.25em';
+      el.style.borderRadius = '0.25rem';
       el.style.color = channelColor;
-      el.style.fontSize = '0.8em';
+      el.style.height = '1.3em';
       el.style.fontWeight = 'bold';
       el.style.textTransform = 'uppercase';
       el.style.background = channelBg;
     });
 
     [
-      this.tooltipContentXValue,
-      this.tooltipContentYValue,
-      this.tooltipContentColorValue,
-      this.tooltipContentOpacityValue,
-      this.tooltipContentSizeValue,
-    ].forEach((el) => {
-      el.style.fontWeight = 'bold';
+      this.tooltipPropertyXChannelName,
+      this.tooltipPropertyYChannelName,
+      this.tooltipPropertyColorChannelName,
+      this.tooltipPropertyOpacityChannelName,
+      this.tooltipPropertySizeChannelName,
+    ].filter((x) => x).forEach((el) => {
+      el.style.display = 'flex';
+      el.style.flexGrow = '1';
+      el.style.justifyContent = 'center';
+      el.style.alignItems = 'center';
+      el.style.fontSize = '0.75em';
+      el.style.lineHeight = '1em';
     });
+
+    const values = this.tooltipContent.querySelectorAll('.value');
+
+    for (const value of values) {
+      value.style.display = 'flex';
+      value.style.gap = '0 0.25em';
+      value.style.fontWeight = 'bold';
+      value.style.alignItems = 'top';
+    }
+
+    const valueTexts = this.tooltipContent.querySelectorAll('.value-text');
+
+    for (const valueText of valueTexts) {
+      valueText.style.flexGrow = '1';
+      valueText.style.maxWidth = '12em';
+      valueText.style.display = '-webkit-box';
+      valueText.style.webkitLineClamp = 3;
+      valueText.style.webkitBoxOrient = 'vertical';
+      valueText.style.overflow = 'hidden';
+    }
   }
 
   getPoint(i) {
@@ -987,24 +1102,48 @@ class JupyterScatterView {
 
   createXGetter() {
     if (!this.xScale) this.createXScale();
+
+    this.getXBin = createNumericalBinGetter(
+      this.model.get('x_histogram'),
+      this.model.get('x_domain'),
+      this.model.get('x_domain_range'),
+    );
+
     this.getX = (i) => {
       const xNdc = this.getPoint(i)[0];
-      return [(xNdc + 1) / 2, this.xFormat(this.xScale.invert(xNdc))];
+      const value = (xNdc + 1) / 2;
+      return [
+        (xNdc + 1) / 2,
+        this.xFormat(this.xScale.invert(xNdc)),
+        this.getXBin(value)
+      ];
     }
   }
 
   createYGetter() {
     if (!this.yScale) this.createYScale();
+
+    this.getYBin = createNumericalBinGetter(
+      this.model.get('y_histogram'),
+      this.model.get('y_domain'),
+      this.model.get('y_domain_range'),
+    );
+
     this.getY = (i) => {
       const yNdc = this.getPoint(i)[1];
-      return [(yNdc + 1) / 2, this.yFormat(this.yScale.invert(yNdc))];
+      const value = (yNdc + 1) / 2;
+      return [
+        value,
+        this.yFormat(this.yScale.invert(yNdc)),
+        this.getYBin(value),
+      ];
     }
   }
 
   createColorGetter() {
     if (!this.colorScale) this.createColorScale();
     if (!this.colorScale) {
-      this.getColor = () => ['#808080', 'Unknown'];
+      this.getColor = () => ['#808080', 'Unknown', 0];
       return;
     }
 
@@ -1017,16 +1156,25 @@ class JupyterScatterView {
         return [
           colors[value] || '#808080',
           this.colorFormat(this.colorScale.invert(value)),
+          value
         ]
       }
     } else {
       const numColors = colors.length;
+
+      this.getColorBin = createNumericalBinGetter(
+        this.model.get('color_histogram'),
+        this.model.get('color_domain'),
+        this.model.get('color_domain_range'),
+      );
+
       this.getColor = (i) => {
         const value = this.getPoint(i)[dim];
         const colorIdx = Math.min(numColors - 1, Math.floor(numColors * value));
         return [
           colors[colorIdx] || '#808080',
           this.colorFormat(this.colorScale.invert(value)),
+          this.getColorBin(value),
         ]
       }
     }
@@ -1035,7 +1183,7 @@ class JupyterScatterView {
   createOpacityGetter() {
     if (!this.opacityScale) this.createOpacityScale();
     if (!this.opacityScale) {
-      this.getOpacity = () => [0.5, 'Unknown'];
+      this.getOpacity = () => [0.5, 'Unknown', 0];
       return;
     }
 
@@ -1048,16 +1196,25 @@ class JupyterScatterView {
         return [
           opacities[value] || '#808080',
           this.opacityFormat(this.opacityScale.invert(value)),
+          value,
         ]
       }
     } else {
       const numOpacities = opacities.length;
+
+      this.getOpacityBin = createNumericalBinGetter(
+        this.model.get('opacity_histogram'),
+        this.model.get('opacity_domain'),
+        this.model.get('opacity_domain_range'),
+      );
+
       this.getOpacity = (i) => {
         const value = this.getPoint(i)[dim];
         const idx = Math.min(numOpacities - 1, Math.floor(numOpacities * value));
         return [
           opacities[idx] || 0.5,
           this.opacityFormat(this.opacityScale.invert(value)),
+          this.getOpacityBin(value),
         ]
       }
     }
@@ -1066,7 +1223,7 @@ class JupyterScatterView {
   createSizeGetter() {
     if (!this.sizeScale) this.createSizeScale();
     if (!this.sizeScale) {
-      this.getSize = () => [0.5, 'Unknown'];
+      this.getSize = () => [0.5, 'Unknown', 0];
       return;
     }
 
@@ -1084,78 +1241,132 @@ class JupyterScatterView {
             ? Math.max(0.1, (sizes[value] - sizesMin) / sizesExtent)
             : '#808080',
           this.sizeFormat(this.sizeScale.invert(value)),
+          value,
         ]
       }
     } else {
       const numSizes = sizes.length;
+
+      this.getSizeBin = createNumericalBinGetter(
+        this.model.get('size_histogram'),
+        this.model.get('size_domain'),
+        this.model.get('size_domain_range'),
+      );
+
       this.getSize = (i) => {
         const value = this.getPoint(i)[dim];
         const idx = Math.min(numSizes - 1, Math.floor(numSizes * value));
         return [
           Math.max(0.1, (sizes[idx] - sizesMin) / sizesExtent),
           this.sizeFormat(this.sizeScale.invert(value)),
+          this.getSizeBin(value),
         ]
       }
     }
   }
 
   createTooltipContentUpdater() {
-    const contents = new Set(this.model.get('tooltip_contents'));
-    const updaters = Array.from(contents).map((content) => {
-      const contentTitle = toCapitalCase(content);
-      const get = (pointIdx) => this[`get${contentTitle}`](pointIdx);
+    const visualUpdaters = this.tooltipPropertiesVisual
+      .map((property) => {
+        const propertyTitle = toCapitalCase(property);
+        const get = (pointIdx) => this[`get${propertyTitle}`](pointIdx);
 
-      const textElement = this[`tooltipContent${contentTitle}ValueText`];
-      const badgeElement = this[`tooltipContent${contentTitle}ValueBadgeMark`];
+        const textElement = this[`tooltipProperty${propertyTitle}ValueText`];
+        const badgeElement = this[`tooltipProperty${propertyTitle}ChannelBadgeMark`];
+        const histogram = this[`tooltipProperty${propertyTitle}ValueHistogram`];
 
-      if (content === 'x') {
-        return (pointIdx) => {
-          const [x, text] = get(pointIdx);
-          badgeElement.style.transform = `translate(calc(${x}em - 50%), -50%)`;
-          textElement.textContent = text;
+        if (property === 'x') {
+          return (pointIdx) => {
+            const [x, text, histogramKey] = get(pointIdx);
+            badgeElement.style.transform = `translate(calc(${x}em - 50%), -50%)`;
+            textElement.textContent = text;
+            if (this.model.get('tooltip_histograms')) histogram.draw(histogramKey);
+          }
         }
-      }
 
-      if (content === 'y') {
-        return (pointIdx) => {
-          const [y, text] = get(pointIdx);
-          badgeElement.style.transform = `translate(-50%, calc(${1 - y}em - 50%))`;
-          textElement.textContent = text;
+        if (property === 'y') {
+          return (pointIdx) => {
+            const [y, text, histogramKey] = get(pointIdx);
+            badgeElement.style.transform = `translate(-50%, calc(${1 - y}em - 50%))`;
+            textElement.textContent = text;
+            if (this.model.get('tooltip_histograms')) histogram.draw(histogramKey);
+          }
         }
-      }
 
-      if (content === 'color') {
-        return (pointIdx) => {
-          const [color, text] = get(pointIdx);
-          badgeElement.style.background = color;
-          textElement.textContent = text;
+        if (property === 'color') {
+          return (pointIdx) => {
+            const [color, text, histogramKey] = get(pointIdx);
+            badgeElement.style.background = color;
+            textElement.textContent = text;
+            if (this.model.get('tooltip_histograms')) histogram.draw(histogramKey);
+          }
         }
-      }
 
-      if (content === 'opacity') {
-        return (pointIdx) => {
-          const [opacity, text] = get(pointIdx);
-          badgeElement.style.opacity = opacity;
-          textElement.textContent = text;
+        if (property === 'opacity') {
+          return (pointIdx) => {
+            const [opacity, text, histogramKey] = get(pointIdx);
+            badgeElement.style.opacity = opacity;
+            textElement.textContent = text;
+            if (this.model.get('tooltip_histograms')) histogram.draw(histogramKey);
+          }
         }
-      }
 
-      if (content === 'size') {
-        return (pointIdx) => {
-          const [scale, text] = get(pointIdx);
-          badgeElement.style.transform = `scale(${scale})`;
-          textElement.textContent = text;
+        if (property === 'size') {
+          return (pointIdx) => {
+            const [scale, text, histogramKey] = get(pointIdx);
+            badgeElement.style.transform = `scale(${scale})`;
+            textElement.textContent = text;
+            if (this.model.get('tooltip_histograms')) histogram.draw(histogramKey);
+          }
         }
-      }
 
-      return (pointIdx) => textElement.textContent = get(pointIdx);
-    });
+        return (pointIdx) => textElement.textContent = get(pointIdx);
+      });
+
+    const nonVisualInfo = this.model.get('tooltip_properties_non_visual_info');
+    const nonVisualData = this.tooltipPropertiesNonVisual.map((property) => {
+      const propertyTitle = toCapitalCase(property);
+
+      const textElement = this[`tooltipProperty${propertyTitle}ValueText`];
+      const histogram = this[`tooltipProperty${propertyTitle}ValueHistogram`];
+
+      const info = nonVisualInfo[property];
+
+      return {
+        property,
+        textElement,
+        histogram,
+        getHistogramKey: info.scale === 'categorical'
+          ? (v) => info.domain[v]
+          : createNumericalBinGetter(info.histogram, info.domain, info.range),
+        format: info.scale === 'categorical'
+          ? (s) => s
+          : format(getD3FormatSpecifier(info.domain))
+      }
+    })
+
+    this.tooltipDataHandlers = (event) => {
+      for (const d of nonVisualData) {
+        if (!(d.property in event.properties)) continue;
+        const value = event.properties[d.property];
+        d.textElement.textContent = d.format(value);
+        d.histogram.draw(d.getHistogramKey(value));
+      }
+    }
+
     this.tooltipContentsUpdater = (pointIdx) => {
-      updaters.forEach((updater) => { updater(pointIdx); });
+      this.model.send({
+        type: TOOLTIP_EVENT_TYPE,
+        index: pointIdx,
+        properties: this.tooltipPropertiesNonVisual
+      });
+      visualUpdaters.forEach((updater) => { updater(pointIdx); });
     }
   }
 
-  showToolip(pointIdx) {
+  showTooltip(pointIdx) {
+    this.tooltipPointIdx = pointIdx;
+
     const [x, y] = this.scatterplot.getScreenPosition(pointIdx);
 
     const newTooltipPosition = this.getTooltipPosition(x, y);
@@ -1165,11 +1376,12 @@ class JupyterScatterView {
     }
 
     this.moveTooltip(x, y);
-    this.tooltip.style.opacity = 1;
     this.tooltipContentsUpdater(pointIdx);
+    this.tooltip.style.opacity = 1;
   }
 
   hideToolip() {
+    this.tooltipPointIdx = undefined;
     this.tooltip.style.opacity = 0;
   }
 
@@ -1179,15 +1391,43 @@ class JupyterScatterView {
 
   tooltipSizeHandler(newSize) {
     this.tooltipContent.style.fontSize = getTooltipFontSize(newSize);
+    for (const property of this.tooltipPropertiesAll) {
+      this[`tooltipProperty${toCapitalCase(property)}ValueHistogram`].resize();
+    }
   }
 
   tooltipColorHandler() {
     this.styleTooltip();
   }
 
-  tooltipContentsHandler() {
-    this.enableTooltipContents();
+  refreshTooltip() {
+    this.createTooltipContents();
     this.createTooltipContentUpdater();
+  }
+
+  tooltipPropertiesHandler() {
+    this.refreshTooltip();
+  }
+
+  tooltipPropertiesNonVisualInfoHandler() {
+    this.refreshTooltip();
+  }
+
+  tooltipHistogramsSizeHandler() {
+    this.refreshTooltip();
+  }
+
+  tooltipHistogramsRangesHandler() {
+    this.createXGetter();
+    this.createYGetter();
+    this.createColorGetter();
+    this.createOpacityGetter();
+    this.createSizeGetter();
+    this.refreshTooltip();
+  }
+
+  tooltipHistogramsHandler() {
+    this.enableTooltipHistograms();
   }
 
   updateLegendWrapperPosition() {
@@ -1316,6 +1556,7 @@ class JupyterScatterView {
     this.scatterplot.unsubscribe('deselect', this.deselectHandlerBound);
     this.scatterplot.unsubscribe('filter', this.filterEventHandlerBound);
     this.scatterplot.unsubscribe('view', this.viewChangeHandlerBound);
+    this.showTooltipDebounced.cancel();
     this.scatterplot.destroy();
   }
 
@@ -1332,13 +1573,14 @@ class JupyterScatterView {
   // Event handlers for JS-triggered events
   pointoverHandler(pointIndex) {
     this.hoveringChangedByJs = true;
-    if (this.model.get('tooltip_enable')) this.showToolip(pointIndex);
+    if (this.model.get('tooltip_enable')) this.showTooltipDebounced(pointIndex);
     this.model.set('hovering', pointIndex);
     this.model.save_changes();
   }
 
   pointoutHandler() {
     this.hoveringChangedByJs = true;
+    this.showTooltipDebounced.cancel();
     this.hideToolip();
     this.model.set('hovering', null);
     this.model.save_changes();
@@ -1540,6 +1782,60 @@ class JupyterScatterView {
     this.createSizeScale();
   }
 
+  xHistogramHandler() {
+    this.tooltipPropertyXValueHistogram?.init(this.model.get('x_histogram'));
+    this.createXGetter();
+  }
+
+  xHistogramRangeHandler() {
+    this.createXGetter();
+  }
+
+  yHistogramHandler() {
+    this.tooltipPropertyYValueHistogram?.init(this.model.get('y_histogram'));
+    this.createYGetter();
+  }
+
+  yHistogramRangeHandler() {
+    this.createYGetter();
+  }
+
+  colorHistogramHandler() {
+    this.tooltipPropertyColorValueHistogram?.init(
+      this.model.get('color_histogram'),
+      this.model.get('color_scale') === 'categorical',
+    );
+    this.createColorGetter();
+  }
+
+  colorHistogramRangeHandler() {
+    this.createColorGetter();
+  }
+
+  opacityHistogramHandler() {
+    this.tooltipPropertyOpacityValueHistogram?.init(
+      this.model.get('opacity_histogram'),
+      this.model.get('opacity_scale') === 'categorical',
+    );
+    this.createOpacityGetter();
+  }
+
+  opacityHistogramRangeHandler() {
+    this.createOpacityGetter();
+  }
+
+  sizeHistogramHandler() {
+    this.tooltipPropertySizeValueHistogram?.init(
+      this.model.get('size_histogram'),
+      this.model.get('size_scale') === 'categorical',
+    );
+    this.createSizeGetter();
+  }
+
+  sizeHistogramRangeHandler() {
+    this.createSizeGetter();
+  }
+
   // Event handlers for Python-triggered events
   pointsHandler(newPoints) {
     if (newPoints.length === this.scatterplot.get('points').length) {
@@ -1638,11 +1934,11 @@ class JupyterScatterView {
   }
 
   xTitleHandler(newTitle) {
-    this.tooltipContentXTitle.textContent = toCapitalCase(newTitle || '');
+    this.tooltipPropertyXTitle.textContent = toTitleCase(newTitle || '');
   }
 
   yTitleHandler(newTitle) {
-    this.tooltipContentYTitle.textContent = toCapitalCase(newTitle || '');
+    this.tooltipPropertyYTitle.textContent = toTitleCase(newTitle || '');
   }
 
   colorHandler(newValue) {
@@ -1666,7 +1962,7 @@ class JupyterScatterView {
   }
 
   colorTitleHandler(newTitle) {
-    this.tooltipContentColorTitle.textContent = toCapitalCase(newTitle || '');
+    this.tooltipPropertyColorTitle.textContent = toCapitalCase(newTitle || '');
   }
 
   opacityHandler(newValue) {
@@ -1686,7 +1982,7 @@ class JupyterScatterView {
   }
 
   opacityTitleHandler(newTitle) {
-    this.tooltipContentOpacityTitle.textContent = toCapitalCase(newTitle || '');
+    this.tooltipPropertyOpacityTitle.textContent = toCapitalCase(newTitle || '');
   }
 
   sizeHandler(newValue) {
@@ -1702,7 +1998,7 @@ class JupyterScatterView {
   }
 
   sizeTitleHandler(newTitle) {
-    this.tooltipContentSizeTitle.textContent = toCapitalCase(newTitle || '');
+    this.tooltipPropertySizeTitle.textContent = toCapitalCase(newTitle || '');
   }
 
   connectHandler(newValue) {
@@ -1897,6 +2193,7 @@ function modelWithSerializers(model, serializers) {
     },
     on: model.on.bind(model),
     save_changes: model.save_changes.bind(model),
+    send: model.send.bind(model),
   }
 }
 

@@ -5,13 +5,13 @@ import numpy as np
 import pandas as pd
 
 from matplotlib.colors import to_rgba, Normalize, LogNorm, PowerNorm, LinearSegmentedColormap, ListedColormap
-from typing import Optional, Union, List, Tuple, Set
+from typing import Dict, Optional, Union, List, Tuple
 
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, create_default_norm, create_labeling
-from .types import Color, Scales, MouseModes, All, Auto, Reverse, Segment, Size, LegendPosition, TooltipContent, Labeling, Undefined
+from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_scale_type_from_df, get_domain_from_df, create_default_norm, create_labeling, get_histogram_from_df, sanitize_tooltip_properties
+from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Size, LegendPosition, VisualProperty, Labeling, Undefined
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -21,19 +21,23 @@ VALID_ENCODING_TYPES = [
     pd.api.types.is_categorical_dtype,
     pd.api.types.is_string_dtype,
 ]
+DEFAULT_HISTOGRAM_BINS = 20
 
 # An "undefined" value
 UNDEF = Undefined()
 
 default_background_color = 'white'
 
-all_tooltip_contents = {
+visual_properties = [
     'x',
     'y',
     'color',
     'opacity',
     'size',
-}
+]
+
+def get_non_visual_properties(properties):
+    return [c for c in properties if c not in visual_properties]
 
 def check_encoding_dtype(series):
     if not any([check(series.dtype) for check in VALID_ENCODING_TYPES]):
@@ -96,6 +100,24 @@ def get_domain(scatter: Scatter, channel: str):
             getattr(scatter, f'_{channel}_norm').vmax
         )
     return getattr(scatter, f'_{channel}_categories')
+
+def get_histogram_bins(bins: Union[int, Dict[str, int]], property: str):
+    if isinstance(bins, dict):
+        return bins.get(property, DEFAULT_HISTOGRAM_BINS)
+
+    if isinstance(bins, int):
+        return bins
+
+    return DEFAULT_HISTOGRAM_BINS
+
+def get_histogram_range(ranges, property):
+    if isinstance(ranges, dict):
+        return ranges.get(property)
+
+    if isinstance(ranges, tuple):
+        return ranges
+
+    return None
 
 
 class Scatter():
@@ -183,8 +205,10 @@ class Scatter():
         self._lasso_min_dist = 3
         self._x_data = None
         self._x_by = None
+        self._x_histogram = None
         self._y_data = None
         self._y_by = None
+        self._y_histogram = None
         self._color = (0, 0, 0, 0.66) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.66)
         self._color_selected = (0, 0.55, 1, 1)
         self._color_hover = (0, 0, 0, 1) if self._background_color_luminance > 0.5 else (1, 1, 1, 1)
@@ -196,6 +220,7 @@ class Scatter():
         self._color_order = None
         self._color_categories = None
         self._color_labeling = None
+        self._color_histogram = None
         self._opacity = 0.66
         self._opacity_unselected = 0.5
         self._opacity_data = None
@@ -206,6 +231,7 @@ class Scatter():
         self._opacity_order = None
         self._opacity_categories = None
         self._opacity_labeling = None
+        self._opacity_histogram = None
         self._size = 3
         self._size_data = None
         self._size_by = None
@@ -215,6 +241,7 @@ class Scatter():
         self._size_order = None
         self._size_categories = None
         self._size_labeling = None
+        self._size_histogram = None
         self._connect_by = None
         self._connect_by_data = None
         self._connect_order = None
@@ -263,8 +290,13 @@ class Scatter():
         self._legend_position = 'top-left'
         self._legend_size = 'small'
         self._tooltip = False
-        self._tooltip_contents = all_tooltip_contents.copy()
+        self._tooltip_properties = visual_properties.copy()
+        self._tooltip_properties_non_visual = None
         self._tooltip_size = 'small'
+        self._tooltip_histograms = True
+        self._tooltip_histograms_bins = DEFAULT_HISTOGRAM_BINS
+        self._tooltip_histograms_ranges = None
+        self._tooltip_histograms_size = 'small'
         self._zoom_to = None
         self._zoom_to_call_idx = 0
         self._zoom_animation = 500
@@ -366,8 +398,12 @@ class Scatter():
         )
         self.tooltip(
             kwargs.get('tooltip', UNDEF),
-            kwargs.get('tooltip_contents', UNDEF),
+            kwargs.get('tooltip_properties', UNDEF),
             kwargs.get('tooltip_size', UNDEF),
+            kwargs.get('tooltip_histograms', UNDEF),
+            kwargs.get('tooltip_histograms_bins', UNDEF),
+            kwargs.get('tooltip_histograms_ranges', UNDEF),
+            kwargs.get('tooltip_histograms_size', UNDEF),
         )
         self.zoom(
             kwargs.get('zoom_to', UNDEF),
@@ -442,6 +478,9 @@ class Scatter():
             try:
                 self._n = len(data)
                 self._data = data
+
+                if self._widget is not None:
+                    self._widget.data = self._data
             except TypeError:
                 return self
 
@@ -551,6 +590,11 @@ class Scatter():
             self._x_min = np.min(self._points[:, 0])
             self._x_max = np.max(self._points[:, 0])
             self._x_domain = [self._x_min, self._x_max]
+            self._x_histogram = get_histogram_from_df(
+                self._points[:, 0],
+                self.get_histogram_bins("x"),
+                self.get_histogram_range("x")
+            )
 
             # Reset scale to new domain
             if scale is UNDEF:
@@ -657,6 +701,11 @@ class Scatter():
             self._y_min = np.min(self._points[:, 1])
             self._y_max = np.max(self._points[:, 1])
             self._y_domain = [self._y_min, self._y_max]
+            self._y_histogram = get_histogram_from_df(
+                self._points[:, 1],
+                self.get_histogram_bins("y"),
+                self.get_histogram_range("y")
+            )
 
             # Reset scale to new domain
             if scale is UNDEF:
@@ -1009,6 +1058,7 @@ class Scatter():
 
             if by is None:
                 self._encodings.delete('color')
+                self._color_histogram = None
 
             else:
                 if isinstance(by, str):
@@ -1027,20 +1077,28 @@ class Scatter():
                 if categorical_data is not None:
                     self._color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                     self._points[:, component] = categorical_data.cat.codes
+                    self._color_histogram = get_histogram_from_df(categorical_data)
                 else:
                     self._color_categories = None
                     self._points[:, component] = self._color_norm(self.color_data.values)
+                    self._color_histogram = get_histogram_from_df(
+                        self._points[:, component],
+                        self.get_histogram_bins("color"),
+                        self.get_histogram_range("color")
+                    )
 
                 if not self._encodings.data[self._color_by].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._color_by].prepared = True
 
+            self.update_widget('color_histogram', self._color_histogram)
             self.update_widget('color_by', self.js_color_by)
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
             self._color_by = None
+            self._color_histogram = None
             self._encodings.delete('color')
             self.update_widget('color_by', self.js_color_by)
 
@@ -1263,6 +1321,7 @@ class Scatter():
 
             if by is None or by == 'density':
                 self._encodings.delete('opacity')
+                self._opacity_histogram = None
 
             else:
                 if isinstance(by, str):
@@ -1281,8 +1340,14 @@ class Scatter():
                 if categorical_data is not None:
                     self._points[:, component] = categorical_data.cat.codes
                     self._opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    self._opacity_histogram = get_histogram_from_df(categorical_data)
                 else:
                     self._points[:, component] = self._opacity_norm(self.opacity_data.values)
+                    self._opacity_histogram = get_histogram_from_df(
+                        self._points[:, component],
+                        self.get_histogram_bins("opacity"),
+                        self.get_histogram_range("opacity")
+                    )
                     self._opacity_categories = None
 
                 if not self._encodings.data[self._opacity_by].prepared:
@@ -1290,11 +1355,14 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._opacity_by].prepared = True
 
+            self.update_widget('opacity_histogram_range', self.get_histogram_range("opacity"))
+            self.update_widget('opacity_histogram', self._opacity_histogram)
             self.update_widget('opacity_by', self.js_opacity_by)
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static opacity encoding
             self._opacity_by = None
+            self._opacity_histogram = None
             self._encodings.delete('opacity')
             self.update_widget('opacity_by', self.js_opacity_by)
 
@@ -1486,6 +1554,7 @@ class Scatter():
 
             if by is None:
                 self._encodings.delete('size')
+                self._size_histogram = None
 
             else:
                 if isinstance(by, str):
@@ -1493,7 +1562,7 @@ class Scatter():
                 else:
                     self._size_data = pd.Series(by, index=self._data_index)
                     self._size_by = 'Custom Size Data'
-
+                    
                 self._encodings.set('size', self._size_by)
 
                 check_encoding_dtype(self.size_data)
@@ -1504,8 +1573,14 @@ class Scatter():
                 if categorical_data is not None:
                     self._points[:, component] = categorical_data.cat.codes
                     self._size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    self._size_histogram = get_histogram_from_df(categorical_data)
                 else:
                     self._points[:, component] = self._size_norm(self.size_data.values)
+                    self._size_histogram = get_histogram_from_df(
+                        self._points[:, component],
+                        self.get_histogram_bins("size"),
+                        self.get_histogram_range("size")
+                    )
                     self._size_categories = None
 
                 if not self._encodings.data[self._size_by].prepared:
@@ -1513,11 +1588,13 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._size_by].prepared = True
 
+            self.update_widget('size_histogram', self._size_histogram)
             self.update_widget('size_by', self.js_size_by)
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
             self._size_by = None
+            self._size_histogram = None
             self._encodings.delete('size')
             self.update_widget('size_by', self.js_size_by)
 
@@ -3127,24 +3204,44 @@ class Scatter():
 
     def tooltip(
         self,
-        tooltip: Optional[Union[bool, Undefined]] = UNDEF,
-        contents: Optional[Union[All, Set[TooltipContent], Undefined]] = UNDEF,
+        enable: Optional[Union[bool, Undefined]] = UNDEF,
+        properties: Optional[Union[List[VisualProperty], Undefined]] = UNDEF,
         size: Optional[Union[Size, Undefined]] = UNDEF,
+        histograms: Optional[Union[bool, Undefined]] = UNDEF,
+        histograms_bins: Optional[Union[int, Dict[str, int], Undefined]] = UNDEF,
+        histograms_ranges: Optional[Union[Tuple[float], Dict[str, Tuple[float]], Undefined]] = UNDEF,
+        histograms_size: Optional[Union[Size, Undefined]] = UNDEF,
     ):
         """
         Set or get the tooltip settings.
 
         Parameters
         ----------
-        tooltip : bool, optional
+        enable : bool, optional
             When set to `True`, a tooltip will be shown upon hovering a point.
-        contents : all or set(str), optional
-            The channels that should be shown in the tooltip. Note, that only
-            the visual channels that are actually used for encoding will be
-            shown in the tooltip eventually. Can be either `all` (default) or
-            some of `x`, `y`, `color`, `opacity`, and `size`.
+        properties : all or list of str, optional
+            The visual and data properties that should be shown in the tooltip.
+            The visual properties can be some of `x`, `y`, `color`, `opacity`,
+            and `size`. Note that visual properties are only shown if they are
+            actually used to encode data properties. To reference other data
+            properties that are not visually encoded, specify a column of the
+            bound DataFrame by its name.
         size : small or medium or large, optional
-            The size of the tooltip. Must be one of small, medium, or large
+            The size of the tooltip. Must be one of small, medium, or large.
+            Defaults to `"small"`.
+        histograms : bool, optional
+            When set to `True`, the tooltip will show histograms of the
+            properties
+        histograms_bins : int, optional
+            The number of bins for all numerical histograms. Or a dictionary of
+            property-specific number of bins. Defaults to 20.
+        histograms_ranges : (float, float) or dict of (float, float), optional
+            The global lower and upper range of all bins. Or a dictionary of
+            property-specific lower upper bin ranges. Defaults to
+            `(min(), max())`.
+        histograms_size : small or medium or large, optional
+            The width of the histograms. Must be one of small, medium, or large.
+            Defaults to `"small"`.
 
         Returns
         -------
@@ -3157,36 +3254,174 @@ class Scatter():
         >>> scatter.tooltip(True)
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.tooltip(contents={'color', 'opacity'})
+        >>> scatter.tooltip(properties=["color", "opacity", "my_column"])
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.tooltip(size='large')
+        >>> scatter.tooltip(size="large")
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(histograms=True)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(histograms_bins=40)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(histograms_ranges={"my_column": (1, 2)})
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(histograms_size="medium")
         <jscatter.jscatter.Scatter>
 
         >>> scatter.tooltip()
-        {'tooltip': True, 'contents': {'color', 'opacity'}, size: 'large'}
+        {
+          "tooltip": True,
+          "properties": ["color", "opacity", "my_column"],
+          size: "large",
+          histograms=True,
+          histograms_bins=20,
+          histograms_ranges={"my_column": (1, 2)},
+          histograms_size="small"
+        }
         """
-        if tooltip is not UNDEF:
-            self._tooltip = tooltip
-            self.update_widget('tooltip_enable', tooltip)
+        if enable is not UNDEF:
+            self._tooltip = enable
+            self.update_widget('tooltip_enable', enable)
 
-        if contents is not UNDEF:
-            if contents == 'all':
-                contents = all_tooltip_contents.copy()
-            self._tooltip_contents = contents
-            self.update_widget('tooltip_contents', contents)
+        if properties is not UNDEF:
+            self._tooltip_properties = sanitize_tooltip_properties(
+                self._data,
+                visual_properties,
+                properties
+            )
+
+            self._tooltip_histograms_bins = {
+                property: get_histogram_bins(
+                    self._tooltip_histograms_bins,
+                    property
+                )
+                for property
+                in self._tooltip_properties
+            }
+
+            self._tooltip_histograms_ranges = {
+                property: get_histogram_range(
+                    self._tooltip_histograms_ranges,
+                    property
+                )
+                for property
+                in self._tooltip_properties
+            }
 
         if size is not UNDEF:
             self._tooltip_size = size
             self.update_widget('tooltip_size', size)
 
-        if any_not([tooltip, contents, size], UNDEF):
+        if histograms is not UNDEF:
+            self._tooltip_histograms = histograms
+            self.update_widget('tooltip_histograms', histograms)
+
+        if histograms_size is not UNDEF:
+            self._tooltip_histograms_size = histograms_size
+            self.update_widget('tooltip_histograms_size', histograms_size)
+
+        if histograms_bins is not UNDEF:
+            self._tooltip_histograms_bins = {
+                property: get_histogram_bins(histograms_bins, property)
+                for property
+                in self._tooltip_properties
+            }
+
+        if histograms_ranges is not UNDEF:
+            self._tooltip_histograms_ranges = {
+                property: get_histogram_range(histograms_ranges, property)
+                for property
+                in self._tooltip_properties
+            }
+
+        if histograms_bins is not UNDEF or histograms_ranges is not UNDEF:
+            # Re-create histograms
+            self._x_histogram = get_histogram_from_df(
+                self._points[:, 0],
+                self.get_histogram_bins("x"),
+                self.get_histogram_range("x"),
+            )
+            self.update_widget('x_histogram_range', self.get_histogram_range("x"))
+            self.update_widget('x_histogram', self._x_histogram)
+
+            self._y_histogram = get_histogram_from_df(
+                self._points[:, 1],
+                self.get_histogram_bins("y"),
+                self.get_histogram_range("y")
+            )
+            self.update_widget('y_histogram_range', self.get_histogram_range("y"))
+            self.update_widget('y_histogram', self._y_histogram)
+
+            if self._color_by is not None and self._color_categories is None:
+                component = self._encodings.data[self._color_by].component
+                self._color_histogram = get_histogram_from_df(
+                    self._points[:, component],
+                    self.get_histogram_bins("color"),
+                    self.get_histogram_range("color")
+                )
+                self.update_widget('color_histogram_range', self.get_histogram_range("color"))
+                self.update_widget('color_histogram', self._color_histogram)
+
+            if self._opacity_by is not None and self._opacity_by != "density" and self._opacity_categories is None:
+                component = self._encodings.data[self._opacity_by].component
+                self._opacity_histogram = get_histogram_from_df(
+                    self._points[:, component],
+                    self.get_histogram_bins("opacity"),
+                    self.get_histogram_range("opacity")
+                )
+                self.update_widget('opacity_histogram_range', self.get_histogram_range("opacity"))
+                self.update_widget('opacity_histogram', self._opacity_histogram)
+
+            if self._size_by is not None and self._size_categories is None:
+                component = self._encodings.data[self._size_by].component
+                self._size_histogram = get_histogram_from_df(
+                    self._points[:, component],
+                    self.get_histogram_bins("size"),
+                    self.get_histogram_range("size")
+                )
+                self.update_widget('size_histogram_range', self.get_histogram_range("size"))
+                self.update_widget('size_histogram', self._size_histogram)
+
+        if (
+            self._tooltip_properties_non_visual is None or
+            properties is not UNDEF or
+            histograms_bins is not UNDEF
+        ):
+            self._tooltip_properties_non_visual = get_non_visual_properties(
+                self._tooltip_properties
+            )
+
+            self._tooltip_properties_non_visual_info = {}
+            for property in self._tooltip_properties_non_visual:
+                self._tooltip_properties_non_visual_info[property] = dict(
+                    scale = get_scale_type_from_df(self._data[property]),
+                    domain = get_domain_from_df(self._data[property]),
+                    range = self.get_histogram_range(property),
+                    histogram = get_histogram_from_df(
+                        self._data[property],
+                        self.get_histogram_bins(property),
+                        self.get_histogram_range(property)
+                    ),
+                )
+
+            self.update_widget('tooltip_properties_non_visual_info', self._tooltip_properties_non_visual_info)
+            self.update_widget('tooltip_properties', self._tooltip_properties)
+
+        if any_not([enable, properties, size, histograms, histograms_bins, histograms_ranges, histograms_size], UNDEF):
             return self
 
         return dict(
-            legend = self._tooltip,
-            contents = self._tooltip_contents,
+            enable = self._tooltip,
+            properties = self._tooltip_properties,
             size = self._tooltip_size,
+            histograms = self._tooltip_histograms,
+            histograms_bins = self._tooltip_histograms_bins,
+            histograms_ranges = self._tooltip_histograms_ranges,
+            histograms_size = self._tooltip_histograms_size,
         )
 
 
@@ -3428,6 +3663,7 @@ class Scatter():
             return self._widget
 
         self._widget = JupyterScatter(
+            data=self._data,
             axes=self._axes,
             axes_color=self.get_axes_color(),
             axes_grid=self._axes_grid,
@@ -3441,6 +3677,8 @@ class Scatter():
             color=order_map(self._color_map, self._color_order) if self._color_map else self._color,
             color_by=self.js_color_by,
             color_domain=get_domain(self, 'color'),
+            color_histogram=self._color_histogram,
+            color_histogram_range=self.get_histogram_range("color"),
             color_hover=self._color_hover,
             color_scale=get_scale(self, 'color'),
             color_selected=self._color_selected,
@@ -3470,6 +3708,8 @@ class Scatter():
             opacity=order_map(self._opacity_map, self._opacity_order) if self._opacity_map else self._opacity,
             opacity_by=self.js_opacity_by,
             opacity_domain=get_domain(self, 'opacity'),
+            opacity_histogram=self._opacity_histogram,
+            opacity_histogram_range=self.get_histogram_range("opacity"),
             opacity_scale=get_scale(self, 'opacity'),
             opacity_title=self._opacity_by,
             opacity_unselected=self._opacity_unselected,
@@ -3480,17 +3720,26 @@ class Scatter():
             size=order_map(self._size_map, self._size_order) if self._size_map else self._size,
             size_by=self.js_size_by,
             size_domain=get_domain(self, 'size'),
+            size_histogram=self._size_histogram,
+            size_histogram_range=self.get_histogram_range("size"),
             size_scale=get_scale(self, 'size'),
             size_title=self._size_by,
             tooltip_color=self.get_tooltip_color(),
-            tooltip_contents=self._tooltip_contents,
+            tooltip_properties=self._tooltip_properties,
+            tooltip_properties_non_visual_info=self._tooltip_properties_non_visual_info,
             tooltip_enable=self._tooltip,
+            tooltip_histograms=self._tooltip_histograms,
+            tooltip_histograms_size=self._tooltip_histograms_size,
             tooltip_size=self._tooltip_size,
             width=self._width,
             x_domain=self._x_domain,
+            x_histogram=self._x_histogram,
+            x_histogram_range=self.get_histogram_range("x"),
             x_scale=to_scale_type(self._x_scale),
             x_title=self._x_by,
             y_domain=self._y_domain,
+            y_histogram=self._y_histogram,
+            y_histogram_range=self.get_histogram_range("y"),
             y_scale=to_scale_type(self._y_scale),
             y_title=self._y_by,
             zoom_animation=self._zoom_animation,
@@ -3506,6 +3755,12 @@ class Scatter():
     def update_widget(self, prop, val):
         if self._widget is not None:
             setattr(self._widget, prop, val)
+
+    def get_histogram_bins(self, property):
+        return get_histogram_bins(self._tooltip_histograms_bins, property)
+
+    def get_histogram_range(self, property):
+        return get_histogram_range(self._tooltip_histograms_ranges, property)
 
     def show(self):
         """
