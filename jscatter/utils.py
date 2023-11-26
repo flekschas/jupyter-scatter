@@ -1,7 +1,10 @@
-from matplotlib.colors import LogNorm, PowerNorm, Normalize
 import ipywidgets as widgets
+
+from matplotlib.colors import LogNorm, PowerNorm, Normalize
+from numpy import histogram
+from pandas.api.types import is_categorical_dtype, is_string_dtype
 from urllib.parse import urlparse
-from typing import Union
+from typing import List, Union
 
 from .types import Labeling
 
@@ -65,6 +68,21 @@ def to_scale_type(norm = None):
 
     return 'categorical'
 
+def get_scale_type_from_df(data):
+    if is_categorical_dtype(data) or is_string_dtype(data):
+        return 'categorical'
+
+    return 'linear'
+
+def get_domain_from_df(data):
+    if is_categorical_dtype(data) or is_string_dtype(data):
+        _data = data
+        if is_string_dtype(data):
+            _data = data.copy().astype('category')
+        return dict(zip(_data, _data.cat.codes))
+
+    return [data.min(), data.max()]
+
 def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeling:
     labeling: Labeling = {}
 
@@ -91,3 +109,30 @@ def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeli
         labeling['variable'] = column
 
     return labeling
+
+def get_histogram_from_df(data, bins=20, range=None):
+    if is_categorical_dtype(data) or is_string_dtype(data):
+        _data = data
+        if is_string_dtype(data):
+            _data = data.copy().astype('category')
+        value_counts = _data.cat.codes.value_counts()
+        return [y for _, y in sorted(dict(value_counts / value_counts.sum()).items())]
+
+    hist = histogram(data, bins=bins, range=range)
+
+    return list(hist[0] / hist[0].max())
+
+def sanitize_tooltip_properties(
+    df,
+    reserved_properties: List[str],
+    properties: List[str],
+):
+    sanitized_properties = []
+
+    for col in properties:
+        if col in reserved_properties or (df is not None and col in df):
+            sanitized_properties.append(col)
+        else:
+            continue
+
+    return sanitized_properties

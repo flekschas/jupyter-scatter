@@ -34,7 +34,7 @@
 
 1. [Install](#install)
 2. [Get Started](#get-started)
-3. [API docs](docs/api.md)
+3. [Docs](https://jupyter-scatter.dev)
 4. [Examples](notebooks/examples.ipynb)
 5. [Development](#development)
 

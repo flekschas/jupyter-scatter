@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "jupyter-scatter"
-description = "A scatter plot extension for Jupyter Notebook and Lab"
+description = "An interactive scatter plot widget for Jupyter Notebook, Lab, and Google Colab that can handle millions of points and supports view linking"
 authors = [
   { name = "Fritz Lekschas", author_email = "code@lekschas.de" }
 ]
