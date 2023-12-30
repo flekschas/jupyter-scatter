@@ -227,3 +227,18 @@ Go to [test-environment](test-environment) and follow the detailed instructions
 
 </p>
 </details>
+
+<details><summary>Test using local regl-scatterplot source</summary>
+<p>
+
+To test a local development copy of regl-scatterplot, place the regl-scatterplot source under the same
+directory as this repo, so that the location of the regl-scatterplot folder relative to the js folder in jupyter-scatter is ```../../regl-scatterplot```. 
+
+**After Changing regl-scatterplot code:** build the regl-scatterplot package by running ```npm run build``` from its folder.
+
+**After Changing JavaScript in jscatter code:** do `cd js && npm run build`.
+
+**Testing jscatter:** Simply open the test.ipynb notebook in the root folder of this repo.
+
+</p>
+</details>
