@@ -254,8 +254,14 @@ class JupyterScatterView {
       Object.entries(properties).forEach((property) => {
         const pyName = property[0];
         const jsName = property[1];
-        if (this[pyName] !== null && reglScatterplotProperty.has(jsName))
+        if (this[pyName] !== null && reglScatterplotProperty.has(jsName)) {
           initialOptions[jsName] = this[pyName];
+        }
+        if (this[pyName] !== null && jsName === 'otherOptions') {
+          Object.entries(this[pyName]).forEach(([key, value]) => {
+            initialOptions[key] = value;
+          })
+        }
       });
 
       this.scatterplot = createScatterplot(initialOptions);

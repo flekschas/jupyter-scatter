@@ -1,3 +1,7 @@
+## v0.15.1
+
+- Fix: Use custom regl-scatterplot option on creating a `Scatter` instance ([#106](https://github.com/flekschas/jupyter-scatter/issues/106))
+
 ## v0.15.0
 
 - Feat: Add support for histograms in the tooltip ([#96](https://github.com/flekschas/jupyter-scatter/pull/96))
