@@ -122,6 +122,8 @@ const properties = {
   sizeScale: 'sizeScale',
   xDomain: 'xDomain',
   yDomain: 'yDomain',
+  xScaleDomain: 'xScaleDomain',
+  yScaleDomain: 'yScaleDomain',
   colorDomain: 'colorDomain',
   opacityDomain: 'opacityDomain',
   sizeDomain: 'sizeDomain',
@@ -425,28 +427,30 @@ class JupyterScatterView {
     // Regl-Scatterplot's gl-space is always linear, hence we have to pass a
     // linear scale to regl-scatterplot.
     // In the future we might integrate this into regl-scatterplot directly
+    const xScaleDomain = this.model.get('x_scale_domain');
     this.xScaleRegl = scaleLinear()
-      .domain(this.model.get('x_domain'))
+      .domain(xScaleDomain)
       .range([0, width - xPadding]);
     // This scale is used for the D3 axis
     this.xScaleAxis = getScale(this.model.get('x_scale'))
-      .domain(this.model.get('x_domain'))
+      .domain(xScaleDomain)
       .range([0, width - xPadding]);
     // This scale converts between the linear, log, or power normalized data
     // scale and the axis
     this.xScaleRegl2Axis = getScale(this.model.get('x_scale'))
-      .domain(this.model.get('x_domain'))
-      .range(this.model.get('x_domain'));
+      .domain(xScaleDomain)
+      .range(xScaleDomain);
 
+    const yScaleDomain = this.model.get('y_scale_domain');
     this.yScaleRegl = scaleLinear()
-      .domain(this.model.get('y_domain'))
+      .domain(yScaleDomain)
       .range([height - yPadding, 0]);
     this.yScaleAxis = getScale(this.model.get('y_scale'))
-      .domain(this.model.get('y_domain'))
+      .domain(yScaleDomain)
       .range([height - yPadding, 0]);
     this.yScaleRegl2Axis = getScale(this.model.get('y_scale'))
-      .domain(this.model.get('y_domain'))
-      .range(this.model.get('y_domain'));
+      .domain(yScaleDomain)
+      .range(yScaleDomain);
 
     if (currentXScaleRegl) {
       this.xScaleAxis.domain(
@@ -1115,12 +1119,16 @@ class JupyterScatterView {
       this.model.get('x_domain_range'),
     );
 
+    const toRelValue = scaleLinear()
+      .domain(this.model.get('x_domain'))
+      .range([0, 1]);
+
     this.getX = (i) => {
-      const xNdc = this.getPoint(i)[0];
-      const value = (xNdc + 1) / 2;
+      const ndc = this.getPoint(i)[0];
+      const value = this.xScale.invert(ndc);
       return [
-        (xNdc + 1) / 2,
-        this.xFormat(this.xScale.invert(xNdc)),
+        toRelValue(value),
+        this.xFormat(value),
         this.getXBin(value)
       ];
     }
@@ -1135,12 +1143,16 @@ class JupyterScatterView {
       this.model.get('y_domain_range'),
     );
 
+    const toRelValue = scaleLinear()
+      .domain(this.model.get('y_domain'))
+      .range([0, 1]);
+
     this.getY = (i) => {
-      const yNdc = this.getPoint(i)[1];
-      const value = (yNdc + 1) / 2;
+      const ndc = this.getPoint(i)[1];
+      const value = this.yScale.invert(ndc);
       return [
-        value,
-        this.yFormat(this.yScale.invert(yNdc)),
+        toRelValue(value),
+        this.yFormat(value),
         this.getYBin(value),
       ];
     }
@@ -1670,17 +1682,19 @@ class JupyterScatterView {
   }
 
   createXScale() {
+    const domain = this.model.get('x_scale_domain');
     this.xScale = getScale(this.model.get('x_scale'))
-      .domain(this.model.get('x_domain'))
+      .domain(domain)
       .range([-1, 1]);
-    this.xFormat = format(getD3FormatSpecifier(this.model.get('x_domain')));
+    this.xFormat = format(getD3FormatSpecifier(domain));
   }
 
   createYScale() {
+    const domain = this.model.get('y_scale_domain');
     this.yScale = getScale(this.model.get('y_scale'))
-      .domain(this.model.get('y_domain'))
+      .domain(domain)
       .range([-1, 1]);
-    this.yFormat = format(getD3FormatSpecifier(this.model.get('y_domain')));
+    this.yFormat = format(getD3FormatSpecifier(domain));
   }
 
   createColorScale() {
@@ -1766,12 +1780,12 @@ class JupyterScatterView {
     if (this.model.get('axes')) this.createAxes();
   }
 
-  xDomainHandler() {
+  xScaleDomainHandler() {
     this.createXScale();
     if (this.model.get('axes')) this.createAxes();
   }
 
-  yDomainHandler() {
+  yScaleDomainHandler() {
     this.createYScale();
     if (this.model.get('axes')) this.createAxes();
   }

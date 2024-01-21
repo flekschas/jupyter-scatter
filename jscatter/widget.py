@@ -83,6 +83,10 @@ class JupyterScatter(anywidget.AnyWidget):
     opacity_domain = Union([Dict(), List(minlen=2, maxlen=2)], allow_none=True).tag(sync=True)
     size_domain = Union([Dict(), List(minlen=2, maxlen=2)], allow_none=True).tag(sync=True)
 
+    # Scale domains
+    x_scale_domain = List(minlen=2, maxlen=2).tag(sync=True)
+    y_scale_domain = List(minlen=2, maxlen=2).tag(sync=True)
+
     # Histograms
     x_histogram = List(None, allow_none=True).tag(sync=True)
     y_histogram = List(None, allow_none=True).tag(sync=True)
