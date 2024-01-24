@@ -1,5 +1,7 @@
 ## v0.15.1
 
+- Fix: Improve the tooltip positioning to avoid the tooltip being cut off unnecessarily
+- Fix: Properly redraw axes on resize ([#108](https://github.com/flekschas/jupyter-scatter/issues/108))
 - Fix: Incorrect axes scale domain ([#107](https://github.com/flekschas/jupyter-scatter/issues/107))
 - Fix: Use custom regl-scatterplot option on creating a `Scatter` instance ([#106](https://github.com/flekschas/jupyter-scatter/issues/106))
 
