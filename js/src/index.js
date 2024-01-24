@@ -1531,6 +1531,14 @@ class JupyterScatterView {
     const xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
     const yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
 
+    const xScaleDomain = this.scatterplot.get('xScale').domain();
+    const yScaleDomain = this.scatterplot.get('yScale').domain();
+    this.xScaleAxis.domain(xScaleDomain.map(this.xScaleRegl2Axis.invert));
+    this.yScaleAxis.domain(yScaleDomain.map(this.yScaleRegl2Axis.invert));
+
+    this.xAxisContainer.call(this.xAxis.scale(this.xScaleAxis));
+    this.yAxisContainer.call(this.yAxis.scale(this.yScaleAxis));
+
     this.xScaleAxis.range([0, width - xPadding]);
     this.yScaleAxis.range([height - yPadding, 0]);
     this.xAxis.scale(this.xScaleAxis);
