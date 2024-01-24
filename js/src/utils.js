@@ -94,3 +94,7 @@ export function createElementWithClass(tagName, className) {
 
   return element;
 }
+
+export function remToPx(rem) {
+  return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+}

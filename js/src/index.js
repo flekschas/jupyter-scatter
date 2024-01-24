@@ -21,6 +21,7 @@ import {
   getTooltipFontSize,
   createNumericalBinGetter,
   createElementWithClass,
+  remToPx,
 } from "./utils";
 
 import { version } from "../package.json";
@@ -48,6 +49,7 @@ const TOOLTIP_HISTOGRAM_HEIGHT = (/** @type {const} */ ({
   medium: '1.25em',
   large: '1.5em',
 }));
+const TOOLTIP_OFFSET_REM = 0.5;
 
 /**
  * This dictionary maps between the camelCased Python property names and their
@@ -713,7 +715,6 @@ class JupyterScatterView {
     }
 
     this.styleTooltip();
-    this.tooltipBbox = this.tooltip.getBoundingClientRect();
   }
 
   createTooltipContents() {
@@ -787,7 +788,7 @@ class JupyterScatterView {
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
-      this.tooltip.style.transform = `translate(calc(${x}px - 50%), calc(${y}px - 0.5rem - 100%))`;
+      this.tooltip.style.transform = `translate(calc(${x}px - 50%), calc(${y}px - ${TOOLTIP_OFFSET_REM}rem - 100%))`;
     }
   }
 
@@ -800,7 +801,7 @@ class JupyterScatterView {
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
-      this.tooltip.style.transform = `translate(calc(${x}px - 100% + 0.625rem), calc(${y}px - 0.5rem - 100%))`;
+      this.tooltip.style.transform = `translate(calc(${x}px - 100% + ${TOOLTIP_OFFSET_REM}rem), calc(${y}px - ${TOOLTIP_OFFSET_REM}rem - 100%))`;
     }
   }
 
@@ -813,7 +814,7 @@ class JupyterScatterView {
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
-      this.tooltip.style.transform = `translate(calc(${x}px - 0.5rem), calc(${y}px - 0.5rem - 100%))`;
+      this.tooltip.style.transform = `translate(calc(${x}px - ${TOOLTIP_OFFSET_REM}rem), calc(${y}px - ${TOOLTIP_OFFSET_REM}rem - 100%))`;
     }
   }
 
@@ -826,7 +827,7 @@ class JupyterScatterView {
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px -1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
-      this.tooltip.style.transform = `translate(calc(${x}px - 50%), calc(${y}px + 0.5rem))`;
+      this.tooltip.style.transform = `translate(calc(${x}px - 50%), calc(${y}px + ${TOOLTIP_OFFSET_REM}rem))`;
     }
   }
 
@@ -839,7 +840,7 @@ class JupyterScatterView {
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px -1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
-      this.tooltip.style.transform = `translate(calc(${x}px - 100% + 0.625rem), calc(${y}px + 0.5rem))`;
+      this.tooltip.style.transform = `translate(calc(${x}px - 100% + ${TOOLTIP_OFFSET_REM}rem), calc(${y}px + ${TOOLTIP_OFFSET_REM}rem))`;
     }
   }
 
@@ -852,7 +853,7 @@ class JupyterScatterView {
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px -1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
-      this.tooltip.style.transform = `translate(calc(${x}px - 0.5rem), calc(${y}px + 0.5rem))`;
+      this.tooltip.style.transform = `translate(calc(${x}px - ${TOOLTIP_OFFSET_REM}rem), calc(${y}px + ${TOOLTIP_OFFSET_REM}rem))`;
     }
   }
 
@@ -865,7 +866,7 @@ class JupyterScatterView {
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px -1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
-      this.tooltip.style.transform = `translate(calc(${x}px - 0.5rem - 100%), calc(${y}px - 50%))`;
+      this.tooltip.style.transform = `translate(calc(${x}px - ${TOOLTIP_OFFSET_REM}rem - 100%), calc(${y}px - 50%))`;
     }
   }
 
@@ -877,7 +878,7 @@ class JupyterScatterView {
     this.tooltipArrow.style.transform = 'translate(calc(-50% + 1px), -50%) rotate(-45deg)';
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), 1px 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
     this.moveTooltip = (x, y) => {
-      this.tooltip.style.transform = `translate(calc(${x}px + 0.5rem), calc(${y}px - 50%))`;
+      this.tooltip.style.transform = `translate(calc(${x}px + ${TOOLTIP_OFFSET_REM}rem), calc(${y}px - 50%))`;
     }
   }
 
@@ -903,22 +904,24 @@ class JupyterScatterView {
   }
 
   getTooltipPosition(x, y) {
-    const xCutoff = (this.tooltipBbox?.width / 2) || 120;
-    const yCutoff = this.tooltipBbox?.height || 120;
+    const { width, height } = this.tooltip.getBoundingClientRect();
+    const xCutoff = width / 2;
+    const yCutoff = height;
+    const tooltipOffset = remToPx(TOOLTIP_OFFSET_REM);
 
-    if (x < xCutoff) {
-      if (y < yCutoff) return 'bottom-right';
-      if (y > this.outerHeight - yCutoff) return 'top-right';
+    if (x < xCutoff + tooltipOffset) {
+      if (y < yCutoff + tooltipOffset) return 'bottom-right';
+      if (y > this.outerHeight - yCutoff - tooltipOffset) return 'top-right';
       return 'right-center';
     }
 
-    if (x > this.outerWidth - xCutoff) {
-      if (y < yCutoff) return 'bottom-left';
-      if (y > this.outerHeight - yCutoff) return 'top-left';
+    if (x > this.outerWidth - xCutoff - tooltipOffset) {
+      if (y < yCutoff + tooltipOffset) return 'bottom-left';
+      if (y > this.outerHeight - yCutoff - tooltipOffset) return 'top-left';
       return 'left-center';
     }
 
-    if (y < yCutoff) return 'bottom-center';
+    if (y < yCutoff + tooltipOffset) return 'bottom-center';
 
     return 'top-center';
   }
