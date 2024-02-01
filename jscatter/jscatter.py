@@ -145,7 +145,7 @@ class Scatter():
             encoding.
         kwargs : optional
             Options to customize the scatter instance and the visual encoding.
-            See https://github.com/flekschas/jupyter-scatter/blob/master/API.md#properties
+            See https://jupyter-scatter.dev/api#properties
             for a complete list of all properties.
 
         Returns
@@ -3807,7 +3807,7 @@ def plot(
         encoding.
     kwargs : optional
         Options to customize the scatter instance and the visual encoding.
-        See https://github.com/flekschas/jupyter-scatter/blob/master/API.md#properties
+        See https://jupyter-scatter.dev/api#properties
         for a complete list of all properties.
 
     Returns
