@@ -145,7 +145,7 @@ class Scatter():
             encoding.
         kwargs : optional
             Options to customize the scatter instance and the visual encoding.
-            See https://github.com/flekschas/jupyter-scatter/blob/master/API.md#properties
+            See https://jupyter-scatter.dev/api#properties
             for a complete list of all properties.
 
         Returns
@@ -604,6 +604,8 @@ class Scatter():
                 except ValueError:
                     pass
 
+            self._x_scale_domain = [self._x_scale.vmin, self._x_scale.vmax]
+
             # Normalize x coordinate to [-1,1]
             self._points[:, 0] = to_ndc(self._points[:, 0], self._x_scale)
 
@@ -714,6 +716,8 @@ class Scatter():
                     self._y_scale.vmax = self._y_max
                 except ValueError:
                     pass
+
+            self._y_scale_domain = [self._y_scale.vmin, self._y_scale.vmax]
 
             # Normalize y coordinate to [-1,1]
             self._points[:, 1] = to_ndc(self._points[:, 1], self._y_scale)
@@ -3736,11 +3740,13 @@ class Scatter():
             x_histogram=self._x_histogram,
             x_histogram_range=self.get_histogram_range("x"),
             x_scale=to_scale_type(self._x_scale),
+            x_scale_domain=self._x_scale_domain,
             x_title=self._x_by,
             y_domain=self._y_domain,
             y_histogram=self._y_histogram,
             y_histogram_range=self.get_histogram_range("y"),
             y_scale=to_scale_type(self._y_scale),
+            y_scale_domain=self._y_scale_domain,
             y_title=self._y_by,
             zoom_animation=self._zoom_animation,
             zoom_on_filter=self._zoom_on_filter,
@@ -3801,7 +3807,7 @@ def plot(
         encoding.
     kwargs : optional
         Options to customize the scatter instance and the visual encoding.
-        See https://github.com/flekschas/jupyter-scatter/blob/master/API.md#properties
+        See https://jupyter-scatter.dev/api#properties
         for a complete list of all properties.
 
     Returns

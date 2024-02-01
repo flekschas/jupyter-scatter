@@ -213,20 +213,29 @@ While jscatter is primarily developed for Jupyter Lab and Notebook, it also runs
 
 **Requirements:**
 
-- [Conda](https://docs.conda.io/en/latest/) >= 4.8
+- [Hatch](https://hatch.pypa.io/latest/) >= 1.7.0
 
 **Installation:**
 
 ```bash
 git clone https://github.com/flekschas/jupyter-scatter/ jscatter && cd jscatter
-conda env create -f environment.yml && conda activate jscatter
-pip install -e ".[test]"
+hatch shell
+pip install -e ".[dev]"
 ```
 
-**After Changing Python code:** simply restart the kernel.
+**After Changing Python code:** restart the kernel.
+
+Alternatively, you can enable auto reloading by enabling the `autoreload`
+extension. To do so, run the following code at the beginning of a notebook:
+
+```py
+%load_ext autoreload
+%autoreload 2
+```
 
 **After Changing JavaScript code:** do `cd js && npm run build`.
-Alternatively you can run `npm run watch` and rebundle the code on the fly.
+
+Alternatively, you can run `npm run watch` and rebundle the code on the fly.
 
 </p>
 </details>
@@ -234,7 +243,7 @@ Alternatively you can run `npm run watch` and rebundle the code on the fly.
 <details><summary>Setting up a test environment</summary>
 <p>
 
-Go to [test-environment](test-environment) and follow the detailed instructions
+Go to [test-environments](test-environments) and follow the instructions.
 
 </p>
 </details>
