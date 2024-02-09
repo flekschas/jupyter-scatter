@@ -3250,16 +3250,13 @@ class Scatter():
         ----------
         enable : bool, optional
             When set to `True`, a tooltip will be shown upon hovering a point.
-        properties : all or list of str, optional
+        properties : list of str, optional
             The visual and data properties that should be shown in the tooltip.
             The visual properties can be some of `x`, `y`, `color`, `opacity`,
             and `size`. Note that visual properties are only shown if they are
             actually used to encode data properties. To reference other data
             properties that are not visually encoded, specify a column of the
             bound DataFrame by its name.
-        size : small or medium or large, optional
-            The size of the tooltip. Must be one of small, medium, or large.
-            Defaults to `"small"`.
         histograms : bool, optional
             When set to `True`, the tooltip will show histograms of the
             properties
@@ -3273,6 +3270,46 @@ class Scatter():
         histograms_size : small or medium or large, optional
             The width of the histograms. Must be one of small, medium, or large.
             Defaults to `"small"`.
+        preview : str, optional
+            A column name of the bound DataFrame that contains preview data.
+            Currently three data types are supported: plain text, URL
+            referencing an image, and URL referencing an audio file.
+        preview_type : str, optional
+            The media type of the preview. This can be one of `"text"`,
+            `"image"`, or `"audio"`.
+        preview_text_lines : int or None, optional
+            For text previews, the maximum number of lines that should be
+            displayed. Text that exceeds defined limit will be truncated with an
+            ellipsis. By default, the line limit is set to `None` to be
+            disabled.
+        preview_image_background_color : str or None, optional
+            For image previews, the background color. By default, the value is
+            `None`, which means that image previews' background is transparent.
+            If `preview_image_size` is set to `"contain"` and your image does
+            not perfectly cover the preview area, you will see the tooltip's
+            background color.
+        preview_image_position : str, optional
+            The image position. This can be one of `"top"`, `"bottom"`,
+            `"left"`, `"right"`, or `"center"`. The default value is `"center"`.
+        preview_image_size : str, optional
+            The size of the image in the context of to the preview area. This
+            can be one of `"cover"` or `"contain"` and is set to `"contain"`
+            by default.
+        preview_audio_length : int or None, optional
+            The number of seconds that should be played as the audio preview. By
+            default (`None`), the audio file is played from the start to the
+            end.
+        preview_audio_loop : bool, optional
+            If `True`, the audio preview is indefinitely looped for the duration
+            the tooltip is shown.
+        preview_audio_controls : bool, optional
+            If `True`, the audio preview will include controls. While you cannot
+            interact with the controls (as the tooltip disappears upon leaving a
+            point), the controls show the progression and length of the played
+            audio.
+        size : small or medium or large, optional
+            The size of the tooltip. Must be one of `"small"`, `"medium"`, or
+            `"large"`. Defaults to `"small"`.
 
         Returns
         -------
@@ -3286,6 +3323,10 @@ class Scatter():
         for details on the behavior of `preview_image_position`.
         See https://developer.mozilla.org/en-US/docs/Web/CSS/background-size
         for details on the behavior of `preview_image_size`.
+        See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#loop
+        for details on the behavior of `preview_audio_loop`.
+        See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#controls
+        for details on the behavior of `preview_audio_controls`.
 
         Examples
         --------
@@ -3293,9 +3334,6 @@ class Scatter():
         <jscatter.jscatter.Scatter>
 
         >>> scatter.tooltip(properties=["color", "opacity", "my_column"])
-        <jscatter.jscatter.Scatter>
-
-        >>> scatter.tooltip(size="large")
         <jscatter.jscatter.Scatter>
 
         >>> scatter.tooltip(histograms=True)
@@ -3310,15 +3348,54 @@ class Scatter():
         >>> scatter.tooltip(histograms_size="medium")
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.tooltip(preview="image_url")
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_type="image")
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_text_lines=3)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_background_color="red")
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_position="top")
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_size="cover")
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_audio_length=2)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_audio_loop=True)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_audio_controls=False)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(size="large")
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.tooltip()
         {
           "tooltip": True,
           "properties": ["color", "opacity", "my_column"],
-          size: "large",
-          histograms=True,
-          histograms_bins=20,
-          histograms_ranges={"my_column": (1, 2)},
-          histograms_size="small"
+          "histograms": True,
+          "histograms_bins": 20,
+          "histograms_ranges": {"my_column": (1, 2)},
+          "histograms_size": "small",
+          "preview": "image_url",
+          "preview_type": "image",
+          "preview_text_lines": 3,
+          "preview_background_color": "red",
+          "preview_position": "top",
+          "preview_size": "cover",
+          "preview_audio_length": 2,
+          "preview_audio_loop": True,
+          "preview_audio_controls": False,
+          "size": "large"
         }
         """
         if enable is not UNDEF:
@@ -3497,11 +3574,20 @@ class Scatter():
         return dict(
             enable = self._tooltip,
             properties = self._tooltip_properties,
-            size = self._tooltip_size,
             histograms = self._tooltip_histograms,
             histograms_bins = self._tooltip_histograms_bins,
             histograms_ranges = self._tooltip_histograms_ranges,
             histograms_size = self._tooltip_histograms_size,
+            preview = self._tooltip_preview,
+            preview_type = self._tooltip_preview_type,
+            preview_text_lines = self._tooltip_preview_text_lines,
+            preview_image_background_color = self._tooltip_preview_image_background_color,
+            preview_image_position = self._tooltip_preview_image_position,
+            preview_image_size = self._tooltip_preview_image_size,
+            preview_audio_length = self._tooltip_preview_audio_length,
+            preview_audio_loop = self._tooltip_preview_audio_loop,
+            preview_audio_controls = self._tooltip_preview_audio_controls,
+            size = self._tooltip_size,
         )
 
 
