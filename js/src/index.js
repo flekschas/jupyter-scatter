@@ -117,6 +117,14 @@ const properties = {
   tooltipHistogramsRanges: 'tooltipHistogramsRanges',
   tooltipHistogramsSize: 'tooltipHistogramsSize',
   tooltipPropertiesNonVisualInfo: 'tooltipPropertiesNonVisualInfo',
+  tooltipPreview: 'tooltipPreview',
+  tooltipPreviewType: 'tooltipPreviewType',
+  tooltipPreviewTextLines: 'tooltipPreviewTextLines',
+  tooltipPreviewTextMarkdown: 'tooltipPreviewTextMarkdown',
+  tooltipPreviewImagePosition: 'tooltipPreviewImagePosition',
+  tooltipPreviewImageSize: 'tooltipPreviewImageSize',
+  tooltipPreviewAudioLength: 'tooltipPreviewAudioLength',
+  tooltipPreviewAudioLoop: 'tooltipPreviewAudioLoop',
   xScale: 'xScale',
   yScale: 'yScale',
   colorScale: 'colorScale',
@@ -617,6 +625,18 @@ class JupyterScatterView {
     this.legend = undefined;
   }
 
+  createTooltipPreviewDomElements() {
+    this.tooltipPreviewValue = document.createElement(
+      this.model.get('tooltip_preview_type') === 'audio' ? 'audio' : 'div'
+    );
+    this.tooltipPreviewValueHelper = document.createElement('div');
+    this.tooltipPreviewBorder = document.createElement('div');
+
+    this.tooltipPreviewValue.appendChild(this.tooltipPreviewValueHelper);
+    this.tooltipContentPreview.appendChild(this.tooltipPreviewValue);
+    this.tooltipContentPreview.appendChild(this.tooltipPreviewBorder);
+  }
+
   createTooltipPropertyDomElements(property) {
     const capitalProperty = toCapitalCase(property);
     const htmlClassProperty = toHtmlClass(property);
@@ -698,15 +718,18 @@ class JupyterScatterView {
       this.model.get(`${property}_title`) || property || ''
     );
 
-    this.tooltipContent.appendChild(this[`tooltipProperty${capitalProperty}Channel`]);
-    this.tooltipContent.appendChild(this[`tooltipProperty${capitalProperty}Title`]);
-    this.tooltipContent.appendChild(this[`tooltipProperty${capitalProperty}Value`]);
+    this.tooltipContentProperties.appendChild(this[`tooltipProperty${capitalProperty}Channel`]);
+    this.tooltipContentProperties.appendChild(this[`tooltipProperty${capitalProperty}Title`]);
+    this.tooltipContentProperties.appendChild(this[`tooltipProperty${capitalProperty}Value`]);
   }
 
   createTooltipContentsDomElements() {
     // Remove existing DOM elements. Not the most efficient approach but it's
     // error-prone.
-    this.tooltipContent.replaceChildren();
+    this.tooltipContentPreview.replaceChildren();
+    this.tooltipContentProperties.replaceChildren();
+
+    this.createTooltipPreviewDomElements();
 
     const properties = new Set(this.tooltipPropertiesAll);
 
@@ -719,12 +742,16 @@ class JupyterScatterView {
 
   createTooltipContents() {
     this.tooltipPropertiesVisual = new Set(this.model.get('tooltip_properties'));
+
+    // Remove all but visual properties that are used for encoding data
+    // properties
     for (const property of this.tooltipPropertiesVisual) {
       if (property in TOOLTIP_MANDATORY_VISUAL_PROPERTIES) continue;
-      if (
-        property in TOOLTIP_OPTIONAL_VISUAL_PROPERTIES &&
-        this.model.get(`${property}_by`)
-      ) continue
+      if (property in TOOLTIP_OPTIONAL_VISUAL_PROPERTIES) {
+        const encoding = this.model.get(`${property}_by`);
+        if (property === 'opacity' && encoding !== 'density') continue
+        if (property !== 'opacity' && encoding) continue
+      }
       this.tooltipPropertiesVisual.delete(property);
     }
     this.tooltipPropertiesVisual = Array.from(this.tooltipPropertiesVisual);
@@ -739,6 +766,8 @@ class JupyterScatterView {
       ...this.tooltipPropertiesVisual,
       ...this.tooltipPropertiesNonVisual
     ];
+
+    this.tooltipPreview = this.model.get('tooltip_preview');
 
     this.createTooltipContentsDomElements();
   }
@@ -764,12 +793,23 @@ class JupyterScatterView {
     this.tooltipContent = document.createElement('div');
     this.tooltipContent.style.position = 'relative';
     this.tooltipContent.style.display = 'grid';
-    this.tooltipContent.style.gap = '0.5em';
-    this.tooltipContent.style.userSelect = 'none';
+    this.tooltipContent.style.gridTemplateColumns = 'min-content';
     this.tooltipContent.style.borderRadius = '0.2rem';
-    this.tooltipContent.style.padding = '0.25em';
-    this.tooltipContent.style.fontSize = getTooltipFontSize(this.model.get('tooltip_size'));
     this.tooltip.appendChild(this.tooltipContent);
+
+    this.tooltipContentPreview = document.createElement('div');
+    this.tooltipContentPreview.style.position = 'relative';
+    this.tooltipContent.appendChild(this.tooltipContentPreview);
+
+    this.tooltipContentProperties = document.createElement('div');
+    this.tooltipContentProperties.style.position = 'relative';
+    this.tooltipContentProperties.style.display = 'grid';
+    this.tooltipContentProperties.style.gap = '0.5em';
+    this.tooltipContentProperties.style.userSelect = 'none';
+    this.tooltipContentProperties.style.borderRadius = '0.2rem';
+    this.tooltipContentProperties.style.padding = '0.25em';
+    this.tooltipContentProperties.style.fontSize = getTooltipFontSize(this.model.get('tooltip_size'));
+    this.tooltipContent.appendChild(this.tooltipContentProperties);
 
     this.container.appendChild(this.tooltip);
 
@@ -928,7 +968,7 @@ class JupyterScatterView {
 
   enableTooltipHistograms() {
     const display = this.model.get('tooltip_histograms') ? 'block' : 'none';
-    const histograms = this.tooltipContent.querySelectorAll('.histogram');
+    const histograms = this.tooltipContentProperties.querySelectorAll('.histogram');
 
     for (const histogram of histograms) {
       histogram.style.display = display;
@@ -952,11 +992,11 @@ class JupyterScatterView {
     }
 
     if (this.tooltipPropertiesVisual.length) {
-      this.tooltipContent.style.gridTemplateColumns = 'max-content max-content max-content';
+      this.tooltipContentProperties.style.gridTemplateColumns = 'max-content max-content max-content';
     } else {
       // Let's hide the channel column since no properties is visually encoded
-      this.tooltipContent.style.gridTemplateColumns = 'max-content max-content';
-      for (const channel of this.tooltipContent.querySelectorAll('.channel')) {
+      this.tooltipContentProperties.style.gridTemplateColumns = 'max-content max-content';
+      for (const channel of this.tooltipContentProperties.querySelectorAll('.channel')) {
         channel.style.display = 'none';
       }
     }
@@ -970,7 +1010,65 @@ class JupyterScatterView {
     this.tooltipArrow.style.backgroundColor = bg;
     this.tooltipContent.style.backgroundColor = bg;
 
-    const channelBadges = this.tooltipContent.querySelectorAll('.channel-badge');
+    if (this.model.get('tooltip_preview')) {
+      const previewType = this.model.get('tooltip_preview_type');
+
+      if (previewType === 'text') {
+        const lines = this.model.get('tooltip_preview_text_lines');
+
+        this.tooltipPreviewValue.style.position = 'relative';
+        this.tooltipPreviewValue.style.width = '100%';
+        this.tooltipPreviewValueHelper.style.padding = '0.25em';
+        this.tooltipPreviewBorder.style.height = '1px';
+        this.tooltipPreviewBorder.style.marginBottom = '0.25em';
+        this.tooltipPreviewBorder.style.backgroundColor = `rgb(${contrast}, ${contrast}, ${contrast}, 0.2)`;
+
+        if (lines > 0) {
+          this.tooltipPreviewValueHelper.style.display = '-webkit-box';
+          this.tooltipPreviewValueHelper.style.webkitLineClamp = lines;
+          this.tooltipPreviewValueHelper.style.webkitBoxOrient = 'vertical';
+          this.tooltipPreviewValueHelper.style.overflow = 'hidden';
+        }
+      } else if (previewType === 'image') {
+        const backgroundColor = this.model.get('tooltip_preview_image_background_color');
+        const position = this.model.get('tooltip_preview_image_position');
+        const size = this.model.get('tooltip_preview_image_size');
+
+        this.tooltipPreviewValue.style.position = 'relative';
+        this.tooltipPreviewValue.style.backgroundColor =
+          backgroundColor === 'auto' ? bg : backgroundColor;
+        this.tooltipPreviewValue.style.backgroundRepeat = 'no-repeat';
+        this.tooltipPreviewValue.style.backgroundPosition = position;
+        this.tooltipPreviewValue.style.backgroundSize = size;
+
+        this.tooltipPreviewValueHelper.style.paddingTop = '6em';
+
+        this.tooltipPreviewBorder.style.height = '1px';
+        this.tooltipPreviewBorder.style.marginBottom = '0.25em';
+        this.tooltipPreviewBorder.style.backgroundColor = `rgb(${contrast}, ${contrast}, ${contrast}, 0.2)`;
+      } else if (previewType === 'audio') {
+        const length = this.model.get('tooltip_preview_audio_length');
+        const loop = this.model.get('tooltip_preview_audio_loop');
+        const controls = this.model.get('tooltip_preview_audio_controls');
+        this.tooltipPreviewValue.controls = controls;
+        this.tooltipPreviewValue.autoplay = true;
+        this.tooltipPreviewValue.loop = loop;
+
+        if (length) {
+          this.tooltipPreviewValue.addEventListener("timeupdate", () => {
+            if (this.tooltipPreviewValue.currentTime > length) {
+              this.tooltipPreviewValue.pause();
+              if (loop) {
+                this.tooltipPreviewValue.currentTime = 0;
+                this.tooltipPreviewValue.play();
+              }
+            }
+          });
+        }
+      }
+    }
+
+    const channelBadges = this.tooltipContentProperties.querySelectorAll('.channel-badge');
 
     for (const channelBadge of channelBadges) {
       channelBadge.style.position = 'relative';
@@ -980,7 +1078,7 @@ class JupyterScatterView {
       channelBadge.style.marginRight = '0.125rem';
     }
 
-    const channelBadgeBgs = this.tooltipContent.querySelectorAll('.channel-badge-bg');
+    const channelBadgeBgs = this.tooltipContentProperties.querySelectorAll('.channel-badge-bg');
 
     for (const channelBadgeBg of channelBadgeBgs) {
       channelBadgeBg.style.position = 'absolute';
@@ -1084,7 +1182,7 @@ class JupyterScatterView {
       el.style.lineHeight = '1em';
     });
 
-    const values = this.tooltipContent.querySelectorAll('.value');
+    const values = this.tooltipContentProperties.querySelectorAll('.value');
 
     for (const value of values) {
       value.style.display = 'flex';
@@ -1093,7 +1191,7 @@ class JupyterScatterView {
       value.style.alignItems = 'top';
     }
 
-    const valueTexts = this.tooltipContent.querySelectorAll('.value-text');
+    const valueTexts = this.tooltipContentProperties.querySelectorAll('.value-text');
 
     for (const valueText of valueTexts) {
       valueText.style.flexGrow = '1';
@@ -1364,7 +1462,30 @@ class JupyterScatterView {
           ? (s) => s
           : format(getD3FormatSpecifier(info.domain))
       }
-    })
+    });
+
+    const previewType = this.model.get('tooltip_preview_type');
+
+    let previewUpdater;
+
+    if (previewType === 'text') {
+      previewUpdater = (text) => {
+        this.tooltipPreviewValueHelper.textContent = text;
+      }
+    }
+
+    if (previewType === 'image') {
+      previewUpdater = (imageUrl) => {
+        this.tooltipPreviewValue.style.backgroundImage = `url(${imageUrl})`;
+      }
+    }
+
+    if (previewType === 'audio') {
+      previewUpdater = (audioSrc) => {
+        this.tooltipPreviewValue.src = audioSrc;
+        this.tooltipPreviewValue.currentTime = 0;
+      }
+    }
 
     this.tooltipDataHandlers = (event) => {
       for (const d of nonVisualData) {
@@ -1373,13 +1494,15 @@ class JupyterScatterView {
         d.textElement.textContent = d.format(value);
         d.histogram.draw(d.getHistogramKey(value));
       }
+      if (event.preview) previewUpdater(event.preview);
     }
 
     this.tooltipContentsUpdater = (pointIdx) => {
       this.model.send({
         type: TOOLTIP_EVENT_TYPE,
         index: pointIdx,
-        properties: this.tooltipPropertiesNonVisual
+        properties: this.tooltipPropertiesNonVisual,
+        preview: this.tooltipPreview,
       });
       visualUpdaters.forEach((updater) => { updater(pointIdx); });
     }
@@ -1404,6 +1527,10 @@ class JupyterScatterView {
   hideToolip() {
     this.tooltipPointIdx = undefined;
     this.tooltip.style.opacity = 0;
+    if (this.tooltipPreviewValue.nodeName === 'AUDIO') {
+      this.tooltipPreviewValue.pause();
+      this.tooltipPreviewValue.currentTime = 0;
+    }
   }
 
   tooltipEnableHandler(tooltip) {
@@ -1654,6 +1781,8 @@ class JupyterScatterView {
     this.xScaleAxis.domain(xScaleDomain.map(this.xScaleRegl2Axis.invert));
     this.yScaleAxis.domain(yScaleDomain.map(this.yScaleRegl2Axis.invert));
 
+    console.log('xScaleAxis.domain (updateAxes)', xScaleDomain, xScaleDomain.map(this.xScaleRegl2Axis.invert))
+
     this.xAxisContainer.call(this.xAxis.scale(this.xScaleAxis));
     this.yAxisContainer.call(this.yAxis.scale(this.yScaleAxis));
 
@@ -1674,6 +1803,7 @@ class JupyterScatterView {
   }
 
   viewChangeHandler(event) {
+    console.log('viewChangeHandler')
     if (this.viewSync) {
       pubSub.globalPubSub.publish(
         'jscatter::view',
@@ -1687,6 +1817,7 @@ class JupyterScatterView {
         { async: true }
       );
     }
+    console.log('viewChangeHandler: event.xScale.domain()', event.xScale.domain())
     if (this.model.get('axes')) {
       this.updateAxes(event.xScale.domain(), event.yScale.domain());
     }

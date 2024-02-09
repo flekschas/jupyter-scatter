@@ -11,7 +11,7 @@ from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
 from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_scale_type_from_df, get_domain_from_df, create_default_norm, create_labeling, get_histogram_from_df, sanitize_tooltip_properties
-from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Size, LegendPosition, VisualProperty, Labeling, Undefined
+from .types import Auto, Color, Scales, MouseModes, Auto, Reverse, Segment, Size, LegendPosition, VisualProperty, Labeling, TooltipPreviewType, TooltipPreviewImagePosition, TooltipPreviewImageSize, Undefined
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -295,8 +295,17 @@ class Scatter():
         self._tooltip_size = 'small'
         self._tooltip_histograms = True
         self._tooltip_histograms_bins = DEFAULT_HISTOGRAM_BINS
-        self._tooltip_histograms_ranges = None
+        self._tooltip_histograms_ranges = {}
         self._tooltip_histograms_size = 'small'
+        self._tooltip_preview = None
+        self._tooltip_preview_type = 'text'
+        self._tooltip_preview_text_lines = 3
+        self._tooltip_preview_image_background_color = 'auto'
+        self._tooltip_preview_image_position = 'center'
+        self._tooltip_preview_image_size = 'contain'
+        self._tooltip_preview_audio_length = None
+        self._tooltip_preview_audio_loop = False
+        self._tooltip_preview_audio_controls = True
         self._zoom_to = None
         self._zoom_to_call_idx = 0
         self._zoom_animation = 500
@@ -399,11 +408,20 @@ class Scatter():
         self.tooltip(
             kwargs.get('tooltip', UNDEF),
             kwargs.get('tooltip_properties', UNDEF),
-            kwargs.get('tooltip_size', UNDEF),
             kwargs.get('tooltip_histograms', UNDEF),
             kwargs.get('tooltip_histograms_bins', UNDEF),
             kwargs.get('tooltip_histograms_ranges', UNDEF),
             kwargs.get('tooltip_histograms_size', UNDEF),
+            kwargs.get('tooltip_preview', UNDEF),
+            kwargs.get('tooltip_preview_type', UNDEF),
+            kwargs.get('tooltip_preview_text_lines', UNDEF),
+            kwargs.get('tooltip_preview_image_background_color', UNDEF),
+            kwargs.get('tooltip_preview_image_position', UNDEF),
+            kwargs.get('tooltip_preview_image_size', UNDEF),
+            kwargs.get('tooltip_preview_audio_length', UNDEF),
+            kwargs.get('tooltip_preview_audio_loop', UNDEF),
+            kwargs.get('tooltip_preview_audio_controls', UNDEF),
+            kwargs.get('tooltip_size', UNDEF),
         )
         self.zoom(
             kwargs.get('zoom_to', UNDEF),
@@ -3210,11 +3228,20 @@ class Scatter():
         self,
         enable: Optional[Union[bool, Undefined]] = UNDEF,
         properties: Optional[Union[List[VisualProperty], Undefined]] = UNDEF,
-        size: Optional[Union[Size, Undefined]] = UNDEF,
         histograms: Optional[Union[bool, Undefined]] = UNDEF,
         histograms_bins: Optional[Union[int, Dict[str, int], Undefined]] = UNDEF,
         histograms_ranges: Optional[Union[Tuple[float], Dict[str, Tuple[float]], Undefined]] = UNDEF,
         histograms_size: Optional[Union[Size, Undefined]] = UNDEF,
+        preview: Optional[Union[str, Undefined]] = UNDEF,
+        preview_type: Optional[Union[TooltipPreviewType, Undefined]] = UNDEF,
+        preview_text_lines: Optional[Union[int, Undefined]] = UNDEF,
+        preview_image_background_color: Optional[Union[Auto, Color, Undefined]] = UNDEF,
+        preview_image_position: Optional[Union[TooltipPreviewImagePosition, str, Undefined]] = UNDEF,
+        preview_image_size: Optional[Union[TooltipPreviewImageSize, Undefined]] = UNDEF,
+        preview_audio_length: Optional[Union[int, Undefined]] = UNDEF,
+        preview_audio_loop: Optional[Union[bool, int, Undefined]] = UNDEF,
+        preview_audio_controls: Optional[Union[bool, Undefined]] = UNDEF,
+        size: Optional[Union[Size, Undefined]] = UNDEF,
     ):
         """
         Set or get the tooltip settings.
@@ -3253,6 +3280,13 @@ class Scatter():
             If no parameters are provided the current tooltip settings are
             returned as a dictionary. Otherwise, `self` is returned.
 
+        Notes
+        -----
+        See https://developer.mozilla.org/en-US/docs/Web/CSS/background-position
+        for details on the behavior of `preview_image_position`.
+        See https://developer.mozilla.org/en-US/docs/Web/CSS/background-size
+        for details on the behavior of `preview_image_size`.
+
         Examples
         --------
         >>> scatter.tooltip(True)
@@ -3290,6 +3324,48 @@ class Scatter():
         if enable is not UNDEF:
             self._tooltip = enable
             self.update_widget('tooltip_enable', enable)
+
+        if preview_text_lines is not UNDEF:
+            try:
+                self._preview_text_lines = max(0, preview_text_lines)
+            except TypeError:
+                self._preview_text_lines = None
+            self.update_widget('tooltip_preview_text_lines', self._preview_text_lines)
+
+        if preview_image_background_color is not UNDEF:
+            self._tooltip_preview_image_background_color = preview_image_background_color
+            self.update_widget('tooltip_preview_image_background_color', preview_image_background_color)
+
+        if preview_image_position is not UNDEF:
+            self._tooltip_preview_image_position = preview_image_position
+            self.update_widget('tooltip_preview_image_position', preview_image_position)
+
+        if preview_image_size is not UNDEF:
+            self._tooltip_preview_image_size = preview_image_size
+            self.update_widget('tooltip_preview_image_size', preview_image_size)
+
+        if preview_audio_length is not UNDEF:
+            try:
+                self._tooltip_preview_audio_length = max(0, preview_audio_length)
+            except TypeError:
+                self._tooltip_preview_audio_length = None
+            self.update_widget('tooltip_preview_audio_length', self._tooltip_preview_audio_length)
+
+        if preview_audio_loop is not UNDEF:
+            self._tooltip_preview_audio_loop = preview_audio_loop
+            self.update_widget('tooltip_preview_audio_loop', preview_audio_loop)
+
+        if preview_audio_controls is not UNDEF:
+            self._tooltip_preview_audio_controls = preview_audio_controls
+            self.update_widget('tooltip_preview_audio_controls', preview_audio_controls)
+
+        if preview_type is not UNDEF:
+            self._tooltip_preview_type = preview_type
+            self.update_widget('tooltip_preview_type', preview_type)
+
+        if preview is not UNDEF:
+            self._tooltip_preview = preview
+            self.update_widget('tooltip_preview', preview)
 
         if properties is not UNDEF:
             self._tooltip_properties = sanitize_tooltip_properties(
@@ -3728,12 +3804,23 @@ class Scatter():
             size_histogram_range=self.get_histogram_range("size"),
             size_scale=get_scale(self, 'size'),
             size_title=self._size_by,
+            tooltip_enable=self._tooltip,
             tooltip_color=self.get_tooltip_color(),
             tooltip_properties=self._tooltip_properties,
             tooltip_properties_non_visual_info=self._tooltip_properties_non_visual_info,
-            tooltip_enable=self._tooltip,
             tooltip_histograms=self._tooltip_histograms,
+            tooltip_histograms_bins=self._tooltip_histograms_bins,
+            tooltip_histograms_ranges=self._tooltip_histograms_ranges,
             tooltip_histograms_size=self._tooltip_histograms_size,
+            tooltip_preview=self._tooltip_preview,
+            tooltip_preview_type=self._tooltip_preview_type,
+            tooltip_preview_text_lines=self._tooltip_preview_text_lines,
+            tooltip_preview_image_background_color=self._tooltip_preview_image_background_color,
+            tooltip_preview_image_position=self._tooltip_preview_image_position,
+            tooltip_preview_image_size=self._tooltip_preview_image_size,
+            tooltip_preview_audio_length=self._tooltip_preview_audio_length,
+            tooltip_preview_audio_loop=self._tooltip_preview_audio_loop,
+            tooltip_preview_audio_controls=self._tooltip_preview_audio_controls,
             tooltip_size=self._tooltip_size,
             width=self._width,
             x_domain=self._x_domain,

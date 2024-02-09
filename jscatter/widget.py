@@ -167,6 +167,18 @@ class JupyterScatter(anywidget.AnyWidget):
     tooltip_histograms_size = Enum(
         ['small', 'medium', 'large'], default_value='small'
     ).tag(sync=True)
+    tooltip_preview = Unicode(None, allow_none=True).tag(sync=True)
+    tooltip_preview_type = Enum(
+        ['text', 'image', 'audio'], default_value='text'
+    ).tag(sync=True)
+    tooltip_preview_text_lines = Int(default_value=3, allow_none=True).tag(sync=True)
+    tooltip_preview_text_markdown = Bool().tag(sync=True)
+    tooltip_preview_image_background_color = Union([Enum(['auto']), Unicode()], default_value='auto').tag(sync=True)
+    tooltip_preview_image_position = Union([Enum(['top', 'left', 'right', 'bottom', 'center']), Unicode()], allow_none=True, default_value=None).tag(sync=True)
+    tooltip_preview_image_size = Enum(['contain', 'cover'], allow_none=True, default_value=None).tag(sync=True)
+    tooltip_preview_audio_length = Int(None, allow_none=True).tag(sync=True)
+    tooltip_preview_audio_loop = Bool().tag(sync=True)
+    tooltip_preview_audio_controls = Bool().tag(sync=True)
 
     # Options
     color = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
@@ -217,12 +229,14 @@ class JupyterScatter(anywidget.AnyWidget):
         self.data = data
         self.on_msg(self._handle_custom_msg)
 
-    def _handle_custom_msg(self, data: dict, buffers):
-        if data["type"] == TOOLTIP_EVENT_TYPE and isinstance(self.data, pd.DataFrame):
+    def _handle_custom_msg(self, event: dict, buffers):
+        if event["type"] == TOOLTIP_EVENT_TYPE and isinstance(self.data, pd.DataFrame):
+            data = self.data.iloc[event["index"]]
             self.send({
                 "type": TOOLTIP_EVENT_TYPE,
-                "index": data["index"],
-                "properties": self.data.iloc[data["index"]][data["properties"]].to_dict()
+                "index": event["index"],
+                "preview": data[event["preview"]],
+                "properties": data[event["properties"]].to_dict()
             })
 
     @property
