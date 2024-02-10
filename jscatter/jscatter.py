@@ -3292,9 +3292,9 @@ class Scatter():
             The image position. This can be one of `"top"`, `"bottom"`,
             `"left"`, `"right"`, or `"center"`. The default value is `"center"`.
         preview_image_size : str, optional
-            The size of the image in the context of to the preview area. This
-            can be one of `"cover"` or `"contain"` and is set to `"contain"`
-            by default.
+            The size of the image in the context of the preview area. This can
+            be one of `"cover"` or `"contain"` and is set to `"contain"` by
+            default.
         preview_audio_length : int or None, optional
             The number of seconds that should be played as the audio preview. By
             default (`None`), the audio file is played from the start to the
