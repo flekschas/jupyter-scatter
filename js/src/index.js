@@ -1018,7 +1018,7 @@ class JupyterScatterView {
 
         this.tooltipPreviewValue.style.position = 'relative';
         this.tooltipPreviewValue.style.width = '100%';
-        this.tooltipPreviewValueHelper.style.padding = '0.25em';
+        this.tooltipPreviewValueHelper.style.margin = '0.25em';
         this.tooltipPreviewBorder.style.height = '1px';
         this.tooltipPreviewBorder.style.marginBottom = '0.25em';
         this.tooltipPreviewBorder.style.backgroundColor = `rgb(${contrast}, ${contrast}, ${contrast}, 0.2)`;
@@ -1040,6 +1040,7 @@ class JupyterScatterView {
         this.tooltipPreviewValue.style.backgroundRepeat = 'no-repeat';
         this.tooltipPreviewValue.style.backgroundPosition = position;
         this.tooltipPreviewValue.style.backgroundSize = size;
+        this.tooltipPreviewValue.style.borderRadius = '0.2rem 0.2rem 0 0';
 
         this.tooltipPreviewValueHelper.style.paddingTop = '6em';
 
