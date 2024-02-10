@@ -70,7 +70,8 @@ export default defineConfig({
           { text: 'Interactions', link: '/interactions' },
           { text: 'Selections', link: '/selections' },
           { text: 'Link Multiple Scatter Plots', link: '/link-multiple-plots' },
-          { text: 'Axes, Legend, & Toolip', link: '/axes-legend-tooltip' }
+          { text: 'Axes & Legends', link: '/axes-legends' },
+          { text: 'Toolip', link: '/tooltip' }
         ]
       },
       // {
