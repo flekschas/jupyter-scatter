@@ -3,7 +3,7 @@
 - [Scatter](#scatter)
   - [Methods](#methods)
     - [x()](#scatter.x), [y()](#scatter.x), [xy()](#scatter.xy), and [data()](#scatter.data)
-    - [selection()](#scatter.selection) anda [filter()](#scatter.filter)
+    - [selection()](#scatter.selection) and [filter()](#scatter.filter)
     - [color()](#scatter.color), [opacity()](#scatter.opacity), and [size()](#scatter.size)
     - [connect()](#scatter.connect), [connection_color()](#scatter.connection_color), [connection_opacity()](#scatter.connection_opacity), and [connection_size()](#scatter.connection_size)
     - [axes()](#scatter.axes), [legend()](#scatter.legend), and [tooltip()](#scatter.tooltip)
