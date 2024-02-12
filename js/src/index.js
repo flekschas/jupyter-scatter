@@ -1782,8 +1782,6 @@ class JupyterScatterView {
     this.xScaleAxis.domain(xScaleDomain.map(this.xScaleRegl2Axis.invert));
     this.yScaleAxis.domain(yScaleDomain.map(this.yScaleRegl2Axis.invert));
 
-    console.log('xScaleAxis.domain (updateAxes)', xScaleDomain, xScaleDomain.map(this.xScaleRegl2Axis.invert))
-
     this.xAxisContainer.call(this.xAxis.scale(this.xScaleAxis));
     this.yAxisContainer.call(this.yAxis.scale(this.yScaleAxis));
 
@@ -1804,7 +1802,6 @@ class JupyterScatterView {
   }
 
   viewChangeHandler(event) {
-    console.log('viewChangeHandler')
     if (this.viewSync) {
       pubSub.globalPubSub.publish(
         'jscatter::view',
@@ -1818,7 +1815,6 @@ class JupyterScatterView {
         { async: true }
       );
     }
-    console.log('viewChangeHandler: event.xScale.domain()', event.xScale.domain())
     if (this.model.get('axes')) {
       this.updateAxes(event.xScale.domain(), event.yScale.domain());
     }
