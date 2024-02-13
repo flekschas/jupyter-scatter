@@ -235,7 +235,7 @@ class JupyterScatter(anywidget.AnyWidget):
             self.send({
                 "type": TOOLTIP_EVENT_TYPE,
                 "index": event["index"],
-                "preview": data[event["preview"]],
+                "preview": data[event["preview"]] if event["preview"] is not None else None,
                 "properties": data[event["properties"]].to_dict()
             })
 
