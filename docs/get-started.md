@@ -159,11 +159,11 @@ of properties. Therefore, `jscatter` provides a functional API that groups
 properties by type and exposes them via meaningfully-named methods that can
 almost be read like a sentence.
 
-For instance, line three of the example below defines that the scatter plot is
-colored by the `mass` column, which maps its values to the plasma color map in
-reverse order.
+For instance, in line two of the example below, the scatter plot colors points
+by the `mass` column by mapping its values to the plasma color map in reverse
+order.
 
-```py{3}
+```py{2}
 scatter = jscatter.Scatter(data=df, x='mass', y='speed')
 scatter.color(by='mass', map='plasma', order='reverse')
 scatter.opacity(by='density')
