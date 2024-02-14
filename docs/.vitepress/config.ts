@@ -88,7 +88,7 @@ export default defineConfig({
         link: '/api',
       },
       {
-        text: 'SciPy \'23 Tutorials',
+        text: 'Tutorial & Demos',
         link: 'https://github.com/flekschas/jupyter-scatter-tutorial',
       }
     ],
