@@ -1,14 +1,22 @@
 # Get Started
 
-Jupyter Scatter is a scalable, interactive, and interlinked scatter plot widget
-for exploring datasets with up to several million data points. It focuses on
-data-driven visual encodings and offers two-way pan+zoom and lasso interactions
-Beyond a single instance, Jupyter Scatter can compose multiple scatter plots and
-synchronize their views and selections.
+## What is Jupyter Scatter?
 
-In the following getting started guide, we will learn about the fundamentals of
-how to create and configure a scatter plot, how to select points within it, and
-how to link multiple scatter plots.
+Jupyter Scatter is a scalable, interactive, and interlinked scatter plot widget
+exploring datasets with up to several million data points that runs in Jupyter
+Lab/Notebook and Google Colab. It focuses on data-driven visual encodings and
+offers two-way pan+zoom and lasso interactions. Beyond a single plot, Jupyter
+Scatter can compose multiple scatter plots and synchronize their views and point
+selections.
+
+### Key Features
+
+- 🖱️ **Interactive**: Pan, zoom, and select data points interactively.
+- 🚀 **Scalable**: Plot up to several millions data points smoothly.
+- 🔗 **Interlinked**: Synchronize the view, hover, and selection across multiple plots.
+- ✨ **Effective Defaults**: Perceptually effective point colors and opacity by default.
+- 📚 **Friendly API:** A readable API that integrates deeply with Pandas DataFrames.
+- 🛠️ **Integratable**: Use Jupyter Scatter in your own widgets by observing its traitlets.
 
 ## Simplest Example
 
