@@ -31,6 +31,10 @@ useful in scenarios with a lot of categories as shown below.
 In both cases, the highlighted bar / rectangle indicates how the hovered point
 compares to the other points.
 
+::: info
+For demos of how to use tooltips with a variety of data, see https://github.com/flekschas/jupyter-scatter-tutorial.
+:::
+
 ## Properties
 
 By default, the tooltip shows all properties that are visually encoded but you
