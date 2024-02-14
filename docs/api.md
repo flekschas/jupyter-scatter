@@ -9,7 +9,7 @@
     - [axes()](#scatter.axes), [legend()](#scatter.legend), and [tooltip()](#scatter.tooltip)
     - [zoom()](#scatter.zoom) and [camera()](#scatter.camera)
     - [lasso()](#scatter.lasso), [reticle()](#scatter.reticle), and [mouse()](#scatter.mouse),
-    - [background()](#scatter.background) and [options()](scatter.options)
+    - [background()](#scatter.background) and [options()](#scatter.options)
   - [Properties](#properties)
   - [Widget](#widget)
 - [Plotting Shorthand](#plotting)
