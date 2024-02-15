@@ -1,115 +1,8 @@
-# Axes, Legend, & Tooltip
+# Tooltip
 
-Now that we know how to create, configure, compose, and link scatter plots, it's
-time learn axes, legends, and tooltip which greatly help in making sense of the
-visualized data.
-
-## Axes
-
-You might have noticed already that axes are drawn by default. E.g.:
-
-```py{7}
-from jscatter import Scatter
-from numpy.random import rand
-
-scatter = jscatter.Scatter(x=rand(500), y=rand(500))
-scatter.show()
-```
-
-<div class="img axes"><div /></div>
-
-::: info
-You can also hide the axes via `scatter.axes(False)` in case they are not
-informative like for t-SNE or UMAP embeddings.
-:::
-
-In addition, you can also enable a grid, which can be helpful to better locate
-points.
-
-```py
-scatter.axes(grid=True)
-```
-
-<div class="img axes-grid"><div /></div>
-
-And finally, you can also label the axes
-
-```py
-scatter.axes(labels=['Speed (km/h)', 'Weight (tons)'])
-```
-
-<div class="img axes-labels"><div /></div>
-
-## Legend
-
-When you encode data properties with the point color, opacity, or size, it's
-immensly helpful to know how the encoded data properties relate to the visual
-properties by showing a legend.
-
-```py{22-24}
-import jscatter
-import numpy as np
-import pandas as pd
-
-df = pd.DataFrame({
-  # Random floats
-  "mass": np.random.rand(500),
-  "speed": np.random.rand(500),
-  "pval": np.random.rand(500),
-  # Gaussian-distributed floats
-  "effect_size": np.random.normal(.5, .2, 500),
-  # Random letters A, B, C, D, E, F, G, H
-  "cat": np.vectorize(lambda x: chr(65 + round(x * 8)))(np.random.rand(500)),
-  # Random letters X, Y, Z
-  "group": np.vectorize(lambda x: chr(88 + round(x * 2)))(np.random.rand(500)),
-})
-
-scatter = jscatter.Scatter(
-  data=df,
-  x="mass",
-  y="speed",
-  color_by="cat",
-  size_by="pval",
-  legend=True,
-)
-scatter.show()
-```
-
-<div class="img legend-1"><div /></div>
-
-When you encode a categorical data property (like `cat`) using color, Jupyter
-Scatter will list out each category in the legend. In contrast, for continuous
-data properties (like `pval`), only five values are shown in the legend: the
-minimum, maximum, and three equally spaced values in between.
-
-```py
-scatter.color(by="pval").opacity(by="cat").size(5)
-```
-
-<div class="img legend-2"><div /></div>
-
-Notice how the legend now only shows five entries for `color` as it encodes a
-continuous variable.
-
-In addition to just showing a mapping of data and visual properties, Jupyter
-Scatter can also label continuous properties.
-
-```py
-scatter.color(labeling={
-    "variable": "p-value",
-    "minValue": "significant",
-    "maxValue": "insignificant", 
-})
-```
-
-<div class="img legend-3"><div /></div>
-
-## Tooltip
-
-Legends depict how data are mapped to visual properties, yet require repeated
-eye movement between individual points and the legend for accurate
-interpretation. Jupyter Scatter supports a tooltip to show a point's encoded
-properties and related details, alleviating this strain.
+To further aid in making sense of the data points and patterns in a scatter
+plot, Jupyter Scatter supports a tooltip that can show a point's properties and
+related media to facilitate sense making.
 
 ```py
 scatter.tooltip(True)
@@ -129,14 +22,20 @@ property features the:
 
 For numerical properties, the histogram is visualized as a bar chart. For
 categorical properties, the histogram is visualized as a
-flat [treemap](https://en.wikipedia.org/wiki/Treemapping) where the rectangles
+[treemap](https://en.wikipedia.org/wiki/Treemapping) where the rectangles
 represents the proportion of categories compared to the whole. Treemaps are
 useful in scenarios with a lot of categories as shown below.
 
 <div class="img tooltip-treemap"><div /></div>
 
-In both cases, the highlighted bar indicates how the hovered point compares to
-the other points.
+In both cases, the highlighted bar / rectangle indicates how the hovered point
+compares to the other points.
+
+::: info
+For demos of how to use tooltips with a variety of data, see https://github.com/flekschas/jupyter-scatter-tutorial.
+:::
+
+## Properties
 
 By default, the tooltip shows all properties that are visually encoded but you
 can limit which properties are shown:
@@ -168,10 +67,10 @@ Here, for instance, we're showing the point's `group` and `effect_size`
 properties, which are two other DataFrame columns we didn't visualize.
 
 ::: tip
-The order of `properties` defines the order of the entries.
+The order of `properties` defines the order of the entries in the tooltip.
 :::
 
-### Customizing Numerical Histograms
+## Customize Numerical Histograms
 
 The histograms of numerical data properties consists of `20` bins, by default,
 and is covering the entire data range, i.e., it starts at the minumum and ends
@@ -196,7 +95,7 @@ scatter.tooltip(
 <div class="img tooltip-6"><div /></div>
 
 Since an increased number of bins can make it harder to read the histogram, you
-can adjust the size as follows:
+can also adjust the size as follows:
 
 ```py
 scatter.tooltip(histograms_size="large")
@@ -209,7 +108,7 @@ might lie outside the histogram. For instance, previously we restricted the
 `effect_size` to `[0.25, 0.75]`, meaning we disregarded part of the lower and
 upper end of the data.
 
-In this case, hovering a point with an `effect_size` less than `.5` will be
+In this case, hovering a point with an `effect_size` less than `.25` will be
 visualized by a red `]` to the left of the histogram to indicate it's value is
 smaller than the value represented by the left-most bar.
 
@@ -235,72 +134,62 @@ scatter.tooltip(properties=['effect_size_winsorized'])
 
 <div class="img tooltip-10"><div /></div>
 
+## Media Previews
+
+In cases where your data has a media representation like text, images, or audio,
+you can show a preview of the media in the tooltip by referencing a column name
+that holds either plain text, URLs referencing images, or URLs referencing
+audio.
+
+
+```py
+scatter.tooltip(preview="headline")
+```
+
+<div class="img tooltip-11"><div /></div>
+
+By default, the media type is set to `text`. If you want to show an image or
+audio file as the preview, you additionally need to specify the corresponding
+media type.
+
+```py
+scatter.tooltip(preview="url", preview_type="image")
+```
+
+<div class="img tooltip-12"><div /></div>
+
+You can further customize the media preview via media type-specific arguments.
+For instance in the following, we limit the audio preview to 2 seconds and
+loop the audio playback.
+
+```py
+scatter.tooltip(
+  preview="audio_url",
+  preview_type="audio",
+  preview_audio_length=2,
+  preview_audio_loop=True
+)
+```
+
+<div class="video">
+  <video loop playsinline width="1256" data-name="tooltip-preview-audio">
+    <source
+      src="/videos/tooltip-preview-audio-light.mp4"
+      type="video/mp4"
+    />
+  </video>
+  <div class="overlay">Hover to play video and turn on audio</div>
+</div>
+
+For more details on how to customize the tooltip preview, see the API docs for
+[`tooltip()`](/api#scatter.tooltip).
+
 <style scoped>
   .img {
     max-width: 100%;
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-  }
-
-  .img.axes {
-    width: 596px;
-    background-image: url(/images/axes-light.png)
-  }
-  .img.axes div { padding-top: 48.489933% }
-
-  :root.dark .img.axes {
-    background-image: url(/images/axes-dark.png)
-  }
-
-  .img.axes-grid {
-    width: 597px;
-    background-image: url(/images/axes-grid-light.png)
-  }
-  .img.axes-grid div { padding-top: 47.906198% }
-
-  :root.dark .img.axes-grid {
-    background-image: url(/images/axes-grid-dark.png)
-  }
-
-  .img.axes-labels {
-    width: 597px;
-    background-image: url(/images/axes-labels-light.png)
-  }
-  .img.axes-labels div { padding-top: 50.921273% }
-
-  :root.dark .img.axes-labels {
-    background-image: url(/images/axes-labels-dark.png)
-  }
-
-  .img.legend-1 {
-    width: 598px;
-    background-image: url(/images/legend-1-light.png)
-  }
-  .img.legend-1 div { padding-top: 48.829431% }
-
-  :root.dark .img.legend-1 {
-    background-image: url(/images/legend-1-dark.png)
-  }
-
-  .img.legend-2 {
-    width: 596px;
-    background-image: url(/images/legend-2-light.png)
-  }
-  .img.legend-2 div { padding-top: 49.328859% }
-
-  :root.dark .img.legend-2 {
-    background-image: url(/images/legend-2-dark.png)
-  }
-
-  .img.legend-3 {
-    width: 597px;
-    background-image: url(/images/legend-3-light.png)
-  }
-  .img.legend-3 div { padding-top: 48.911223% }
-
-  :root.dark .img.legend-3 {
-    background-image: url(/images/legend-3-dark.png)
   }
 
   .img.tooltip-1 {
@@ -416,4 +305,75 @@ scatter.tooltip(properties=['effect_size_winsorized'])
     background-image: url(/images/tooltip-10-dark.png)
   }
   :root.dark .img.tooltip-10 div { padding-top: 15.789474% }
+
+  .img.tooltip-11 {
+    width: 814px;
+    background-image: url(/images/tooltip-11-light.jpg)
+  }
+  .img.tooltip-11 div { padding-top: 35.87223587% }
+
+  :root.dark .img.tooltip-11 {
+    width: 764px;
+    background-image: url(/images/tooltip-11-dark.jpg)
+  }
+  :root.dark .img.tooltip-11 div { padding-top: 37.17277487% }
+
+  .img.tooltip-12 {
+    width: 704px;
+    background-image: url(/images/tooltip-12-light.png)
+  }
+  .img.tooltip-12 div { padding-top: 46.02272727% }
+
+  :root.dark .img.tooltip-12 {
+    width: 702px;
+    background-image: url(/images/tooltip-12-dark.png)
+  }
+  :root.dark .img.tooltip-12 div { padding-top: 49.57264957% }
+
+  .video {
+    position: relative;
+  }
+
+  .video video {
+    filter: blur(0.5px);
+  }
+
+  .video .overlay {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    user-select: none;
+    pointer-events: none;
+    transition: 0.25s ease;
+    border-radius: 0.25rem;
+    font-weight: 700;
+    color: black;
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  .video:hover .overlay {
+    opacity: 0;
+  }
+
+  .video:hover video {
+    filter: blur(0);
+  }
+
+  :root.dark .video .overlay {
+    color: white;
+    background: rgba(30, 30, 32, 0.5);
+  }
 </style>
+
+
+<script setup>
+  import { videoColorModeSrcSwitcher, videoPlayOnHover } from './utils';
+  videoColorModeSrcSwitcher();
+  videoPlayOnHover();
+</script>

@@ -44,7 +44,10 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-homepage = "https://github.com/flekschas/jscatter"
+homepage = "https://jupyter-scatter.dev"
+documentation = "https://jupyter-scatter.dev/api"
+repository = "https://github.com/flekschas/jupyter-scatter"
+changelog = "https://github.com/flekschas/jupyter-scatter/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
@@ -78,3 +81,4 @@ path = "js"
 
 [tool.hatch.envs.default]
 features = ["dev"]
+python = "3.11"
