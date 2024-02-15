@@ -1349,9 +1349,9 @@ class JupyterScatterView {
 
     const dim = this.model.get('size_by') === 'valueA' ? 2 : 3;
     const sizes = this.model.get('size');
-    const sizesMin = min(sizes);
-    const sizesMax = max(sizes);
-    const sizesExtent = sizesMax - sizesMin;
+    const sizesMin = Array.isArray(sizes) ? min(sizes) : sizes;
+    const sizesMax = Array.isArray(sizes) ? max(sizes) : sizes;
+    const sizesExtent = (sizesMax - sizesMin) || 1;
 
     if (this.model.get('size_scale') === 'categorical') {
       this.getSize = (i) => {

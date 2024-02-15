@@ -1114,15 +1114,11 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._color_by].prepared = True
 
-            self.update_widget('color_histogram', self._color_histogram)
-            self.update_widget('color_by', self.js_color_by)
-
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
             self._color_by = None
             self._color_histogram = None
             self._encodings.delete('color')
-            self.update_widget('color_by', self.js_color_by)
 
         if order is not UNDEF:
             if order is None or order == 'reverse':
@@ -1198,6 +1194,8 @@ class Scatter():
         else:
             self.update_widget('color', self._color)
 
+        self.update_widget('color_histogram', self._color_histogram)
+        self.update_widget('color_by', self.js_color_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -1377,16 +1375,11 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._opacity_by].prepared = True
 
-            self.update_widget('opacity_histogram_range', self.get_histogram_range("opacity"))
-            self.update_widget('opacity_histogram', self._opacity_histogram)
-            self.update_widget('opacity_by', self.js_opacity_by)
-
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static opacity encoding
             self._opacity_by = None
             self._opacity_histogram = None
             self._encodings.delete('opacity')
-            self.update_widget('opacity_by', self.js_opacity_by)
 
         if order is not UNDEF:
             if order is None or order == 'reverse':
@@ -1445,6 +1438,8 @@ class Scatter():
         else:
             self.update_widget('opacity', self._opacity)
 
+        self.update_widget('opacity_histogram', self._opacity_histogram)
+        self.update_widget('opacity_by', self.js_opacity_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -1610,15 +1605,11 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._size_by].prepared = True
 
-            self.update_widget('size_histogram', self._size_histogram)
-            self.update_widget('size_by', self.js_size_by)
-
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
             self._size_by = None
             self._size_histogram = None
             self._encodings.delete('size')
-            self.update_widget('size_by', self.js_size_by)
 
         if order is not UNDEF:
             if order is None or order == 'reverse':
@@ -1676,6 +1667,8 @@ class Scatter():
         else:
             self.update_widget('size', self._size)
 
+        self.update_widget('size_histogram', self._size_histogram)
+        self.update_widget('size_by', self.js_size_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -1984,13 +1977,10 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._connection_color_by].prepared = True
 
-            self.update_widget('connection_color_by', self.js_connection_color_by)
-
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
             self._connection_color_by = None
             self._encodings.delete('connection_color')
-            self.update_widget('connection_color_by', self.js_connection_color_by)
 
         if order is not UNDEF:
             if order is None or order == 'reverse':
@@ -2067,6 +2057,7 @@ class Scatter():
         else:
             self.update_widget('connection_color', self._connection_color)
 
+        self.update_widget('connection_color_by', self.js_connection_color_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -2230,13 +2221,10 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._connection_opacity_by].prepared = True
 
-            self.update_widget('connection_opacity_by', self.js_connection_opacity_by)
-
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static opacity encoding
             self._connection_opacity_by = None
             self._encodings.delete('connection_opacity')
-            self.update_widget('connection_opacity_by', self.js_connection_opacity_by)
 
         if order is not UNDEF:
             if order is None or order == 'reverse':
@@ -2301,6 +2289,7 @@ class Scatter():
         else:
             self.update_widget('connection_opacity', self._connection_opacity)
 
+        self.update_widget('connection_opacity_by', self.js_connection_opacity_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -2461,13 +2450,10 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._connection_size_by].prepared = True
 
-            self.update_widget('connection_size_by', self.js_connection_size_by)
-
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static size encoding
             self._connection_size_by = None
             self._encodings.delete('connection_size')
-            self.update_widget('connection_size_by', self.js_connection_size_by)
 
         if order is not UNDEF:
             if order is None or order == 'reverse':
@@ -2523,6 +2509,7 @@ class Scatter():
         else:
             self.update_widget('connection_size', self._connection_size)
 
+        self.update_widget('connection_size_by', self.js_connection_size_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
