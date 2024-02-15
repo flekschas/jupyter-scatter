@@ -3,13 +3,13 @@
 - [Scatter](#scatter)
   - [Methods](#methods)
     - [x()](#scatter.x), [y()](#scatter.x), [xy()](#scatter.xy), and [data()](#scatter.data)
-    - [selection()](#scatter.selection) anda [filter()](#scatter.filter)
+    - [selection()](#scatter.selection) and [filter()](#scatter.filter)
     - [color()](#scatter.color), [opacity()](#scatter.opacity), and [size()](#scatter.size)
     - [connect()](#scatter.connect), [connection_color()](#scatter.connection_color), [connection_opacity()](#scatter.connection_opacity), and [connection_size()](#scatter.connection_size)
     - [axes()](#scatter.axes), [legend()](#scatter.legend), and [tooltip()](#scatter.tooltip)
     - [zoom()](#scatter.zoom) and [camera()](#scatter.camera)
     - [lasso()](#scatter.lasso), [reticle()](#scatter.reticle), and [mouse()](#scatter.mouse),
-    - [background()](#scatter.background) and [options()](scatter.options)
+    - [background()](#scatter.background) and [options()](#scatter.options)
   - [Properties](#properties)
   - [Widget](#widget)
 - [Plotting Shorthand](#plotting)
@@ -357,18 +357,50 @@ scatter.legend(True, 'top-right', 'small')
 ```
 
 
-### scatter.tooltip(_enable=Undefined_, _properties=Undefined_, _size=Undefined_, _histograms=Undefined_, _histograms_bins=Undefined_, _histograms_ranges=Undefined_, _histograms_size=Undefined_) {#scatter.tooltip}
+### scatter.tooltip(_enable=Undefined_, _properties=Undefined_, _histograms=Undefined_, _histograms_bins=Undefined_, _histograms_ranges=Undefined_, _histograms_size=Undefined_, _preview=Undefined_, _preview_type=Undefined_, _preview_text_lines=Undefined_, _preview_image_background_color=Undefined_, _preview_image_position=Undefined_, _preview_image_size=Undefined_, _preview_audio_length=Undefined_, _preview_audio_loop=Undefined_, _preview_audio_controls=Undefined_, _size=Undefined_) {#scatter.tooltip}
 
 Set or get the tooltip settings.
 
 **Arguments:**
 - `enable` is a Boolean specifying if the tooltip should be enabled or disabled.
+
 - `properties` is a list of string specifying for which visual or data properties to show in the tooltip. The visual properties can be some of `x`, `y`, `color`, `opacity`, and `size`. Note that visual properties are only shown if they are actually used to data properties. To reference other data properties, specify a column of the bound DataFrame by its name.
-- `size` is a string specifying the size of the tooltip. It must be one of `small`, `medium`, or `large`. The default is `"small"`.
+
 - `histograms` is a Boolean specifying if the tooltip should show histograms of the properties
+
 - `histograms_bins` is either an Integer specifying the number of bins of all numerical histograms or a dictionary of property-specific number of bins. The default is `20`.
+
 - `histograms_ranges` is either a tuple of the lower and upper range of all bins or a dictionary of property-specific lower upper bin ranges. The default is `(min(), max())`.
+
 - `histograms_size` is a string specifying the size of the histograms. It must be one of `small`, `medium`, or `large`. The default is `"small"`.
+
+- `preview` is a string referencing a column name of the bound DataFrame that contains preview data. Currently three data types are supported: plain text, URLs referencing images, and URLs referencing audio.
+
+- `preview_type` is a string specifying the media type of the preview. This can be one of `"text"`, `"image"`, or `"audio"`. The default is `"text"`.
+
+- `preview_text_lines` is an integer specifying the maximum number of lines for text previews that should be displayed. Text that exceeds defined limit will be truncated with an ellipsis. By default, the line limit is set to `None` to be disabled.
+
+- `preview_image_background_color` is a string specifying the background color for image previews. By default, the value is `None`, which means that image preview has a transparent background. In this case and if `preview_image_size` is set to `"contain"` and your image does not perfectly cover the preview area, you will see the tooltip's background color.
+
+- `preview_image_position` is a string specifying the image position of image previews. This can be one of `"top"`, `"bottom"`, `"left"`, `"right"`, or `"center"`. The default value is `"center"`.
+  
+  See https://developer.mozilla.org/en-US/docs/Web/CSS/background-position for details on the behavior.
+
+- `preview_image_size` is a string specifying the size of the image in the context of the preview area. This can be one of `"cover"` or `"contain"` and is set to `"contain"` by default.
+
+  See https://developer.mozilla.org/en-US/docs/Web/CSS/background-size for details on the behavior.
+
+- `preview_audio_length` is an integer specifying the number of seconds of an audio preview that should be played. By default (`None`), the audio file is played from the start to the end.
+
+- `preview_audio_loop` is a Boolean specifying if the audio preview is indefinitely looped for the duration the tooltip is shown.
+
+  See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#loop for details on the behavior.
+
+- `preview_audio_controls` is a Boolean specifying if the audio preview will include controls. While you cannot interact with the controls (as the tooltip disappears upon leaving a point), the controls show the progression and length of the played audio.
+
+  See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#controls for details on the behavior.
+
+- `size` is a string specifying the size of the tooltip. It must be one of `small`, `medium`, or `large`. The default is `"small"`.
 
 **Returns:** either the legend properties when all arguments are `Undefined` or `self`.
 
@@ -378,11 +410,16 @@ Set or get the tooltip settings.
 scatter.tooltip(
   enable=True,
   properties=["color", "opacity", "effect_size"],
-  size="small",
   histograms=True,
   histograms_bins=12,
   histograms_ranges={"effect_size": (0.5, 1.5)},
   histograms_width="medium",
+  preview="image_url",
+  preview_type="image",
+  preview_image_background_color="black",
+  preview_image_position="center",
+  preview_image_size="cover",
+  size="small",
 )
 ```
 

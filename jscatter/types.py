@@ -1,10 +1,14 @@
 from enum import Enum
-from typing import Union, Tuple
+from typing import Literal, Tuple, Union
 from typing_extensions import NotRequired, TypedDict
 
+Auto = Literal['auto']
 Rgb = Tuple[float, float, float]
 Rgba = Tuple[float, float, float, float]
 Color = Union[str, Rgb, Rgba]
+TooltipPreviewType = Literal['text', 'image', 'audio']
+TooltipPreviewImagePosition = Literal['top', 'bottom', 'left', 'right', 'center']
+TooltipPreviewImageSize = Literal['contain', 'cover']
 
 # To distinguish between None and an undefined (optional) argument, where None
 # is used for unsetting and Undefined is used for skipping.

@@ -11,7 +11,7 @@ from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
 from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_scale_type_from_df, get_domain_from_df, create_default_norm, create_labeling, get_histogram_from_df, sanitize_tooltip_properties
-from .types import Color, Scales, MouseModes, Auto, Reverse, Segment, Size, LegendPosition, VisualProperty, Labeling, Undefined
+from .types import Auto, Color, Scales, MouseModes, Auto, Reverse, Segment, Size, LegendPosition, VisualProperty, Labeling, TooltipPreviewType, TooltipPreviewImagePosition, TooltipPreviewImageSize, Undefined
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -295,8 +295,17 @@ class Scatter():
         self._tooltip_size = 'small'
         self._tooltip_histograms = True
         self._tooltip_histograms_bins = DEFAULT_HISTOGRAM_BINS
-        self._tooltip_histograms_ranges = None
+        self._tooltip_histograms_ranges = {}
         self._tooltip_histograms_size = 'small'
+        self._tooltip_preview = None
+        self._tooltip_preview_type = 'text'
+        self._tooltip_preview_text_lines = 3
+        self._tooltip_preview_image_background_color = 'auto'
+        self._tooltip_preview_image_position = 'center'
+        self._tooltip_preview_image_size = 'contain'
+        self._tooltip_preview_audio_length = None
+        self._tooltip_preview_audio_loop = False
+        self._tooltip_preview_audio_controls = True
         self._zoom_to = None
         self._zoom_to_call_idx = 0
         self._zoom_animation = 500
@@ -399,11 +408,20 @@ class Scatter():
         self.tooltip(
             kwargs.get('tooltip', UNDEF),
             kwargs.get('tooltip_properties', UNDEF),
-            kwargs.get('tooltip_size', UNDEF),
             kwargs.get('tooltip_histograms', UNDEF),
             kwargs.get('tooltip_histograms_bins', UNDEF),
             kwargs.get('tooltip_histograms_ranges', UNDEF),
             kwargs.get('tooltip_histograms_size', UNDEF),
+            kwargs.get('tooltip_preview', UNDEF),
+            kwargs.get('tooltip_preview_type', UNDEF),
+            kwargs.get('tooltip_preview_text_lines', UNDEF),
+            kwargs.get('tooltip_preview_image_background_color', UNDEF),
+            kwargs.get('tooltip_preview_image_position', UNDEF),
+            kwargs.get('tooltip_preview_image_size', UNDEF),
+            kwargs.get('tooltip_preview_audio_length', UNDEF),
+            kwargs.get('tooltip_preview_audio_loop', UNDEF),
+            kwargs.get('tooltip_preview_audio_controls', UNDEF),
+            kwargs.get('tooltip_size', UNDEF),
         )
         self.zoom(
             kwargs.get('zoom_to', UNDEF),
@@ -1096,15 +1114,11 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._color_by].prepared = True
 
-            self.update_widget('color_histogram', self._color_histogram)
-            self.update_widget('color_by', self.js_color_by)
-
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
             self._color_by = None
             self._color_histogram = None
             self._encodings.delete('color')
-            self.update_widget('color_by', self.js_color_by)
 
         if order is not UNDEF:
             if order is None or order == 'reverse':
@@ -1180,6 +1194,8 @@ class Scatter():
         else:
             self.update_widget('color', self._color)
 
+        self.update_widget('color_histogram', self._color_histogram)
+        self.update_widget('color_by', self.js_color_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -1359,16 +1375,11 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._opacity_by].prepared = True
 
-            self.update_widget('opacity_histogram_range', self.get_histogram_range("opacity"))
-            self.update_widget('opacity_histogram', self._opacity_histogram)
-            self.update_widget('opacity_by', self.js_opacity_by)
-
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static opacity encoding
             self._opacity_by = None
             self._opacity_histogram = None
             self._encodings.delete('opacity')
-            self.update_widget('opacity_by', self.js_opacity_by)
 
         if order is not UNDEF:
             if order is None or order == 'reverse':
@@ -1427,6 +1438,8 @@ class Scatter():
         else:
             self.update_widget('opacity', self._opacity)
 
+        self.update_widget('opacity_histogram', self._opacity_histogram)
+        self.update_widget('opacity_by', self.js_opacity_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -1592,15 +1605,11 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._size_by].prepared = True
 
-            self.update_widget('size_histogram', self._size_histogram)
-            self.update_widget('size_by', self.js_size_by)
-
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
             self._size_by = None
             self._size_histogram = None
             self._encodings.delete('size')
-            self.update_widget('size_by', self.js_size_by)
 
         if order is not UNDEF:
             if order is None or order == 'reverse':
@@ -1658,6 +1667,8 @@ class Scatter():
         else:
             self.update_widget('size', self._size)
 
+        self.update_widget('size_histogram', self._size_histogram)
+        self.update_widget('size_by', self.js_size_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -1966,13 +1977,10 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._connection_color_by].prepared = True
 
-            self.update_widget('connection_color_by', self.js_connection_color_by)
-
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
             self._connection_color_by = None
             self._encodings.delete('connection_color')
-            self.update_widget('connection_color_by', self.js_connection_color_by)
 
         if order is not UNDEF:
             if order is None or order == 'reverse':
@@ -2049,6 +2057,7 @@ class Scatter():
         else:
             self.update_widget('connection_color', self._connection_color)
 
+        self.update_widget('connection_color_by', self.js_connection_color_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -2212,13 +2221,10 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._connection_opacity_by].prepared = True
 
-            self.update_widget('connection_opacity_by', self.js_connection_opacity_by)
-
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static opacity encoding
             self._connection_opacity_by = None
             self._encodings.delete('connection_opacity')
-            self.update_widget('connection_opacity_by', self.js_connection_opacity_by)
 
         if order is not UNDEF:
             if order is None or order == 'reverse':
@@ -2283,6 +2289,7 @@ class Scatter():
         else:
             self.update_widget('connection_opacity', self._connection_opacity)
 
+        self.update_widget('connection_opacity_by', self.js_connection_opacity_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -2443,13 +2450,10 @@ class Scatter():
                     # Make sure we don't prepare the data twice
                     self._encodings.data[self._connection_size_by].prepared = True
 
-            self.update_widget('connection_size_by', self.js_connection_size_by)
-
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static size encoding
             self._connection_size_by = None
             self._encodings.delete('connection_size')
-            self.update_widget('connection_size_by', self.js_connection_size_by)
 
         if order is not UNDEF:
             if order is None or order == 'reverse':
@@ -2505,6 +2509,7 @@ class Scatter():
         else:
             self.update_widget('connection_size', self._connection_size)
 
+        self.update_widget('connection_size_by', self.js_connection_size_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -3210,11 +3215,20 @@ class Scatter():
         self,
         enable: Optional[Union[bool, Undefined]] = UNDEF,
         properties: Optional[Union[List[VisualProperty], Undefined]] = UNDEF,
-        size: Optional[Union[Size, Undefined]] = UNDEF,
         histograms: Optional[Union[bool, Undefined]] = UNDEF,
         histograms_bins: Optional[Union[int, Dict[str, int], Undefined]] = UNDEF,
         histograms_ranges: Optional[Union[Tuple[float], Dict[str, Tuple[float]], Undefined]] = UNDEF,
         histograms_size: Optional[Union[Size, Undefined]] = UNDEF,
+        preview: Optional[Union[str, Undefined]] = UNDEF,
+        preview_type: Optional[Union[TooltipPreviewType, Undefined]] = UNDEF,
+        preview_text_lines: Optional[Union[int, Undefined]] = UNDEF,
+        preview_image_background_color: Optional[Union[Auto, Color, Undefined]] = UNDEF,
+        preview_image_position: Optional[Union[TooltipPreviewImagePosition, str, Undefined]] = UNDEF,
+        preview_image_size: Optional[Union[TooltipPreviewImageSize, Undefined]] = UNDEF,
+        preview_audio_length: Optional[Union[int, Undefined]] = UNDEF,
+        preview_audio_loop: Optional[Union[bool, int, Undefined]] = UNDEF,
+        preview_audio_controls: Optional[Union[bool, Undefined]] = UNDEF,
+        size: Optional[Union[Size, Undefined]] = UNDEF,
     ):
         """
         Set or get the tooltip settings.
@@ -3223,16 +3237,13 @@ class Scatter():
         ----------
         enable : bool, optional
             When set to `True`, a tooltip will be shown upon hovering a point.
-        properties : all or list of str, optional
+        properties : list of str, optional
             The visual and data properties that should be shown in the tooltip.
             The visual properties can be some of `x`, `y`, `color`, `opacity`,
             and `size`. Note that visual properties are only shown if they are
             actually used to encode data properties. To reference other data
             properties that are not visually encoded, specify a column of the
             bound DataFrame by its name.
-        size : small or medium or large, optional
-            The size of the tooltip. Must be one of small, medium, or large.
-            Defaults to `"small"`.
         histograms : bool, optional
             When set to `True`, the tooltip will show histograms of the
             properties
@@ -3246,6 +3257,46 @@ class Scatter():
         histograms_size : small or medium or large, optional
             The width of the histograms. Must be one of small, medium, or large.
             Defaults to `"small"`.
+        preview : str, optional
+            A column name of the bound DataFrame that contains preview data.
+            Currently three data types are supported: plain text, URL
+            referencing an image, and URL referencing an audio file.
+        preview_type : str, optional
+            The media type of the preview. This can be one of `"text"`,
+            `"image"`, or `"audio"`.
+        preview_text_lines : int or None, optional
+            For text previews, the maximum number of lines that should be
+            displayed. Text that exceeds defined limit will be truncated with an
+            ellipsis. By default, the line limit is set to `None` to be
+            disabled.
+        preview_image_background_color : str or None, optional
+            For image previews, the background color. By default, the value is
+            `None`, which means that image previews' background is transparent.
+            If `preview_image_size` is set to `"contain"` and your image does
+            not perfectly cover the preview area, you will see the tooltip's
+            background color.
+        preview_image_position : str, optional
+            The image position. This can be one of `"top"`, `"bottom"`,
+            `"left"`, `"right"`, or `"center"`. The default value is `"center"`.
+        preview_image_size : str, optional
+            The size of the image in the context of the preview area. This can
+            be one of `"cover"` or `"contain"` and is set to `"contain"` by
+            default.
+        preview_audio_length : int or None, optional
+            The number of seconds that should be played as the audio preview. By
+            default (`None`), the audio file is played from the start to the
+            end.
+        preview_audio_loop : bool, optional
+            If `True`, the audio preview is indefinitely looped for the duration
+            the tooltip is shown.
+        preview_audio_controls : bool, optional
+            If `True`, the audio preview will include controls. While you cannot
+            interact with the controls (as the tooltip disappears upon leaving a
+            point), the controls show the progression and length of the played
+            audio.
+        size : small or medium or large, optional
+            The size of the tooltip. Must be one of `"small"`, `"medium"`, or
+            `"large"`. Defaults to `"small"`.
 
         Returns
         -------
@@ -3253,15 +3304,23 @@ class Scatter():
             If no parameters are provided the current tooltip settings are
             returned as a dictionary. Otherwise, `self` is returned.
 
+        Notes
+        -----
+        See https://developer.mozilla.org/en-US/docs/Web/CSS/background-position
+        for details on the behavior of `preview_image_position`.
+        See https://developer.mozilla.org/en-US/docs/Web/CSS/background-size
+        for details on the behavior of `preview_image_size`.
+        See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#loop
+        for details on the behavior of `preview_audio_loop`.
+        See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#controls
+        for details on the behavior of `preview_audio_controls`.
+
         Examples
         --------
         >>> scatter.tooltip(True)
         <jscatter.jscatter.Scatter>
 
         >>> scatter.tooltip(properties=["color", "opacity", "my_column"])
-        <jscatter.jscatter.Scatter>
-
-        >>> scatter.tooltip(size="large")
         <jscatter.jscatter.Scatter>
 
         >>> scatter.tooltip(histograms=True)
@@ -3276,20 +3335,101 @@ class Scatter():
         >>> scatter.tooltip(histograms_size="medium")
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.tooltip(preview="image_url")
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_type="image")
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_text_lines=3)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_background_color="red")
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_position="top")
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_size="cover")
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_audio_length=2)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_audio_loop=True)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(preview_audio_controls=False)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.tooltip(size="large")
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.tooltip()
         {
           "tooltip": True,
           "properties": ["color", "opacity", "my_column"],
-          size: "large",
-          histograms=True,
-          histograms_bins=20,
-          histograms_ranges={"my_column": (1, 2)},
-          histograms_size="small"
+          "histograms": True,
+          "histograms_bins": 20,
+          "histograms_ranges": {"my_column": (1, 2)},
+          "histograms_size": "small",
+          "preview": "image_url",
+          "preview_type": "image",
+          "preview_text_lines": 3,
+          "preview_background_color": "red",
+          "preview_position": "top",
+          "preview_size": "cover",
+          "preview_audio_length": 2,
+          "preview_audio_loop": True,
+          "preview_audio_controls": False,
+          "size": "large"
         }
         """
         if enable is not UNDEF:
             self._tooltip = enable
             self.update_widget('tooltip_enable', enable)
+
+        if preview_text_lines is not UNDEF:
+            try:
+                self._preview_text_lines = max(0, preview_text_lines)
+            except TypeError:
+                self._preview_text_lines = None
+            self.update_widget('tooltip_preview_text_lines', self._preview_text_lines)
+
+        if preview_image_background_color is not UNDEF:
+            self._tooltip_preview_image_background_color = preview_image_background_color
+            self.update_widget('tooltip_preview_image_background_color', preview_image_background_color)
+
+        if preview_image_position is not UNDEF:
+            self._tooltip_preview_image_position = preview_image_position
+            self.update_widget('tooltip_preview_image_position', preview_image_position)
+
+        if preview_image_size is not UNDEF:
+            self._tooltip_preview_image_size = preview_image_size
+            self.update_widget('tooltip_preview_image_size', preview_image_size)
+
+        if preview_audio_length is not UNDEF:
+            try:
+                self._tooltip_preview_audio_length = max(0, preview_audio_length)
+            except TypeError:
+                self._tooltip_preview_audio_length = None
+            self.update_widget('tooltip_preview_audio_length', self._tooltip_preview_audio_length)
+
+        if preview_audio_loop is not UNDEF:
+            self._tooltip_preview_audio_loop = preview_audio_loop
+            self.update_widget('tooltip_preview_audio_loop', preview_audio_loop)
+
+        if preview_audio_controls is not UNDEF:
+            self._tooltip_preview_audio_controls = preview_audio_controls
+            self.update_widget('tooltip_preview_audio_controls', preview_audio_controls)
+
+        if preview_type is not UNDEF:
+            self._tooltip_preview_type = preview_type
+            self.update_widget('tooltip_preview_type', preview_type)
+
+        if preview is not UNDEF:
+            self._tooltip_preview = preview
+            self.update_widget('tooltip_preview', preview)
 
         if properties is not UNDEF:
             self._tooltip_properties = sanitize_tooltip_properties(
@@ -3421,11 +3561,20 @@ class Scatter():
         return dict(
             enable = self._tooltip,
             properties = self._tooltip_properties,
-            size = self._tooltip_size,
             histograms = self._tooltip_histograms,
             histograms_bins = self._tooltip_histograms_bins,
             histograms_ranges = self._tooltip_histograms_ranges,
             histograms_size = self._tooltip_histograms_size,
+            preview = self._tooltip_preview,
+            preview_type = self._tooltip_preview_type,
+            preview_text_lines = self._tooltip_preview_text_lines,
+            preview_image_background_color = self._tooltip_preview_image_background_color,
+            preview_image_position = self._tooltip_preview_image_position,
+            preview_image_size = self._tooltip_preview_image_size,
+            preview_audio_length = self._tooltip_preview_audio_length,
+            preview_audio_loop = self._tooltip_preview_audio_loop,
+            preview_audio_controls = self._tooltip_preview_audio_controls,
+            size = self._tooltip_size,
         )
 
 
@@ -3728,12 +3877,23 @@ class Scatter():
             size_histogram_range=self.get_histogram_range("size"),
             size_scale=get_scale(self, 'size'),
             size_title=self._size_by,
+            tooltip_enable=self._tooltip,
             tooltip_color=self.get_tooltip_color(),
             tooltip_properties=self._tooltip_properties,
             tooltip_properties_non_visual_info=self._tooltip_properties_non_visual_info,
-            tooltip_enable=self._tooltip,
             tooltip_histograms=self._tooltip_histograms,
+            tooltip_histograms_bins=self._tooltip_histograms_bins,
+            tooltip_histograms_ranges=self._tooltip_histograms_ranges,
             tooltip_histograms_size=self._tooltip_histograms_size,
+            tooltip_preview=self._tooltip_preview,
+            tooltip_preview_type=self._tooltip_preview_type,
+            tooltip_preview_text_lines=self._tooltip_preview_text_lines,
+            tooltip_preview_image_background_color=self._tooltip_preview_image_background_color,
+            tooltip_preview_image_position=self._tooltip_preview_image_position,
+            tooltip_preview_image_size=self._tooltip_preview_image_size,
+            tooltip_preview_audio_length=self._tooltip_preview_audio_length,
+            tooltip_preview_audio_loop=self._tooltip_preview_audio_loop,
+            tooltip_preview_audio_controls=self._tooltip_preview_audio_controls,
             tooltip_size=self._tooltip_size,
             width=self._width,
             x_domain=self._x_domain,
