@@ -1,14 +1,14 @@
 <h1 align="center">
-  jupyter-scatter
+  <img src="https://jupyter-scatter.dev/images/logo-dark.svg" height="24"></img> Jupyter Scatter
 </h1>
 
 <div align="center">
   
   [![pypi version](https://img.shields.io/pypi/v/jupyter-scatter.svg?color=1a8cff&style=flat-square)](https://pypi.org/project/jupyter-scatter/)
-  [![build status](https://img.shields.io/github/actions/workflow/status/flekschas/jupyter-scatter/build.yml?branch=master&color=139ce9&style=flat-square)](https://github.com/flekschas/jupyter-scatter/actions?query=workflow%3A%22Build+Python+%26+JavaScript%22)
-  [![API docs](https://img.shields.io/badge/API-docs-139ce9.svg?style=flat-square)](https://jupyter-scatter.dev/api)
-  [![notebook examples](https://img.shields.io/badge/notebook-examples-139ce9.svg?style=flat-square)](notebooks/get-started.ipynb)
-  [![tutorial](https://img.shields.io/badge/SciPy_'23-tutorial-139ce9.svg?style=flat-square)](https://github.com/flekschas/jupyter-scatter-tutorial)
+  [![build status](https://img.shields.io/github/actions/workflow/status/flekschas/jupyter-scatter/build.yml?branch=master&color=1a8cff&style=flat-square)](https://github.com/flekschas/jupyter-scatter/actions?query=workflow%3A%22Build+Python+%26+JavaScript%22)
+  [![API docs](https://img.shields.io/badge/API-docs-1a8cff.svg?style=flat-square)](https://jupyter-scatter.dev/api)
+  [![notebook examples](https://img.shields.io/badge/notebook-examples-1a8cff.svg?style=flat-square)](notebooks/get-started.ipynb)
+  [![tutorial](https://img.shields.io/badge/SciPy_'23-tutorial-1a8cff.svg?style=flat-square)](https://github.com/flekschas/jupyter-scatter-tutorial)
   
 </div>
 
@@ -26,11 +26,24 @@
   
 </div>
 
-**Why?** Imagine trying to explore an embedding space of millions of data points. Besides plotting the space as a 2D scatter, the exploration typically involves three things: First, we want to interactively adjust the view (e.g., via panning & zooming) and the visual point encoding (e.g., the point color, opacity, or size). Second, we want to be able to select/highlight points. And third, we want to compare multiple embeddings (e.g., via animation, color, or point connections). The goal of jupyter-scatter is to support all three requirements and scale to millions of points.
+**Features?**
 
-**How?** Internally, jupyter-scatter uses [regl-scatterplot](https://github.com/flekschas/regl-scatterplot/) for rendering and [ipywidgets](https://github.com/jupyter-widgets/ipywidgets) for linking the scatter plot to the iPython kernel.
+- 🖱️ **Interactive**: Pan, zoom, and select data points interactively with your mouse or through the Python API.
+- 🚀 **Scalable**: Plot up to several millions data points smoothly thanks to WebGL rendering.
+- 🔗 **Interlinked**: Synchronize the view, hover, and selection across multiple scatter plot instances.
+- ✨ **Effective Defaults**: Rely on Jupyter Scatter to choose perceptually effective point colors and opacity by default.
+- 📚 **Friendly API:** Enjoy a readable API that integrates deeply with Pandas DataFrames.
+- 🛠️ **Integratable**: Use Jupyter Scatter in your own widgets by observing its traitlets.
 
-### Index
+**Why?**
+
+Imagine trying to explore a dataset of millions of data points as a 2D scatter. Besides plotting, the exploration typically involves three things: First, we want to interactively adjust the view (e.g., via panning & zooming) and the visual point encoding (e.g., the point color, opacity, or size). Second, we want to be able to select and highlight data points. And third, we want to compare multiple datasets or views of the same dataset (e.g., via synchronized interactions). The goal of jupyter-scatter is to support all three requirements and scale to millions of points.
+
+**How?**
+
+Internally, Jupyter Scatter uses [regl-scatterplot](https://github.com/flekschas/regl-scatterplot/) for WebGL rendering, [traitlets](https://traitlets.readthedocs.io/en/stable/) for two-way communication between the JS and iPython kernels, and [anywidget](https://anywidget.dev/) for composing the widget.
+
+**Index**
 
 1. [Install](#install)
 2. [Get Started](#get-started)
@@ -54,11 +67,9 @@ For a minimal working example, take a look at [test-environments](test-environme
 
 ## Get Started
 
-To play with the following examples yourself, open [notebooks/get-started.ipynb](notebooks/get-started.ipynb).
-
-> **Note**
+> **Info**
 > 
-> Also check out our [full-blown tutorial](https://github.com/flekschas/jupyter-scatter-tutorial) that we first presented at the SciPy '23 conference.
+> Visit [jupyter-scatter.dev](https://jupyter-scatter.dev) for details on all essential features of Jupyter Scatter and check out our [full-blown tutorial](https://github.com/flekschas/jupyter-scatter-tutorial) from SciPy '23.
 
 #### Simplest Example
 
@@ -202,20 +213,29 @@ While jscatter is primarily developed for Jupyter Lab and Notebook, it also runs
 
 **Requirements:**
 
-- [Conda](https://docs.conda.io/en/latest/) >= 4.8
+- [Hatch](https://hatch.pypa.io/latest/) >= 1.7.0
 
 **Installation:**
 
 ```bash
 git clone https://github.com/flekschas/jupyter-scatter/ jscatter && cd jscatter
-conda env create -f environment.yml && conda activate jscatter
-pip install -e ".[test]"
+hatch shell
+pip install -e ".[dev]"
 ```
 
-**After Changing Python code:** simply restart the kernel.
+**After Changing Python code:** restart the kernel.
+
+Alternatively, you can enable auto reloading by enabling the `autoreload`
+extension. To do so, run the following code at the beginning of a notebook:
+
+```py
+%load_ext autoreload
+%autoreload 2
+```
 
 **After Changing JavaScript code:** do `cd js && npm run build`.
-Alternatively you can run `npm run watch` and rebundle the code on the fly.
+
+Alternatively, you can run `npm run watch` and rebundle the code on the fly.
 
 </p>
 </details>
@@ -223,7 +243,7 @@ Alternatively you can run `npm run watch` and rebundle the code on the fly.
 <details><summary>Setting up a test environment</summary>
 <p>
 
-Go to [test-environment](test-environment) and follow the detailed instructions
+Go to [test-environments](test-environments) and follow the instructions.
 
 </p>
 </details>
