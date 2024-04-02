@@ -1,44 +1,45 @@
 import { onMounted, onUnmounted } from 'vue';
 
 export const videoColorModeSrcSwitcher = () => {
-  const switchSrc = () => {
-    const suffix = document.documentElement.classList.contains('dark')
-      ? 'dark'
-      : 'light';
-
-    const videos = document.body.querySelectorAll('video');
-
-    for (const video of videos) {
-      const name = video.dataset.name;
-
-      video
-        .querySelector('source')
-        ?.setAttribute('src', `/videos/${name}-${suffix}.mp4`);
-
-      if (video.getAttribute('poster')) {
-        video.setAttribute('poster', `/images/${name}-${suffix}.jpg`);
-      }
-
-      video.pause();
-      video.currentTime = 0;
-      video.load();
-    }
-  }
-
-  const classObserver = new MutationObserver((mutations) => {
-    mutations.forEach((mu) => {
-      if (mu.type !== 'attributes' && mu.attributeName !== 'class') return;
-      switchSrc();
-    });
-  });
+  let classObserver;
 
   onMounted(() => {
+    const switchSrc = () => {
+      const suffix = document.documentElement.classList.contains('dark')
+        ? 'dark'
+        : 'light';
+
+      const videos = document.body.querySelectorAll('video');
+
+      for (const video of videos) {
+        const name = video.dataset.name;
+
+        video
+          .querySelector('source')
+          ?.setAttribute('src', `/videos/${name}-${suffix}.mp4`);
+
+        if (video.getAttribute('poster')) {
+          video.setAttribute('poster', `/images/${name}-${suffix}.jpg`);
+        }
+
+        video.pause();
+        video.currentTime = 0;
+        video.load();
+      }
+    }
+
+    classObserver = new window.MutationObserver((mutations) => {
+      mutations.forEach((mu) => {
+        if (mu.type !== 'attributes' && mu.attributeName !== 'class') return;
+        switchSrc();
+      });
+    });
     classObserver.observe(document.documentElement, {attributes: true});
     switchSrc();
   });
 
   onUnmounted(() => {
-    classObserver.disconnect();
+    if (classObserver) classObserver.disconnect();
   });
 }
 
