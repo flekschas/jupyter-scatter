@@ -642,7 +642,7 @@ You can define those property when creating a `Scatter` instance. For example,
 The widget has the following properties, which you can think of as the view model of Jupyter Scatter.
 
 ::: warning
-While you can adjust these properties directly, we highly recommend using the [`Scatter` methods](#methods) as these methods purely exist to simplify and automate the setting of the widget properties.
+While you can adjust these properties directly, the [`Scatter` methods](#methods) are the idiomatic and recommended way to set widget properties.
 :::
 
 | Name                                     | Type                                                                                                                                 | Default                                  | Allow None | Read Only | Note          |
