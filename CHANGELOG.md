@@ -1,4 +1,4 @@
-## v0.16.1
+## v0.16.0
 
 **BREAKING CHANGES**:
 
@@ -36,9 +36,13 @@ Additionally, the following helper methods are removed as they are unnecessary.
 - `scatter.widget.select()` (same as `scatter.selection = list_of_point_indices`)
 - `scatter.widget.use_cmap()` (same as passing the cmap name to `scatter.color(map=cmap_name)`)
 
----
+**Other Changes**:
 
 - Docs: Add API documentation for `scatter.widget`
+
+## v0.15.1
+
+- Fix: Remove an unused widget property that causes an issue with newer version of anywidget ([#117](https://github.com/flekschas/jupyter-scatter/pull/117))
 
 ## v0.15.0
 
