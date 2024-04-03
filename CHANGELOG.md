@@ -1,3 +1,7 @@
+## v0.15.1
+
+- Fix: Remove an unused widget property that causes an issue with newer version of anywidget ([#117](https://github.com/flekschas/jupyter-scatter/pull/117))
+
 ## v0.15.0
 
 - Feat: Add support for histograms in the tooltip ([#96](https://github.com/flekschas/jupyter-scatter/pull/96))
