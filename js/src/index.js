@@ -302,13 +302,18 @@ class JupyterScatterView {
       this.externalViewChangeHandlerBound = this.externalViewChangeHandler.bind(this);
       this.viewChangeHandlerBound = this.viewChangeHandler.bind(this);
       this.resizeHandlerBound = this.resizeHandler.bind(this);
-
-      this.scatterplot.subscribe('pointover', this.pointoverHandlerBound);
-      this.scatterplot.subscribe('pointout', this.pointoutHandlerBound);
-      this.scatterplot.subscribe('select', this.selectHandlerBound);
-      this.scatterplot.subscribe('deselect', this.deselectHandlerBound);
-      this.scatterplot.subscribe('filter', this.filterEventHandlerBound);
-      this.scatterplot.subscribe('view', this.viewChangeHandlerBound);
+      this.scatterplot.subscribe('lassoEnd', ({ centerPositions }) => {
+        console.log("lassoEnd")
+        console.log({centerPositions})
+        this.model.set("center_positions", centerPositions);
+        this.model.save_changes();
+      })
+      this.scatterplot.subscribe('dirEnd', ({ dircenterPositions }) => {
+        console.log("dirEnd")
+        console.log({dircenterPositions})
+        this.model.set("dir_center_positions", dircenterPositions);
+        this.model.save_changes();
+      })
 
       window.pubSub = pubSub;
 
@@ -2356,7 +2361,7 @@ function modelWithSerializers(model, serializers) {
   }
 }
 
-export async function render({ model, el }) {
+async function render({ model, el }) {
   const view = new JupyterScatterView({
     el: el,
     model: modelWithSerializers(model, {
@@ -2370,3 +2375,4 @@ export async function render({ model, el }) {
   view.render();
   return () => view.destroy();
 }
+export default {render}
