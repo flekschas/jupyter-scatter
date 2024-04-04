@@ -283,21 +283,6 @@ class JupyterScatter(anywidget.AnyWidget):
         return with_left_label('Selected points', widget)
 
     @property
-    def hovering_widget(self):
-        widget = widgets.Text(
-            value=f'{self.hovered_point}',
-            placeholder='The index of the hovered point will be shown here',
-            disabled=True
-        )
-
-        def change_handler(change):
-            widget.value = f'{change.new}'
-
-        self.observe(change_handler, names='hovered_point')
-
-        return with_left_label('Hovered point', widget)
-
-    @property
     def color_widgets(self):
         color_by_widget = widgets.RadioButtons(
             options=[
