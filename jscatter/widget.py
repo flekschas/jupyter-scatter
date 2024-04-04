@@ -188,7 +188,6 @@ class JupyterScatter(anywidget.AnyWidget):
     opacity_unselected = Float().tag(sync=True)
     opacity_by = Enum([None, 'valueA', 'valueB', 'density'], allow_none=True, default_value=None).tag(sync=True)
     size = Union([Union([Int(), Float()]), List(Union([Int(), Float()]))]).tag(sync=True)
-    size_active = Int().tag(sync=True)
     size_by = Enum([None, 'valueA', 'valueB'], allow_none=True, default_value=None).tag(sync=True)
     connect = Bool().tag(sync=True)
     connection_color = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
