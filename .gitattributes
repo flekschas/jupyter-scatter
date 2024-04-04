@@ -1,3 +1,4 @@
+*.ipynb linguist-vendored
 *.png !text !filter !merge !diff
 *.jpg !text !filter !merge !diff
 *.jpeg !text !filter !merge !diff
