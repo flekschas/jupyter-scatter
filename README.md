@@ -67,8 +67,7 @@ For a minimal working example, take a look at [test-environments](test-environme
 
 ## Get Started
 
-> **Info**
-> 
+> [!TIP]
 > Visit [jupyter-scatter.dev](https://jupyter-scatter.dev) for details on all essential features of Jupyter Scatter and check out our [full-blown tutorial](https://github.com/flekschas/jupyter-scatter-tutorial) from SciPy '23.
 
 #### Simplest Example
