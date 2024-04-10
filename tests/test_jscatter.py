@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from .jscatter import Scatter, component_idx_to_name
-from .utils import to_ndc, create_default_norm
+from jscatter.jscatter import Scatter, component_idx_to_name
+from jscatter.utils import to_ndc, create_default_norm
 
 def test_component_idx_to_name():
     assert component_idx_to_name(2) == 'valueA'

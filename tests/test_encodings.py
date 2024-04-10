@@ -1,5 +1,5 @@
 from functools import reduce
-from .encodings import Encodings
+from jscatter.encodings import Encodings
 
 def test_encodings():
     enc = Encodings()
