@@ -1,6 +1,7 @@
 from functools import reduce
 from jscatter.encodings import Encodings
 
+
 def test_encodings():
     enc = Encodings()
 
@@ -37,7 +38,7 @@ def test_encodings():
     x = reduce(
         lambda acc, i: acc + int(enc.components._components[i].used),
         enc.components._components,
-        0
+        0,
     )
     print(x)
     print([enc.components._components[c].used for c in enc.components._components])
@@ -48,9 +49,10 @@ def test_encodings():
     assert len(enc.data) == 2
     assert len(enc.visual) == 3
     assert enc.visual['opacity'].data == 'test2'
+    print(enc.data)
     assert enc.data[enc.visual['opacity'].data].component == 3
 
-    color_component = enc.get('color').component
+    color_component = enc['color'].component
     assert color_component == 2
     enc.delete('color')
 
