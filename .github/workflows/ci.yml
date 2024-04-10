@@ -18,12 +18,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v3
       - uses: actions/setup-node@v4
         with:
           node-version: "18.x"
-      - run: npm ci
+      - run: |
+          cd js
+          npm ci
 
       - uses: actions/setup-python@v5
         with:
