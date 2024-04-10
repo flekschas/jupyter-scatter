@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "jupyter-scatter"
 description = "An interactive scatter plot widget for Jupyter Notebook, Lab, and Google Colab that can handle millions of points and supports view linking"
 authors = [
-  { name = "Fritz Lekschas", author_email = "code@lekschas.de" }
+  { name = "Fritz Lekschas", email = "code@lekschas.de" }
 ]
 license = { text = "Apache-2.0" }
 readme = "README.md"
@@ -53,7 +53,7 @@ changelog = "https://github.com/flekschas/jupyter-scatter/blob/main/CHANGELOG.md
 dev = [
     "anywidget[dev]",
     "black[jupyter]",
-    "jupyterlab>=3.0,<4",
+    "jupyterlab",
     "pytest",
     "ruff",
 ]
@@ -82,3 +82,9 @@ path = "js"
 [tool.hatch.envs.default]
 features = ["dev"]
 python = "3.11"
+
+[tool.hatch.envs.default.scripts]
+test = "pytest ."
+
+[tool.ruff.format]
+quote-style = "single"

@@ -1,6 +1,6 @@
 from enum import Enum
-from typing import Literal, Tuple, Union
-from typing_extensions import NotRequired, TypedDict
+from typing import Tuple, Union
+from typing_extensions import NotRequired, TypedDict, Literal
 
 Auto = Literal['auto']
 Rgb = Tuple[float, float, float]
