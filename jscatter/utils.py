@@ -34,14 +34,14 @@ def any_not(l, value = None):
 def tolist(l):
     try:
         return l.tolist()
-    except:
+    except Exception:
         return l
 
 def uri_validator(x):
     try:
         result = urlparse(x)
         return all([result.scheme, result.netloc, result.path])
-    except:
+    except Exception:
         return False
 
 def sorting_to_dict(sorting):
