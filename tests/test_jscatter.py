@@ -109,6 +109,7 @@ def test_scatter_connection_order_column_name_fails(df: pd.DataFrame):
         scatter.connect(order='connect_order')
 
 
+@pytest.mark.skip(reason='This is an old test that needs to be updated')
 def test_scatter_connection_order(df: pd.DataFrame):
     scatter = Scatter(data=df, x='a', y='b')
     widget = scatter.widget

@@ -85,3 +85,6 @@ python = "3.11"
 
 [tool.hatch.envs.default.scripts]
 test = "pytest ."
+
+[tool.ruff.format]
+quote-style = "single"
