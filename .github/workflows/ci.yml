@@ -10,8 +10,7 @@ on:
 
 jobs:
 
-  TestPython:
-    name: Python / Test
+  Test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
