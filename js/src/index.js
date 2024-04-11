@@ -1525,7 +1525,7 @@ class JupyterScatterView {
     this.tooltip.style.opacity = 1;
   }
 
-  hideToolip() {
+  hideTooltip() {
     this.tooltipPointIdx = undefined;
     this.tooltip.style.opacity = 0;
     if (this.tooltipPreviewValue.nodeName === 'AUDIO') {
@@ -1535,7 +1535,7 @@ class JupyterScatterView {
   }
 
   tooltipEnableHandler(tooltip) {
-    if (!tooltip) this.hideToolip;
+    if (!tooltip) this.hideTooltip;
   }
 
   tooltipSizeHandler(newSize) {
@@ -1738,7 +1738,7 @@ class JupyterScatterView {
   pointoutHandler() {
     this.hoveringChangedByJs = true;
     this.showTooltipDebounced.cancel();
-    this.hideToolip();
+    this.hideTooltip();
     this.model.set('hovering', null);
     this.model.save_changes();
   }

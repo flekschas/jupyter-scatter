@@ -47,7 +47,7 @@ Additionally, the following helper methods are removed as they are unnecessary.
 ## v0.15.0
 
 - Feat: Add support for histograms in the tooltip ([#96](https://github.com/flekschas/jupyter-scatter/pull/96))
-- Feat: Add support for non-visualized properties in the toolip ([#96](https://github.com/flekschas/jupyter-scatter/pull/96))
+- Feat: Add support for non-visualized properties in the tooltip ([#96](https://github.com/flekschas/jupyter-scatter/pull/96))
 - Fix: Allow mixing custom and DataFrame-based data ([#89](https://github.com/flekschas/jupyter-scatter/issues/89))
 - Fix: Improve the tooltip positioning to avoid the tooltip being cut off unnecessarily
 - Fix: Properly redraw axes on resize ([#108](https://github.com/flekschas/jupyter-scatter/issues/108))
