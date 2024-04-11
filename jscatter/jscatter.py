@@ -192,7 +192,6 @@ class Scatter():
         self._background_color = to_rgba(default_background_color)
         self._background_color_luminance = 1
         self._background_image = None
-        self._reticle_color = 'auto'
         self.background(
             kwargs.get('background_color', UNDEF),
             kwargs.get('background_image', UNDEF),
@@ -278,6 +277,7 @@ class Scatter():
         self._width = 'auto'
         self._height = 240
         self._reticle = True
+        self._reticle_color = 'auto'
         self._camera_target = [0, 0]
         self._camera_distance = 1.0
         self._camera_rotation = 0.0
