@@ -172,7 +172,6 @@ class JupyterScatter(anywidget.AnyWidget):
         ['text', 'image', 'audio'], default_value='text'
     ).tag(sync=True)
     tooltip_preview_text_lines = Int(default_value=3, allow_none=True).tag(sync=True)
-    tooltip_preview_text_markdown = Bool().tag(sync=True)
     tooltip_preview_image_background_color = Union([Enum(['auto']), Unicode()], default_value='auto').tag(sync=True)
     tooltip_preview_image_position = Union([Enum(['top', 'left', 'right', 'bottom', 'center']), Unicode()], allow_none=True, default_value=None).tag(sync=True)
     tooltip_preview_image_size = Enum(['contain', 'cover'], allow_none=True, default_value=None).tag(sync=True)
@@ -189,7 +188,6 @@ class JupyterScatter(anywidget.AnyWidget):
     opacity_unselected = Float().tag(sync=True)
     opacity_by = Enum([None, 'valueA', 'valueB', 'density'], allow_none=True, default_value=None).tag(sync=True)
     size = Union([Union([Int(), Float()]), List(Union([Int(), Float()]))]).tag(sync=True)
-    size_active = Int().tag(sync=True)
     size_by = Enum([None, 'valueA', 'valueB'], allow_none=True, default_value=None).tag(sync=True)
     connect = Bool().tag(sync=True)
     connection_color = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
@@ -218,7 +216,7 @@ class JupyterScatter(anywidget.AnyWidget):
     view_reset = Bool(False).tag(sync=True) # Used for triggering a view reset
     view_download = Unicode(None, allow_none=True).tag(sync=True) # Used for triggering a download
     view_data = Array(default_value=None, allow_none=True, read_only=True).tag(sync=True, **ndarray_serialization)
-    view_shape = List(None, allow_none=True, read_only=True).tag(sync=True)
+    view_shape = List(None, allow_none=True, read_only=True, minlen=2, maxlen=2).tag(sync=True)
 
     # For synchronyzing view changes across scatter plot instances
     view_sync = Unicode(None, allow_none=True).tag(sync=True)
@@ -239,326 +237,7 @@ class JupyterScatter(anywidget.AnyWidget):
                 "properties": data[event["properties"]].to_dict()
             })
 
-    @property
-    def mouse_mode_widget(self):
-        widget = widgets.RadioButtons(
-            options=[
-                ('Pan & zoom', 'panZoom'),
-                ('Lasso selection', 'lasso'),
-                ('Rotation', 'rotate')
-            ],
-            value='panZoom'
-        )
-
-        def change_handler(change):
-            self.mouse_mode = change.new
-
-        widget.observe(change_handler, names='value')
-
-        return with_left_label('Mouse mode', widget)
-
-    @property
-    def lasso_initiator_widget(self):
-        widget = widgets.Checkbox(
-            icon='check',
-            indent=False,
-            value=self.lasso_initiator
-        )
-        widgets.jslink((self, 'lasso_initiator'), (widget, 'value'))
-        return with_left_label('Enable lasso initiator', widget)
-
-    @property
-    def selection_widget(self):
-        widget = widgets.Textarea(
-            value=', '.join(f'{n}' for n in self.selection),
-            placeholder='The indices of selected points will be shown here',
-            disabled=True
-        )
-
-        def change_handler(change):
-            widget.value = ', '.join(f'{n}' for n in change.new)
-
-        self.observe(change_handler, names='selected_points')
-
-        return with_left_label('Selected points', widget)
-
-    @property
-    def color_widgets(self):
-        color_by_widget = widgets.RadioButtons(
-            options=[
-                ('Point color', 'none'),
-                ('Category (using colormap)', 'category'),
-                ('Value (using colormap)', 'value')
-            ],
-            value='none' if self.color_by is None else self.color_by
-        )
-
-        colormap_widget = widgets.Combobox(
-            placeholder='Choose a Matplotlib colormap',
-            options=list(plt.colormaps()),
-            ensure_option=True,
-            disabled=self.color_by is None,
-        )
-
-        color_widget = widgets.ColorPicker(
-            value=to_hex(self.color),
-            disabled=False
-        )
-
-        def color_by_change_handler(change):
-            if change.new == 'none':
-                self.color_by = None
-                self.color = color_widget.value
-
-                colormap_widget.disabled = True
-                color_widget.disabled = False
-
-            else:
-                if change.new == 'category':
-                    colormap_widget.options = [
-                        'Pastel1', 'Pastel2', 'Paired', 'Accent', 'Dark2', 'Set1',
-                        'Set2', 'Set3', 'tab10', 'tab20', 'tab20b', 'tab20c'
-                    ]
-                else:
-                    colormap_widget.options = [
-                        'greys', 'viridis', 'plasma', 'inferno', 'magma',
-                        'cividis', 'coolwarm', 'RdGy'
-                    ]
-
-                self.color_by = change.new
-                if colormap_widget.value:
-                    self.use_cmap(colormap_widget.value)
-
-                colormap_widget.disabled = False
-                color_widget.disabled = True
-
-        def colormap_change_handler(change):
-            self.use_cmap(change.new)
-
-        def color_change_handler(change):
-            self.color = change.new
-
-        color_by_widget.observe(color_by_change_handler, names='value')
-        colormap_widget.observe(colormap_change_handler, names='value')
-        color_widget.observe(color_change_handler, names='value')
-
-        return (
-            with_left_label('Color by', color_by_widget),
-            with_left_label('Colormap', colormap_widget),
-            with_left_label('Point color', color_widget)
-        )
-
-    @property
-    def color_by_widget(self):
-        widget = widgets.RadioButtons(
-            options=[
-                ('Point color', 'none'),
-                ('Category (using colormap)', 'category'),
-                ('Value (using colormap)', 'value')
-            ],
-            value='none'
-        )
-
-        def change_handler(change):
-            if change.new == 'none':
-                self.color_by = None
-            else:
-                self.color_by = change.new
-
-        widget.observe(change_handler, names='value')
-
-        return with_left_label('Color by', widget)
-
-    @property
-    def color_map_widget(self):
-        widget = widgets.Combobox(
-            placeholder='Choose a Matplotlib colormap',
-            options=list(plt.colormaps()),
-            ensure_option=True,
-            disabled=True,
-        )
-
-        def change_handler(change):
-            self.use_cmap(change.new)
-
-        widget.observe(change_handler, names='value')
-
-        return with_left_label('Color map', widget)
-
-    @property
-    def height_widget(self):
-        widget = widgets.IntSlider(
-            value=self.height,
-            min=128,
-            max=max(1280, self.height + 64),
-            step=32
-        )
-        widgets.jslink((self, 'height'), (widget, 'value'))
-        return with_left_label('Height', widget)
-
-    @property
-    def background_color_widget(self):
-        widget = widgets.ColorPicker(value=to_hex(self.background_color))
-
-        def change_handler(change):
-            self.background_color = change.new
-
-        widget.observe(change_handler, names='value')
-
-        return with_left_label('Background color', widget)
-
-    @property
-    def background_image_widget(self):
-        widget = widgets.FileUpload(
-            accept='image/*',
-            description='Select a file',
-            multiple=False
-        )
-
-        def change_handler(change):
-            [filename] = change.new
-            ext = filename.split('.')[-1]
-            prefix = f'data:image/{ext};base64,'
-            filedata = change.new[filename]['content']
-            self.background_image = f'{prefix}{base64.b64encode(filedata).decode("utf-8")}'
-
-        widget.observe(change_handler, names='value')
-
-        return with_left_label('Background image', widget)
-
-    @property
-    def lasso_color_widget(self):
-        widget = widgets.ColorPicker(value=to_hex(self.lasso_color))
-
-        def change_handler(change):
-            self.lasso_color = change.new
-
-        widget.observe(change_handler, names='value')
-
-        return with_left_label('Lasso color', widget)
-
-    @property
-    def lasso_min_delay_widget(self):
-        widget = widgets.IntSlider(
-            value=self.lasso_min_delay,
-            min=0,
-            max=max(100, self.lasso_min_delay),
-            step=5
-        )
-        widgets.jslink((self, 'lasso_min_delay'), (widget, 'value'))
-        return with_left_label('Lasso min delay', widget)
-
-    @property
-    def lasso_min_dist_widget(self):
-        widget = widgets.IntSlider(
-            value=self.lasso_min_dist,
-            min=0,
-            max=max(32, self.lasso_min_dist),
-            step=2
-        )
-        widgets.jslink((self, 'lasso_min_dist'), (widget, 'value'))
-        return with_left_label('Lasso min dist', widget)
-
-    @property
-    def color_widget(self):
-        widget = widgets.ColorPicker(value=to_hex(self.color))
-
-        def change_handler(change):
-            self.color = change.new
-
-        widget.observe(change_handler, names='value')
-
-        return with_left_label('Point color', widget)
-
-    @property
-    def color_selected_widget(self):
-        widget = widgets.ColorPicker(value=to_hex(self.color_selected))
-
-        def change_handler(change):
-            self.color_selected = change.new
-
-        widget.observe(change_handler, names='value')
-
-        return with_left_label('Point color active', widget)
-
-    @property
-    def color_hover_widget(self):
-        widget = widgets.ColorPicker(value=to_hex(self.color_hover))
-
-        def change_handler(change):
-            self.color_hover = change.new
-
-        widget.observe(change_handler, names='value')
-
-        return with_left_label('Point color hover', widget)
-
-    @property
-    def opacity_widget(self):
-        widget = widgets.FloatSlider(
-            value=self.opacity,
-            min=0.0,
-            max=1.0,
-            step=0.05,
-            continuous_update=True
-        )
-        widgets.jslink((self, 'opacity'), (widget, 'value'))
-        return with_left_label('Point opacity', widget)
-
-    @property
-    def selection_outline_width_widget(self):
-        widget = widgets.IntSlider(
-            value=self.selection_outline_width,
-            min=0,
-            max=max(8, self.selection_outline_width + 2),
-            continuous_update=True
-        )
-        widgets.jslink((self, 'selection_outline_width'), (widget, 'value'))
-        return with_left_label('Point outline width', widget)
-
-    @property
-    def size_widget(self):
-        widget = widgets.IntSlider(
-            value=self.size,
-            min=1,
-            max=max(10, self.size + 5),
-            continuous_update=True
-        )
-        widgets.jslink((self, 'size'), (widget, 'value'))
-        return with_left_label('Point size', widget)
-
-    @property
-    def selection_size_addition_widget(self):
-        widget = widgets.IntSlider(
-            value=self.selection_size_addition,
-            min=0,
-            max=max(8, self.selection_size_addition + 2),
-            continuous_update=True
-        )
-        widgets.jslink((self, 'selection_size_addition'), (widget, 'value'))
-        return with_left_label('Point size selected', widget)
-
-    @property
-    def reticle_widget(self):
-        widget = widgets.Checkbox(
-            icon='check',
-            indent=False,
-            value=self.reticle
-        )
-        widgets.jslink((self, 'reticle'), (widget, 'value'))
-        return with_left_label('Show reticle', widget)
-
-    @property
-    def reticle_color_widget(self):
-        widget = widgets.ColorPicker(value=to_hex(self.reticle_color))
-
-        def change_handler(change):
-            self.reticle_color = change.new
-
-        widget.observe(change_handler, names='value')
-
-        return with_left_label('Reticle color', widget)
-
-    def get_download_view_widget(self, icon_only=False, width=None):
+    def create_download_view_button(self, icon_only=False, width=None):
         button = widgets.Button(
             description='' if icon_only else 'Download View',
             icon='download'
@@ -573,11 +252,7 @@ class JupyterScatter(anywidget.AnyWidget):
         button.on_click(click_handler)
         return button
 
-    @property
-    def download_view_widget(self):
-        return self.get_download_view_widget()
-
-    def get_save_view_widget(self, icon_only=False, width=None):
+    def create_save_view_button(self, icon_only=False, width=None):
         button = widgets.Button(
             description='' if icon_only else 'Save View',
             icon='camera'
@@ -592,11 +267,10 @@ class JupyterScatter(anywidget.AnyWidget):
         button.on_click(click_handler)
         return button
 
-    @property
-    def save_view_widget(self):
-        return self.get_save_view_widget()
+    def reset_view(self):
+        self.view_reset = True
 
-    def get_reset_view_widget(self, icon_only=False, width=None):
+    def create_reset_view_button(self, icon_only=False, width=None):
         button = widgets.Button(
             description='' if icon_only else 'Reset View',
             icon='refresh'
@@ -611,147 +285,30 @@ class JupyterScatter(anywidget.AnyWidget):
         button.on_click(click_handler)
         return button
 
-    @property
-    def reset_view_widget(self):
-        return self.get_reset_view_widget()
-
-    def get_separator(self, color='#efefef', margin_top=10, margin_bottom=10):
-        return widgets.Box(
-            children=[],
-            layout=widgets.Layout(
-                margin=f'{margin_top}px 0 {margin_bottom}px 0',
-                width='100%',
-                height='0',
-                border=f'1px solid {color}'
-            )
-        )
-
-    def options(self):
-        """Display widgets for all options
-        """
-        color_by_widget, colormap_widget, color_widget = self.color_widgets
-        ipydisplay.display(
-            self.mouse_mode_widget,
-            self.lasso_initiator_widget,
-            self.height_widget,
-            self.size_widget,
-            self.opacity_widget,
-            color_by_widget,
-            colormap_widget,
-            color_widget,
-            self.color_selected_widget,
-            self.color_hover_widget,
-            self.selection_outline_width_widget,
-            self.selection_size_addition_widget,
-            self.lasso_color_widget,
-            self.reticle_color_widget,
-            self.reticle_widget,
-            self.background_color_widget,
-            self.background_image_widget,
-            widgets.Box(
-                children=[],
-                layout=widgets.Layout(
-                    margin='10px 0',
-                    width='100%',
-                    height='0',
-                    border='1px solid #efefef'
-                )
-            ),
-            self.reset_view_widget
-        )
-
-    def use_cmap(self, cmap_name: str, reverse: bool = False):
-        """Use a Matplotlib colormap for the point color.
-
-        Parameters
-        ----------
-        cmap_name : str
-            The name of the Matplotlib color map.
-        reverse : bool, optional
-            Reverse the colormap when set to ``True``.
-        """
-        self.color = plt.get_cmap(cmap_name)(range(256)).tolist()[::(1 + (-2 * reverse))]
-
-    def reset_view(self):
-        self.view_reset = True
-
     def download_view(self, target = 'file'):
         self.view_download = target
 
-    def select(self, points):
-        """Select points
-
-        Parameters
-        ----------
-        points : 1D array_like
-            List of point indices to select
-        """
-
-        self.selection = np.asarray(points).astype(SELECTION_DTYPE)
-
-    def get_panzoom_mode_widget(self, icon_only=False, width=None):
+    def create_mouse_mode_toggle_button(
+        self,
+        mouse_mode,
+        icon,
+        tooltip,
+    ):
         button = widgets.Button(
-            description='' if icon_only else 'Pan & Zoom',
-            icon='arrows',
-            tooltip='Activate pan & zoom',
-            button_style = 'primary' if self.mouse_mode == 'panZoom' else '',
+            description='',
+            icon=icon,
+            tooltip=tooltip,
+            button_style = 'primary' if self.mouse_mode == mouse_mode else '',
         )
 
-        if width is not None:
-            button.layout.width = f'{width}px'
+        button.layout.width = '36px'
 
         def click_handler(b):
             button.button_style = 'primary'
-            self.mouse_mode = 'panZoom'
+            self.mouse_mode = mouse_mode
 
         def change_handler(change):
-            button.button_style = 'primary' if change['new'] == 'panZoom' else ''
-
-        self.observe(change_handler, names=['mouse_mode'])
-
-        button.on_click(click_handler)
-        return button
-
-    def get_lasso_mode_widget(self, icon_only=False, width=None):
-        button = widgets.Button(
-            description='' if icon_only else 'Lasso',
-            icon='crosshairs',
-            tooltip='Activate lasso selection',
-            button_style = 'primary' if self.mouse_mode == 'lasso' else '',
-        )
-
-        if width is not None:
-            button.layout.width = f'{width}px'
-
-        def click_handler(b):
-            button.button_style = 'primary'
-            self.mouse_mode = 'lasso'
-
-        def change_handler(change):
-            button.button_style = 'primary' if change['new'] == 'lasso' else ''
-
-        self.observe(change_handler, names=['mouse_mode'])
-
-        button.on_click(click_handler)
-        return button
-
-    def get_rotate_mode_widget(self, icon_only=False, width=None):
-        button = widgets.Button(
-            description='' if icon_only else 'Rotate',
-            icon='undo',
-            tooltip='Activate rotation',
-            button_style = 'primary' if self.mouse_mode == 'rotate' else '',
-        )
-
-        if width is not None:
-            button.layout.width = f'{width}px'
-
-        def click_handler(b):
-            button.button_style = 'primary'
-            self.mouse_mode = 'rotate'
-
-        def change_handler(change):
-            button.button_style = 'primary' if change['new'] == 'rotate' else ''
+            button.button_style = 'primary' if change['new'] == mouse_mode else ''
 
         self.observe(change_handler, names=['mouse_mode'])
 
@@ -761,10 +318,22 @@ class JupyterScatter(anywidget.AnyWidget):
     def show(self):
         buttons = widgets.VBox(
             children=[
-                self.get_panzoom_mode_widget(icon_only=True, width=36),
-                self.get_lasso_mode_widget(icon_only=True, width=36),
-                self.get_rotate_mode_widget(icon_only=True, width=36),
-               widgets.Box(
+                self.create_mouse_mode_toggle_button(
+                    mouse_mode='panZoom',
+                    icon='arrows',
+                    tooltip='Activate pan & zoom',
+                ),
+                self.create_mouse_mode_toggle_button(
+                    mouse_mode='lasso',
+                    icon='crosshairs',
+                    tooltip='Activate lasso selection',
+                ),
+                self.create_mouse_mode_toggle_button(
+                    mouse_mode='rotate',
+                    icon='undo',
+                    tooltip='Activate rotation',
+                ),
+                widgets.Box(
                     children=[],
                     layout=widgets.Layout(
                         margin='10px 0',
@@ -773,9 +342,9 @@ class JupyterScatter(anywidget.AnyWidget):
                         border='1px solid var(--jp-layout-color2)'
                     )
                 ),
-                self.get_save_view_widget(icon_only=True, width=36),
-                self.get_download_view_widget(icon_only=True, width=36),
-                self.get_reset_view_widget(icon_only=True, width=36),
+                self.create_save_view_button(icon_only=True, width=36),
+                self.create_download_view_button(icon_only=True, width=36),
+                self.create_reset_view_button(icon_only=True, width=36),
             ],
             layout=widgets.Layout(
                 display='flex',
