@@ -1,14 +1,14 @@
 import base64
-import IPython.display as ipydisplay
-import ipywidgets as widgets
-import matplotlib.pyplot as plt
-import numpy as np
-import anywidget
-import pandas as pd
+import IPython.display as ipydisplay # type: ignore
+import ipywidgets as widgets # type: ignore
+import matplotlib.pyplot as plt # type: ignore
+import numpy as np # type: ignore
+import anywidget # type: ignore
+import pandas as pd # type: ignore
 import pathlib
 
-from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
-from traittypes import Array
+from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union # type: ignore
+from traittypes import Array # type: ignore
 
 from .utils import to_hex, with_left_label
 
@@ -220,6 +220,9 @@ class JupyterScatter(anywidget.AnyWidget):
 
     # For synchronyzing view changes across scatter plot instances
     view_sync = Unicode(None, allow_none=True).tag(sync=True)
+
+    center_positions = List().tag(sync=True)
+    dir_center_positions = List().tag(sync=True)
 
     def __init__(self, data, *args, **kwargs):
         super().__init__(*args, **kwargs)
