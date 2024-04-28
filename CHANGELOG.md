@@ -1,3 +1,45 @@
+## v0.16.0
+
+**BREAKING CHANGES**:
+
+The following list of helper widgets for configuring the scatter are removed from the `scatter.widget` as they are unmaintained, undocumented, and incomplete. If you relied on any of those UI widgets, please see `jscatter/widget.py` v0.15.0 on how they were created.
+
+- `scatter.widget.mouse_mode_widget`
+- `scatter.widget.lasso_initiator_widget`
+- `scatter.widget.selection_widget`
+- `scatter.widget.hovering_widget`
+- `scatter.widget.color_widgets`
+- `scatter.widget.color_by_widget`
+- `scatter.widget.color_map_widget`
+- `scatter.widget.height_widget`
+- `scatter.widget.background_color_widget`
+- `scatter.widget.background_image_widget`
+- `scatter.widget.lasso_color_widget`
+- `scatter.widget.lasso_min_delay_widget`
+- `scatter.widget.lasso_min_dist_widget`
+- `scatter.widget.color_widget`
+- `scatter.widget.color_selected_widget`
+- `scatter.widget.color_hover_widget`
+- `scatter.widget.opacity_widget`
+- `scatter.widget.selection_outline_width_widget`
+- `scatter.widget.size_widget`
+- `scatter.widget.selection_size_addition_widget`
+- `scatter.widget.reticle_widget`
+- `scatter.widget.reticle_color_widget`
+- `scatter.widget.download_view_widget`
+- `scatter.widget.save_view_widget`
+- `scatter.widget.reset_view_widget`
+
+Additionally, the following helper methods are removed as they are unnecessary.
+
+- `scatter.widget.options()` (simply listed out all above removed widgets)
+- `scatter.widget.select()` (same as `scatter.selection = list_of_point_indices`)
+- `scatter.widget.use_cmap()` (same as passing the cmap name to `scatter.color(map=cmap_name)`)
+
+**Other Changes**:
+
+- Docs: Add API documentation for `scatter.widget`
+
 ## v0.15.1
 
 - Fix: Remove an unused widget property that causes an issue with newer version of anywidget ([#117](https://github.com/flekschas/jupyter-scatter/pull/117))
@@ -5,7 +47,7 @@
 ## v0.15.0
 
 - Feat: Add support for histograms in the tooltip ([#96](https://github.com/flekschas/jupyter-scatter/pull/96))
-- Feat: Add support for non-visualized properties in the toolip ([#96](https://github.com/flekschas/jupyter-scatter/pull/96))
+- Feat: Add support for non-visualized properties in the tooltip ([#96](https://github.com/flekschas/jupyter-scatter/pull/96))
 - Fix: Allow mixing custom and DataFrame-based data ([#89](https://github.com/flekschas/jupyter-scatter/issues/89))
 - Fix: Improve the tooltip positioning to avoid the tooltip being cut off unnecessarily
 - Fix: Properly redraw axes on resize ([#108](https://github.com/flekschas/jupyter-scatter/issues/108))
