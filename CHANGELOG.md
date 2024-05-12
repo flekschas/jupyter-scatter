@@ -1,3 +1,7 @@
+## v0.16.1
+
+- Fix: Match numerical and string IDs properly in `compose(match_by='XYZ')`
+
 ## v0.16.0
 
 **BREAKING CHANGES**:
