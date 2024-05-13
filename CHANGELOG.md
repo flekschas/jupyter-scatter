@@ -2,6 +2,7 @@
 
 - Fix: Match numerical and string IDs properly in `compose(match_by='XYZ')`
 - Fix: Ensure that the domain and histograms match by avoiding missing categorical indices
+- Fix: Ignore `NaN`s when computing histograms
 
 ## v0.16.0
 

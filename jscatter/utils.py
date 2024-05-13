@@ -1,7 +1,7 @@
 import ipywidgets as widgets
 
 from matplotlib.colors import LogNorm, PowerNorm, Normalize
-from numpy import histogram
+from numpy import histogram, isnan
 from pandas.api.types import is_categorical_dtype, is_string_dtype
 from urllib.parse import urlparse
 from typing import List, Union
@@ -117,7 +117,7 @@ def get_histogram_from_df(data, bins=20, range=None):
         value_counts = data.copy().astype(str).astype('category').cat.codes.value_counts()
         return [y for _, y in sorted(dict(value_counts / value_counts.sum()).items())]
 
-    hist = histogram(data, bins=bins, range=range)
+    hist = histogram(data[~isnan(data)], bins=bins, range=range)
 
     return list(hist[0] / hist[0].max())
 
