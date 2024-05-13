@@ -76,9 +76,9 @@ def get_scale_type_from_df(data):
 
 def get_domain_from_df(data):
     if is_categorical_dtype(data) or is_string_dtype(data):
-        _data = data
-        if is_string_dtype(data):
-            _data = data.copy().astype('category')
+        # We need to recreate the categorization in case the data is just a
+        # filtered view, in which case it might contain "missing" indices
+        _data = data.copy().astype(str).astype('category')
         return dict(zip(_data, _data.cat.codes))
 
     return [data.min(), data.max()]
@@ -112,10 +112,9 @@ def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeli
 
 def get_histogram_from_df(data, bins=20, range=None):
     if is_categorical_dtype(data) or is_string_dtype(data):
-        _data = data
-        if is_string_dtype(data):
-            _data = data.copy().astype('category')
-        value_counts = _data.cat.codes.value_counts()
+        # We need to recreate the categorization in case the data is just a
+        # filtered view, in which case it might contain "missing" indices
+        value_counts = data.copy().astype(str).astype('category').cat.codes.value_counts()
         return [y for _, y in sorted(dict(value_counts / value_counts.sum()).items())]
 
     hist = histogram(data, bins=bins, range=range)
