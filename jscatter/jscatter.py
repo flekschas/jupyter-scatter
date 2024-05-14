@@ -823,6 +823,7 @@ class Scatter():
                 self.update_widget('y_scale_domain', self._y_scale_domain)
                 self.update_widget('y_domain', self._y_domain)
                 self.update_widget('y_title', self._y_by)
+                self.update_widget('axes_labels', self.get_axes_labels())
                 self.update_widget('points', self.get_point_list())
             return self
 
@@ -3129,22 +3130,17 @@ class Scatter():
                 pass
 
         if labels is not UNDEF:
-            if labels == False:
+            if isinstance(labels, bool):
                 self._axes_labels = labels
-            elif labels == True:
-                if self._data is None:
-                    self._axes_labels = ['x', 'y']
-                else:
-                    self._axes_labels = [self._x, self._y]
             elif isinstance(labels, dict):
                 self._axes_labels = [
-                    labels.get('x', 'x'), labels.get('y', 'y')
+                    labels.get('x', ''), labels.get('y', '')
                 ]
             else:
                 self._axes_labels = labels
 
             try:
-                self.update_widget('axes_labels', self._axes_labels)
+                self.update_widget('axes_labels', self.get_axes_labels())
             except:
                 pass
 
@@ -3839,7 +3835,7 @@ class Scatter():
             axes=self._axes,
             axes_color=self.get_axes_color(),
             axes_grid=self._axes_grid,
-            axes_labels=self._axes_labels,
+            axes_labels=self.get_axes_labels(),
             background_color=self._background_color,
             background_image=self._background_image,
             camera_distance=self._camera_distance,
@@ -3946,6 +3942,17 @@ class Scatter():
 
     def get_histogram_range(self, property):
         return get_histogram_range(self._tooltip_histograms_ranges, property)
+
+    def get_axes_labels(self):
+        if self._axes_labels == False:
+            return self._axes_labels
+        elif self._axes_labels == True:
+            if self._data is None:
+                return ['x', 'y']
+            else:
+                return [self._x_by, self._y_by]
+        else:
+            self._axes_labels = labels
 
     def show(self):
         """
