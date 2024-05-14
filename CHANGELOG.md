@@ -8,6 +8,7 @@
 - Fix: Ensure the widget's x and y scale domains are updated properly
 - Fix: Ensure the widget's color, opacity, and size titles are updated properly
 - Fix: Ensure the widget's axes titles are updated properly
+- Fix: Include normalization in data dimension name
 
 ## v0.16.0
 

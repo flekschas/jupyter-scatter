@@ -1094,12 +1094,12 @@ class Scatter():
                     self._color_data = pd.Series(by, index=self._data_index)
                     self._color_by = 'Custom Color Data'
 
-                self._encodings.set('color', self._color_by)
+                self._encodings.set('color', self._color_data_dimension)
 
                 check_encoding_dtype(self.color_data)
 
                 categorical_data = get_categorical_data(self.color_data)
-                component = self._encodings.data[self._color_by].component
+                component = self._encodings.data[self._color_data_dimension].component
 
                 if categorical_data is not None:
                     self._color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
@@ -1116,10 +1116,10 @@ class Scatter():
                         self.get_histogram_range("color")
                     )
 
-                if not self._encodings.data[self._color_by].prepared:
+                if not self._encodings.data[self._color_data_dimension].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._color_by].prepared = True
+                    self._encodings.data[self._color_data_dimension].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
@@ -1358,11 +1358,11 @@ class Scatter():
                     self._opacity_data = pd.Series(by, index=self._data_index)
                     self._opacity_by = 'Custom Opacity Data'
 
-                self._encodings.set('opacity', self._opacity_by)
+                self._encodings.set('opacity', self._opacity_data_dimension)
 
                 check_encoding_dtype(self.opacity_data)
 
-                component = self._encodings.data[self._opacity_by].component
+                component = self._encodings.data[self._opacity_data_dimension].component
                 categorical_data = get_categorical_data(self.opacity_data)
 
                 if categorical_data is not None:
@@ -1380,10 +1380,10 @@ class Scatter():
                     )
                     self._opacity_categories = None
 
-                if not self._encodings.data[self._opacity_by].prepared:
+                if not self._encodings.data[self._opacity_data_dimension].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._opacity_by].prepared = True
+                    self._encodings.data[self._opacity_data_dimension].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static opacity encoding
@@ -1590,12 +1590,12 @@ class Scatter():
                 else:
                     self._size_data = pd.Series(by, index=self._data_index)
                     self._size_by = 'Custom Size Data'
-                    
-                self._encodings.set('size', self._size_by)
+
+                self._encodings.set('size', self._size_data_dimension)
 
                 check_encoding_dtype(self.size_data)
 
-                component = self._encodings.data[self._size_by].component
+                component = self._encodings.data[self._size_data_dimension].component
                 categorical_data = get_categorical_data(self.size_data)
 
                 if categorical_data is not None:
@@ -1613,10 +1613,10 @@ class Scatter():
                     )
                     self._size_categories = None
 
-                if not self._encodings.data[self._size_by].prepared:
+                if not self._encodings.data[self._size_data_dimension].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._size_by].prepared = True
+                    self._encodings.data[self._size_data_dimension].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
@@ -1972,11 +1972,11 @@ class Scatter():
                     )
                     self._connection_color_by = 'Custom Connection-Color Data'
 
-                self._encodings.set('connection_color', self._connection_color_by)
+                self._encodings.set('connection_color', self._connection_color_data_dimension)
 
                 check_encoding_dtype(self.connection_color_data)
 
-                component = self._encodings.data[self._connection_color_by].component
+                component = self._encodings.data[self._connection_color_data_dimension].component
                 categorical_data = get_categorical_data(self.connection_color_data)
 
                 if categorical_data is not None:
@@ -1988,10 +1988,10 @@ class Scatter():
                         zerofy_missing_values(self.connection_color_data.values, 'Connection color')
                     )
 
-                if not self._encodings.data[self._connection_color_by].prepared:
+                if not self._encodings.data[self._connection_color_data_dimension].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._connection_color_by].prepared = True
+                    self._encodings.data[self._connection_color_data_dimension].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
@@ -2218,11 +2218,11 @@ class Scatter():
                     )
                     self._connection_opacity_by = 'Custom Connection-Opacity Data'
 
-                self._encodings.set('connection_opacity', self._connection_opacity_by)
+                self._encodings.set('connection_opacity', self._connection_opacity_data_dimension)
 
                 check_encoding_dtype(self.connection_opacity_data)
 
-                component = self._encodings.data[self._connection_opacity_by].component
+                component = self._encodings.data[self._connection_opacity_data_dimension].component
                 categorical_data = get_categorical_data(self.connection_opacity_data)
 
                 if categorical_data is not None:
@@ -2234,10 +2234,10 @@ class Scatter():
                     )
                     self._connection_opacity_categories = None
 
-                if not self._encodings.data[self._connection_opacity_by].prepared:
+                if not self._encodings.data[self._connection_opacity_data_dimension].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._connection_opacity_by].prepared = True
+                    self._encodings.data[self._connection_opacity_data_dimension].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static opacity encoding
@@ -2449,11 +2449,11 @@ class Scatter():
                     )
                     self._connection_size_by = 'Custom Connection-Size Data'
 
-                self._encodings.set('connection_size', self._connection_size_by)
+                self._encodings.set('connection_size', self._connection_size_data_dimension)
 
                 check_encoding_dtype(self.connection_size_data)
 
-                component = self._encodings.data[self._connection_size_by].component
+                component = self._encodings.data[self._connection_size_data_dimension].component
                 categorical_data = get_categorical_data(self.connection_size_data)
 
                 if categorical_data is not None:
@@ -2465,10 +2465,10 @@ class Scatter():
                     )
                     self._connection_size_categories = None
 
-                if not self._encodings.data[self._connection_size_by].prepared:
+                if not self._encodings.data[self._connection_size_data_dimension].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._connection_size_by].prepared = True
+                    self._encodings.data[self._connection_size_data_dimension].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static size encoding
@@ -3766,10 +3766,46 @@ class Scatter():
         return self._data.index
 
     @property
+    def _color_data_dimension(self):
+        if self._color_by is None:
+            return None
+        return f'{self._color_by}:{to_scale_type(self._color_norm)}'
+
+    @property
+    def _opacity_data_dimension(self):
+        if self._opacity_by is None or self._opacity_by == 'density':
+            return None
+        return f'{self._opacity_by}:{to_scale_type(self._opacity_norm)}'
+
+    @property
+    def _size_data_dimension(self):
+        if self._size_by is None:
+            return None
+        return f'{self._size_by}:{to_scale_type(self._size_norm)}'
+
+    @property
+    def _connection_color_data_dimension(self):
+        if self._connection_color_by is None or self._connection_color_by == 'segment':
+            return None
+        return f'{self._connection_color_by}:{to_scale_type(self._connection_color_norm)}'
+
+    @property
+    def _connection_opacity_data_dimension(self):
+        if self._connection_opacity_by is None:
+            return None
+        return f'{self._connection_opacity_by}:{to_scale_type(self._connection_opacity_norm)}'
+
+    @property
+    def _connection_size_data_dimension(self):
+        if self._connection_size_by is None:
+            return None
+        return f'{self._connection_size_by}:{to_scale_type(self._connection_size_norm)}'
+
+    @property
     def js_color_by(self):
-        if self._color_by is not None:
+        if self._color_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._color_by].component
+                self._encodings.data[self._color_data_dimension].component
             )
 
         return None
@@ -3779,18 +3815,18 @@ class Scatter():
         if self._opacity_by == 'density':
             return 'density'
 
-        elif self._opacity_by is not None:
+        if self._opacity_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._opacity_by].component
+                self._encodings.data[self._opacity_data_dimension].component
             )
 
         return None
 
     @property
     def js_size_by(self):
-        if self._size_by is not None:
+        if self._size_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._size_by].component
+                self._encodings.data[self._size_data_dimension].component
             )
 
         return None
@@ -3800,27 +3836,27 @@ class Scatter():
         if self._connection_color_by == 'segment':
             return 'segment'
 
-        elif self._connection_color_by is not None:
+        if self._connection_color_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._connection_color_by].component
+                self._encodings.data[self._connection_color_data_dimension].component
             )
 
         return None
 
     @property
     def js_connection_opacity_by(self):
-        if self._connection_opacity_by is not None:
+        if self._connection_color_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._connection_opacity_by].component
+                self._encodings.data[self._connection_color_data_dimension].component
             )
 
         return None
 
     @property
     def js_connection_size_by(self):
-        if self._connection_size_by is not None:
+        if self._connection_color_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._connection_size_by].component
+                self._encodings.data[self._connection_color_data_dimension].component
             )
 
         return None
