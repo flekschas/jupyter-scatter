@@ -994,7 +994,7 @@ class Scatter():
         norm : array_like, optional
             The normalization method for data-driven color encoding. It can
             either be a tuple defining a value range that maps to `[0, 1]` with
-            `matplotlib.colors.N ormalize` or a matplotlib normalizer instance.
+            `matplotlib.colors.Normalize` or a matplotlib normalizer instance.
         order : array_like, optional
             The order of the color map. It can either be a list of values (for
             categorical coloring) or `reverse` to reverse the color map.
