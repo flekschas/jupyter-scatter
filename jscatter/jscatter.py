@@ -1202,6 +1202,7 @@ class Scatter():
 
         self.update_widget('color_histogram', self._color_histogram)
         self.update_widget('color_by', self.js_color_by)
+        self.update_widget('color_title', self._color_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -1448,6 +1449,7 @@ class Scatter():
 
         self.update_widget('opacity_histogram', self._opacity_histogram)
         self.update_widget('opacity_by', self.js_opacity_by)
+        self.update_widget('opacity_title', self._opacity_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -1679,6 +1681,7 @@ class Scatter():
 
         self.update_widget('size_histogram', self._size_histogram)
         self.update_widget('size_by', self.js_size_by)
+        self.update_widget('size_title', self._size_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
