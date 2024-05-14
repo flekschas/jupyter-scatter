@@ -5,6 +5,7 @@
 - Fix: Ignore `NaN`s when computing histograms
 - Fix: Warn when data contains `NaN`s and replace them with zeros
 - Fix: Show correctly ordered color encoding in legend
+- Fix: Ensure the widget's x and y scale domains update properly
 
 ## v0.16.0
 

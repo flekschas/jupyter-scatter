@@ -630,6 +630,7 @@ class Scatter():
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('x_title', self._x_by)
                 self.update_widget('x_domain', self._x_domain)
+                self.update_widget('x_scale_domain', self._x_scale_domain)
                 self.update_widget('points', self.get_point_list())
 
         if any_not([x, scale], UNDEF):
@@ -743,6 +744,7 @@ class Scatter():
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('y_title', self._y_by)
                 self.update_widget('y_domain', self._y_domain)
+                self.update_widget('y_scale_domain', self._y_scale_domain)
                 self.update_widget('points', self.get_point_list())
 
         if any_not([y, scale], UNDEF):
@@ -814,9 +816,11 @@ class Scatter():
         if any_not([x, y, x_scale, y_scale], UNDEF):
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('x_scale', to_scale_type(self._x_scale))
+                self.update_widget('x_scale_domain', self._x_scale_domain)
                 self.update_widget('x_domain', self._x_domain)
                 self.update_widget('x_title', self._x_by)
                 self.update_widget('y_scale', to_scale_type(self._y_scale))
+                self.update_widget('y_scale_domain', self._y_scale_domain)
                 self.update_widget('y_domain', self._y_domain)
                 self.update_widget('y_title', self._y_by)
                 self.update_widget('points', self.get_point_list())
