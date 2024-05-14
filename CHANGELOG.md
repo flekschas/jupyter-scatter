@@ -4,6 +4,7 @@
 - Fix: Ensure that the domain and histograms match by avoiding missing categorical indices
 - Fix: Ignore `NaN`s when computing histograms
 - Fix: Warn when data contains `NaN`s and replace them with zeros
+- Fix: Show correctly ordered color encoding in legend
 
 ## v0.16.0
 

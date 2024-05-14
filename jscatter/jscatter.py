@@ -1185,7 +1185,7 @@ class Scatter():
             self.update_widget('color', final_color_map)
             self._encodings.set_legend(
                 'color',
-                self._color_map,
+                final_color_map,
                 self._color_norm,
                 self._color_categories,
                 self._color_labeling,
