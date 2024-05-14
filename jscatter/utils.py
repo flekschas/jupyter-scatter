@@ -1,7 +1,8 @@
 import ipywidgets as widgets
+import warnings
 
 from matplotlib.colors import LogNorm, PowerNorm, Normalize
-from numpy import histogram, isnan
+from numpy import histogram, isnan, sum
 from pandas.api.types import is_categorical_dtype, is_string_dtype
 from urllib.parse import urlparse
 from typing import List, Union
@@ -135,3 +136,12 @@ def sanitize_tooltip_properties(
             continue
 
     return sanitized_properties
+
+def zerofy_missing_values(values, dtype):
+    if isnan(sum(values)):
+        warnings.warn(
+            f'{dtype} data contains missing values. Those missing values will be replaced with zeros.',
+            UserWarning
+        )
+        values[isnan(values)] = 0
+    return values

@@ -10,7 +10,7 @@ from typing import Dict, Optional, Union, List, Tuple
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_scale_type_from_df, get_domain_from_df, create_default_norm, create_labeling, get_histogram_from_df, sanitize_tooltip_properties
+from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_scale_type_from_df, get_domain_from_df, create_default_norm, create_labeling, get_histogram_from_df, sanitize_tooltip_properties, zerofy_missing_values
 from .types import Auto, Color, Scales, MouseModes, Auto, Reverse, Segment, Size, LegendPosition, VisualProperty, Labeling, TooltipPreviewType, TooltipPreviewImagePosition, TooltipPreviewImageSize, Undefined
 
 COMPONENT_CONNECT = 4
@@ -603,7 +603,7 @@ class Scatter():
 
         if x is not UNDEF or scale is not UNDEF:
             self.update_widget('prevent_filter_reset', True)
-            self._points[:, 0] = self.x_data.values
+            self._points[:, 0] = zerofy_missing_values(self.x_data.values, 'X')
 
             self._x_min = np.min(self._points[:, 0])
             self._x_max = np.max(self._points[:, 0])
@@ -716,7 +716,7 @@ class Scatter():
 
         if y is not UNDEF or scale is not UNDEF:
             self.update_widget('prevent_filter_reset', True)
-            self._points[:, 1] = self.y_data.values
+            self._points[:, 1] = zerofy_missing_values(self.y_data.values, 'Y')
 
             self._y_min = np.min(self._points[:, 1])
             self._y_max = np.max(self._points[:, 1])
@@ -1102,7 +1102,9 @@ class Scatter():
                     self._color_histogram = get_histogram_from_df(categorical_data)
                 else:
                     self._color_categories = None
-                    self._points[:, component] = self._color_norm(self.color_data.values)
+                    self._points[:, component] = self._color_norm(
+                        zerofy_missing_values(self.color_data.values, 'Color')
+                    )
                     self._color_histogram = get_histogram_from_df(
                         self._points[:, component],
                         self.get_histogram_bins("color"),
@@ -1362,7 +1364,9 @@ class Scatter():
                     self._opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                     self._opacity_histogram = get_histogram_from_df(categorical_data)
                 else:
-                    self._points[:, component] = self._opacity_norm(self.opacity_data.values)
+                    self._points[:, component] = self._opacity_norm(
+                        zerofy_missing_values(self.opacity_data.values, 'Opacity')
+                    )
                     self._opacity_histogram = get_histogram_from_df(
                         self._points[:, component],
                         self.get_histogram_bins("opacity"),
@@ -1592,7 +1596,9 @@ class Scatter():
                     self._size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                     self._size_histogram = get_histogram_from_df(categorical_data)
                 else:
-                    self._points[:, component] = self._size_norm(self.size_data.values)
+                    self._points[:, component] = self._size_norm(
+                        zerofy_missing_values(self.size_data.values, 'Size')
+                    )
                     self._size_histogram = get_histogram_from_df(
                         self._points[:, component],
                         self.get_histogram_bins("size"),
@@ -1970,7 +1976,9 @@ class Scatter():
                     self._points[:, component] = categorical_data.cat.codes
                 else:
                     self._connection_color_categories = None
-                    self._points[:, component] = self._connection_color_norm(self.connection_color_data.values)
+                    self._points[:, component] = self._connection_color_norm(
+                        zerofy_missing_values(self.connection_color_data.values, 'Connection color')
+                    )
 
                 if not self._encodings.data[self._connection_color_by].prepared:
                     data_updated = True
@@ -2213,7 +2221,9 @@ class Scatter():
                     self._points[:, component] = categorical_data.cat.codes
                     self._connection_opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                 else:
-                    self._points[:, component] = self._connection_opacity_norm(self.connection_opacity_data.values)
+                    self._points[:, component] = self._connection_opacity_norm(
+                        zerofy_missing_values(self.connection_opacity_data.values, 'Connection opacity')
+                    )
                     self._connection_opacity_categories = None
 
                 if not self._encodings.data[self._connection_opacity_by].prepared:
@@ -2442,7 +2452,9 @@ class Scatter():
                     self._points[:, component] = categorical_data.cat.codes
                     self._connection_size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                 else:
-                    self._points[:, component] = self._connection_size_norm(self.connection_size_data.values)
+                    self._points[:, component] = self._connection_size_norm(
+                        zerofy_missing_values(self.connection_size_data.values, 'Connection size')
+                    )
                     self._connection_size_categories = None
 
                 if not self._encodings.data[self._connection_size_by].prepared:

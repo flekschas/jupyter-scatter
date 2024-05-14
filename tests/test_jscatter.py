@@ -121,3 +121,95 @@ def test_scatter_connection_order(df: pd.DataFrame):
         df['connect_order'].values
         == widget_data[:, 5].astype(df['connect_order'].dtype)
     )
+
+def test_missing_values_handling():
+    with_nan = np.array([0, 0.25, 0.5, np.nan, 1])
+    no_nan = np.array([0, 0.25, 0.5, 0.75, 1])
+
+    df = pd.DataFrame({
+        'x': with_nan,
+        'y': with_nan,
+        'z': with_nan,
+        'w': with_nan,
+    })
+
+    base_warning = 'data contains missing values. Those missing values will be replaced with zeros.'
+
+    with pytest.warns(UserWarning, match=f'X {base_warning}'):
+        scatter = Scatter(
+            data=pd.DataFrame({ 'x': with_nan, 'y': no_nan }),
+            x='x',
+            y='y'
+        )
+        print(scatter.widget.points)
+        assert np.isfinite(scatter.widget.points).all()
+        assert scatter.widget.points[3, 0] == -1
+
+    with pytest.warns(UserWarning, match=f'Y {base_warning}'):
+        scatter = Scatter(
+            data=pd.DataFrame({ 'x': no_nan, 'y': with_nan }),
+            x='x',
+            y='y'
+        )
+        assert np.isfinite(scatter.widget.points).all()
+        assert scatter.widget.points[3, 1] == -1
+
+    with pytest.warns(UserWarning, match=f'Color {base_warning}'):
+        scatter = Scatter(
+            data=pd.DataFrame({ 'x': no_nan, 'y': no_nan, 'z': with_nan }),
+            x='x',
+            y='y',
+            color_by='z'
+        )
+        assert np.isfinite(scatter.widget.points).all()
+        assert scatter.widget.points[3, 2] == 0
+
+    with pytest.warns(UserWarning, match=f'Opacity {base_warning}'):
+        scatter = Scatter(
+            data=pd.DataFrame({ 'x': no_nan, 'y': no_nan, 'z': with_nan }),
+            x='x',
+            y='y',
+            opacity_by='z'
+        )
+        assert np.isfinite(scatter.widget.points).all()
+        assert scatter.widget.points[3, 2] == 0
+
+    with pytest.warns(UserWarning, match=f'Size {base_warning}'):
+        scatter = Scatter(
+            data=pd.DataFrame({ 'x': no_nan, 'y': no_nan, 'z': with_nan }),
+            x='x',
+            y='y',
+            size_by='z'
+        )
+        assert np.isfinite(scatter.widget.points).all()
+        assert scatter.widget.points[3, 2] == 0
+
+    with pytest.warns(UserWarning, match=f'Connection color {base_warning}'):
+        scatter = Scatter(
+            data=pd.DataFrame({ 'x': no_nan, 'y': no_nan, 'z': with_nan }),
+            x='x',
+            y='y',
+            connection_color_by='z'
+        )
+        assert np.isfinite(scatter.widget.points).all()
+        assert scatter.widget.points[3, 2] == 0
+
+    with pytest.warns(UserWarning, match=f'Connection opacity {base_warning}'):
+        scatter = Scatter(
+            data=pd.DataFrame({ 'x': no_nan, 'y': no_nan, 'z': with_nan }),
+            x='x',
+            y='y',
+            connection_opacity_by='z'
+        )
+        assert np.isfinite(scatter.widget.points).all()
+        assert scatter.widget.points[3, 2] == 0
+
+    with pytest.warns(UserWarning, match=f'Connection size {base_warning}'):
+        scatter = Scatter(
+            data=pd.DataFrame({ 'x': no_nan, 'y': no_nan, 'z': with_nan }),
+            x='x',
+            y='y',
+            connection_size_by='z'
+        )
+        assert np.isfinite(scatter.widget.points).all()
+        assert scatter.widget.points[3, 2] == 0
