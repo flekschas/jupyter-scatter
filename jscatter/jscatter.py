@@ -1786,12 +1786,12 @@ class Scatter():
         if order is not UNDEF:
             self._connect_order = order
 
-            if by is not None:
-                if isinstance(by, str):
+            if order is not None:
+                if isinstance(order, str):
                     self._connect_order_data = None
                 else:
                     self._connect_order_data = pd.Series(
-                        by,
+                        order,
                         index=self._data_index,
                         dtype='category'
                     )
