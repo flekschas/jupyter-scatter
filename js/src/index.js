@@ -27,7 +27,7 @@ import {
 import { version } from "../package.json";
 
 const AXES_LABEL_SIZE = 12;
-const AXES_PADDING_X = 40;
+const AXES_PADDING_X = 60;
 const AXES_PADDING_X_WITH_LABEL = AXES_PADDING_X + AXES_LABEL_SIZE;
 const AXES_PADDING_Y = 20;
 const AXES_PADDING_Y_WITH_LABEL = AXES_PADDING_Y + AXES_LABEL_SIZE;
@@ -395,9 +395,8 @@ class JupyterScatterView {
     let yPadding = 0;
 
     if (this.model.get('axes')) {
-      const labels = this.model.get('axes_labels');
-      xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
-      yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+      xPadding = this.getXPadding();
+      yPadding = this.getYPadding();
     }
 
     const outerWidth = this.model.get('width') === 'auto'
@@ -430,9 +429,9 @@ class JupyterScatterView {
     const currentXScaleRegl = this.scatterplot.get('xScale');
     const currentYScaleRegl = this.scatterplot.get('yScale');
 
-    const labels = this.model.get('axes_labels');
-    const xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
-    const yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+    const [xLabel, yLabel] = this.model.get('axes_labels') || [];
+    const xPadding = this.getXPadding();
+    const yPadding = this.getYPadding();
 
     // Regl-Scatterplot's gl-space is always linear, hence we have to pass a
     // linear scale to regl-scatterplot.
@@ -495,26 +494,28 @@ class JupyterScatterView {
 
     this.axesSvg.selectAll('.domain').attr('opacity', 0);
 
-    if (labels) {
+    if (xLabel) {
       this.xAxisLabel = this.axesSvg.select('.x-axis-label').node()
         ? this.axesSvg.select('.x-axis-label')
         : this.axesSvg.append('text').attr('class', 'x-axis-label');
 
       this.xAxisLabel
-        .text(labels[0])
+        .text(xLabel)
         .attr('fill', 'currentColor')
         .attr('text-anchor', 'middle')
         .attr('font-size', '12px')
         .attr('font-weight', 'bold')
         .attr('x', (width - xPadding) / 2)
         .attr('y', height);
+      }
 
+    if (yLabel) {
       this.yAxisLabel = this.axesSvg.select('.y-axis-label').node()
         ? this.axesSvg.select('.y-axis-label')
         : this.axesSvg.append('text').attr('class', 'y-axis-label');
 
       this.yAxisLabel
-        .text(labels[1])
+        .text(yLabel)
         .attr('fill', 'currentColor')
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'hanging')
@@ -645,15 +646,16 @@ class JupyterScatterView {
       'div',
       ['title', `${htmlClassProperty}-title`]
     );
+
     this[`tooltipProperty${capitalProperty}Value`] = createElementWithClass(
       'div',
       ['value', `${htmlClassProperty}-value`]
     );
+
     this[`tooltipProperty${capitalProperty}ValueText`] = createElementWithClass(
       'div',
       ['value-text', `${htmlClassProperty}-value-text`]
     );
-
 
     this[`tooltipProperty${capitalProperty}Channel`] = createElementWithClass(
       'div',
@@ -1582,14 +1584,10 @@ class JupyterScatterView {
   updateLegendWrapperPosition() {
     if (!this.legendWrapper) return;
 
-    const labels = this.model.get('axes_labels');
-    const xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
-    const yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
-
     this.legendWrapper.style.top = 0;
-    this.legendWrapper.style.bottom = yPadding + 'px';
+    this.legendWrapper.style.bottom = this.getYPadding() + 'px';
     this.legendWrapper.style.left = 0;
-    this.legendWrapper.style.right = xPadding + 'px';
+    this.legendWrapper.style.right = this.getXPadding() + 'px';
   }
 
   updateLegendPosition() {
@@ -1637,9 +1635,8 @@ class JupyterScatterView {
     let yPadding = 0;
 
     if (this.model.get('axes')) {
-      const labels = this.model.get('axes_labels');
-      xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
-      yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+      xPadding = this.getXPadding();
+      yPadding = this.getYPadding();
     }
 
     this.container.style.width = width === 'auto'
@@ -1655,9 +1652,9 @@ class JupyterScatterView {
 
     const [width, height] = this.getOuterDimensions();
 
-    const labels = this.model.get('axes_labels');
-    const xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
-    const yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+    const [xLabel, yLabel] = this.model.get('axes_labels') || [];
+    const xPadding = this.getXPadding();
+    const yPadding = this.getYPadding();
 
     const xScaleDomain = this.scatterplot.get('xScale').domain();
     const yScaleDomain = this.scatterplot.get('yScale').domain();
@@ -1690,8 +1687,10 @@ class JupyterScatterView {
       this.yAxis.tickSizeInner(-(width - xPadding));
     }
 
-    if (labels) {
+    if (xLabel) {
       this.xAxisLabel.attr('x', (width - xPadding) / 2).attr('y', height - 4);
+    }
+    if (yLabel) {
       this.yAxisLabel.attr('x', (height - yPadding) / 2).attr('y', -width);
     }
   }
@@ -2334,6 +2333,16 @@ class JupyterScatterView {
     const p = {};
     p[property] = changedValue;
     this.scatterplot.set(p);
+  }
+
+  getXPadding() {
+    const yLabel = this.model.get('axes_labels')?.[1];
+    return yLabel ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
+  }
+
+  getYPadding() {
+    const xLabel = this.model.get('axes_labels')?.[0];
+    return xLabel ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
   }
 };
 

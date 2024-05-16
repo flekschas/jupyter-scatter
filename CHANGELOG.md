@@ -9,6 +9,7 @@
 - Fix: Ensure the widget's color, opacity, and size titles are updated properly
 - Fix: Ensure the widget's axes titles are updated properly
 - Fix: Include normalization in data dimension name
+- Fix: Allow rendering a single axis instead of enforcing either none or both axis
 
 ## v0.16.0
 
