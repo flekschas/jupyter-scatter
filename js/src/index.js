@@ -1220,7 +1220,6 @@ class JupyterScatterView {
     this.getXBin = createNumericalBinGetter(
       this.model.get('x_histogram'),
       this.model.get('x_domain'),
-      this.model.get('x_domain_range'),
     );
 
     const toRelValue = scaleLinear()
@@ -1244,7 +1243,6 @@ class JupyterScatterView {
     this.getYBin = createNumericalBinGetter(
       this.model.get('y_histogram'),
       this.model.get('y_domain'),
-      this.model.get('y_domain_range'),
     );
 
     const toRelValue = scaleLinear()
@@ -1287,7 +1285,6 @@ class JupyterScatterView {
       this.getColorBin = createNumericalBinGetter(
         this.model.get('color_histogram'),
         this.model.get('color_domain'),
-        this.model.get('color_domain_range'),
       );
 
       this.getColor = (i) => {
@@ -1327,7 +1324,6 @@ class JupyterScatterView {
       this.getOpacityBin = createNumericalBinGetter(
         this.model.get('opacity_histogram'),
         this.model.get('opacity_domain'),
-        this.model.get('opacity_domain_range'),
       );
 
       this.getOpacity = (i) => {
@@ -1372,7 +1368,6 @@ class JupyterScatterView {
       this.getSizeBin = createNumericalBinGetter(
         this.model.get('size_histogram'),
         this.model.get('size_domain'),
-        this.model.get('size_domain_range'),
       );
 
       this.getSize = (i) => {
@@ -1460,7 +1455,7 @@ class JupyterScatterView {
         histogram,
         getHistogramKey: info.scale === 'categorical'
           ? (v) => info.domain[v]
-          : createNumericalBinGetter(info.histogram, info.domain, info.range),
+          : createNumericalBinGetter(info.histogram, info.range || info.domain),
         format: info.scale === 'categorical'
           ? (s) => s
           : format(getD3FormatSpecifier(info.domain))
