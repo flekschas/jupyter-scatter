@@ -76,21 +76,21 @@ def test_scatter_point_encoding_updates(df: pd.DataFrame):
     scatter.color(by='group')
     widget_data = np.asarray(widget.points)
     assert 'color' in scatter._encodings.visual
-    assert 'group' in scatter._encodings.data
-    assert np.sum(widget_data[:, 2]) > 0
-    assert np.sum(widget_data[:, 3]) == 0
+    assert 'group:linear' in scatter._encodings.data
+    assert np.sum(widget_data[:,2]) > 0
+    assert np.sum(widget_data[:,3]) == 0
 
     scatter.opacity(by='c')
     widget_data = np.asarray(widget.points)
     assert 'opacity' in scatter._encodings.visual
-    assert 'c' in scatter._encodings.data
-    assert np.sum(widget_data[:, 3]) > 0
+    assert 'c:linear' in scatter._encodings.data
+    assert np.sum(widget_data[:,3]) > 0
 
     scatter.size(by='c')
     widget_data = np.asarray(widget.points)
     assert 'size' in scatter._encodings.visual
-    assert 'c' in scatter._encodings.data
-    assert np.sum(widget_data[:, 3]) > 0
+    assert 'c:linear' in scatter._encodings.data
+    assert np.sum(widget_data[:,3]) > 0
 
 
 def test_scatter_connection_by(df: pd.DataFrame):
@@ -109,7 +109,6 @@ def test_scatter_connection_order_column_name_fails(df: pd.DataFrame):
         scatter.connect(order='connect_order')
 
 
-@pytest.mark.skip(reason='This is an old test that needs to be updated')
 def test_scatter_connection_order(df: pd.DataFrame):
     scatter = Scatter(data=df, x='a', y='b')
     widget = scatter.widget
@@ -121,6 +120,7 @@ def test_scatter_connection_order(df: pd.DataFrame):
         df['connect_order'].values
         == widget_data[:, 5].astype(df['connect_order'].dtype)
     )
+
 
 def test_missing_values_handling():
     with_nan = np.array([0, 0.25, 0.5, np.nan, 1])
