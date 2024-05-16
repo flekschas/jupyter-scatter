@@ -675,7 +675,7 @@ class JupyterScatterView {
 
       this[`tooltipProperty${capitalProperty}ChannelBadge`] = createElementWithClass(
         'div',
-        ['channel-badge', `${htmlClassProperty}-value-badge`]
+        ['channel-badge', `${htmlClassProperty}-channel-badge`]
       );
       this[`tooltipProperty${capitalProperty}ChannelBadgeMark`] = createElementWithClass(
         'div',
