@@ -1288,11 +1288,12 @@ class JupyterScatterView {
       );
 
       this.getColor = (i) => {
-        const value = this.getPoint(i)[dim];
-        const colorIdx = Math.min(numColors - 1, Math.floor(numColors * value));
+        const normalizedValue = this.getPoint(i)[dim];
+        const colorIdx = Math.min(numColors - 1, Math.floor(numColors * normalizedValue));
+        const value = this.colorScale.invert(normalizedValue);
         return [
           colors[colorIdx] || '#808080',
-          this.colorFormat(this.colorScale.invert(value)),
+          this.colorFormat(value),
           this.getColorBin(value),
         ]
       }
@@ -1327,11 +1328,12 @@ class JupyterScatterView {
       );
 
       this.getOpacity = (i) => {
-        const value = this.getPoint(i)[dim];
-        const idx = Math.min(numOpacities - 1, Math.floor(numOpacities * value));
+        const normalizedValue = this.getPoint(i)[dim];
+        const idx = Math.min(numOpacities - 1, Math.floor(numOpacities * normalizedValue));
+        const value = this.opacityScale.invert(normalizedValue);
         return [
           opacities[idx] || 0.5,
-          this.opacityFormat(this.opacityScale.invert(value)),
+          this.opacityFormat(value),
           this.getOpacityBin(value),
         ]
       }
@@ -1371,11 +1373,12 @@ class JupyterScatterView {
       );
 
       this.getSize = (i) => {
-        const value = this.getPoint(i)[dim];
-        const idx = Math.min(numSizes - 1, Math.floor(numSizes * value));
+        const normalizedValue = this.getPoint(i)[dim];
+        const idx = Math.min(numSizes - 1, Math.floor(numSizes * normalizedValue));
+        const value = this.sizeScale.invert(normalizedValue);
         return [
           Math.max(0.1, (sizes[idx] - sizesMin) / sizesExtent),
-          this.sizeFormat(this.sizeScale.invert(value)),
+          this.sizeFormat(value),
           this.getSizeBin(value),
         ]
       }

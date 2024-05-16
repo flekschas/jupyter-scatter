@@ -10,6 +10,7 @@
 - Fix: Ensure the widget's axes titles are updated properly
 - Fix: Include normalization in data dimension name
 - Fix: Allow rendering a single axis instead of enforcing either none or both axis
+- Fix: Rely on pre-normalized data to get bin ID
 
 ## v0.16.0
 
