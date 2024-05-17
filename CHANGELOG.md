@@ -1,18 +1,3 @@
-## v0.16.1
-
-- Fix: Match numerical and string IDs properly in `compose(match_by='XYZ')`
-- Fix: Ensure that the domain and histograms match by avoiding missing categorical indices
-- Fix: Ignore `NaN`s when computing histograms
-- Fix: Warn when data contains `NaN`s and replace them with zeros
-- Fix: Show correctly ordered color encoding in legend
-- Fix: Ensure the widget's x and y scale domains are updated properly
-- Fix: Ensure the widget's color, opacity, and size titles are updated properly
-- Fix: Ensure the widget's axes titles are updated properly
-- Fix: Include normalization in data dimension name
-- Fix: Allow rendering a single axis instead of enforcing either none or both axis
-- Fix: Rely on pre-normalized data to get bin ID
-- Fix: Connect order
-
 ## v0.16.0
 
 **BREAKING CHANGES**:
@@ -54,6 +39,18 @@ Additionally, the following helper methods are removed as they are unnecessary.
 **Other Changes**:
 
 - Docs: Add API documentation for `scatter.widget`
+- Fix: Match numerical and string IDs properly in `compose(match_by='XYZ')`
+- Fix: Ensure that the domain and histograms match by avoiding missing categorical indices
+- Fix: Ignore `NaN`s when computing histograms
+- Fix: Warn when data contains `NaN`s and replace them with zeros
+- Fix: Show correctly ordered color encoding in legend
+- Fix: Ensure the widget's x and y scale domains are updated properly
+- Fix: Ensure the widget's color, opacity, and size titles are updated properly
+- Fix: Ensure the widget's axes titles are updated properly
+- Fix: Include normalization in data dimension name
+- Fix: Allow rendering a single axis instead of enforcing either none or both axis
+- Fix: Rely on pre-normalized data to get bin ID
+- Fix: Connect order
 
 ## v0.15.1
 
