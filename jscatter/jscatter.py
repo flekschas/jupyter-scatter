@@ -1793,7 +1793,7 @@ class Scatter():
                     self._connect_order_data = pd.Series(
                         order,
                         index=self._data_index,
-                        dtype='category'
+                        dtype='int'
                     )
                     self._connect_order = 'Custom Connect-Order Data'
 
