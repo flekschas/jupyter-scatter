@@ -103,17 +103,11 @@ def test_scatter_connection_by(df: pd.DataFrame):
     assert np.all(df['connect'].values == widget_data[:, 4].astype(df['connect'].dtype))
 
 
-def test_scatter_connection_order_column_name_fails(df: pd.DataFrame):
-    scatter = Scatter(data=df, x='a', y='b')
-    with pytest.raises(ValueError):
-        scatter.connect(order='connect_order')
-
-
 def test_scatter_connection_order(df: pd.DataFrame):
     scatter = Scatter(data=df, x='a', y='b')
     widget = scatter.widget
 
-    scatter.connect(order=df['connect_order'].values)
+    scatter.connect(by='connect', order='connect_order')
     widget_data = np.asarray(widget.points)
     assert widget_data.shape == (500, 6)
     assert np.all(
