@@ -153,6 +153,31 @@ Jupyter Scatter is primarily a tool for data scientists to visually explore and 
 
 Further, due to its usage of traitlets [@traitlets], Jupyter Scatter integrates easily with other widgets, which enables visualization researchers and practitioners to build domain-specific applications on top of Jupyter Scatter. For instance, the _Comparative Embedding Visualization_ widget [@manz2024general] uses Jupyter Scatter to display four synchronized scatter plots for guided comparison of embedding visualizations. [Andrés Colubri’s research group](https://co-labo.org/) is actively working on a new version of their _Single Cell Interactive Viewer_ which will be based on Jupyter Scatter.
 
+# Implementation
+
+Jupyter Scatter's architecture consists of two main components: a Python
+program running in the Jupyter kernel and a front-end program for interactive
+visualization. It implements this architecture using anywidget [@anywidget],
+creating a cross-platform Jupyter widget that runs across various notebook
+environments, including Jupyter, JupyterLab, Google Colab, and VS Code, as well
+as dashboarding frameworks like Shiny for Python, Solara, and Panel. The
+front-end widget is built on regl-scatterplot [@lekschas2023regl], a
+high-performance rendering library based on WebGL, ensuring efficient
+GPU-accelerated rendering.
+
+The Python backend uses anywidget and ipywidgets [@ipywidgets] for interaction
+with the front-end, leveraging binary data support to efficiently send
+in-memory data to the GPU, avoiding the overhead of JSON serialization. This
+approach enables the transfer of millions of data points from the Python kernel
+to the front-end with minimal latency. There is bidirectional communication
+between the visualization and the notebook kernel, meaning that the
+visualization state is shared between the front-end and kernel. Changes made on
+either side can be accessed and manipulated, allowing updates to various
+scatterplot properties and access to states like selections from other notebook
+cells. Coordination is managed using anywidget APIs, and users can connect the
+visualization to other ipywidgets such as sliders, dropdowns, and buttons to
+create interactive
+
 # Related Work
 
 There are many Python packages for rendering scatter plots in notebook-like environments. General-purpose visualization libraries like Matplotlib [@hunter2007matplotlib], Bokeh [@bokeh], or Altair [@altair] offer great customizability but do not scale to millions of points. They also don't offer bespoke features for exploring scatter plots and require manual configuration.
