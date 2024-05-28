@@ -27,13 +27,13 @@ bibliography: paper/refs.bib
 
 # Summary
 
-Jupyter Scatter is a scalable, interactive, and interlinked scatter plot widget for exploring datasets in Jupyter Notebook/Lab, Colab, and VSCode. Thanks to its WebGL-based rendering engine [@lekschas2023regl], Jupyter Scatter can render and animate up to several million data points. The widget focuses on data-driven visual encodings and offers perceptually-effective point color and opacity settings by default. For interactive exploration, Jupyter Scatter features two-way zoom and point selections. Furthermore, the widget can compose multiple scatter plots and synchronize their views and selections, which is useful for comparing datasets. Finally, Jupyter Scatter's API integrates with Pandas DataFrames [@mckinney2010data] and Matplotlib [@hunter2007matplotlib] and offers functional methods that group properties by type to ease accessibility and readability.
+Jupyter Scatter is a scalable, interactive, and interlinked scatter plot widget for exploring datasets in Jupyter Notebook/Lab, Colab, and VS Code. Thanks to its WebGL-based rendering engine [@lekschas2023regl], Jupyter Scatter can render and animate up to several million data points. The widget focuses on data-driven visual encodings and offers perceptually-effective point color and opacity settings by default. For interactive exploration, Jupyter Scatter features two-way zoom and point selections. Furthermore, the widget can compose multiple scatter plots and synchronize their views and selections, which is useful for comparing datasets. Finally, Jupyter Scatter's API integrates with Pandas DataFrames [@mckinney2010data] and Matplotlib [@hunter2007matplotlib] and offers functional methods that group properties by type to ease accessibility and readability.
 
 ![Examples of Jupyter Scatter.\label{fig:teaser}](paper/teaser.jpg)
 
 # Usage Scenario
 
-Jupyter Scatter's primary purpose is to simplify the visual exploration, analysis, and comparison of large-scale bivariate datasets. To achieve this goal, the widget combines smooth rendering of up to twenty million points with fast and observable point selections, Pandas DataFrame [@mckinney2010data] integration, perceptually-effective default encodings, and a friendly API.
+Jupyter Scatter simplifies the visual exploration, analysis, and comparison of large-scale bivariate datasets. It renders up to twenty million points smoothly, supports fast point selections, integrates with Pandas DataFrame [@mckinney2010data], uses perceptually-effective default encodings, and offers a user-friendly API.
 
 In the following, we demonstrate its usage for visualizing the GeoNames dataset [@geonames], which contains data about cities world wide. For instance, to visualize cities by their longitude/latitude and color-code them by continent (\autoref{fig:teaser} Left), we create a `Scatter` widget as follows.
 
@@ -52,9 +52,10 @@ scatter = jscatter.Scatter(
 scatter.show()
 ```
 
-Without having to specify a color map, Jupyter Scatter picks the categorical colorblind-safe palette from @okabe2008color as the `Continent` column is categorical consisting of seven unique values, i.e., the continents. Had we chosen a column with continuous data, Jupyter Scatter would have automatically picked Matplotlib's [@hunter2007matplotlib] _Viridis_ color palette. Furthermore, as shown in (\autoref{fig:teaser} Middle), Jupyter Scatter applies dynamic point opacity by default where the opacity depends on the point density within the field of view. I.e., as one zooms into a sparse area points become more opaque. This is important for large scale scatter plots as one otherwise suffers from either severe over plotting issue when zoomed out or points being barely visible when zoomed in.
+Without specifying a color map, Jupyter Scatter uses the categorical colorblind-safe palette from @okabe2008color for the `Continent` column, which has seven unique values. For columns with continuous data, it automatically selects Matplotlib's [@hunter2007matplotlib] _Viridis_ color palette. As shown in (\autoref{fig:teaser} Middle), Jupyter Scatter dynamically adjusts point opacity based on point density within the field of view. This means points become more opaque when zooming into sparse areas, addressing over-plotting issues when zoomed out and visibility issues when zoomed in.
 
-Jupyter Scatter offers many ways to customize the point color, size, and opacity encoding. Since it can get a bit overwhelming to configure everything during the construction of the `Scatter` instance, Jupyter Scatter offers topic-specific methods for configuring the scatter plot. For instance, as shown in \autoref{fig:teaser} Right, in the following we choose a static point size of `2` pixels, use dynamic opacity that depends on the point density in the field of view, and color the points by the log-normalized population using Matplotlib's [@hunter2007matplotlib] _Magma_ color palette in reverse order such that dark blue represents highly-populated cities.
+
+Jupyter Scatter offers many ways to customize the point color, size, and opacity encodings. To simplify configuration, it provides topic-specific methods for setting up the scatter plot, rather than requiring all properties to be set during the instantiation of `Scatter`. For instance, as shown in \autoref{fig:teaser} Right, the point size (`2` pixels), opacity (density-based), and color (log-normalized population using Matplotlib's [@hunter2007matplotlib] _Magma_ color palette in reverse order) can be set using the following methods.
 
 ```py
 import matplotlib
@@ -63,7 +64,7 @@ scatter.opacity('density')
 scatter.color(by='Population', map='magma', norm=matplotlib.colors.LogNorm(), order='reverse')
 ```
 
-To aid interpretation of individual points and point clusters, Jupyter Scatter offers support for legends, axis labels, and tooltips. The features can be activated and customized via their respective methods as shown in the following.
+To aid interpretation of individual points and point clusters, Jupyter Scatter offers support for legends, axis labels, and tooltips. The features are activated and customized via their respective methods.
 
 ```py
 scatter.legend(True)
@@ -76,13 +77,13 @@ As shown in \autoref{fig:teaser} Right-Bottom, the tooltip can show a point's da
 ![Additional features of Jupyter Scatter. Legend, axes labels, and tooltip.
 \label{fig:additional}](paper/additional.jpg)
 
-Exploring a scatter plot often involves studying subsets of the points. To select some points, one can either long press and lasso-select points interactively in the plot (\autoref{fig:teaser} Top Right) or query-select points (\autoref{fig:teaser} Bottom Right) as shown below. In this example, we're selecting all cities with a population greater than ten million.
+Exploring a scatter plot often involves studying subsets of the points. To select points, one can either long press and lasso-select points interactively in the plot (\autoref{fig:teaser} Top Right) or query-select points (\autoref{fig:teaser} Bottom Right) as shown below. In this example, we select all cities with a population greater than ten million.
 
 ```py
 scatter.selection(geonames.query('Population > 10_000_000').index)
 ```
 
-The selected cities can be retrieved by calling `scatter.selection()` without any argument. The method returns the data record indices, which can then be used to get back the underlying data records.
+The selected cities can be retrieved by calling `scatter.selection()` without any arguments. The method returns the data record indices, which can then be used to get back the underlying data records.
 
 ```py
 cities.iloc[scatter.selection()]
