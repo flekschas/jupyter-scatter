@@ -177,7 +177,7 @@ either side can be accessed and manipulated, allowing updates to various
 scatterplot properties and access to states like selections from other notebook
 cells. Coordination is managed using anywidget APIs, and users can connect the
 visualization to other ipywidgets such as sliders, dropdowns, and buttons to
-create interactive
+create bespoke widgets for interactive visual data exploration.
 
 # Related Work
 
