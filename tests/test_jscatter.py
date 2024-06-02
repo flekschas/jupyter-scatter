@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from functools import partial
+from matplotlib.colors import AsinhNorm, LogNorm, Normalize, PowerNorm, SymLogNorm
+
 from jscatter.jscatter import Scatter, component_idx_to_name
 from jscatter.utils import create_default_norm, to_ndc
 
@@ -63,6 +66,43 @@ def test_scatter_pandas(df):
     assert (500, 4) == np.asarray(widget.points).shape
     assert np.allclose(to_ndc(df['a'].values, create_default_norm()), widget_data[:, 0])
     assert np.allclose(to_ndc(df['b'].values, create_default_norm()), widget_data[:, 1])
+
+
+def test_xy_scale_shorthands(df):
+    for norm, Norm in [
+        ('linear', Normalize),
+        ('asinh', AsinhNorm),
+        ('log', LogNorm),
+        ('log10', LogNorm),
+        ('pow', partial(PowerNorm, gamma=2)),
+        ('pow2', partial(PowerNorm, gamma=2)),
+    ]:
+        scatter = Scatter(
+            data=df,
+            x='a',
+            x_scale=norm,
+            y='b',
+            y_scale=norm,
+        )
+        points = np.asarray(scatter.widget.points)
+
+        assert np.allclose(to_ndc(df['a'].values, Norm()), points[:, 0])
+        assert np.allclose(to_ndc(df['b'].values, Norm()), points[:, 1])
+
+
+def test_xy_manual_scale(df):
+    for Norm in [Normalize, AsinhNorm, LogNorm, partial(PowerNorm, gamma=2)]:
+        scatter = Scatter(
+            data=df,
+            x='a',
+            x_scale=Norm(),
+            y='b',
+            y_scale=Norm(),
+        )
+        points = np.asarray(scatter.widget.points)
+
+        assert np.allclose(to_ndc(df['a'].values, Norm()), points[:, 0])
+        assert np.allclose(to_ndc(df['b'].values, Norm()), points[:, 1])
 
 
 def test_scatter_point_encoding_updates(df: pd.DataFrame):
