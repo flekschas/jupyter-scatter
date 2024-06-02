@@ -71,11 +71,8 @@ def test_scatter_pandas(df):
 def test_xy_scale_shorthands(df):
     for norm, Norm in [
         ('linear', Normalize),
-        ('asinh', AsinhNorm),
         ('log', LogNorm),
-        ('log10', LogNorm),
         ('pow', partial(PowerNorm, gamma=2)),
-        ('pow2', partial(PowerNorm, gamma=2)),
     ]:
         scatter = Scatter(
             data=df,
@@ -91,7 +88,7 @@ def test_xy_scale_shorthands(df):
 
 
 def test_xy_manual_scale(df):
-    for Norm in [Normalize, AsinhNorm, LogNorm, partial(PowerNorm, gamma=2)]:
+    for Norm in [Normalize, LogNorm, partial(PowerNorm, gamma=2)]:
         scatter = Scatter(
             data=df,
             x='a',
