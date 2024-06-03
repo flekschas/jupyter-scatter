@@ -622,10 +622,10 @@ class Scatter():
                 except ValueError:
                     pass
 
-            self._x_scale_domain = [self._x_scale.vmin, self._x_scale.vmax]
-
             # Normalize x coordinate to [-1,1]
             self._points[:, 0] = to_ndc(self._points[:, 0], self._x_scale)
+
+            self._x_scale_domain = [self._x_scale.vmin, self._x_scale.vmax]
 
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('x_title', self._x_by)
@@ -736,10 +736,10 @@ class Scatter():
                 except ValueError:
                     pass
 
-            self._y_scale_domain = [self._y_scale.vmin, self._y_scale.vmax]
-
             # Normalize y coordinate to [-1,1]
             self._points[:, 1] = to_ndc(self._points[:, 1], self._y_scale)
+
+            self._y_scale_domain = [self._y_scale.vmin, self._y_scale.vmax]
 
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('y_title', self._y_by)

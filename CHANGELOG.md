@@ -51,6 +51,7 @@ Additionally, the following helper methods are removed as they are unnecessary.
 - Fix: Allow rendering a single axis instead of enforcing either none or both axis
 - Fix: Rely on pre-normalized data to get bin ID
 - Fix: Connect order
+- Fix: X/Y scale domain bug
 
 ## v0.15.1
 
