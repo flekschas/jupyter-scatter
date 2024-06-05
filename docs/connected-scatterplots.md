@@ -50,6 +50,11 @@ scatter.show()
 
 <div class="img basics"><div /></div>
 
+::: tip
+By default, line connections are spline interpolated curves. If you instead want
+straight lines, call `scatter.options({ 'pointConnectionTolerance': 1 })`.
+:::
+
 ## Styling
 
 Similar to how you can visually style and encode the point color, opacity, and
