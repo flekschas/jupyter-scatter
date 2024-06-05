@@ -1,7 +1,8 @@
 import ipywidgets as widgets
+import warnings
 
 from matplotlib.colors import LogNorm, PowerNorm, Normalize
-from numpy import histogram
+from numpy import histogram, isnan, sum
 from pandas.api.types import is_categorical_dtype, is_string_dtype
 from urllib.parse import urlparse
 from typing import List, Union
@@ -50,7 +51,12 @@ def sorting_to_dict(sorting):
         out[original_idx] = order_idx
     return out
 
-def create_default_norm():
+class TimeNormalize(Normalize):
+    is_time = True
+
+def create_default_norm(is_time=False):
+    if is_time:
+        return TimeNormalize(clip=True)
     return Normalize(clip=True)
 
 def to_ndc(X, norm):
@@ -62,6 +68,9 @@ def to_scale_type(norm = None):
 
     if (isinstance(norm, PowerNorm)):
         return f'pow_{norm.gamma}'
+
+    if (isinstance(norm, TimeNormalize)):
+        return 'time'
 
     if (isinstance(norm, Normalize)):
         return 'linear'
@@ -76,9 +85,9 @@ def get_scale_type_from_df(data):
 
 def get_domain_from_df(data):
     if is_categorical_dtype(data) or is_string_dtype(data):
-        _data = data
-        if is_string_dtype(data):
-            _data = data.copy().astype('category')
+        # We need to recreate the categorization in case the data is just a
+        # filtered view, in which case it might contain "missing" indices
+        _data = data.copy().astype(str).astype('category')
         return dict(zip(_data, _data.cat.codes))
 
     return [data.min(), data.max()]
@@ -112,13 +121,12 @@ def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeli
 
 def get_histogram_from_df(data, bins=20, range=None):
     if is_categorical_dtype(data) or is_string_dtype(data):
-        _data = data
-        if is_string_dtype(data):
-            _data = data.copy().astype('category')
-        value_counts = _data.cat.codes.value_counts()
+        # We need to recreate the categorization in case the data is just a
+        # filtered view, in which case it might contain "missing" indices
+        value_counts = data.copy().astype(str).astype('category').cat.codes.value_counts()
         return [y for _, y in sorted(dict(value_counts / value_counts.sum()).items())]
 
-    hist = histogram(data, bins=bins, range=range)
+    hist = histogram(data[~isnan(data)], bins=bins, range=range)
 
     return list(hist[0] / hist[0].max())
 
@@ -136,3 +144,12 @@ def sanitize_tooltip_properties(
             continue
 
     return sanitized_properties
+
+def zerofy_missing_values(values, dtype):
+    if isnan(sum(values)):
+        warnings.warn(
+            f'{dtype} data contains missing values. Those missing values will be replaced with zeros.',
+            UserWarning
+        )
+        values[isnan(values)] = 0
+    return values
