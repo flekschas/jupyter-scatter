@@ -89,8 +89,8 @@ Get or set the x and y coordinate. This is just a convenience function to animat
 
 - `x` is either an array-like list of coordinates or a string referencing a column in `data`.
 - `y` is either an array-like list of coordinates or a string referencing a column in `data`.
-- `x_scale` is either a string (`linear`, `log`, `pow`), a tuple defining the value range that's map to the extent of the scatter plot, or an instance of `matplotlib.colors.LogNorm` or `matplotlib.colors.PowerNorm`.
-- `y_scale` is either a string (`linear`, `log`, `pow`), a tuple defining the value range that's map to the extent of the scatter plot, or an instance of `matplotlib.colors.LogNorm` or `matplotlib.colors.PowerNorm`.
+- `x_scale` is either a string (`linear`, `time`, `log`, `pow`), a tuple defining the value range that's map to the extent of the scatter plot, or an instance of `matplotlib.colors.LogNorm` or `matplotlib.colors.PowerNorm`.
+- `y_scale` is either a string (`linear`, `time`, `log`, `pow`), a tuple defining the value range that's map to the extent of the scatter plot, or an instance of `matplotlib.colors.LogNorm` or `matplotlib.colors.PowerNorm`.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
 

@@ -189,6 +189,7 @@ class Scatter():
 
         # We need to set the background first in order to choose sensible
         # default colors
+        self._reticle_color = 'auto'
         self._background_color = to_rgba(default_background_color)
         self._background_color_luminance = 1
         self._background_image = None
@@ -277,7 +278,6 @@ class Scatter():
         self._width = 'auto'
         self._height = 240
         self._reticle = True
-        self._reticle_color = 'auto'
         self._camera_target = [0, 0]
         self._camera_distance = 1.0
         self._camera_rotation = 0.0
@@ -547,7 +547,7 @@ class Scatter():
         x : str, array_like, optional
             The x coordinates given as either an array-like list of coordinates
             or a string referencing a column in `data`.
-        scale : {'linear', 'log', 'pow'}, tuple of floats, matplotlib.color.LogNorm, or matplotlib.color.PowerNorm, optional
+        scale : {'linear', 'time', 'log', 'pow'}, tuple of floats, matplotlib.color.LogNorm, or matplotlib.color.PowerNorm, optional
             The x scale
         kwargs : optional
             Options which can be used to skip updating the widget when
@@ -575,6 +575,8 @@ class Scatter():
         if scale is not UNDEF:
             if scale is None or scale == 'linear':
                 self._x_scale = create_default_norm()
+            elif scale == 'time':
+                self._x_scale = create_default_norm(True)
             elif scale == 'log':
                 self._x_scale = LogNorm(clip=True)
             elif scale == 'pow':
@@ -661,7 +663,7 @@ class Scatter():
         y : str, array_like, optional
             The y coordinates given as either an array-like list of coordinates
             or a string referencing a column in `data`.
-        scale : {'linear', 'log', 'pow'}, tuple of floats, matplotlib.color.LogNorm, or matplotlib.color.PowerNorm, optional
+        scale : {'linear', 'time', 'log', 'pow'}, tuple of floats, matplotlib.color.LogNorm, or matplotlib.color.PowerNorm, optional
             The y scale
         kwargs : optional
             Options which can be used to skip updating the widget when
@@ -689,6 +691,8 @@ class Scatter():
         if scale is not UNDEF:
             if scale is None or scale == 'linear':
                 self._y_scale = create_default_norm()
+            elif scale == 'time':
+                self._y_scale = create_default_norm(True)
             elif scale == 'log':
                 self._y_scale = LogNorm(clip=True)
             elif scale == 'pow':
@@ -960,9 +964,9 @@ class Scatter():
 
     def color(
         self,
-        default: Optional[Union[Color, Undefined]] = UNDEF,
+        default: Optional[Union[Color, Auto, Undefined]] = UNDEF,
         selected: Optional[Union[Color, Undefined]] = UNDEF,
-        hover: Optional[Union[Color, Undefined]] = UNDEF,
+        hover: Optional[Union[Color, Auto, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
         map: Optional[Union[Auto, str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
@@ -1044,10 +1048,13 @@ class Scatter():
          'labeling': None}
         """
         if default is not UNDEF:
-            try:
-                self._color = to_rgba(default)
-            except ValueError:
-                pass
+            if default == 'auto':
+                self._color = (0, 0, 0, 0.66) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.66)
+            else:
+                try:
+                    self._color = to_rgba(default)
+                except ValueError:
+                    pass
 
         if selected is not UNDEF:
             try:
@@ -1057,11 +1064,14 @@ class Scatter():
                 pass
 
         if hover is not UNDEF:
-            try:
-                self._color_hover = to_rgba(hover)
-                self.update_widget('color_hover', self._color_hover)
-            except ValueError:
-                pass
+            if hover == 'auto':
+                self._color_hover = (0, 0, 0, 1) if self._background_color_luminance > 0.5 else (1, 1, 1, 1)
+            else:
+                try:
+                    self._color_hover = to_rgba(hover)
+                    self.update_widget('color_hover', self._color_hover)
+                except ValueError:
+                    pass
 
         if norm is not UNDEF:
             if callable(norm):
@@ -1774,6 +1784,7 @@ class Scatter():
                     self._connect_by = 'Custom Connect-By Data'
 
                 categorical_data = get_categorical_data(self.connect_by_data)
+
                 if categorical_data is not None:
                     self._points[:, COMPONENT_CONNECT] = categorical_data.cat.codes
                 elif pd.api.types.is_integer_dtype(self.connect_by_data.dtype):
@@ -1917,10 +1928,13 @@ class Scatter():
          'labeling': None}
         """
         if default is not UNDEF:
-            try:
-                self._connection_color = to_rgba(default)
-            except ValueError:
-                pass
+            if default == 'inherit':
+                self._connection_color = default
+            else:
+                try:
+                    self._connection_color = to_rgba(default)
+                except ValueError:
+                    pass
 
         if selected is not UNDEF:
             try:
@@ -1960,6 +1974,9 @@ class Scatter():
                 self._encodings.delete('connection_color')
 
             elif by == 'segment':
+                pass
+
+            elif by == 'inherit':
                 pass
 
             else:
@@ -3836,6 +3853,9 @@ class Scatter():
         if self._connection_color_by == 'segment':
             return 'segment'
 
+        if self._connection_color == 'inherit' or self._connection_color_by == 'inherit':
+            return 'inherit'
+
         if self._connection_color_data_dimension is not None:
             return component_idx_to_name(
                 self._encodings.data[self._connection_color_data_dimension].component
@@ -3845,18 +3865,18 @@ class Scatter():
 
     @property
     def js_connection_opacity_by(self):
-        if self._connection_color_data_dimension is not None:
+        if self._connection_opacity_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._connection_color_data_dimension].component
+                self._encodings.data[self._connection_opacity_data_dimension].component
             )
 
         return None
 
     @property
     def js_connection_size_by(self):
-        if self._connection_color_data_dimension is not None:
+        if self._connection_size_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._connection_color_data_dimension].component
+                self._encodings.data[self._connection_size_data_dimension].component
             )
 
         return None

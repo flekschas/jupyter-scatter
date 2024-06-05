@@ -6,7 +6,7 @@ from functools import partial
 from matplotlib.colors import AsinhNorm, LogNorm, Normalize, PowerNorm, SymLogNorm
 
 from jscatter.jscatter import Scatter, component_idx_to_name
-from jscatter.utils import create_default_norm, to_ndc
+from jscatter.utils import create_default_norm, to_ndc, TimeNormalize
 
 
 @pytest.fixture
@@ -71,6 +71,7 @@ def test_scatter_pandas(df):
 def test_xy_scale_shorthands(df):
     for norm, Norm in [
         ('linear', Normalize),
+        ('time', TimeNormalize),
         ('log', LogNorm),
         ('pow', partial(PowerNorm, gamma=2)),
     ]:

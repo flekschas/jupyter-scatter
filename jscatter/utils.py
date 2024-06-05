@@ -51,7 +51,12 @@ def sorting_to_dict(sorting):
         out[original_idx] = order_idx
     return out
 
-def create_default_norm():
+class TimeNormalize(Normalize):
+    is_time = True
+
+def create_default_norm(is_time=False):
+    if is_time:
+        return TimeNormalize(clip=True)
     return Normalize(clip=True)
 
 def to_ndc(X, norm):
@@ -63,6 +68,9 @@ def to_scale_type(norm = None):
 
     if (isinstance(norm, PowerNorm)):
         return f'pow_{norm.gamma}'
+
+    if (isinstance(norm, TimeNormalize)):
+        return 'time'
 
     if (isinstance(norm, Normalize)):
         return 'linear'

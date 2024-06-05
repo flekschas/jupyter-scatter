@@ -22,6 +22,7 @@ import {
   createNumericalBinGetter,
   createElementWithClass,
   remToPx,
+  createTimeFormat,
 } from "./utils";
 
 import { version } from "../package.json";
@@ -1819,18 +1820,29 @@ class JupyterScatterView {
 
   createXScale() {
     const domain = this.model.get('x_scale_domain');
-    this.xScale = getScale(this.model.get('x_scale'))
+    const scale = this.model.get('x_scale');
+    this.xScale = getScale(scale)
       .domain(domain)
       .range([-1, 1]);
-    this.xFormat = format(getD3FormatSpecifier(domain));
+    this.xFormat =
+      scale === 'time'
+        ? createTimeFormat(
+            this.points,
+            (point) => Math.floor(this.xScale.invert(point[0]).getTime() / 1000)
+          )
+        : format(getD3FormatSpecifier(domain));
   }
 
   createYScale() {
     const domain = this.model.get('y_scale_domain');
-    this.yScale = getScale(this.model.get('y_scale'))
+    const scale = this.model.get('y_scale');
+    this.yScale = getScale(scale)
       .domain(domain)
       .range([-1, 1]);
-    this.yFormat = format(getD3FormatSpecifier(domain));
+    this.yFormat =
+      scale === 'time'
+        ? createTimeFormat(this.points, (p) => this.yScale.invert(p[1]))
+        : format(getD3FormatSpecifier(domain));
   }
 
   createColorScale() {
@@ -2174,7 +2186,17 @@ class JupyterScatterView {
   }
 
   connectionColorByHandler(newValue) {
+    const currValue = this.scatterplot.get('pointConnectionColorBy');
     this.withPropertyChangeHandler('pointConnectionColorBy', newValue);
+
+    if (currValue === 'segment' || newValue === 'segment') {
+      // We need to fix this in regl-scatterplot and regl-line but changing from
+      // or to color the point connections by segment, requires recreating the
+      // point connections as the line's color indices change.
+      // As a workaround, redrawing the points triggers the recreation of the
+      // point connections.
+      this.scatterplot.draw(this.scatterplot.get('points'));
+    }
   }
 
   connectionOpacityHandler(newValue) {

@@ -38,7 +38,10 @@ Additionally, the following helper methods are removed as they are unnecessary.
 
 **Other Changes**:
 
+- Feat: Add basic support for x/y time scale via `Scatter(data=df, x='x', x_scale='time', y='y', y_scale='time')`
 - Docs: Add API documentation for `scatter.widget`
+- Docs: Add description for x/y scales
+- Docs: Add description for connected scatterplots
 - Fix: Match numerical and string IDs properly in `compose(match_by='XYZ')`
 - Fix: Ensure that the domain and histograms match by avoiding missing categorical indices
 - Fix: Ignore `NaN`s when computing histograms
@@ -52,6 +55,7 @@ Additionally, the following helper methods are removed as they are unnecessary.
 - Fix: Rely on pre-normalized data to get bin ID
 - Fix: Connect order
 - Fix: X/Y scale domain bug
+- Fix: Connected point bugs
 
 ## v0.15.1
 
