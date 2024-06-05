@@ -10,7 +10,7 @@ from typing import Dict, Optional, Union, List, Tuple
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_scale_type_from_df, get_domain_from_df, create_default_norm, create_labeling, get_histogram_from_df, sanitize_tooltip_properties
+from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_scale_type_from_df, get_domain_from_df, create_default_norm, create_labeling, get_histogram_from_df, sanitize_tooltip_properties, zerofy_missing_values
 from .types import Auto, Color, Scales, MouseModes, Auto, Reverse, Segment, Size, LegendPosition, VisualProperty, Labeling, TooltipPreviewType, TooltipPreviewImagePosition, TooltipPreviewImageSize, Undefined
 
 COMPONENT_CONNECT = 4
@@ -189,6 +189,7 @@ class Scatter():
 
         # We need to set the background first in order to choose sensible
         # default colors
+        self._reticle_color = 'auto'
         self._background_color = to_rgba(default_background_color)
         self._background_color_luminance = 1
         self._background_image = None
@@ -277,7 +278,6 @@ class Scatter():
         self._width = 'auto'
         self._height = 240
         self._reticle = True
-        self._reticle_color = 'auto'
         self._camera_target = [0, 0]
         self._camera_distance = 1.0
         self._camera_rotation = 0.0
@@ -547,7 +547,7 @@ class Scatter():
         x : str, array_like, optional
             The x coordinates given as either an array-like list of coordinates
             or a string referencing a column in `data`.
-        scale : {'linear', 'log', 'pow'}, tuple of floats, matplotlib.color.LogNorm, or matplotlib.color.PowerNorm, optional
+        scale : {'linear', 'time', 'log', 'pow'}, tuple of floats, matplotlib.color.LogNorm, or matplotlib.color.PowerNorm, optional
             The x scale
         kwargs : optional
             Options which can be used to skip updating the widget when
@@ -575,6 +575,8 @@ class Scatter():
         if scale is not UNDEF:
             if scale is None or scale == 'linear':
                 self._x_scale = create_default_norm()
+            elif scale == 'time':
+                self._x_scale = create_default_norm(True)
             elif scale == 'log':
                 self._x_scale = LogNorm(clip=True)
             elif scale == 'pow':
@@ -603,7 +605,7 @@ class Scatter():
 
         if x is not UNDEF or scale is not UNDEF:
             self.update_widget('prevent_filter_reset', True)
-            self._points[:, 0] = self.x_data.values
+            self._points[:, 0] = zerofy_missing_values(self.x_data.values, 'X')
 
             self._x_min = np.min(self._points[:, 0])
             self._x_max = np.max(self._points[:, 0])
@@ -622,14 +624,15 @@ class Scatter():
                 except ValueError:
                     pass
 
-            self._x_scale_domain = [self._x_scale.vmin, self._x_scale.vmax]
-
             # Normalize x coordinate to [-1,1]
             self._points[:, 0] = to_ndc(self._points[:, 0], self._x_scale)
+
+            self._x_scale_domain = [self._x_scale.vmin, self._x_scale.vmax]
 
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('x_title', self._x_by)
                 self.update_widget('x_domain', self._x_domain)
+                self.update_widget('x_scale_domain', self._x_scale_domain)
                 self.update_widget('points', self.get_point_list())
 
         if any_not([x, scale], UNDEF):
@@ -660,7 +663,7 @@ class Scatter():
         y : str, array_like, optional
             The y coordinates given as either an array-like list of coordinates
             or a string referencing a column in `data`.
-        scale : {'linear', 'log', 'pow'}, tuple of floats, matplotlib.color.LogNorm, or matplotlib.color.PowerNorm, optional
+        scale : {'linear', 'time', 'log', 'pow'}, tuple of floats, matplotlib.color.LogNorm, or matplotlib.color.PowerNorm, optional
             The y scale
         kwargs : optional
             Options which can be used to skip updating the widget when
@@ -688,6 +691,8 @@ class Scatter():
         if scale is not UNDEF:
             if scale is None or scale == 'linear':
                 self._y_scale = create_default_norm()
+            elif scale == 'time':
+                self._y_scale = create_default_norm(True)
             elif scale == 'log':
                 self._y_scale = LogNorm(clip=True)
             elif scale == 'pow':
@@ -716,7 +721,7 @@ class Scatter():
 
         if y is not UNDEF or scale is not UNDEF:
             self.update_widget('prevent_filter_reset', True)
-            self._points[:, 1] = self.y_data.values
+            self._points[:, 1] = zerofy_missing_values(self.y_data.values, 'Y')
 
             self._y_min = np.min(self._points[:, 1])
             self._y_max = np.max(self._points[:, 1])
@@ -735,14 +740,15 @@ class Scatter():
                 except ValueError:
                     pass
 
-            self._y_scale_domain = [self._y_scale.vmin, self._y_scale.vmax]
-
             # Normalize y coordinate to [-1,1]
             self._points[:, 1] = to_ndc(self._points[:, 1], self._y_scale)
+
+            self._y_scale_domain = [self._y_scale.vmin, self._y_scale.vmax]
 
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('y_title', self._y_by)
                 self.update_widget('y_domain', self._y_domain)
+                self.update_widget('y_scale_domain', self._y_scale_domain)
                 self.update_widget('points', self.get_point_list())
 
         if any_not([y, scale], UNDEF):
@@ -814,11 +820,14 @@ class Scatter():
         if any_not([x, y, x_scale, y_scale], UNDEF):
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('x_scale', to_scale_type(self._x_scale))
+                self.update_widget('x_scale_domain', self._x_scale_domain)
                 self.update_widget('x_domain', self._x_domain)
                 self.update_widget('x_title', self._x_by)
                 self.update_widget('y_scale', to_scale_type(self._y_scale))
+                self.update_widget('y_scale_domain', self._y_scale_domain)
                 self.update_widget('y_domain', self._y_domain)
                 self.update_widget('y_title', self._y_by)
+                self.update_widget('axes_labels', self.get_axes_labels())
                 self.update_widget('points', self.get_point_list())
             return self
 
@@ -955,9 +964,9 @@ class Scatter():
 
     def color(
         self,
-        default: Optional[Union[Color, Undefined]] = UNDEF,
+        default: Optional[Union[Color, Auto, Undefined]] = UNDEF,
         selected: Optional[Union[Color, Undefined]] = UNDEF,
-        hover: Optional[Union[Color, Undefined]] = UNDEF,
+        hover: Optional[Union[Color, Auto, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
         map: Optional[Union[Auto, str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
@@ -989,7 +998,7 @@ class Scatter():
         norm : array_like, optional
             The normalization method for data-driven color encoding. It can
             either be a tuple defining a value range that maps to `[0, 1]` with
-            `matplotlib.colors.N ormalize` or a matplotlib normalizer instance.
+            `matplotlib.colors.Normalize` or a matplotlib normalizer instance.
         order : array_like, optional
             The order of the color map. It can either be a list of values (for
             categorical coloring) or `reverse` to reverse the color map.
@@ -1039,10 +1048,13 @@ class Scatter():
          'labeling': None}
         """
         if default is not UNDEF:
-            try:
-                self._color = to_rgba(default)
-            except ValueError:
-                pass
+            if default == 'auto':
+                self._color = (0, 0, 0, 0.66) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.66)
+            else:
+                try:
+                    self._color = to_rgba(default)
+                except ValueError:
+                    pass
 
         if selected is not UNDEF:
             try:
@@ -1052,11 +1064,14 @@ class Scatter():
                 pass
 
         if hover is not UNDEF:
-            try:
-                self._color_hover = to_rgba(hover)
-                self.update_widget('color_hover', self._color_hover)
-            except ValueError:
-                pass
+            if hover == 'auto':
+                self._color_hover = (0, 0, 0, 1) if self._background_color_luminance > 0.5 else (1, 1, 1, 1)
+            else:
+                try:
+                    self._color_hover = to_rgba(hover)
+                    self.update_widget('color_hover', self._color_hover)
+                except ValueError:
+                    pass
 
         if norm is not UNDEF:
             if callable(norm):
@@ -1089,12 +1104,12 @@ class Scatter():
                     self._color_data = pd.Series(by, index=self._data_index)
                     self._color_by = 'Custom Color Data'
 
-                self._encodings.set('color', self._color_by)
+                self._encodings.set('color', self._color_data_dimension)
 
                 check_encoding_dtype(self.color_data)
 
                 categorical_data = get_categorical_data(self.color_data)
-                component = self._encodings.data[self._color_by].component
+                component = self._encodings.data[self._color_data_dimension].component
 
                 if categorical_data is not None:
                     self._color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
@@ -1102,17 +1117,19 @@ class Scatter():
                     self._color_histogram = get_histogram_from_df(categorical_data)
                 else:
                     self._color_categories = None
-                    self._points[:, component] = self._color_norm(self.color_data.values)
+                    self._points[:, component] = self._color_norm(
+                        zerofy_missing_values(self.color_data.values, 'Color')
+                    )
                     self._color_histogram = get_histogram_from_df(
                         self._points[:, component],
                         self.get_histogram_bins("color"),
                         self.get_histogram_range("color")
                     )
 
-                if not self._encodings.data[self._color_by].prepared:
+                if not self._encodings.data[self._color_data_dimension].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._color_by].prepared = True
+                    self._encodings.data[self._color_data_dimension].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
@@ -1183,7 +1200,7 @@ class Scatter():
             self.update_widget('color', final_color_map)
             self._encodings.set_legend(
                 'color',
-                self._color_map,
+                final_color_map,
                 self._color_norm,
                 self._color_categories,
                 self._color_labeling,
@@ -1196,6 +1213,7 @@ class Scatter():
 
         self.update_widget('color_histogram', self._color_histogram)
         self.update_widget('color_by', self.js_color_by)
+        self.update_widget('color_title', self._color_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -1350,11 +1368,11 @@ class Scatter():
                     self._opacity_data = pd.Series(by, index=self._data_index)
                     self._opacity_by = 'Custom Opacity Data'
 
-                self._encodings.set('opacity', self._opacity_by)
+                self._encodings.set('opacity', self._opacity_data_dimension)
 
                 check_encoding_dtype(self.opacity_data)
 
-                component = self._encodings.data[self._opacity_by].component
+                component = self._encodings.data[self._opacity_data_dimension].component
                 categorical_data = get_categorical_data(self.opacity_data)
 
                 if categorical_data is not None:
@@ -1362,7 +1380,9 @@ class Scatter():
                     self._opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                     self._opacity_histogram = get_histogram_from_df(categorical_data)
                 else:
-                    self._points[:, component] = self._opacity_norm(self.opacity_data.values)
+                    self._points[:, component] = self._opacity_norm(
+                        zerofy_missing_values(self.opacity_data.values, 'Opacity')
+                    )
                     self._opacity_histogram = get_histogram_from_df(
                         self._points[:, component],
                         self.get_histogram_bins("opacity"),
@@ -1370,10 +1390,10 @@ class Scatter():
                     )
                     self._opacity_categories = None
 
-                if not self._encodings.data[self._opacity_by].prepared:
+                if not self._encodings.data[self._opacity_data_dimension].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._opacity_by].prepared = True
+                    self._encodings.data[self._opacity_data_dimension].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static opacity encoding
@@ -1440,6 +1460,7 @@ class Scatter():
 
         self.update_widget('opacity_histogram', self._opacity_histogram)
         self.update_widget('opacity_by', self.js_opacity_by)
+        self.update_widget('opacity_title', self._opacity_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -1579,12 +1600,12 @@ class Scatter():
                 else:
                     self._size_data = pd.Series(by, index=self._data_index)
                     self._size_by = 'Custom Size Data'
-                    
-                self._encodings.set('size', self._size_by)
+
+                self._encodings.set('size', self._size_data_dimension)
 
                 check_encoding_dtype(self.size_data)
 
-                component = self._encodings.data[self._size_by].component
+                component = self._encodings.data[self._size_data_dimension].component
                 categorical_data = get_categorical_data(self.size_data)
 
                 if categorical_data is not None:
@@ -1592,7 +1613,9 @@ class Scatter():
                     self._size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                     self._size_histogram = get_histogram_from_df(categorical_data)
                 else:
-                    self._points[:, component] = self._size_norm(self.size_data.values)
+                    self._points[:, component] = self._size_norm(
+                        zerofy_missing_values(self.size_data.values, 'Size')
+                    )
                     self._size_histogram = get_histogram_from_df(
                         self._points[:, component],
                         self.get_histogram_bins("size"),
@@ -1600,10 +1623,10 @@ class Scatter():
                     )
                     self._size_categories = None
 
-                if not self._encodings.data[self._size_by].prepared:
+                if not self._encodings.data[self._size_data_dimension].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._size_by].prepared = True
+                    self._encodings.data[self._size_data_dimension].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
@@ -1669,6 +1692,7 @@ class Scatter():
 
         self.update_widget('size_histogram', self._size_histogram)
         self.update_widget('size_by', self.js_size_by)
+        self.update_widget('size_title', self._size_by)
         self.update_widget('legend_encoding', self.get_legend_encoding())
 
         if data_updated and 'skip_widget_update' not in kwargs:
@@ -1760,6 +1784,7 @@ class Scatter():
                     self._connect_by = 'Custom Connect-By Data'
 
                 categorical_data = get_categorical_data(self.connect_by_data)
+
                 if categorical_data is not None:
                     self._points[:, COMPONENT_CONNECT] = categorical_data.cat.codes
                 elif pd.api.types.is_integer_dtype(self.connect_by_data.dtype):
@@ -1772,14 +1797,14 @@ class Scatter():
         if order is not UNDEF:
             self._connect_order = order
 
-            if by is not None:
-                if isinstance(by, str):
+            if order is not None:
+                if isinstance(order, str):
                     self._connect_order_data = None
                 else:
                     self._connect_order_data = pd.Series(
-                        by,
+                        order,
                         index=self._data_index,
-                        dtype='category'
+                        dtype='int'
                     )
                     self._connect_order = 'Custom Connect-Order Data'
 
@@ -1903,10 +1928,13 @@ class Scatter():
          'labeling': None}
         """
         if default is not UNDEF:
-            try:
-                self._connection_color = to_rgba(default)
-            except ValueError:
-                pass
+            if default == 'inherit':
+                self._connection_color = default
+            else:
+                try:
+                    self._connection_color = to_rgba(default)
+                except ValueError:
+                    pass
 
         if selected is not UNDEF:
             try:
@@ -1948,6 +1976,9 @@ class Scatter():
             elif by == 'segment':
                 pass
 
+            elif by == 'inherit':
+                pass
+
             else:
                 if isinstance(by, str):
                     self._connection_color_data = None
@@ -1958,11 +1989,11 @@ class Scatter():
                     )
                     self._connection_color_by = 'Custom Connection-Color Data'
 
-                self._encodings.set('connection_color', self._connection_color_by)
+                self._encodings.set('connection_color', self._connection_color_data_dimension)
 
                 check_encoding_dtype(self.connection_color_data)
 
-                component = self._encodings.data[self._connection_color_by].component
+                component = self._encodings.data[self._connection_color_data_dimension].component
                 categorical_data = get_categorical_data(self.connection_color_data)
 
                 if categorical_data is not None:
@@ -1970,12 +2001,14 @@ class Scatter():
                     self._points[:, component] = categorical_data.cat.codes
                 else:
                     self._connection_color_categories = None
-                    self._points[:, component] = self._connection_color_norm(self.connection_color_data.values)
+                    self._points[:, component] = self._connection_color_norm(
+                        zerofy_missing_values(self.connection_color_data.values, 'Connection color')
+                    )
 
-                if not self._encodings.data[self._connection_color_by].prepared:
+                if not self._encodings.data[self._connection_color_data_dimension].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._connection_color_by].prepared = True
+                    self._encodings.data[self._connection_color_data_dimension].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
@@ -2202,24 +2235,26 @@ class Scatter():
                     )
                     self._connection_opacity_by = 'Custom Connection-Opacity Data'
 
-                self._encodings.set('connection_opacity', self._connection_opacity_by)
+                self._encodings.set('connection_opacity', self._connection_opacity_data_dimension)
 
                 check_encoding_dtype(self.connection_opacity_data)
 
-                component = self._encodings.data[self._connection_opacity_by].component
+                component = self._encodings.data[self._connection_opacity_data_dimension].component
                 categorical_data = get_categorical_data(self.connection_opacity_data)
 
                 if categorical_data is not None:
                     self._points[:, component] = categorical_data.cat.codes
                     self._connection_opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                 else:
-                    self._points[:, component] = self._connection_opacity_norm(self.connection_opacity_data.values)
+                    self._points[:, component] = self._connection_opacity_norm(
+                        zerofy_missing_values(self.connection_opacity_data.values, 'Connection opacity')
+                    )
                     self._connection_opacity_categories = None
 
-                if not self._encodings.data[self._connection_opacity_by].prepared:
+                if not self._encodings.data[self._connection_opacity_data_dimension].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._connection_opacity_by].prepared = True
+                    self._encodings.data[self._connection_opacity_data_dimension].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static opacity encoding
@@ -2431,24 +2466,26 @@ class Scatter():
                     )
                     self._connection_size_by = 'Custom Connection-Size Data'
 
-                self._encodings.set('connection_size', self._connection_size_by)
+                self._encodings.set('connection_size', self._connection_size_data_dimension)
 
                 check_encoding_dtype(self.connection_size_data)
 
-                component = self._encodings.data[self._connection_size_by].component
+                component = self._encodings.data[self._connection_size_data_dimension].component
                 categorical_data = get_categorical_data(self.connection_size_data)
 
                 if categorical_data is not None:
                     self._points[:, component] = categorical_data.cat.codes
                     self._connection_size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
                 else:
-                    self._points[:, component] = self._connection_size_norm(self.connection_size_data.values)
+                    self._points[:, component] = self._connection_size_norm(
+                        zerofy_missing_values(self.connection_size_data.values, 'Connection size')
+                    )
                     self._connection_size_categories = None
 
-                if not self._encodings.data[self._connection_size_by].prepared:
+                if not self._encodings.data[self._connection_size_data_dimension].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._connection_size_by].prepared = True
+                    self._encodings.data[self._connection_size_data_dimension].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static size encoding
@@ -3110,22 +3147,17 @@ class Scatter():
                 pass
 
         if labels is not UNDEF:
-            if labels == False:
+            if isinstance(labels, bool):
                 self._axes_labels = labels
-            elif labels == True:
-                if self._data is None:
-                    self._axes_labels = ['x', 'y']
-                else:
-                    self._axes_labels = [self._x, self._y]
             elif isinstance(labels, dict):
                 self._axes_labels = [
-                    labels.get('x', 'x'), labels.get('y', 'y')
+                    labels.get('x', ''), labels.get('y', '')
                 ]
             else:
                 self._axes_labels = labels
 
             try:
-                self.update_widget('axes_labels', self._axes_labels)
+                self.update_widget('axes_labels', self.get_axes_labels())
             except:
                 pass
 
@@ -3751,10 +3783,46 @@ class Scatter():
         return self._data.index
 
     @property
+    def _color_data_dimension(self):
+        if self._color_by is None:
+            return None
+        return f'{self._color_by}:{to_scale_type(self._color_norm)}'
+
+    @property
+    def _opacity_data_dimension(self):
+        if self._opacity_by is None or self._opacity_by == 'density':
+            return None
+        return f'{self._opacity_by}:{to_scale_type(self._opacity_norm)}'
+
+    @property
+    def _size_data_dimension(self):
+        if self._size_by is None:
+            return None
+        return f'{self._size_by}:{to_scale_type(self._size_norm)}'
+
+    @property
+    def _connection_color_data_dimension(self):
+        if self._connection_color_by is None or self._connection_color_by == 'segment':
+            return None
+        return f'{self._connection_color_by}:{to_scale_type(self._connection_color_norm)}'
+
+    @property
+    def _connection_opacity_data_dimension(self):
+        if self._connection_opacity_by is None:
+            return None
+        return f'{self._connection_opacity_by}:{to_scale_type(self._connection_opacity_norm)}'
+
+    @property
+    def _connection_size_data_dimension(self):
+        if self._connection_size_by is None:
+            return None
+        return f'{self._connection_size_by}:{to_scale_type(self._connection_size_norm)}'
+
+    @property
     def js_color_by(self):
-        if self._color_by is not None:
+        if self._color_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._color_by].component
+                self._encodings.data[self._color_data_dimension].component
             )
 
         return None
@@ -3764,18 +3832,18 @@ class Scatter():
         if self._opacity_by == 'density':
             return 'density'
 
-        elif self._opacity_by is not None:
+        if self._opacity_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._opacity_by].component
+                self._encodings.data[self._opacity_data_dimension].component
             )
 
         return None
 
     @property
     def js_size_by(self):
-        if self._size_by is not None:
+        if self._size_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._size_by].component
+                self._encodings.data[self._size_data_dimension].component
             )
 
         return None
@@ -3785,27 +3853,30 @@ class Scatter():
         if self._connection_color_by == 'segment':
             return 'segment'
 
-        elif self._connection_color_by is not None:
+        if self._connection_color == 'inherit' or self._connection_color_by == 'inherit':
+            return 'inherit'
+
+        if self._connection_color_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._connection_color_by].component
+                self._encodings.data[self._connection_color_data_dimension].component
             )
 
         return None
 
     @property
     def js_connection_opacity_by(self):
-        if self._connection_opacity_by is not None:
+        if self._connection_opacity_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._connection_opacity_by].component
+                self._encodings.data[self._connection_opacity_data_dimension].component
             )
 
         return None
 
     @property
     def js_connection_size_by(self):
-        if self._connection_size_by is not None:
+        if self._connection_size_data_dimension is not None:
             return component_idx_to_name(
-                self._encodings.data[self._connection_size_by].component
+                self._encodings.data[self._connection_size_data_dimension].component
             )
 
         return None
@@ -3820,7 +3891,7 @@ class Scatter():
             axes=self._axes,
             axes_color=self.get_axes_color(),
             axes_grid=self._axes_grid,
-            axes_labels=self._axes_labels,
+            axes_labels=self.get_axes_labels(),
             background_color=self._background_color,
             background_image=self._background_image,
             camera_distance=self._camera_distance,
@@ -3927,6 +3998,17 @@ class Scatter():
 
     def get_histogram_range(self, property):
         return get_histogram_range(self._tooltip_histograms_ranges, property)
+
+    def get_axes_labels(self):
+        if self._axes_labels == False:
+            return self._axes_labels
+        elif self._axes_labels == True:
+            if self._data is None:
+                return ['x', 'y']
+            else:
+                return [self._x_by, self._y_by]
+        else:
+            self._axes_labels = labels
 
     def show(self):
         """

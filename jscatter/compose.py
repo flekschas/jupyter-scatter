@@ -127,7 +127,7 @@ def compose(
                 return matched_id
 
             try:
-                return scatter._data.query(f'{match_by[index]} == {matched_id}').index.tolist()[0]
+                return scatter._data.query(f'{match_by[index]} == @matched_id').index.tolist()[0]
             except IndexError:
                 return -1
 

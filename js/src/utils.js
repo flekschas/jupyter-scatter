@@ -1,4 +1,5 @@
-import { scaleLog, scalePow, scaleLinear, scaleOrdinal } from 'd3-scale';
+import { scaleLog, scalePow, scaleLinear, scaleOrdinal, scaleTime } from 'd3-scale';
+import { utcFormat } from 'd3-time-format';
 
 export function camelToSnake(string) {
   return string.replace(/[\w]([A-Z])/g, (m) => m[0] + "_" + m[1]).toLowerCase();
@@ -50,6 +51,9 @@ export function getScale(scaleType) {
   if (scaleType.startsWith('pow'))
     return scalePow().exponent(scaleType.split('_')[1] || 2);
 
+  if (scaleType === 'time')
+    return scaleTime();
+
   if (scaleType === 'linear')
     return scaleLinear();
 
@@ -74,10 +78,10 @@ export function getTooltipFontSize(size) {
   return '0.675rem';
 }
 
-export function createNumericalBinGetter(histogram, domain, range) {
+export function createNumericalBinGetter(histogram, domain) {
   const maxBinId = histogram.length - 1;
-  const min = range ? range[0] : domain[0];
-  const extent = range ? range[1] - range[0] : domain[1] - domain[0];
+  const min = domain[0];
+  const extent = domain[1] - domain[0];
   return (value) => Math.round(((value - min) / extent) * maxBinId);
 }
 
@@ -97,4 +101,60 @@ export function createElementWithClass(tagName, className) {
 
 export function remToPx(rem) {
   return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+}
+
+const formatMillisecond = utcFormat("%a, %b %e, %Y %H:%M:%S.%L");
+const formatSecond = utcFormat("%a, %b %e, %Y %H:%M:%S");
+const formatMinute = utcFormat("%a, %b %e, %Y %H:%M");
+const formatHour = utcFormat("%a, %b %e, %Y %H");
+const formatDay = utcFormat("%a, %b %e, %Y");
+const formatWeek = utcFormat("%b %e, %Y");
+const formatMonth = utcFormat("%b %Y");
+const formatYear = utcFormat("%Y");
+
+const SEC_MSEC = 1000;
+const MIN_MSEC = 60 * SEC_MSEC;
+const HOUR_MSEC = 60 * MIN_MSEC;
+const DAY_MSEC = 24 * HOUR_MSEC;
+const WEEK_MSEC = 7 * DAY_MSEC;
+const MONTH_MSEC = 4 * WEEK_MSEC;
+const YEAR_MSEC = 365 * DAY_MSEC;
+
+export function medianTimeInterval(points, accessor) {
+  const values = [];
+  for (const point of points) {
+    values.push(accessor(point));
+  }
+  values.sort();
+
+  const intervals = []
+  for (let i = 1; i < values.length; i++) {
+    const interval = values[i] - values[i - 1];
+    if (interval > 0) {
+      intervals.push(interval);
+    }
+  }
+  intervals.sort();
+
+  return intervals[Math.floor(intervals.length / 2)];
+}
+
+export function createTimeFormat(points, accessor) {
+  const medianInterval = medianTimeInterval(points, accessor);
+  if (medianInterval > YEAR_MSEC) return formatYear;
+  if (medianInterval > MONTH_MSEC) return formatMonth;
+  if (medianInterval > WEEK_MSEC) return formatWeek;
+  if (medianInterval > DAY_MSEC) return formatDay;
+  if (medianInterval > HOUR_MSEC) return formatHour;
+  if (medianInterval > MIN_MSEC) return formatMinute;
+  if (medianInterval > SEC_MSEC) return formatSecond;
+  return formatMillisecond;
+}
+
+export function createXTimeFormat(points) {
+  return createTimeFormat(points, (point) => point[0])
+}
+
+export function createYTimeFormat(points) {
+  return createTimeFormat(points, (point) => point[1])
 }
