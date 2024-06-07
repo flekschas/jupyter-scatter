@@ -1,3 +1,7 @@
+## v0.17.0
+
+- Feat: Add `scatter.show_tooltip(point_idx)`
+
 ## v0.16.0
 
 **BREAKING CHANGES**:
