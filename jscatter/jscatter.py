@@ -4025,6 +4025,28 @@ class Scatter():
         """
         return self.widget.show()
 
+    def show_tooltip(self, pointIdx: int):
+        """
+        Programmatically show the tooltip for a point.
+
+        If the widget has not been instantiated yet or the tooltip is not
+        activated, this method is a noop.
+
+        Returns
+        -------
+        self
+            The Scatter instance itself is returned.
+
+        Examples
+        --------
+        >>> scatter.show_tooltip(42)
+        """
+
+        if self._widget is not None and self._tooltip == True:
+            self._widget.show_tooltip(pointIdx)
+
+        return self
+
 
 def plot(
     x: Union[str, List[float], np.ndarray],

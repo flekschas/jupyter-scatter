@@ -386,8 +386,9 @@ class JupyterScatterView {
 
   customEventHandler(event) {
     if (event.type === TOOLTIP_EVENT_TYPE) {
-      if (event.index !== this.tooltipPointIdx) return;
+      if (event.index !== this.tooltipPointIdx && event.show !== true) return;
       this.tooltipDataHandlers(event)
+      if (event.show) this.showTooltip(event.index);
     }
   }
 

@@ -237,6 +237,16 @@ class JupyterScatter(anywidget.AnyWidget):
                 "properties": data[event["properties"]].to_dict()
             })
 
+    def show_tooltip(self, point_idx):
+        data = self.data.iloc[point_idx]
+        self.send({
+            "type": TOOLTIP_EVENT_TYPE,
+            "show": True,
+            "index": point_idx,
+            "preview": data[self.tooltip_preview] if self.tooltip_preview is not None else None,
+            "properties": data[self.tooltip_properties_non_visual_info.keys()].to_dict() if self.tooltip_properties_non_visual_info is not None else {}
+        })
+
     def create_download_view_button(self, icon_only=False, width=None):
         button = widgets.Button(
             description='' if icon_only else 'Download View',

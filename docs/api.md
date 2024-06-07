@@ -6,7 +6,8 @@
     - [selection()](#scatter.selection) and [filter()](#scatter.filter)
     - [color()](#scatter.color), [opacity()](#scatter.opacity), and [size()](#scatter.size)
     - [connect()](#scatter.connect), [connection_color()](#scatter.connection_color), [connection_opacity()](#scatter.connection_opacity), and [connection_size()](#scatter.connection_size)
-    - [axes()](#scatter.axes), [legend()](#scatter.legend), and [tooltip()](#scatter.tooltip)
+    - [axes()](#scatter.axes) and [legend()](#scatter.legend)
+    - [tooltip()](#scatter.tooltip) and [show_tooltip()](#scatter.show_tooltip)
     - [zoom()](#scatter.zoom) and [camera()](#scatter.camera)
     - [lasso()](#scatter.lasso), [reticle()](#scatter.reticle), and [mouse()](#scatter.mouse),
     - [background()](#scatter.background) and [options()](#scatter.options)
@@ -421,6 +422,30 @@ scatter.tooltip(
   preview_image_size="cover",
   size="small",
 )
+```
+
+
+### scatter.show_tooltip(_point_idx_) {#scatter.show_tooltip}
+
+Programmatically show a tooltip for a point.
+
+::: info
+The tooltip is not permanent and will go away as soon as you mouse over some
+other points in the plot.
+:::
+
+::: warning
+If the widget has not been instantiated yet or the tooltip has not been
+activated via `scatter.tooltip(True)`, this method is a noop.
+:::
+
+**Arguments:**
+- `point_idx` is a point index.
+
+**Example:**
+
+```python
+scatter.show_tooltip(42)
 ```
 
 
