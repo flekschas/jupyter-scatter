@@ -29,7 +29,8 @@ bibliography: paper/refs.bib
 
 Jupyter Scatter is a scalable, interactive, and interlinked scatterplot widget for exploring datasets in Jupyter Notebook/Lab, Colab, and VS Code. Thanks to its WebGL-based rendering engine [@lekschas2023regl], Jupyter Scatter can render and animate up to several million data points. The widget focuses on data-driven visual encodings and offers perceptually-effective point color and opacity settings by default. For interactive exploration, Jupyter Scatter features two-way zoom and point selections. Furthermore, the widget can compose multiple scatterplots and synchronize their views and selections, which is useful for comparing datasets. Finally, Jupyter Scatter's API integrates with Pandas DataFrames [@mckinney2010data] and Matplotlib [@hunter2007matplotlib] and offers functional methods that group properties by type to ease accessibility and readability.
 
-![Examples of Jupyter Scatter.\label{fig:teaser}](paper/teaser.jpg)
+![Examples of Jupyter Scatter. Top row left to right: A 10M point scatterplot of the Roessler Attractor. A connected scatterplot of the market capitalization over the last five years of top ten S&P500 company according to YCharts. Five linked embedding plots of epigenomic data [@dekker2023spatial] that are connected to the HiGlass genome browser [@kerpedjiev2018higlass]. Bottom row left to right: A single-cell embedding plot of tumor data [@mair2022extricating] that was clustered and annotated with FAUST [@greene2021new, @greene2022data]. Several linked embedding plots of chromatin state datasets [@spracklin2023diverse]. An embedding plot of news headlines [@misra2022news] that is linked to a widget for displaying selected articles.
+\label{fig:teaser}](paper/teaser.jpg)
 
 # Usage Scenario
 
@@ -54,7 +55,7 @@ scatter.show()
 
 ![GeoNames Dataset of Cities Around the World.\label{fig:geonames}](paper/geonames.jpg)
 
-Without specifying a color map, Jupyter Scatter uses the categorical colorblind-safe palette from @okabe2008color for the `Continent` column, which has seven unique values. For columns with continuous data, it automatically selects Matplotlib's [@hunter2007matplotlib] _Viridis_ color palette. As shown in \autoref{fig:teaser} Left, Jupyter Scatter dynamically adjusts the point opacity based on the point density within the field of view. This means points become more opaque when zooming into sparse areas and more transparent when zooming out into an area that contains many points. The dynamic opacity addresses over-plotting issues when zoomed out and visibility issues when zoomed in.
+Without specifying a color map, Jupyter Scatter uses the categorical colorblind-safe palette from @okabe2008color for the `Continent` column, which has seven unique values. For columns with continuous data, it automatically selects Matplotlib's [@hunter2007matplotlib] _Viridis_ color palette. As shown in \autoref{fig:teaser} and \autoref{fig:geonames} Left, Jupyter Scatter dynamically adjusts the point opacity based on the point density within the field of view. This means points become more opaque when zooming into sparse areas and more transparent when zooming out into an area that contains many points. The dynamic opacity addresses over-plotting issues when zoomed out and visibility issues when zoomed in.
 
 Jupyter Scatter offers many ways to customize the point color, size, and opacity encodings. To simplify configuration, it provides topic-specific methods for setting up the scatterplot, rather than requiring all properties to be set during the instantiation of `Scatter`. For instance, as shown in \autoref{fig:geonames} Right, the point opacity (`0.5`), size (asinh-normalized), and color (log-normalized population using Matplotlib's [@hunter2007matplotlib] _Magma_ color palette in reverse order) can be set using the following methods.
 
@@ -75,7 +76,7 @@ scatter.tooltip(True, properties=['color', 'Latitude', 'Country'], preview='Name
 
 the tooltip can show a point's data distribution in context to the whole dataset and include a text, image or audio-based media preview. For instance, in the above example (\autoref{fig:geonames} Right) we decided to show the distribution of the visually encoded color property as well as the `Latitude` and `Country` columns. For numerical properties, the distribution is visualized as a bar chart and for categorical properties the distribution is visualized as a treemap. As the media preview we're showing the city name.
 
-Exploring a scatterplot often involves studying subsets of the points. To select points, one can either long press and lasso-select points interactively in the plot (\autoref{fig:teaser} ???) or query-select points (\autoref{fig:geonames} Right) as shown below. In this example, we select all cities with a population greater than ten million.
+Exploring a scatterplot often involves studying subsets of the points. To select points, one can either long press and lasso-select points interactively in the plot (\autoref{fig:fashion-mnist} Bottom Left) or query-select points (\autoref{fig:geonames} Right) as shown below. In this example, we select all cities with a population greater than ten million.
 
 ```py
 scatter.selection(geonames.query('Population > 10_000_000').index)
