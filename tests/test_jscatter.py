@@ -36,6 +36,33 @@ def df() -> pd.DataFrame:
     return df
 
 
+@pytest.fixture
+def df2() -> pd.DataFrame:
+    num_groups = 10
+
+    data = np.random.rand(500, 7)
+    data[:, 2] *= 200
+    data[:, 3] *= 200
+    data[:, 3] = data[:, 3].astype(int)
+    data[:, 4] = np.round(data[:, 4] * (num_groups - 1)).astype(int)
+    data[:, 5] = np.repeat(np.arange(100), 5).astype(int)
+    data[:, 6] = np.resize(np.arange(5), 500).astype(int)
+
+    df = pd.DataFrame(
+        data, columns=['a', 'b', 'c', 'd', 'group', 'connect', 'connect_order']
+    )
+    df['group'] = (
+        df['group']
+        .astype('int')
+        .astype('category')
+        .map(lambda c: chr(65 + c), na_action=None)
+    )
+    df['connect'] = df['connect'].astype('int')
+    df['connect_order'] = df['connect_order'].astype('int')
+
+    return df
+
+
 def test_component_idx_to_name():
     assert component_idx_to_name(2) == 'valueA'
     assert component_idx_to_name(3) == 'valueB'
@@ -60,12 +87,23 @@ def test_scatter_numpy():
 
 def test_scatter_pandas(df):
     scatter = Scatter(data=df, x='a', y='b')
-    widget = scatter.widget
-    widget_data = np.asarray(widget.points)
+    widget_data = np.asarray(scatter.widget.points)
 
-    assert (500, 4) == np.asarray(widget.points).shape
+    assert (500, 4) == widget_data.shape
     assert np.allclose(to_ndc(df['a'].values, create_default_norm()), widget_data[:, 0])
     assert np.allclose(to_ndc(df['b'].values, create_default_norm()), widget_data[:, 1])
+
+
+def test_scatter_pandas_update(df, df2):
+    scatter = Scatter(data=df, x='a', y='b')
+    scatter.data(df2)
+    widget_data = np.asarray(scatter.widget.points)
+
+    assert df['a'].max() != df2['a'].max()
+    assert df['b'].max() != df2['b'].max()
+
+    assert np.allclose(to_ndc(df2['a'].values, create_default_norm()), widget_data[:, 0])
+    assert np.allclose(to_ndc(df2['b'].values, create_default_norm()), widget_data[:, 1])
 
 
 def test_xy_scale_shorthands(df):

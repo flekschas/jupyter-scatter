@@ -1,3 +1,7 @@
+## v0.16.1
+
+- Fix: reset scale & norm ranges upon updating the data via `scatter.data()`
+
 ## v0.16.0
 
 **BREAKING CHANGES**:

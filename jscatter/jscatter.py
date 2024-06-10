@@ -504,6 +504,24 @@ class Scatter():
 
             self._points = np.zeros((self._n, 6))
 
+            # Reset scale & norm ranges
+            self._x_scale.vmin = None
+            self._x_scale.vmax = None
+            self._y_scale.vmin = None
+            self._y_scale.vmax = None
+            self._color_norm.vmin = None
+            self._color_norm.vmax = None
+            self._opacity_norm.vmin = None
+            self._opacity_norm.vmax = None
+            self._size_norm.vmin = None
+            self._size_norm.vmax = None
+            self._connection_color_norm.vmin = None
+            self._connection_color_norm.vmax = None
+            self._connection_opacity_norm.vmin = None
+            self._connection_opacity_norm.vmax = None
+            self._connection_size_norm.vmin = None
+            self._connection_size_norm.vmax = None
+
             self.x(skip_widget_update=True, **self.x())
             self.y(skip_widget_update=True, **self.y())
             self.color(skip_widget_update=True, **self.color())
