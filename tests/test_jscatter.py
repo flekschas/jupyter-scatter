@@ -95,15 +95,21 @@ def test_scatter_pandas(df):
 
 
 def test_scatter_pandas_update(df, df2):
-    scatter = Scatter(data=df, x='a', y='b')
+    x = 'a'
+    y = 'b'
+    scatter = Scatter(data=df, x=x, y=y)
+    assert np.allclose(np.array([df[x].min(), df[x].max()]), np.array(scatter._x_scale_domain))
+    assert np.allclose(np.array([df[y].min(), df[y].max()]), np.array(scatter._y_scale_domain))
+
     scatter.data(df2)
-    widget_data = np.asarray(scatter.widget.points)
+    assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter._x_scale_domain))
+    assert np.allclose(np.array([df2[y].min(), df2[y].max()]), np.array(scatter._y_scale_domain))
 
-    assert df['a'].max() != df2['a'].max()
-    assert df['b'].max() != df2['b'].max()
+    assert df[x].max() != df2[x].max()
+    assert df[y].max() != df2[y].max()
 
-    assert np.allclose(to_ndc(df2['a'].values, create_default_norm()), widget_data[:, 0])
-    assert np.allclose(to_ndc(df2['b'].values, create_default_norm()), widget_data[:, 1])
+    assert np.allclose(to_ndc(df2[x].values, create_default_norm()), scatter.widget.points[:, 0])
+    assert np.allclose(to_ndc(df2[y].values, create_default_norm()), scatter.widget.points[:, 1])
 
 
 def test_xy_scale_shorthands(df):

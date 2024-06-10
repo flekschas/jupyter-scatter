@@ -535,6 +535,10 @@ class Scatter():
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('prevent_filter_reset', False)
                 self.update_widget('points', self.get_point_list())
+                self.update_widget('x_domain', self._x_domain)
+                self.update_widget('x_scale_domain', self._x_scale_domain)
+                self.update_widget('y_domain', self._y_domain)
+                self.update_widget('y_scale_domain', self._y_scale_domain)
 
         if use_index is not UNDEF:
             self._data_use_index = use_index
@@ -622,7 +626,8 @@ class Scatter():
                 self._x_by = 'Custom X Data'
 
         if x is not UNDEF or scale is not UNDEF:
-            self.update_widget('prevent_filter_reset', True)
+            if 'skip_widget_update' not in kwargs:
+                self.update_widget('prevent_filter_reset', True)
             self._points[:, 0] = zerofy_missing_values(self.x_data.values, 'X')
 
             self._x_min = np.min(self._points[:, 0])
