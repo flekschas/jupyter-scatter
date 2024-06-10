@@ -98,12 +98,16 @@ def test_scatter_pandas_update(df, df2):
     x = 'a'
     y = 'b'
     scatter = Scatter(data=df, x=x, y=y)
-    assert np.allclose(np.array([df[x].min(), df[x].max()]), np.array(scatter._x_scale_domain))
-    assert np.allclose(np.array([df[y].min(), df[y].max()]), np.array(scatter._y_scale_domain))
+    assert np.allclose(np.array([df[x].min(), df[x].max()]), np.array(scatter.widget.x_domain))
+    assert np.allclose(np.array([df[y].min(), df[y].max()]), np.array(scatter.widget.y_domain))
+    assert np.allclose(np.array([df[x].min(), df[x].max()]), np.array(scatter.widget.x_scale_domain))
+    assert np.allclose(np.array([df[y].min(), df[y].max()]), np.array(scatter.widget.y_scale_domain))
 
     scatter.data(df2)
-    assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter._x_scale_domain))
-    assert np.allclose(np.array([df2[y].min(), df2[y].max()]), np.array(scatter._y_scale_domain))
+    assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_domain))
+    assert np.allclose(np.array([df2[y].min(), df2[y].max()]), np.array(scatter.widget.y_domain))
+    assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_scale_domain))
+    assert np.allclose(np.array([df2[y].min(), df2[y].max()]), np.array(scatter.widget.y_scale_domain))
 
     assert df[x].max() != df2[x].max()
     assert df[y].max() != df2[y].max()
