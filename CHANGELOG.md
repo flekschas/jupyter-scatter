@@ -1,6 +1,10 @@
-## v0.16.1
+## v0.16.2
 
 - Fix: reset scale & norm ranges upon updating the data via `scatter.data()`
+
+## v0.16.1
+
+- Fix: preserve filter state upon changing visual encoding ([#134](https://github.com/flekschas/jupyter-scatter/issues/134))
 
 ## v0.16.0
 
