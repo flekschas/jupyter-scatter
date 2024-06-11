@@ -1,3 +1,7 @@
+## v0.16.1
+
+- Fix: preserve filter state upon changing visual encoding ([#134](https://github.com/flekschas/jupyter-scatter/issues/134))
+
 ## v0.16.0
 
 **BREAKING CHANGES**:
