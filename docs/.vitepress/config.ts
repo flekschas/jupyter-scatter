@@ -71,7 +71,9 @@ export default defineConfig({
           { text: 'Selections', link: '/selections' },
           { text: 'Link Multiple Scatter Plots', link: '/link-multiple-plots' },
           { text: 'Axes & Legends', link: '/axes-legends' },
-          { text: 'Tooltip', link: '/tooltip' }
+          { text: 'Tooltip', link: '/tooltip' },
+          { text: 'Scales', link: '/scales' },
+          { text: 'Connected Scatterplots', link: '/connected-scatterplots' }
         ]
       },
       // {

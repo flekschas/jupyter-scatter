@@ -107,8 +107,8 @@ class Components():
 
 @dataclass
 class VisualEncoding():
-    channel: str  # Visual channel. E.g., color
-    dimension: str  # Data dimension E.g., column name
+    channel: str  # Visual channel. I.e., color, opacity, or size
+    dimension: str  # Data dimension I.e., f'{column_name}_{norm}'
     legend: Optional[List[Tuple[float, Union[float, int, str]]]] = None
 
 

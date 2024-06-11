@@ -193,7 +193,7 @@ class JupyterScatter(anywidget.AnyWidget):
     connection_color = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
     connection_color_selected = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
     connection_color_hover = Union([Union([Unicode(), List(minlen=4, maxlen=4)]), List(Union([Unicode(), List(minlen=4, maxlen=4)]))]).tag(sync=True)
-    connection_color_by = Enum([None, 'valueA', 'valueB', 'segment'], allow_none=True, default_value=None).tag(sync=True)
+    connection_color_by = Enum([None, 'valueA', 'valueB', 'segment', 'inherit'], allow_none=True, default_value=None).tag(sync=True)
     connection_opacity = Union([Float(), List(Float())], allow_none=True).tag(sync=True)
     connection_opacity_by = Enum([None, 'valueA', 'valueB', 'segment'], allow_none=True, default_value=None).tag(sync=True)
     connection_size = Union([Union([Int(), Float()]), List(Union([Int(), Float()]))]).tag(sync=True)
@@ -216,7 +216,7 @@ class JupyterScatter(anywidget.AnyWidget):
     view_reset = Bool(False).tag(sync=True) # Used for triggering a view reset
     view_download = Unicode(None, allow_none=True).tag(sync=True) # Used for triggering a download
     view_data = Array(default_value=None, allow_none=True, read_only=True).tag(sync=True, **ndarray_serialization)
-    view_shape = List(None, allow_none=True, read_only=True, minlen=2, maxlen=2).tag(sync=True)
+    view_shape = List(None, allow_none=True, read_only=True).tag(sync=True)
 
     # For synchronyzing view changes across scatter plot instances
     view_sync = Unicode(None, allow_none=True).tag(sync=True)

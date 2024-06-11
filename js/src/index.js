@@ -22,12 +22,13 @@ import {
   createNumericalBinGetter,
   createElementWithClass,
   remToPx,
+  createTimeFormat,
 } from "./utils";
 
 import { version } from "../package.json";
 
 const AXES_LABEL_SIZE = 12;
-const AXES_PADDING_X = 40;
+const AXES_PADDING_X = 60;
 const AXES_PADDING_X_WITH_LABEL = AXES_PADDING_X + AXES_LABEL_SIZE;
 const AXES_PADDING_Y = 20;
 const AXES_PADDING_Y_WITH_LABEL = AXES_PADDING_Y + AXES_LABEL_SIZE;
@@ -400,9 +401,8 @@ class JupyterScatterView {
     let yPadding = 0;
 
     if (this.model.get('axes')) {
-      const labels = this.model.get('axes_labels');
-      xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
-      yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+      xPadding = this.getXPadding();
+      yPadding = this.getYPadding();
     }
 
     const outerWidth = this.model.get('width') === 'auto'
@@ -435,9 +435,9 @@ class JupyterScatterView {
     const currentXScaleRegl = this.scatterplot.get('xScale');
     const currentYScaleRegl = this.scatterplot.get('yScale');
 
-    const labels = this.model.get('axes_labels');
-    const xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
-    const yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+    const [xLabel, yLabel] = this.model.get('axes_labels') || [];
+    const xPadding = this.getXPadding();
+    const yPadding = this.getYPadding();
 
     // Regl-Scatterplot's gl-space is always linear, hence we have to pass a
     // linear scale to regl-scatterplot.
@@ -500,26 +500,28 @@ class JupyterScatterView {
 
     this.axesSvg.selectAll('.domain').attr('opacity', 0);
 
-    if (labels) {
+    if (xLabel) {
       this.xAxisLabel = this.axesSvg.select('.x-axis-label').node()
         ? this.axesSvg.select('.x-axis-label')
         : this.axesSvg.append('text').attr('class', 'x-axis-label');
 
       this.xAxisLabel
-        .text(labels[0])
+        .text(xLabel)
         .attr('fill', 'currentColor')
         .attr('text-anchor', 'middle')
         .attr('font-size', '12px')
         .attr('font-weight', 'bold')
         .attr('x', (width - xPadding) / 2)
         .attr('y', height);
+      }
 
+    if (yLabel) {
       this.yAxisLabel = this.axesSvg.select('.y-axis-label').node()
         ? this.axesSvg.select('.y-axis-label')
         : this.axesSvg.append('text').attr('class', 'y-axis-label');
 
       this.yAxisLabel
-        .text(labels[1])
+        .text(yLabel)
         .attr('fill', 'currentColor')
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'hanging')
@@ -650,15 +652,16 @@ class JupyterScatterView {
       'div',
       ['title', `${htmlClassProperty}-title`]
     );
+
     this[`tooltipProperty${capitalProperty}Value`] = createElementWithClass(
       'div',
       ['value', `${htmlClassProperty}-value`]
     );
+
     this[`tooltipProperty${capitalProperty}ValueText`] = createElementWithClass(
       'div',
       ['value-text', `${htmlClassProperty}-value-text`]
     );
-
 
     this[`tooltipProperty${capitalProperty}Channel`] = createElementWithClass(
       'div',
@@ -678,7 +681,7 @@ class JupyterScatterView {
 
       this[`tooltipProperty${capitalProperty}ChannelBadge`] = createElementWithClass(
         'div',
-        ['channel-badge', `${htmlClassProperty}-value-badge`]
+        ['channel-badge', `${htmlClassProperty}-channel-badge`]
       );
       this[`tooltipProperty${capitalProperty}ChannelBadgeMark`] = createElementWithClass(
         'div',
@@ -1223,7 +1226,6 @@ class JupyterScatterView {
     this.getXBin = createNumericalBinGetter(
       this.model.get('x_histogram'),
       this.model.get('x_domain'),
-      this.model.get('x_domain_range'),
     );
 
     const toRelValue = scaleLinear()
@@ -1247,7 +1249,6 @@ class JupyterScatterView {
     this.getYBin = createNumericalBinGetter(
       this.model.get('y_histogram'),
       this.model.get('y_domain'),
-      this.model.get('y_domain_range'),
     );
 
     const toRelValue = scaleLinear()
@@ -1290,15 +1291,15 @@ class JupyterScatterView {
       this.getColorBin = createNumericalBinGetter(
         this.model.get('color_histogram'),
         this.model.get('color_domain'),
-        this.model.get('color_domain_range'),
       );
 
       this.getColor = (i) => {
-        const value = this.getPoint(i)[dim];
-        const colorIdx = Math.min(numColors - 1, Math.floor(numColors * value));
+        const normalizedValue = this.getPoint(i)[dim];
+        const colorIdx = Math.min(numColors - 1, Math.floor(numColors * normalizedValue));
+        const value = this.colorScale.invert(normalizedValue);
         return [
           colors[colorIdx] || '#808080',
-          this.colorFormat(this.colorScale.invert(value)),
+          this.colorFormat(value),
           this.getColorBin(value),
         ]
       }
@@ -1330,15 +1331,15 @@ class JupyterScatterView {
       this.getOpacityBin = createNumericalBinGetter(
         this.model.get('opacity_histogram'),
         this.model.get('opacity_domain'),
-        this.model.get('opacity_domain_range'),
       );
 
       this.getOpacity = (i) => {
-        const value = this.getPoint(i)[dim];
-        const idx = Math.min(numOpacities - 1, Math.floor(numOpacities * value));
+        const normalizedValue = this.getPoint(i)[dim];
+        const idx = Math.min(numOpacities - 1, Math.floor(numOpacities * normalizedValue));
+        const value = this.opacityScale.invert(normalizedValue);
         return [
           opacities[idx] || 0.5,
-          this.opacityFormat(this.opacityScale.invert(value)),
+          this.opacityFormat(value),
           this.getOpacityBin(value),
         ]
       }
@@ -1375,15 +1376,15 @@ class JupyterScatterView {
       this.getSizeBin = createNumericalBinGetter(
         this.model.get('size_histogram'),
         this.model.get('size_domain'),
-        this.model.get('size_domain_range'),
       );
 
       this.getSize = (i) => {
-        const value = this.getPoint(i)[dim];
-        const idx = Math.min(numSizes - 1, Math.floor(numSizes * value));
+        const normalizedValue = this.getPoint(i)[dim];
+        const idx = Math.min(numSizes - 1, Math.floor(numSizes * normalizedValue));
+        const value = this.sizeScale.invert(normalizedValue);
         return [
           Math.max(0.1, (sizes[idx] - sizesMin) / sizesExtent),
-          this.sizeFormat(this.sizeScale.invert(value)),
+          this.sizeFormat(value),
           this.getSizeBin(value),
         ]
       }
@@ -1463,7 +1464,7 @@ class JupyterScatterView {
         histogram,
         getHistogramKey: info.scale === 'categorical'
           ? (v) => info.domain[v]
-          : createNumericalBinGetter(info.histogram, info.domain, info.range),
+          : createNumericalBinGetter(info.histogram, info.range || info.domain),
         format: info.scale === 'categorical'
           ? (s) => s
           : format(getD3FormatSpecifier(info.domain))
@@ -1587,14 +1588,10 @@ class JupyterScatterView {
   updateLegendWrapperPosition() {
     if (!this.legendWrapper) return;
 
-    const labels = this.model.get('axes_labels');
-    const xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
-    const yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
-
     this.legendWrapper.style.top = 0;
-    this.legendWrapper.style.bottom = yPadding + 'px';
+    this.legendWrapper.style.bottom = this.getYPadding() + 'px';
     this.legendWrapper.style.left = 0;
-    this.legendWrapper.style.right = xPadding + 'px';
+    this.legendWrapper.style.right = this.getXPadding() + 'px';
   }
 
   updateLegendPosition() {
@@ -1642,9 +1639,8 @@ class JupyterScatterView {
     let yPadding = 0;
 
     if (this.model.get('axes')) {
-      const labels = this.model.get('axes_labels');
-      xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
-      yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+      xPadding = this.getXPadding();
+      yPadding = this.getYPadding();
     }
 
     this.container.style.width = width === 'auto'
@@ -1660,9 +1656,9 @@ class JupyterScatterView {
 
     const [width, height] = this.getOuterDimensions();
 
-    const labels = this.model.get('axes_labels');
-    const xPadding = labels ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
-    const yPadding = labels ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+    const [xLabel, yLabel] = this.model.get('axes_labels') || [];
+    const xPadding = this.getXPadding();
+    const yPadding = this.getYPadding();
 
     const xScaleDomain = this.scatterplot.get('xScale').domain();
     const yScaleDomain = this.scatterplot.get('yScale').domain();
@@ -1695,8 +1691,10 @@ class JupyterScatterView {
       this.yAxis.tickSizeInner(-(width - xPadding));
     }
 
-    if (labels) {
+    if (xLabel) {
       this.xAxisLabel.attr('x', (width - xPadding) / 2).attr('y', height - 4);
+    }
+    if (yLabel) {
       this.yAxisLabel.attr('x', (height - yPadding) / 2).attr('y', -width);
     }
   }
@@ -1827,18 +1825,29 @@ class JupyterScatterView {
 
   createXScale() {
     const domain = this.model.get('x_scale_domain');
-    this.xScale = getScale(this.model.get('x_scale'))
+    const scale = this.model.get('x_scale');
+    this.xScale = getScale(scale)
       .domain(domain)
       .range([-1, 1]);
-    this.xFormat = format(getD3FormatSpecifier(domain));
+    this.xFormat =
+      scale === 'time'
+        ? createTimeFormat(
+            this.points,
+            (point) => Math.floor(this.xScale.invert(point[0]).getTime() / 1000)
+          )
+        : format(getD3FormatSpecifier(domain));
   }
 
   createYScale() {
     const domain = this.model.get('y_scale_domain');
-    this.yScale = getScale(this.model.get('y_scale'))
+    const scale = this.model.get('y_scale');
+    this.yScale = getScale(scale)
       .domain(domain)
       .range([-1, 1]);
-    this.yFormat = format(getD3FormatSpecifier(domain));
+    this.yFormat =
+      scale === 'time'
+        ? createTimeFormat(this.points, (p) => this.yScale.invert(p[1]))
+        : format(getD3FormatSpecifier(domain));
   }
 
   createColorScale() {
@@ -2182,7 +2191,17 @@ class JupyterScatterView {
   }
 
   connectionColorByHandler(newValue) {
+    const currValue = this.scatterplot.get('pointConnectionColorBy');
     this.withPropertyChangeHandler('pointConnectionColorBy', newValue);
+
+    if (currValue === 'segment' || newValue === 'segment') {
+      // We need to fix this in regl-scatterplot and regl-line but changing from
+      // or to color the point connections by segment, requires recreating the
+      // point connections as the line's color indices change.
+      // As a workaround, redrawing the points triggers the recreation of the
+      // point connections.
+      this.scatterplot.draw(this.scatterplot.get('points'));
+    }
   }
 
   connectionOpacityHandler(newValue) {
@@ -2339,6 +2358,16 @@ class JupyterScatterView {
     const p = {};
     p[property] = changedValue;
     this.scatterplot.set(p);
+  }
+
+  getXPadding() {
+    const yLabel = this.model.get('axes_labels')?.[1];
+    return yLabel ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
+  }
+
+  getYPadding() {
+    const xLabel = this.model.get('axes_labels')?.[0];
+    return xLabel ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
   }
 };
 
