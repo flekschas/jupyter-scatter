@@ -32,7 +32,6 @@ const AXES_PADDING_X = 60;
 const AXES_PADDING_X_WITH_LABEL = AXES_PADDING_X + AXES_LABEL_SIZE;
 const AXES_PADDING_Y = 20;
 const AXES_PADDING_Y_WITH_LABEL = AXES_PADDING_Y + AXES_LABEL_SIZE;
-const TOOLTIP_EVENT_TYPE = 'tooltip';
 const TOOLTIP_DEBOUNCE_TIME = 250;
 const TOOLTIP_MANDATORY_VISUAL_PROPERTIES = (/** @type {const} */ ({ x: 'X', y: 'Y' }));
 const TOOLTIP_OPTIONAL_VISUAL_PROPERTIES = (/** @type {const} */ ({ color: 'Col', opacity: 'Opa', size: 'Size' }));
@@ -97,7 +96,6 @@ const properties = {
   connectionSize: 'pointConnectionSize',
   connectionSizeBy: 'pointConnectionSizeBy',
   viewDownload: 'viewDownload',
-  viewReset: 'viewReset',
   viewSync: 'viewSync',
   hovering: 'hovering',
   axes: 'axes',
@@ -207,6 +205,7 @@ class JupyterScatterView {
   constructor({ el, model }) {
     this.el = el;
     this.model = model;
+    this.events = model.get('events');
   }
 
   render() {
@@ -385,9 +384,16 @@ class JupyterScatterView {
   }
 
   customEventHandler(event) {
-    if (event.type === TOOLTIP_EVENT_TYPE) {
+    if (event.type === this.events.TOOLTIP) {
       if (event.index !== this.tooltipPointIdx) return;
       this.tooltipDataHandlers(event)
+    }
+    if (event.type === this.events.VIEW_RESET) {
+      if (!this.scatterplot) return;
+      this.scatterplot.zoomToArea(
+        event.data_extent,
+        { transition: true, transitionDuration: 500 }
+      );
     }
   }
 
@@ -1501,7 +1507,7 @@ class JupyterScatterView {
 
     this.tooltipContentsUpdater = (pointIdx) => {
       this.model.send({
-        type: TOOLTIP_EVENT_TYPE,
+        type: EVENT_TOOLTIP_EVENT_TYPE,
         index: pointIdx,
         properties: this.tooltipPropertiesNonVisual,
         preview: this.tooltipPreview,
@@ -2335,14 +2341,6 @@ class JupyterScatterView {
         this.model.save_changes();
       }, 0);
     });
-  }
-
-  viewResetHandler() {
-    this.scatterplot.reset();
-    setTimeout(() => {
-      this.model.set('view_reset', false);
-      this.model.save_changes();
-    }, 0);
   }
 
   optionsHandler(newOptions) {

@@ -13,7 +13,10 @@ from traittypes import Array
 from .utils import to_hex, with_left_label
 
 SELECTION_DTYPE = 'uint32'
-TOOLTIP_EVENT_TYPE = 'tooltip';
+EVENTS = {
+    "TOOLTIP": "tooltip",
+    "VIEW_RESET": "view_reset",
+}
 
 def component_idx_to_name(idx):
     if idx == 2:
@@ -213,13 +216,14 @@ class JupyterScatter(anywidget.AnyWidget):
     # be overwritten by the short-hand options
     other_options = Dict(dict()).tag(sync=True)
 
-    view_reset = Bool(False).tag(sync=True) # Used for triggering a view reset
     view_download = Unicode(None, allow_none=True).tag(sync=True) # Used for triggering a download
     view_data = Array(default_value=None, allow_none=True, read_only=True).tag(sync=True, **ndarray_serialization)
     view_shape = List(None, allow_none=True, read_only=True).tag(sync=True)
 
     # For synchronyzing view changes across scatter plot instances
     view_sync = Unicode(None, allow_none=True).tag(sync=True)
+
+    events = Dict(EVENTS, read_only=True).tag(sync=True)
 
     def __init__(self, data, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -228,10 +232,10 @@ class JupyterScatter(anywidget.AnyWidget):
         self.on_msg(self._handle_custom_msg)
 
     def _handle_custom_msg(self, event: dict, buffers):
-        if event["type"] == TOOLTIP_EVENT_TYPE and isinstance(self.data, pd.DataFrame):
+        if event["type"] == EVENTS["TOOLTIP"] and isinstance(self.data, pd.DataFrame):
             data = self.data.iloc[event["index"]]
             self.send({
-                "type": TOOLTIP_EVENT_TYPE,
+                "type": EVENTS["TOOLTIP"],
                 "index": event["index"],
                 "preview": data[event["preview"]] if event["preview"] is not None else None,
                 "properties": data[event["properties"]].to_dict()
@@ -268,7 +272,15 @@ class JupyterScatter(anywidget.AnyWidget):
         return button
 
     def reset_view(self):
-        self.view_reset = True
+        self.send({
+            "type": EVENTS["VIEW_RESET"],
+            "data_extent": {
+                "x": self.points[:, 0].min(),
+                "width": self.points[:, 0].max() - self.points[:, 0].min(),
+                "y": self.points[:, 1].min(),
+                "height": self.points[:, 1].max() - self.points[:, 1].min(),
+            }
+        })
 
     def create_reset_view_button(self, icon_only=False, width=None):
         button = widgets.Button(
