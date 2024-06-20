@@ -178,7 +178,7 @@ for custom interactive data exploration widgets.
 
 # Related Work
 
-There are many Python packages for rendering scatterplots in notebook-like environments. General-purpose visualization libraries like Matplotlib [@hunter2007matplotlib], Bokeh [@bokeh], or Altair [@altair] offer great customizability but do not scale to millions of points. They also don't offer bespoke features for exploring scatterplots and require manual configuration.
+There are many Python packages for rendering scatterplots in notebook-like environments. General-purpose visualization libraries like Matplotlib [@hunter2007matplotlib], Bokeh [@bokeh], or Altair [@vanderplas2018altair] offer great customizability but do not scale to millions of points. They also don't offer bespoke features for exploring scatterplots and require manual configuration.
 
 More bespoke dataset-centric plotting libraries like Seaborn [@waskom2021seaborn] or pyobsplot [@pyobsplot] require less configuration and make it easier to create visually-pleasing scatterplots but they still fall short in terms of scalability.
 
