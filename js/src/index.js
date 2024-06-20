@@ -205,7 +205,7 @@ class JupyterScatterView {
   constructor({ el, model }) {
     this.el = el;
     this.model = model;
-    this.events = model.get('events');
+    this.eventTypes = model.get('event_types');
   }
 
   render() {
@@ -384,16 +384,30 @@ class JupyterScatterView {
   }
 
   customEventHandler(event) {
-    if (event.type === this.events.TOOLTIP) {
+    if (event.type === this.eventTypes.TOOLTIP) {
       if (event.index !== this.tooltipPointIdx) return;
       this.tooltipDataHandlers(event)
     }
-    if (event.type === this.events.VIEW_RESET) {
+    if (event.type === this.eventTypes.VIEW_RESET) {
       if (!this.scatterplot) return;
-      this.scatterplot.zoomToArea(
-        event.data_extent,
-        { transition: true, transitionDuration: 500 }
-      );
+      if (event.area) {
+        this.scatterplot.zoomToArea(
+          event.area,
+          {
+            transition: event.animation > 0,
+            transitionDuration: event.animation,
+            transitionEasing: 'quadInOut',
+          }
+        );
+      } else {
+        this.scatterplot.zoomToOrigin(
+          {
+            transition: event.animation > 0,
+            transitionDuration: event.animation,
+            transitionEasing: 'quadInOut',
+          }
+        );
+      }
     }
   }
 
@@ -1507,7 +1521,7 @@ class JupyterScatterView {
 
     this.tooltipContentsUpdater = (pointIdx) => {
       this.model.send({
-        type: EVENT_TOOLTIP_EVENT_TYPE,
+        type: this.events.TOOLTIP,
         index: pointIdx,
         properties: this.tooltipPropertiesNonVisual,
         preview: this.tooltipPreview,
@@ -2015,7 +2029,7 @@ class JupyterScatterView {
     if (newPoints.length === this.scatterplot.get('points').length) {
       // We assume point correspondence
       this.scatterplot.draw(newPoints, {
-        transition: true,
+        transition: this.model.get('transition_points'),
         transitionDuration: 3000,
         transitionEasing: 'quadInOut',
         preventFilterReset: this.model.get('prevent_filter_reset'),

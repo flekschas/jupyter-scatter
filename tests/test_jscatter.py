@@ -13,11 +13,12 @@ from jscatter.utils import create_default_norm, to_ndc, TimeNormalize
 def df() -> pd.DataFrame:
     num_groups = 8
 
-    data = np.random.rand(500, 7)
-    data[:, 2] *= 100
-    data[:, 3] *= 100
-    data[:, 3] = data[:, 3].astype(int)
-    data[:, 4] = np.round(data[:, 4] * (num_groups - 1)).astype(int)
+    data = np.zeros((500, 7))
+    data[:, 0] = np.linspace(0, 1, 500)
+    data[:, 1] = np.linspace(0, 1, 500)
+    data[:, 2] = np.random.rand(500) * 100
+    data[:, 3] = (np.random.rand(500) * 100).astype(int)
+    data[:, 4] = np.round(np.random.rand(500) * (num_groups - 1)).astype(int)
     data[:, 5] = np.repeat(np.arange(100), 5).astype(int)
     data[:, 6] = np.resize(np.arange(5), 500).astype(int)
 
@@ -40,11 +41,12 @@ def df() -> pd.DataFrame:
 def df2() -> pd.DataFrame:
     num_groups = 10
 
-    data = np.random.rand(500, 7)
-    data[:, 2] *= 200
-    data[:, 3] *= 200
-    data[:, 3] = data[:, 3].astype(int)
-    data[:, 4] = np.round(data[:, 4] * (num_groups - 1)).astype(int)
+    data = np.zeros((500, 7))
+    data[:, 0] = np.linspace(-2, 2, 500)
+    data[:, 1] = np.linspace(-2, 2, 500)
+    data[:, 2] = np.random.rand(500) * 200
+    data[:, 3] = (np.random.rand(500) * 200).astype(int)
+    data[:, 4] = np.round(np.random.rand(500) * (num_groups - 1)).astype(int)
     data[:, 5] = np.repeat(np.arange(100), 5).astype(int)
     data[:, 6] = np.resize(np.arange(5), 500).astype(int)
 
@@ -103,7 +105,21 @@ def test_scatter_pandas_update(df, df2):
     assert np.allclose(np.array([df[x].min(), df[x].max()]), np.array(scatter.widget.x_scale_domain))
     assert np.allclose(np.array([df[y].min(), df[y].max()]), np.array(scatter.widget.y_scale_domain))
 
+    prev_x_scale_domain = np.array(scatter.widget.x_scale_domain)
+    prev_y_scale_domain = np.array(scatter.widget.y_scale_domain)
+
     scatter.data(df2)
+
+    # The data domain updated by the scale domain remain unchanged as the view was not reset
+    assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_domain))
+    assert np.allclose(np.array([df2[y].min(), df2[y].max()]), np.array(scatter.widget.y_domain))
+    assert np.allclose(prev_x_scale_domain, np.array(scatter.widget.x_scale_domain))
+    assert np.allclose(prev_y_scale_domain, np.array(scatter.widget.y_scale_domain))
+
+    scatter.data(df)
+    scatter.data(df2, reset_view=True)
+
+    # Now that we reset the view, both the data and scale domain updated properly
     assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_domain))
     assert np.allclose(np.array([df2[y].min(), df2[y].max()]), np.array(scatter.widget.y_domain))
     assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_scale_domain))
@@ -157,7 +173,7 @@ def test_scatter_point_encoding_updates(df: pd.DataFrame):
     widget_data = np.asarray(widget.points)
 
     assert len(scatter._encodings.data) == 0
-    assert np.sum(widget_data[:, 2:]) == 0
+    assert np.sum(widget_data[:,2]) == 0
 
     scatter.color(by='group')
     widget_data = np.asarray(widget.points)

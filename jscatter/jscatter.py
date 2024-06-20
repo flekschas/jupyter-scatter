@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from matplotlib.colors import to_rgba, Normalize, LogNorm, PowerNorm, LinearSegmentedColormap, ListedColormap
-from typing import Dict, Optional, Union, List, Tuple
+from typing import Dict, Optional, Union, List, Tuple, Literal
 
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
@@ -452,6 +452,8 @@ class Scatter():
         self,
         data: Optional[pd.DataFrame] = None,
         use_index: Optional[Union[bool, Undefined]] = UNDEF,
+        reset_view: Optional[Union[bool, Undefined]] = UNDEF,
+        animate: Optional[Union[bool, Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -460,13 +462,19 @@ class Scatter():
         Parameters
         ----------
         data : pd.DataFrame, optional
-            The data frame that holds the x and y coordinates as well as other
-            possible dimensions that can be used for color, size, or opacity
-            encoding.
+            The new data frame that holds the x and y coordinates as well as
+            other possible dimensions that can be used for color, size, or
+            opacity encoding.
         label_index : bool, optional
             If `True` and if the data frame's index is not an instance of
             `RangeIndex` then the selection and filter methods will reference
             points by the data frame's label index instead of the row index.
+        view_data : bool, optional
+            If `True`, the view will adjust to the new data extent. If `False`,
+            the view will remain unchanged.
+        animate_change : bool, optional
+            If `True` and if the number of points (i.e., rows in the data frame)
+            are the same, the points will transition smoothly.
 
         Returns
         -------
@@ -493,6 +501,8 @@ class Scatter():
         {'data': <pandas.DataFrame>, 'use_label_index': False}
         """
         if data is not None:
+            old_n = self._n
+
             try:
                 self._n = len(data)
                 self._data = data
@@ -504,23 +514,32 @@ class Scatter():
 
             self._points = np.zeros((self._n, 6))
 
-            # Reset scale & norm ranges
-            self._x_scale.vmin = None
-            self._x_scale.vmax = None
-            self._y_scale.vmin = None
-            self._y_scale.vmax = None
-            self._color_norm.vmin = None
-            self._color_norm.vmax = None
-            self._opacity_norm.vmin = None
-            self._opacity_norm.vmax = None
-            self._size_norm.vmin = None
-            self._size_norm.vmax = None
-            self._connection_color_norm.vmin = None
-            self._connection_color_norm.vmax = None
-            self._connection_opacity_norm.vmin = None
-            self._connection_opacity_norm.vmax = None
-            self._connection_size_norm.vmin = None
-            self._connection_size_norm.vmax = None
+            if reset_view == True:
+                self._x_scale.vmin = None
+                self._x_scale.vmax = None
+                self._y_scale.vmin = None
+                self._y_scale.vmax = None
+                self._color_norm.vmin = None
+                self._color_norm.vmax = None
+                self._opacity_norm.vmin = None
+                self._opacity_norm.vmax = None
+                self._size_norm.vmin = None
+                self._size_norm.vmax = None
+                self._connection_color_norm.vmin = None
+                self._connection_color_norm.vmax = None
+                self._connection_opacity_norm.vmin = None
+                self._connection_opacity_norm.vmax = None
+                self._connection_size_norm.vmin = None
+                self._connection_size_norm.vmax = None
+
+            if 'skip_widget_update' not in kwargs:
+                # We have to update the following widget props now to ensure
+                # that the update propagated to the widget prior to updating the
+                # points below. This seems to be a bug in Jupyter Lab but I
+                # noticed that the order in which updates are registered on the
+                # front-end does *not* correspond to the call order in Python!
+                self.update_widget('transition_points', animate == True)
+                self.update_widget('prevent_filter_reset', False)
 
             self.x(skip_widget_update=True, **self.x())
             self.y(skip_widget_update=True, **self.y())
@@ -533,16 +552,19 @@ class Scatter():
             self.connection_size(skip_widget_update=True, **self.connection_size())
 
             if 'skip_widget_update' not in kwargs:
-                self.update_widget('prevent_filter_reset', False)
                 self.update_widget('points', self.get_point_list())
+                self.update_widget('transition_points', animate == True)
                 self.update_widget('x_domain', self._x_domain)
                 self.update_widget('x_scale_domain', self._x_scale_domain)
                 self.update_widget('y_domain', self._y_domain)
                 self.update_widget('y_scale_domain', self._y_scale_domain)
 
+            if reset_view == True:
+                animation_time = 3000 if animate == True else 0
+                self.widget.reset_view(animation_time)
+
         if use_index is not UNDEF:
             self._data_use_index = use_index
-
 
         if any_not([data, use_index], UNDEF):
             return self
@@ -598,18 +620,17 @@ class Scatter():
             if scale is None or scale == 'linear':
                 self._x_scale = create_default_norm()
             elif scale == 'time':
-                self._x_scale = create_default_norm(True)
+                self._x_scale = create_default_norm(is_time=True)
             elif scale == 'log':
-                self._x_scale = LogNorm(clip=True)
+                self._x_scale = LogNorm()
             elif scale == 'pow':
-                self._x_scale = PowerNorm(2, clip=True)
+                self._x_scale = PowerNorm(2)
             elif isinstance(scale, LogNorm) or isinstance(scale, PowerNorm):
                 self._x_scale = scale
-                self._x_scale.clip = True
             else:
                 try:
                     vmin, vmax = scale
-                    self._x_scale = Normalize(vmin, vmax, clip=True)
+                    self._x_scale = Normalize(vmin, vmax)
                 except:
                     pass
 
@@ -715,18 +736,17 @@ class Scatter():
             if scale is None or scale == 'linear':
                 self._y_scale = create_default_norm()
             elif scale == 'time':
-                self._y_scale = create_default_norm(True)
+                self._y_scale = create_default_norm(is_time=True)
             elif scale == 'log':
-                self._y_scale = LogNorm(clip=True)
+                self._y_scale = LogNorm()
             elif scale == 'pow':
-                self._y_scale = PowerNorm(2, clip=True)
+                self._y_scale = PowerNorm(2)
             elif isinstance(scale, LogNorm) or isinstance(scale, PowerNorm):
                 self._y_scale = scale
-                self._y_scale.clip = True
             else:
                 try:
                     vmin, vmax = scale
-                    self._y_scale = Normalize(vmin, vmax, clip=True)
+                    self._y_scale = Normalize(vmin, vmax)
                 except:
                     pass
 
@@ -1100,13 +1120,12 @@ class Scatter():
             if callable(norm):
                 try:
                     self._color_norm = norm
-                    self._color_norm.clip = True
                 except:
                     pass
             else:
                 try:
                     vmin, vmax = norm
-                    self._color_norm = Normalize(vmin, vmax, clip=True)
+                    self._color_norm = Normalize(vmin, vmax)
                 except:
                     if norm is None:
                         self._color_norm = create_default_norm()
@@ -1363,13 +1382,12 @@ class Scatter():
             if callable(norm):
                 try:
                     self._opacity_norm = norm
-                    self._opacity_norm.clip = True
                 except:
                     pass
             else:
                 try:
                     vmin, vmax = norm
-                    self._opacity_norm = Normalize(vmin, vmax, clip=True)
+                    self._opacity_norm = Normalize(vmin, vmax)
                 except:
                     if norm is None:
                         # Reset to default value
@@ -1597,13 +1615,12 @@ class Scatter():
             if callable(norm):
                 try:
                     self._size_norm = norm
-                    self._size_norm.clip = True
                 except:
                     pass
             else:
                 try:
                     vmin, vmax = norm
-                    self._size_norm = Normalize(vmin, vmax, clip=True)
+                    self._size_norm = Normalize(vmin, vmax)
                 except:
                     if norm is not None:
                         self._size_norm = create_default_norm()
@@ -1977,13 +1994,12 @@ class Scatter():
             if callable(norm):
                 try:
                     self._connection_color_norm = norm
-                    self._connection_color_norm.clip = True
                 except:
                     pass
             else:
                 try:
                     vmin, vmax = norm
-                    self._connection_color_norm = Normalize(vmin, vmax, clip=True)
+                    self._connection_color_norm = Normalize(vmin, vmax)
                 except:
                     if norm is None:
                         self._connection_color_norm = create_default_norm()
@@ -2229,13 +2245,12 @@ class Scatter():
             if callable(norm):
                 try:
                     self._connection_opacity_norm.clip = norm
-                    self._connection_opacity_norm.clip = True
                 except:
                     pass
             else:
                 try:
                     vmin, vmax = norm
-                    self._connection_opacity_norm = Normalize(vmin, vmax, clip=True)
+                    self._connection_opacity_norm = Normalize(vmin, vmax)
                 except:
                     if norm is None:
                         self._connection_opacity_norm = create_default_norm()
@@ -2460,13 +2475,12 @@ class Scatter():
             if callable(norm):
                 try:
                     self._connection_size_norm = norm
-                    self._connection_size_norm.clip = True
                 except:
                     pass
             else:
                 try:
                     vmin, vmax = norm
-                    self._connection_size_norm = Normalize(vmin, vmax, clip=True)
+                    self._connection_size_norm = Normalize(vmin, vmax)
                 except:
                     if norm is None:
                         self._connection_size_norm = create_default_norm()
