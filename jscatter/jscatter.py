@@ -452,8 +452,9 @@ class Scatter():
         self,
         data: Optional[pd.DataFrame] = None,
         use_index: Optional[Union[bool, Undefined]] = UNDEF,
-        reset_view: Optional[Union[bool, Undefined]] = UNDEF,
-        animate: Optional[Union[bool, Undefined]] = UNDEF,
+        reset_scales: Optional[bool] = False,
+        reset_view: Optional[bool] = False,
+        animate: Optional[bool] = False,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -469,12 +470,15 @@ class Scatter():
             If `True` and if the data frame's index is not an instance of
             `RangeIndex` then the selection and filter methods will reference
             points by the data frame's label index instead of the row index.
-        view_data : bool, optional
-            If `True`, the view will adjust to the new data extent. If `False`,
-            the view will remain unchanged.
-        animate_change : bool, optional
-            If `True` and if the number of points (i.e., rows in the data frame)
-            are the same, the points will transition smoothly.
+        reset_scales : bool, optional
+            If `True`, all scales (and norms) will be reset to the extend of the
+            the new data.
+        reset_view : bool, optional
+            If `True`, the view will be reset to the origin.
+        animate : bool, optional
+            If `True`, if the number of points remain the same, and if
+            `reset_scales` is `False`, the points will transition smoothly. If
+            `reset_view` is `True`, the view will also transition smoothly.
 
         Returns
         -------
@@ -514,7 +518,9 @@ class Scatter():
 
             self._points = np.zeros((self._n, 6))
 
-            if reset_view == True:
+            same_n = old_n == self._n
+
+            if reset_scales == True:
                 self._x_scale.vmin = None
                 self._x_scale.vmax = None
                 self._y_scale.vmin = None
@@ -538,7 +544,7 @@ class Scatter():
                 # points below. This seems to be a bug in Jupyter Lab but I
                 # noticed that the order in which updates are registered on the
                 # front-end does *not* correspond to the call order in Python!
-                self.update_widget('transition_points', animate == True)
+                self.update_widget('transition_points', animate and same_n)
                 self.update_widget('prevent_filter_reset', False)
 
             self.x(skip_widget_update=True, **self.x())
@@ -559,9 +565,15 @@ class Scatter():
                 self.update_widget('y_domain', self._y_domain)
                 self.update_widget('y_scale_domain', self._y_scale_domain)
 
-            if reset_view == True:
-                animation_time = 3000 if animate == True else 0
-                self.widget.reset_view(animation_time)
+            if reset_view:
+                if reset_scales:
+                    self.widget.reset_view()
+                else:
+                    animation = 3000 if animate and same_n else 0
+                    self.widget.reset_view(
+                        animation=animation,
+                        data_extent=True,
+                    )
 
         if use_index is not UNDEF:
             self._data_use_index = use_index
@@ -625,7 +637,7 @@ class Scatter():
                 self._x_scale = LogNorm()
             elif scale == 'pow':
                 self._x_scale = PowerNorm(2)
-            elif isinstance(scale, LogNorm) or isinstance(scale, PowerNorm):
+            elif isinstance(scale, LogNorm) or isinstance(scale, PowerNorm) or isinstance(scale, Normalize):
                 self._x_scale = scale
             else:
                 try:
@@ -741,7 +753,7 @@ class Scatter():
                 self._y_scale = LogNorm()
             elif scale == 'pow':
                 self._y_scale = PowerNorm(2)
-            elif isinstance(scale, LogNorm) or isinstance(scale, PowerNorm):
+            elif isinstance(scale, LogNorm) or isinstance(scale, PowerNorm) or isinstance(scale, Normalize):
                 self._y_scale = scale
             else:
                 try:
