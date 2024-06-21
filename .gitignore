@@ -16,6 +16,7 @@ coverage
 .temp
 
 __pycache__
+_build
 
 pids
 logs
