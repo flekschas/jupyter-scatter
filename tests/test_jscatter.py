@@ -117,7 +117,7 @@ def test_scatter_pandas_update(df, df2):
     assert np.allclose(prev_y_scale_domain, np.array(scatter.widget.y_scale_domain))
 
     scatter.data(df)
-    scatter.data(df2, reset_view=True)
+    scatter.data(df2, reset_scales=True)
 
     # Now that we reset the view, both the data and scale domain updated properly
     assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_domain))
