@@ -1,6 +1,7 @@
 ## v0.17.0
 
 - Feat: Add `scatter.show_tooltip(point_idx)`
+- Fix: reset scale & norm ranges upon updating the data via `scatter.data()`
 
 ## v0.16.1
 

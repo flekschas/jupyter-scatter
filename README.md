@@ -246,3 +246,20 @@ Go to [test-environments](test-environments) and follow the instructions.
 
 </p>
 </details>
+
+## Citation
+
+If you use Jupyter Scatter in your research, please cite the following preprint:
+
+```bibtex
+@article{lekschas2024jupyter,
+  title = {Jupyter Scatter: Interactive Exploration of Large-Scale Datasets},
+  url = {https://arxiv.org/abs/2406.14397},
+  doi = {10.48550/arXiv.2406.14397},
+  publisher = {arXiv},
+  journal = {arXiv},
+  author = {Lekschas, Fritz and Manz, Trevor},
+  year = {2024},
+  month = {6},
+}
+```

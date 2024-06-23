@@ -3,17 +3,27 @@ authors:
 - family-names: Lekschas
   given-names: Fritz
   orcid: "https://orcid.org/0000-0001-8432-4835"
-doi: 10.25080/gerudo-f2bc6f59-030
-message: If you use Jupyter Scatter for an academic publication, please cite our SciPy 2023 talk.
+- family-names: Manz
+  given-names: Trevor
+  orcid: "https://orcid.org/0000-0001-7694-5164"
+doi: 10.48550/arXiv.2406.14397
+message: If you use Jupyter Scatter for an academic publication, please cite our preprint.
 preferred-citation:
+  type: article
   authors:
   - family-names: Lekschas
     given-names: Fritz
     orcid: "https://orcid.org/0000-0001-8432-4835"
-  date-published: 2023-08-07
-  doi: 10.25080/gerudo-f2bc6f59-030
-  publisher:
-    name: Zenodo
-  title: "Interactive Exploration of Large-Scale Datasets with Jupyter-Scatter"
-  url: "https://doi.org/10.25080/gerudo-f2bc6f59-030"
-title: "Interactive Exploration of Large-Scale Datasets with Jupyter-Scatter"
+  - family-names: Manz
+    given-names: Trevor
+    orcid: "https://orcid.org/0000-0001-7694-5164"
+  date-published: 2024-05-20
+  doi: 10.48550/arXiv.2406.14397
+  publisher: "arXiv"
+  journal: "arXiv"
+  year: 2024
+  month: 6
+  day: 20
+  title: "Jupyter Scatter: Interactive Exploration of Large-Scale Datasets"
+  url: "https://arxiv.org/abs/2406.14397"
+title: "Jupyter Scatter: Interactive Exploration of Large-Scale Datasets"

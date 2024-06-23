@@ -56,8 +56,8 @@ class TimeNormalize(Normalize):
 
 def create_default_norm(is_time=False):
     if is_time:
-        return TimeNormalize(clip=True)
-    return Normalize(clip=True)
+        return TimeNormalize()
+    return Normalize()
 
 def to_ndc(X, norm):
     return (norm(X).data * 2) - 1
