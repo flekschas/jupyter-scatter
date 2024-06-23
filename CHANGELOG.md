@@ -2,6 +2,7 @@
 
 - Feat: Add `scatter.show_tooltip(point_idx)`
 - Fix: reset scale & norm ranges upon updating the data via `scatter.data()`
+- Fix: ensure `scatter.axes(labels=['x_label', 'y_label'])` works properly ([#137](https://github.com/flekschas/jupyter-scatter/issues/137]))
 
 ## v0.16.1
 
