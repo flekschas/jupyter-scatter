@@ -384,7 +384,7 @@ class JupyterScatter(anywidget.AnyWidget):
 
 class Button(anywidget.AnyWidget):
     _esm = """
-    export function render({ model, el }) {
+    function render({ model, el }) {
       const button = document.createElement('button');
 
       button.classList.add('jupyter-widgets');
@@ -446,6 +446,7 @@ class Button(anywidget.AnyWidget):
         button.removeEventListener('dblclick', dblclickHandler);
       };
     }
+    export default { render }
     """
 
     description = Unicode().tag(sync=True)
