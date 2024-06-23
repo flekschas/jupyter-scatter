@@ -261,4 +261,5 @@ If you use Jupyter Scatter in your research, please cite the following preprint:
   author = {Lekschas, Fritz and Manz, Trevor},
   year = {2024},
   month = {6},
+}
 ```
