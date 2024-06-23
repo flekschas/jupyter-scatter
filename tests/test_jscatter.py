@@ -309,3 +309,16 @@ def test_missing_values_handling():
         )
         assert np.isfinite(scatter.widget.points).all()
         assert scatter.widget.points[3, 2] == 0
+
+
+def test_scatter_axes_labels(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    scatter.axes(labels=True)
+    assert scatter.widget.axes_labels == ['a', 'b']
+
+    scatter.axes(labels=False)
+    assert scatter.widget.axes_labels == False
+
+    scatter.axes(labels=['axis 1', 'axis 2'])
+    assert scatter.widget.axes_labels == ['axis 1', 'axis 2']
