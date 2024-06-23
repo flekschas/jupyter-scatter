@@ -4049,15 +4049,13 @@ class Scatter():
         return get_histogram_range(self._tooltip_histograms_ranges, property)
 
     def get_axes_labels(self):
-        if self._axes_labels == False:
-            return self._axes_labels
-        elif self._axes_labels == True:
+        if self._axes_labels == True:
             if self._data is None:
                 return ['x', 'y']
             else:
                 return [self._x_by, self._y_by]
-        else:
-            self._axes_labels = labels
+
+        return self._axes_labels
 
     def show(self):
         """
