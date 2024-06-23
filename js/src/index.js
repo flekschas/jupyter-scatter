@@ -32,7 +32,6 @@ const AXES_PADDING_X = 60;
 const AXES_PADDING_X_WITH_LABEL = AXES_PADDING_X + AXES_LABEL_SIZE;
 const AXES_PADDING_Y = 20;
 const AXES_PADDING_Y_WITH_LABEL = AXES_PADDING_Y + AXES_LABEL_SIZE;
-const TOOLTIP_EVENT_TYPE = 'tooltip';
 const TOOLTIP_DEBOUNCE_TIME = 250;
 const TOOLTIP_MANDATORY_VISUAL_PROPERTIES = (/** @type {const} */ ({ x: 'X', y: 'Y' }));
 const TOOLTIP_OPTIONAL_VISUAL_PROPERTIES = (/** @type {const} */ ({ color: 'Col', opacity: 'Opa', size: 'Size' }));
@@ -97,7 +96,6 @@ const properties = {
   connectionSize: 'pointConnectionSize',
   connectionSizeBy: 'pointConnectionSizeBy',
   viewDownload: 'viewDownload',
-  viewReset: 'viewReset',
   viewSync: 'viewSync',
   hovering: 'hovering',
   axes: 'axes',
@@ -207,6 +205,7 @@ class JupyterScatterView {
   constructor({ el, model }) {
     this.el = el;
     this.model = model;
+    this.eventTypes = model.get('event_types');
   }
 
   render() {
@@ -385,9 +384,30 @@ class JupyterScatterView {
   }
 
   customEventHandler(event) {
-    if (event.type === TOOLTIP_EVENT_TYPE) {
+    if (event.type === this.eventTypes.TOOLTIP) {
       if (event.index !== this.tooltipPointIdx) return;
       this.tooltipDataHandlers(event)
+    }
+    if (event.type === this.eventTypes.VIEW_RESET) {
+      if (!this.scatterplot) return;
+      if (event.area) {
+        this.scatterplot.zoomToArea(
+          event.area,
+          {
+            transition: event.animation > 0,
+            transitionDuration: event.animation,
+            transitionEasing: 'quadInOut',
+          }
+        );
+      } else {
+        this.scatterplot.zoomToOrigin(
+          {
+            transition: event.animation > 0,
+            transitionDuration: event.animation,
+            transitionEasing: 'quadInOut',
+          }
+        );
+      }
     }
   }
 
@@ -1501,7 +1521,7 @@ class JupyterScatterView {
 
     this.tooltipContentsUpdater = (pointIdx) => {
       this.model.send({
-        type: TOOLTIP_EVENT_TYPE,
+        type: this.events.TOOLTIP,
         index: pointIdx,
         properties: this.tooltipPropertiesNonVisual,
         preview: this.tooltipPreview,
@@ -2009,7 +2029,7 @@ class JupyterScatterView {
     if (newPoints.length === this.scatterplot.get('points').length) {
       // We assume point correspondence
       this.scatterplot.draw(newPoints, {
-        transition: true,
+        transition: this.model.get('transition_points'),
         transitionDuration: 3000,
         transitionEasing: 'quadInOut',
         preventFilterReset: this.model.get('prevent_filter_reset'),
@@ -2337,14 +2357,6 @@ class JupyterScatterView {
     });
   }
 
-  viewResetHandler() {
-    this.scatterplot.reset();
-    setTimeout(() => {
-      this.model.set('view_reset', false);
-      this.model.save_changes();
-    }, 0);
-  }
-
   optionsHandler(newOptions) {
     this.scatterplot.set(newOptions);
   }
@@ -2385,7 +2397,7 @@ function modelWithSerializers(model, serializers) {
   }
 }
 
-export async function render({ model, el }) {
+async function render({ model, el }) {
   const view = new JupyterScatterView({
     el: el,
     model: modelWithSerializers(model, {
@@ -2399,3 +2411,5 @@ export async function render({ model, el }) {
   view.render();
   return () => view.destroy();
 }
+
+export default { render };
