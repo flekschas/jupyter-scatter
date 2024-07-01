@@ -1,3 +1,7 @@
+## v0.17.1
+
+- Fix: fix regression preventing tooltip from showing up ([#141](https://github.com/flekschas/jupyter-scatter/issues/141))
+
 ## v0.17.0
 
 - Feat: Add `scatter.show_tooltip(point_idx)`

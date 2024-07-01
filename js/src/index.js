@@ -1522,7 +1522,7 @@ class JupyterScatterView {
 
     this.tooltipContentsUpdater = (pointIdx) => {
       this.model.send({
-        type: this.events.TOOLTIP,
+        type: this.eventTypes.TOOLTIP,
         index: pointIdx,
         properties: this.tooltipPropertiesNonVisual,
         preview: this.tooltipPreview,
