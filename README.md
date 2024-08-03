@@ -69,11 +69,14 @@ Visit [https://jupyter-scatter.dev](https://jupyter-scatter.dev) for detailed do
 pip install jupyter-scatter
 ```
 
-If you are using JupyterLab <=2:
+If you want to use Jupyter Scatter in JupyterLab <=2 you need to manually
+install it as an extension as follows:
 
 ```bash
 jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-scatter
 ```
+
+If you want to instal Jupyter Scatter from source, make sure to have [Node](https://nodejs.org) installed. While several version might work, we're primarily testing against the [Active LTS and Maintenance LTS releases](https://nodejs.org/en/about/previous-releases).
 
 For a minimal working example, take a look at [test-environments](test-environments).
 
