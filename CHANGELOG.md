@@ -1,6 +1,10 @@
+## v0.17.2
+
+- Fix: bump regl-scatterplot to v1.10.2 for a [hotfix related to rendering more than 1M points](https://github.com/flekschas/regl-scatterplot/pull/190)
+
 ## v0.17.1
 
-- Fix: fix regression preventing tooltip from showing up ([#141](https://github.com/flekschas/jupyter-scatter/issues/141))
+- Fix: regression preventing tooltip from showing up ([#141](https://github.com/flekschas/jupyter-scatter/issues/141))
 
 ## v0.17.0
 
