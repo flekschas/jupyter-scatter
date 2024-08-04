@@ -225,7 +225,8 @@ While jscatter is primarily developed for Jupyter Lab and Notebook, it also runs
 
 **Requirements:**
 
-- [Hatch](https://hatch.pypa.io/latest/) >= 1.7.0
+- [Hatch](https://hatch.pypa.io/latest/) >= v1.7.0
+- [Node](https://nodejs.org) [Active LTS or Maintenance LTS release](https://nodejs.org/en/about/previous-releases)
 
 **Installation:**
 
@@ -247,7 +248,12 @@ extension. To do so, run the following code at the beginning of a notebook:
 
 **After Changing JavaScript code:** do `cd js && npm run build`.
 
-Alternatively, you can run `npm run watch` and rebundle the code on the fly.
+Alternatively, you can enable anywidgets hot-module-reloading (HMR) as follows
+and run `npm run watch` to rebundle the JS code on the fly.
+
+```py
+%env ANYWIDGET_HMR=1
+```
 
 </p>
 </details>
