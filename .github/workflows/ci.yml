@@ -23,6 +23,7 @@ jobs:
           node-version: "20.x"
       - run: |
           cd js
+          npm cache verify
           npm ci
 
       - uses: actions/setup-python@v5
