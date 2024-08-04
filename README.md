@@ -266,6 +266,14 @@ Go to [test-environments](test-environments) and follow the instructions.
 </p>
 </details>
 
+<details><summary>Running tests</summary>
+<p>
+
+Run `pytest` after activating `hatch shell`.
+
+</p>
+</details>
+
 ## Citation
 
 If you use Jupyter Scatter in your research, please cite the following preprint:
