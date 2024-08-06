@@ -186,7 +186,7 @@ Plotly combines great customizability with interactivity and can render scatterp
 
 Datashader [@datashader] specializes on static rendering of large-scale datasets and offers unparalleled scalability that greatly exceeds that of Jupyter Scatter. One can also fine-tune how data is aggregated and rasterized. However, this comes at the cost of limited interactivity. While it's possible to interactively zoom into a rasterized image produced by Datashader, the image is just drawn at scale instead of being re-rendered at different field of views. Re-rendering can be important though to better identify patters in subsets of large scatterplots through optimized point size and opacity.
 
-Finally, except for Plotly, none of the tools support interactive _two-way_ point selections that exposes the selected points for reading and writing in both the Python and JavaScript kernels. This is a key feature of Jupyter Scatter to allow. Also, no other library offers direct support for synchronized exploration of multiple scatterplots for comparison.
+Finally, except for Plotly, none of the tools offer readily-available interactive _two-way_ point selection that exposes the selected points for reading and writing in both the Python and JavaScript kernels. This is a key feature of Jupyter Scatter to enable follow-up analysis of subsets of the data. Also, no other library offers direct support for synchronized exploration of multiple scatterplots for comparison.
 
 # Acknowledgements
 
