@@ -13,7 +13,10 @@ from traittypes import Array # type: ignore
 from .utils import to_hex, with_left_label
 
 SELECTION_DTYPE = 'uint32'
-TOOLTIP_EVENT_TYPE = 'tooltip';
+EVENT_TYPES = {
+    "TOOLTIP": "tooltip",
+    "VIEW_RESET": "view_reset",
+}
 
 def component_idx_to_name(idx):
     if idx == 2:
@@ -57,6 +60,7 @@ class JupyterScatter(anywidget.AnyWidget):
 
     # Data
     points = Array(default_value=None).tag(sync=True, **ndarray_serialization)
+    transition_points = Bool(False).tag(sync=True)
     prevent_filter_reset = Bool(False).tag(sync=True)
     selection = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
     filter = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
@@ -213,7 +217,6 @@ class JupyterScatter(anywidget.AnyWidget):
     # be overwritten by the short-hand options
     other_options = Dict(dict()).tag(sync=True)
 
-    view_reset = Bool(False).tag(sync=True) # Used for triggering a view reset
     view_download = Unicode(None, allow_none=True).tag(sync=True) # Used for triggering a download
     view_data = Array(default_value=None, allow_none=True, read_only=True).tag(sync=True, **ndarray_serialization)
     view_shape = List(None, allow_none=True, read_only=True).tag(sync=True)
@@ -223,6 +226,7 @@ class JupyterScatter(anywidget.AnyWidget):
 
     center_positions = List().tag(sync=True)
     dir_center_positions = List().tag(sync=True)
+    event_types = Dict(EVENT_TYPES, read_only=True).tag(sync=True)
 
     def __init__(self, data, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -231,14 +235,24 @@ class JupyterScatter(anywidget.AnyWidget):
         self.on_msg(self._handle_custom_msg)
 
     def _handle_custom_msg(self, event: dict, buffers):
-        if event["type"] == TOOLTIP_EVENT_TYPE and isinstance(self.data, pd.DataFrame):
+        if event["type"] == EVENT_TYPES["TOOLTIP"] and isinstance(self.data, pd.DataFrame):
             data = self.data.iloc[event["index"]]
             self.send({
-                "type": TOOLTIP_EVENT_TYPE,
+                "type": EVENT_TYPES["TOOLTIP"],
                 "index": event["index"],
                 "preview": data[event["preview"]] if event["preview"] is not None else None,
                 "properties": data[event["properties"]].to_dict()
             })
+
+    def show_tooltip(self, point_idx):
+        data = self.data.iloc[point_idx]
+        self.send({
+            "type": TOOLTIP_EVENT_TYPE,
+            "show": True,
+            "index": point_idx,
+            "preview": data[self.tooltip_preview] if self.tooltip_preview is not None else None,
+            "properties": data[self.tooltip_properties_non_visual_info.keys()].to_dict() if self.tooltip_properties_non_visual_info is not None else {}
+        })
 
     def create_download_view_button(self, icon_only=False, width=None):
         button = widgets.Button(
@@ -270,20 +284,33 @@ class JupyterScatter(anywidget.AnyWidget):
         button.on_click(click_handler)
         return button
 
-    def reset_view(self):
-        self.view_reset = True
+    def reset_view(self, animation: int = 0, data_extent: bool = False):
+        if data_extent:
+            self.send({
+                "type": EVENT_TYPES["VIEW_RESET"],
+                "area": {
+                    "x": self.points[:, 0].min(),
+                    "width": self.points[:, 0].max() - self.points[:, 0].min(),
+                    "y": self.points[:, 1].min(),
+                    "height": self.points[:, 1].max() - self.points[:, 1].min(),
+                },
+                "animation": animation
+            })
+        else:
+            self.send({
+                "type": EVENT_TYPES["VIEW_RESET"],
+                "animation": animation
+            })
 
     def create_reset_view_button(self, icon_only=False, width=None):
-        button = widgets.Button(
+        button = Button(
             description='' if icon_only else 'Reset View',
-            icon='refresh'
+            icon='refresh',
+            width=width,
         )
 
-        if width is not None:
-            button.layout.width = f'{width}px'
-
-        def click_handler(b):
-            self.reset_view()
+        def click_handler(event):
+            self.reset_view(500, event["alt_key"])
 
         button.on_click(click_handler)
         return button
@@ -366,3 +393,91 @@ class JupyterScatter(anywidget.AnyWidget):
         )
 
         return widgets.HBox([buttons, plots])
+
+class Button(anywidget.AnyWidget):
+    _esm = """
+    function render({ model, el }) {
+      const button = document.createElement('button');
+
+      button.classList.add('jupyter-widgets');
+      button.classList.add('jupyter-button');
+      button.classList.add('widget-button');
+
+      const update = () => {
+        const description = model.get('description');
+        const icon = model.get('icon');
+        const width = model.get('width');
+
+        button.textContent = '';
+
+        if (icon) {
+          const i = document.createElement('i');
+          i.classList.add('fa', `fa-${icon}`);
+
+          if (!description) {
+            i.classList.add('center');
+          }
+
+          button.appendChild(i);
+        }
+
+        if (description) {
+          button.appendChild(document.createTextNode(description));
+        }
+
+        if (width) {
+          button.style.width = `${width}px`;
+        }
+      }
+
+      const createEventHandler = (eventType) => (event) => {
+        model.send({
+          type: eventType,
+          alt_key: event.altKey,
+          shift_key: event.shiftKey,
+          meta_key: event.metaKey,
+        });
+      }
+
+      const clickHandler = createEventHandler('click');
+      const dblclickHandler = createEventHandler('dblclick');
+
+      button.addEventListener('click', clickHandler);
+      button.addEventListener('dblclick', dblclickHandler);
+
+      model.on('change:description', update);
+      model.on('change:icon', update);
+      model.on('change:width', update);
+
+      update();
+
+      el.appendChild(button);
+
+      return () => {
+        button.removeEventListener('click', clickHandler);
+        button.removeEventListener('dblclick', dblclickHandler);
+      };
+    }
+    export default { render }
+    """
+
+    description = Unicode().tag(sync=True)
+    icon = Unicode().tag(sync=True)
+    width = Int(allow_none=True).tag(sync=True)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._click_handler = None
+        self.on_msg(self._handle_custom_msg)
+
+    def _handle_custom_msg(self, event: dict, buffers):
+        if event["type"] == "click" and self._click_handler is not None:
+            self._click_handler(event)
+        if event["type"] == "dblclick" and self._dblclick_handler is not None:
+            self._dblclick_handler(event)
+
+    def on_click(self, callback):
+        self._click_handler = callback
+
+    def on_dblclick(self, callback):
+        self._dblclick_handler = callback

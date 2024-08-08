@@ -13,11 +13,40 @@ from jscatter.utils import create_default_norm, to_ndc, TimeNormalize
 def df() -> pd.DataFrame:
     num_groups = 8
 
-    data = np.random.rand(500, 7)
-    data[:, 2] *= 100
-    data[:, 3] *= 100
-    data[:, 3] = data[:, 3].astype(int)
-    data[:, 4] = np.round(data[:, 4] * (num_groups - 1)).astype(int)
+    data = np.zeros((500, 7))
+    data[:, 0] = np.linspace(0, 1, 500)
+    data[:, 1] = np.linspace(0, 1, 500)
+    data[:, 2] = np.random.rand(500) * 100
+    data[:, 3] = (np.random.rand(500) * 100).astype(int)
+    data[:, 4] = np.round(np.random.rand(500) * (num_groups - 1)).astype(int)
+    data[:, 5] = np.repeat(np.arange(100), 5).astype(int)
+    data[:, 6] = np.resize(np.arange(5), 500).astype(int)
+
+    df = pd.DataFrame(
+        data, columns=['a', 'b', 'c', 'd', 'group', 'connect', 'connect_order']
+    )
+    df['group'] = (
+        df['group']
+        .astype('int')
+        .astype('category')
+        .map(lambda c: chr(65 + c), na_action=None)
+    )
+    df['connect'] = df['connect'].astype('int')
+    df['connect_order'] = df['connect_order'].astype('int')
+
+    return df
+
+
+@pytest.fixture
+def df2() -> pd.DataFrame:
+    num_groups = 10
+
+    data = np.zeros((500, 7))
+    data[:, 0] = np.linspace(-2, 2, 500)
+    data[:, 1] = np.linspace(-2, 2, 500)
+    data[:, 2] = np.random.rand(500) * 200
+    data[:, 3] = (np.random.rand(500) * 200).astype(int)
+    data[:, 4] = np.round(np.random.rand(500) * (num_groups - 1)).astype(int)
     data[:, 5] = np.repeat(np.arange(100), 5).astype(int)
     data[:, 6] = np.resize(np.arange(5), 500).astype(int)
 
@@ -60,12 +89,47 @@ def test_scatter_numpy():
 
 def test_scatter_pandas(df):
     scatter = Scatter(data=df, x='a', y='b')
-    widget = scatter.widget
-    widget_data = np.asarray(widget.points)
+    widget_data = np.asarray(scatter.widget.points)
 
-    assert (500, 4) == np.asarray(widget.points).shape
+    assert (500, 4) == widget_data.shape
     assert np.allclose(to_ndc(df['a'].values, create_default_norm()), widget_data[:, 0])
     assert np.allclose(to_ndc(df['b'].values, create_default_norm()), widget_data[:, 1])
+
+
+def test_scatter_pandas_update(df, df2):
+    x = 'a'
+    y = 'b'
+    scatter = Scatter(data=df, x=x, y=y)
+    assert np.allclose(np.array([df[x].min(), df[x].max()]), np.array(scatter.widget.x_domain))
+    assert np.allclose(np.array([df[y].min(), df[y].max()]), np.array(scatter.widget.y_domain))
+    assert np.allclose(np.array([df[x].min(), df[x].max()]), np.array(scatter.widget.x_scale_domain))
+    assert np.allclose(np.array([df[y].min(), df[y].max()]), np.array(scatter.widget.y_scale_domain))
+
+    prev_x_scale_domain = np.array(scatter.widget.x_scale_domain)
+    prev_y_scale_domain = np.array(scatter.widget.y_scale_domain)
+
+    scatter.data(df2)
+
+    # The data domain updated by the scale domain remain unchanged as the view was not reset
+    assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_domain))
+    assert np.allclose(np.array([df2[y].min(), df2[y].max()]), np.array(scatter.widget.y_domain))
+    assert np.allclose(prev_x_scale_domain, np.array(scatter.widget.x_scale_domain))
+    assert np.allclose(prev_y_scale_domain, np.array(scatter.widget.y_scale_domain))
+
+    scatter.data(df)
+    scatter.data(df2, reset_scales=True)
+
+    # Now that we reset the view, both the data and scale domain updated properly
+    assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_domain))
+    assert np.allclose(np.array([df2[y].min(), df2[y].max()]), np.array(scatter.widget.y_domain))
+    assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_scale_domain))
+    assert np.allclose(np.array([df2[y].min(), df2[y].max()]), np.array(scatter.widget.y_scale_domain))
+
+    assert df[x].max() != df2[x].max()
+    assert df[y].max() != df2[y].max()
+
+    assert np.allclose(to_ndc(df2[x].values, create_default_norm()), scatter.widget.points[:, 0])
+    assert np.allclose(to_ndc(df2[y].values, create_default_norm()), scatter.widget.points[:, 1])
 
 
 def test_xy_scale_shorthands(df):
@@ -109,7 +173,7 @@ def test_scatter_point_encoding_updates(df: pd.DataFrame):
     widget_data = np.asarray(widget.points)
 
     assert len(scatter._encodings.data) == 0
-    assert np.sum(widget_data[:, 2:]) == 0
+    assert np.sum(widget_data[:,2]) == 0
 
     scatter.color(by='group')
     widget_data = np.asarray(widget.points)
@@ -245,3 +309,16 @@ def test_missing_values_handling():
         )
         assert np.isfinite(scatter.widget.points).all()
         assert scatter.widget.points[3, 2] == 0
+
+
+def test_scatter_axes_labels(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    scatter.axes(labels=True)
+    assert scatter.widget.axes_labels == ['a', 'b']
+
+    scatter.axes(labels=False)
+    assert scatter.widget.axes_labels == False
+
+    scatter.axes(labels=['axis 1', 'axis 2'])
+    assert scatter.widget.axes_labels == ['axis 1', 'axis 2']

@@ -1,3 +1,17 @@
+## v0.17.2
+
+- Fix: bump regl-scatterplot to v1.10.2 for a [hotfix related to rendering more than 1M points](https://github.com/flekschas/regl-scatterplot/pull/190)
+
+## v0.17.1
+
+- Fix: regression preventing tooltip from showing up ([#141](https://github.com/flekschas/jupyter-scatter/issues/141))
+
+## v0.17.0
+
+- Feat: Add `scatter.show_tooltip(point_idx)`
+- Fix: reset scale & norm ranges upon updating the data via `scatter.data()`
+- Fix: ensure `scatter.axes(labels=['x_label', 'y_label'])` works properly ([#137](https://github.com/flekschas/jupyter-scatter/issues/137]))
+
 ## v0.16.1
 
 - Fix: preserve filter state upon changing visual encoding ([#134](https://github.com/flekschas/jupyter-scatter/issues/134))
