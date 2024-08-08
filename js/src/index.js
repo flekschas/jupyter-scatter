@@ -277,6 +277,7 @@ class JupyterScatterView {
       });
 
       this.scatterplot = createScatterplot(initialOptions);
+      // this.scatterplot.setSelectionManager('directional');
 
       if (!window.jupyterScatter.versionLog) {
         // eslint-disable-next-line

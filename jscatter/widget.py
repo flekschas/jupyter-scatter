@@ -120,7 +120,7 @@ class JupyterScatter(anywidget.AnyWidget):
     zoom_on_filter = Bool(False).tag(sync=True)
 
     # Interaction properties
-    mouse_mode = Enum(['panZoom', 'lasso', 'rotate'], default_value='panZoom').tag(sync=True)
+    mouse_mode = Enum(['panZoom', 'lasso', 'directional', 'rotate'], default_value='panZoom').tag(sync=True)
     lasso_initiator = Bool().tag(sync=True)
     lasso_on_long_press = Bool().tag(sync=True)
 
@@ -337,6 +337,13 @@ class JupyterScatter(anywidget.AnyWidget):
             button.button_style = 'primary'
             self.mouse_mode = mouse_mode
 
+            if mouse_mode == 'lasso':
+                # Change selection manager in js code to lasso
+                print("use lasso")
+            elif mouse_mode == 'directional':
+                # Change selection manager in js code to lasso
+                print("use directional")
+
         def change_handler(change):
             button.button_style = 'primary' if change['new'] == mouse_mode else ''
 
@@ -358,6 +365,11 @@ class JupyterScatter(anywidget.AnyWidget):
                     icon='crosshairs',
                     tooltip='Activate lasso selection',
                 ),
+                self.create_mouse_mode_toggle_button(
+                    mouse_mode='directional',
+                    icon='crosshairs',
+                    tooltip='Activate directional selection',
+                ),                                
                 self.create_mouse_mode_toggle_button(
                     mouse_mode='rotate',
                     icon='undo',
