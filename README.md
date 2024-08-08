@@ -261,6 +261,7 @@ directory as this repo, so that the location of the regl-scatterplot folder rela
 
 </p>
 </details>
+
 ## Citation
 
 If you use Jupyter Scatter in your research, please cite the following preprint:
