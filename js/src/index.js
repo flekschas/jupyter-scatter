@@ -303,13 +303,17 @@ class JupyterScatterView {
       this.viewChangeHandlerBound = this.viewChangeHandler.bind(this);
       this.resizeHandlerBound = this.resizeHandler.bind(this);
       this.scatterplot.subscribe('lassoEnd', ({ centerPositions }) => {
+        // eslint-disable-next-line
         console.log("lassoEnd")
+        // eslint-disable-next-line
         console.log({centerPositions})
         this.model.set("center_positions", centerPositions);
         this.model.save_changes();
       })
       this.scatterplot.subscribe('dirEnd', ({ dircenterPositions }) => {
+        // eslint-disable-next-line
         console.log("dirEnd")
+        // eslint-disable-next-line
         console.log({dircenterPositions})
         this.model.set("dir_center_positions", dircenterPositions);
         this.model.save_changes();
