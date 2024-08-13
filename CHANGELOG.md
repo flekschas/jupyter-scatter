@@ -1,3 +1,7 @@
+## v0.18.0
+
+- Refactor: When saving the current view as an image via the camera button on the left side bar, the image gets saved in `scatter.widget.view_data` as a 3D Numpy array (shape: `[height, width, 4]`) instead of a 1D Numpy array. Since the shape is now encoded by the 3D numpy array, `scatter.widget.view_shape` is no longer needed and is removed.
+
 ## v0.17.2
 
 - Fix: bump regl-scatterplot to v1.10.2 for a [hotfix related to rendering more than 1M points](https://github.com/flekschas/regl-scatterplot/pull/190)
