@@ -15,7 +15,9 @@ from .utils import to_hex, with_left_label
 SELECTION_DTYPE = 'uint32'
 EVENT_TYPES = {
     "TOOLTIP": "tooltip",
+    "VIEW_DOWNLOAD": "view_download",
     "VIEW_RESET": "view_reset",
+    "VIEW_SAVE": "view_save",
 }
 
 def component_idx_to_name(idx):
@@ -219,7 +221,6 @@ class JupyterScatter(anywidget.AnyWidget):
 
     view_download = Unicode(None, allow_none=True).tag(sync=True) # Used for triggering a download
     view_data = Array(default_value=None, allow_none=True, read_only=True).tag(sync=True, **ndarray_serialization)
-    view_shape = List(None, allow_none=True, read_only=True).tag(sync=True)
 
     # For synchronyzing view changes across scatter plot instances
     view_sync = Unicode(None, allow_none=True).tag(sync=True)
@@ -255,6 +256,7 @@ class JupyterScatter(anywidget.AnyWidget):
     def create_download_view_button(self, icon_only=False, width=None):
         button = widgets.Button(
             description='' if icon_only else 'Download View',
+            tooltip='Download View as PNG',
             icon='download'
         )
 
@@ -262,7 +264,9 @@ class JupyterScatter(anywidget.AnyWidget):
             button.layout.width = f'{width}px'
 
         def click_handler(b):
-            self.download_view('file')
+            self.send({
+                "type": EVENT_TYPES["VIEW_DOWNLOAD"]
+            })
 
         button.on_click(click_handler)
         return button
@@ -270,6 +274,7 @@ class JupyterScatter(anywidget.AnyWidget):
     def create_save_view_button(self, icon_only=False, width=None):
         button = widgets.Button(
             description='' if icon_only else 'Save View',
+            tooltip='Save View to Widget Property',
             icon='camera'
         )
 
@@ -277,7 +282,9 @@ class JupyterScatter(anywidget.AnyWidget):
             button.layout.width = f'{width}px'
 
         def click_handler(b):
-            self.download_view('property')
+            self.send({
+                "type": EVENT_TYPES["VIEW_SAVE"]
+            })
 
         button.on_click(click_handler)
         return button
@@ -304,6 +311,7 @@ class JupyterScatter(anywidget.AnyWidget):
         button = Button(
             description='' if icon_only else 'Reset View',
             icon='refresh',
+            tooltip='Reset View',
             width=width,
         )
 
@@ -312,9 +320,6 @@ class JupyterScatter(anywidget.AnyWidget):
 
         button.on_click(click_handler)
         return button
-
-    def download_view(self, target = 'file'):
-        self.view_download = target
 
     def create_mouse_mode_toggle_button(
         self,

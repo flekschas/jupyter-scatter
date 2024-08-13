@@ -16,7 +16,41 @@ const DTYPES = {
  * @prop {keyof typeof DTYPES} dtype
  * @prop {Shape} shape
  */
+export function NumpyImage() {
+  return {
+    /**
+     * @param {SerializedArray<[number, number, number]>} data
+     * @returns {ImageData | null}
+     */
+    deserialize(data) {
+      if (data == null) return null;
+      // Take full view of data buffer
+      const dataArray = new Uint8ClampedArray(data.view.buffer);
+      // Chunk single TypedArray into nested Array of points
+      const [height, width] = data.shape;
+      return new ImageData(dataArray, width, height);
+    },
+    /**
+     * @param {ImageData} data
+     * @returns {SerializedArray<[number, number, number]>}
+     */
+    serialize(imageData) {
+      return {
+        view: new DataView(imageData.data.buffer),
+        dtype: 'uint8',
+        shape: [imageData.height, imageData.width, 4],
+      };
+    }
+  }
+}
 
+/**
+ * @template {number[]} Shape
+ * @typedef SerializedArray
+ * @prop {DataView} view
+ * @prop {keyof typeof DTYPES} dtype
+ * @prop {Shape} shape
+ */
 export function Numpy2D(dtype) {
   if (!(dtype in DTYPES)) {
     throw Error(`Dtype not supported, got ${JSON.stringify(dtype)}.`);

@@ -7,7 +7,7 @@ import { format } from 'd3-format';
 import { scaleLinear } from 'd3-scale';
 import { select } from 'd3-selection';
 
-import { Numpy1D, Numpy2D } from "./codecs";
+import { Numpy1D, Numpy2D, NumpyImage } from "./codecs";
 import { createHistogram } from "./histogram";
 import { createLegend } from "./legend";
 import {
@@ -95,7 +95,6 @@ const properties = {
   connectionOpacityBy: 'pointConnectionOpacityBy',
   connectionSize: 'pointConnectionSize',
   connectionSizeBy: 'pointConnectionSizeBy',
-  viewDownload: 'viewDownload',
   viewSync: 'viewSync',
   hovering: 'hovering',
   axes: 'axes',
@@ -388,7 +387,14 @@ class JupyterScatterView {
       if (event.index !== this.tooltipPointIdx && event.show !== true) return;
       this.tooltipDataHandlers(event)
       if (event.show) this.showTooltip(event.index);
+      return;
     }
+
+    if (event.type === this.eventTypes.VIEW_DOWNLOAD) {
+      this.viewDownload()
+      return;
+    }
+
     if (event.type === this.eventTypes.VIEW_RESET) {
       if (!this.scatterplot) return;
       if (event.area) {
@@ -409,6 +415,12 @@ class JupyterScatterView {
           }
         );
       }
+      return;
+    }
+
+    if (event.type === this.eventTypes.VIEW_SAVE) {
+      this.viewSave()
+      return;
     }
   }
 
@@ -2337,18 +2349,7 @@ class JupyterScatterView {
     this.zoomToHandler(this.model.get('zoom_to'));
   }
 
-  viewDownloadHandler(target) {
-    if (!target) return;
-
-    if (target === 'property') {
-      const image = this.scatterplot.export();
-      this.model.set('view_data', image.data);
-      this.model.set('view_shape', [image.width, image.height]);
-      this.model.set('view_download', null);
-      this.model.save_changes();
-      return;
-    }
-
+  viewDownload() {
     this.scatterplot.get('canvas').toBlob((blob) => {
       downloadBlob(blob, 'scatter.png');
       setTimeout(() => {
@@ -2356,6 +2357,12 @@ class JupyterScatterView {
         this.model.save_changes();
       }, 0);
     });
+  }
+
+  viewSave() {
+    const image = this.scatterplot.export();
+    this.model.set('view_data', image);
+    this.model.save_changes();
   }
 
   optionsHandler(newOptions) {
@@ -2405,7 +2412,7 @@ async function render({ model, el }) {
       points: Numpy2D('float32'),
       selection: Numpy1D('uint32'),
       filter: Numpy1D('uint32'),
-      view_data: Numpy1D('uint8'),
+      view_data: NumpyImage(),
       zoom_to: Numpy1D('uint32'),
     }),
   });
