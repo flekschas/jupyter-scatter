@@ -1,3 +1,7 @@
+## v0.17.3
+
+- Fix: hide button for activating rotate mouse mode as the rotation did not work (which is easily fixable) and should not be available when axes are shown as the axes are not rotateable. However rotating the plot without rotating the axis leads to incorrect tick marks.
+
 ## v0.17.2
 
 - Fix: bump regl-scatterplot to v1.10.2 for a [hotfix related to rendering more than 1M points](https://github.com/flekschas/regl-scatterplot/pull/190)
