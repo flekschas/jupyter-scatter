@@ -186,7 +186,11 @@ Plotly combines great customizability with interactivity and can render scatterp
 
 Datashader [@datashader] specializes on static rendering of large-scale datasets and offers unparalleled scalability that greatly exceeds that of Jupyter Scatter. One can also fine-tune how data is aggregated and rasterized. However, this comes at the cost of limited interactivity. While it's possible to interactively zoom into a rasterized image produced by Datashader, the image is just drawn at scale instead of being re-rendered at different field of views. Re-rendering can be important though to better identify patters in subsets of large scatterplots through optimized point size and opacity.
 
+Although Jupyter Scatter is not tied to any specific application area and works with any bivariate data, one use case is to plot 2D embeddings. In that context, WizMap [@wang2023wizmap] and DataMapPlot [datamapplot] are alternatives to Jupyter Scatter that run in Jupyter Notebook/Lab and scale to millions of points. In addition, both tools offers bespoke features like displaying labels and cluster outlines/contours. In contrast, WizMap offers only a fixed visual encoding that's optimized for embeddings, meaning the point color, size, and opacity can't be adjusted. Importantly, both tools output static HTML only. Hence, they do not integrate into the [Jupyter Widget](https://ipywidgets.readthedocs.io/en/latest/) ecosystem. For instance, while Jupyter Scatter does not have a build-in search functionality, it's easy to implement it by using an existing Jupyter Widget string widget in combination with Jupyter Scatters support for two-way point selections[^1].
+
 Finally, except for Plotly, none of the tools offer readily-available interactive _two-way_ point selection that exposes the selected points for reading and writing in both the Python and JavaScript kernels. This is a key feature of Jupyter Scatter to enable follow-up analysis of subsets of the data. Also, no other library offers direct support for synchronized exploration of multiple scatterplots for comparison.
+
+[^1] [https://github.com/flekschas/jupyter-scatter-tutorial/blob/main/notebooks/5-Search.ipynb](https://github.com/flekschas/jupyter-scatter-tutorial/blob/main/notebooks/5-Search.ipynb)
 
 # Acknowledgements
 
