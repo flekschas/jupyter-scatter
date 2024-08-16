@@ -254,36 +254,34 @@ class JupyterScatter(anywidget.AnyWidget):
         })
 
     def create_download_view_button(self, icon_only=False, width=None):
-        button = widgets.Button(
+        button = Button(
             description='' if icon_only else 'Download View',
             tooltip='Download View as PNG',
-            icon='download'
+            icon='download',
+            width=width,
         )
 
-        if width is not None:
-            button.layout.width = f'{width}px'
-
-        def click_handler(b):
+        def click_handler(event):
             self.send({
-                "type": EVENT_TYPES["VIEW_DOWNLOAD"]
+                "type": EVENT_TYPES["VIEW_DOWNLOAD"],
+                "transparentBackgroundColor": bool(event["alt_key"]),
             })
 
         button.on_click(click_handler)
         return button
 
     def create_save_view_button(self, icon_only=False, width=None):
-        button = widgets.Button(
+        button = Button(
             description='' if icon_only else 'Save View',
             tooltip='Save View to Widget Property',
-            icon='camera'
+            icon='camera',
+            width=width,
         )
 
-        if width is not None:
-            button.layout.width = f'{width}px'
-
-        def click_handler(b):
+        def click_handler(event):
             self.send({
-                "type": EVENT_TYPES["VIEW_SAVE"]
+                "type": EVENT_TYPES["VIEW_SAVE"],
+                "transparentBackgroundColor": bool(event["alt_key"]),
             })
 
         button.on_click(click_handler)
@@ -409,6 +407,7 @@ class Button(anywidget.AnyWidget):
       const update = () => {
         const description = model.get('description');
         const icon = model.get('icon');
+        const tooltip = model.get('tooltip');
         const width = model.get('width');
 
         button.textContent = '';
@@ -426,6 +425,10 @@ class Button(anywidget.AnyWidget):
 
         if (description) {
           button.appendChild(document.createTextNode(description));
+        }
+
+        if (tooltip) {
+          button.title = tooltip;
         }
 
         if (width) {
@@ -451,6 +454,7 @@ class Button(anywidget.AnyWidget):
       model.on('change:description', update);
       model.on('change:icon', update);
       model.on('change:width', update);
+      model.on('change:tooltip', update);
 
       update();
 

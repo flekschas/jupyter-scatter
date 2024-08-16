@@ -23,6 +23,8 @@ import {
   createElementWithClass,
   remToPx,
   createTimeFormat,
+  addBackgroundColor,
+  imageDataToCanvas,
 } from "./utils";
 
 import { version } from "../package.json";
@@ -391,7 +393,7 @@ class JupyterScatterView {
     }
 
     if (event.type === this.eventTypes.VIEW_DOWNLOAD) {
-      this.viewDownload()
+      this.viewDownload(event.transparentBackgroundColor)
       return;
     }
 
@@ -419,7 +421,7 @@ class JupyterScatterView {
     }
 
     if (event.type === this.eventTypes.VIEW_SAVE) {
-      this.viewSave()
+      this.viewSave(event.transparentBackgroundColor)
       return;
     }
   }
@@ -1751,8 +1753,14 @@ class JupyterScatterView {
   // Helper
   colorCanvas() {
     if (Array.isArray(this.backgroundColor)) {
-      this.container.style.backgroundColor = 'rgb(' +
-        this.backgroundColor.slice(0, 3).map((x) => x * 255).join(',') + ')';
+      const rgbStr =
+        this.backgroundColor.slice(0, 3).map((x) => x * 255).join(',');
+
+      const colorStr = this.backgroundColor.length === 4
+        ? `rgba(${rgbStr}, ${this.backgroundColor[3]})`
+        : `rgb(${rgbStr})`;
+
+      this.container.style.backgroundColor = colorStr;
     } else {
       this.container.style.backgroundColor = this.backgroundColor;
     }
@@ -2349,19 +2357,22 @@ class JupyterScatterView {
     this.zoomToHandler(this.model.get('zoom_to'));
   }
 
-  viewDownload() {
-    this.scatterplot.get('canvas').toBlob((blob) => {
+  viewDownload(transparentBackgroundColor) {
+    const image = this.scatterplot.export();
+    const finalImage = transparentBackgroundColor
+      ? image
+      : addBackgroundColor(image, this.backgroundColor);
+    imageDataToCanvas(finalImage).toBlob((blob) => {
       downloadBlob(blob, 'scatter.png');
-      setTimeout(() => {
-        this.model.set('view_download', null);
-        this.model.save_changes();
-      }, 0);
     });
   }
 
-  viewSave() {
+  viewSave(transparentBackgroundColor) {
     const image = this.scatterplot.export();
-    this.model.set('view_data', image);
+    const finalImage = transparentBackgroundColor
+      ? image
+      : addBackgroundColor(image, this.backgroundColor);
+    this.model.set('view_data', finalImage);
     this.model.save_changes();
   }
 

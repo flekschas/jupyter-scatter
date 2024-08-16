@@ -33,6 +33,12 @@ The downloaded image will look as follows:
 
 <div class="img export-download-png"><div /></div>
 
+::: info
+By default, the background color of the image is the same as
+`scatter.widget.background_color`. However, you can also download the view with
+a transparent background by holding down <kbd>Alt</kbd> while clicking on the
+camera button.
+:::
 
 ## Export to `widget.view_data`
 

@@ -1,5 +1,6 @@
 ## v0.18.0
 
+- Feat: The exported and saved images now include a background color instead of a transparent background. You can still still export or save images with a transparent background by holding down the ALT key while clicking on the download or camera button.
 - Refactor: When saving the current view as an image via the camera button on the left side bar, the image gets saved in `scatter.widget.view_data` as a 3D Numpy array (shape: `[height, width, 4]`) instead of a 1D Numpy array. Since the shape is now encoded by the 3D numpy array, `scatter.widget.view_shape` is no longer needed and is removed.
 
 ## v0.17.2
