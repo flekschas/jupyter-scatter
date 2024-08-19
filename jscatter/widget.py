@@ -253,7 +253,7 @@ class JupyterScatter(anywidget.AnyWidget):
             "properties": data[self.tooltip_properties_non_visual_info.keys()].to_dict() if self.tooltip_properties_non_visual_info is not None else {}
         })
 
-    def create_download_view_button(self, icon_only=False, width=None):
+    def create_download_view_button(self, icon_only=True, width=36):
         button = Button(
             description='' if icon_only else 'Download View',
             tooltip='Download View as PNG',
@@ -270,7 +270,7 @@ class JupyterScatter(anywidget.AnyWidget):
         button.on_click(click_handler)
         return button
 
-    def create_save_view_button(self, icon_only=False, width=None):
+    def create_save_view_button(self, icon_only=True, width=36):
         button = Button(
             description='' if icon_only else 'Save View',
             tooltip='Save View to Widget Property',
@@ -305,7 +305,7 @@ class JupyterScatter(anywidget.AnyWidget):
                 "animation": animation
             })
 
-    def create_reset_view_button(self, icon_only=False, width=None):
+    def create_reset_view_button(self, icon_only=True, width=36):
         button = Button(
             description='' if icon_only else 'Reset View',
             icon='refresh',
@@ -347,23 +347,32 @@ class JupyterScatter(anywidget.AnyWidget):
         return button
 
     def show(self):
+        button_pan_zoom = self.create_mouse_mode_toggle_button(
+            mouse_mode='panZoom',
+            icon='arrows',
+            tooltip='Activate pan & zoom',
+        )
+        button_lasso = self.create_mouse_mode_toggle_button(
+            mouse_mode='lasso',
+            icon='crosshairs',
+            tooltip='Activate lasso selection',
+        )
+        # Hide the rotate button for now until we find a robust way to only use
+        # it while axes are hidden.
+        # button_rotate = self.create_mouse_mode_toggle_button(
+        #     mouse_mode='rotate',
+        #     icon='undo',
+        #     tooltip='Activate rotation',
+        # )
+        button_view_save = self.create_save_view_button()
+        button_view_download = self.create_download_view_button()
+        button_view_reset = self.create_reset_view_button()
+
         buttons = widgets.VBox(
             children=[
-                self.create_mouse_mode_toggle_button(
-                    mouse_mode='panZoom',
-                    icon='arrows',
-                    tooltip='Activate pan & zoom',
-                ),
-                self.create_mouse_mode_toggle_button(
-                    mouse_mode='lasso',
-                    icon='crosshairs',
-                    tooltip='Activate lasso selection',
-                ),
-                self.create_mouse_mode_toggle_button(
-                    mouse_mode='rotate',
-                    icon='undo',
-                    tooltip='Activate rotation',
-                ),
+                button_pan_zoom,
+                button_lasso,
+                # button_rotate,
                 widgets.Box(
                     children=[],
                     layout=widgets.Layout(
@@ -373,9 +382,9 @@ class JupyterScatter(anywidget.AnyWidget):
                         border='1px solid var(--jp-layout-color2)'
                     )
                 ),
-                self.create_save_view_button(icon_only=True, width=36),
-                self.create_download_view_button(icon_only=True, width=36),
-                self.create_reset_view_button(icon_only=True, width=36),
+                button_view_save,
+                button_view_download,
+                button_view_reset,
             ],
             layout=widgets.Layout(
                 display='flex',
