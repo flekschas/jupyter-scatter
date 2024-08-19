@@ -158,3 +158,49 @@ export function createXTimeFormat(points) {
 export function createYTimeFormat(points) {
   return createTimeFormat(points, (point) => point[1])
 }
+
+const toRgbaElement = document.createElement('div');
+export function toRgba(color) {
+  if (Array.isArray) {
+    if (color.length >= 4) {
+      return color.map((c) => c * 255);
+    }
+    if (color.length === 3) {
+      return [...color.map((c) => c * 255), 255];
+    }
+    return [0, 0, 0, 0];
+  }
+  toRgbaElement.style.backgroundColor = color;
+  document.body.appendChild(toRgbaElement);
+  const rgba = getComputedStyle(toRgbaElement)['background-color'];
+  document.body.removeChild(toRgbaElement);
+  return rgba.slice(rgba.indexOf('(') + 1, rgba.indexOf(')')).split(',').map(Number);
+}
+
+export function addBackgroundColor(imageData, backgroundColor) {
+  const newData = new Uint8ClampedArray(imageData.width * imageData.height * 4);
+
+  const bg = toRgba(backgroundColor);
+
+  for (let i = 0; i < newData.length; i += 4) {
+    const bgAlpha = 1 - imageData.data[i + 3];
+    const fgAlpha = imageData.data[i + 3];
+    newData[i] = bg[0] * bgAlpha + imageData.data[i] * fgAlpha;
+    newData[i + 1] = bg[1] * bgAlpha + imageData.data[i + 1] * fgAlpha;
+    newData[i + 2] = bg[2] * bgAlpha + imageData.data[i + 2] * fgAlpha;
+    newData[i + 3] = bg[3] * bgAlpha + imageData.data[i + 3] * fgAlpha;
+  }
+
+  return new ImageData(newData, imageData.width, imageData.height);
+}
+
+export function imageDataToCanvas(imageData) {
+  const canvas = document.createElement("canvas");
+  canvas.width = imageData.width;;
+  canvas.height = imageData.height;
+
+  const ctx = canvas.getContext("2d");
+  ctx.putImageData(imageData, 0, 0);
+
+  return canvas;
+}
