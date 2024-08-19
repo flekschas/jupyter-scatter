@@ -2270,6 +2270,7 @@ class JupyterScatterView {
 
   mouseModeHandler(newValue) {
     this.withPropertyChangeHandler('mouseMode', newValue);
+    this.scatterplot.get('camera').config({ isRotate: newValue === 'rotate' });
   }
 
   axesHandler(newValue) {
