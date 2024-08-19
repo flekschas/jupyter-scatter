@@ -1,5 +1,6 @@
 ## v0.17.3
 
+- Fix: hide button for activating rotate mouse mode as the rotation did not work (which is easily fixable) and should not be available when axes are shown as the axes are not rotateable. However rotating the plot without rotating the axis leads to incorrect tick marks.
 - Fix: VSCode integration by updating regl-scatterplot to v1.10.4 ([#37](https://github.com/flekschas/jupyter-scatter/issues/37))
 
 ## v0.17.2
