@@ -73,7 +73,8 @@ export default defineConfig({
           { text: 'Axes & Legends', link: '/axes-legends' },
           { text: 'Tooltip', link: '/tooltip' },
           { text: 'Scales', link: '/scales' },
-          { text: 'Connected Scatterplots', link: '/connected-scatterplots' }
+          { text: 'Connected Scatterplots', link: '/connected-scatterplots' },
+          { text: 'Export as Image', link: '/export-image' },
         ]
       },
       // {
