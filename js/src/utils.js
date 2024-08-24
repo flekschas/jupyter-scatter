@@ -5,6 +5,10 @@ export function camelToSnake(string) {
   return string.replace(/[\w]([A-Z])/g, (m) => m[0] + "_" + m[1]).toLowerCase();
 }
 
+export function snakeToCamel(string) {
+  return string.toLowerCase().replace(/[-_][a-z]/g, (group) => group.slice(-1).toUpperCase());
+}
+
 export function toCapitalCase(string) {
   if (string.length === 0) return string;
   return string.at(0).toUpperCase() + string.slice(1);

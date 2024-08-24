@@ -1,3 +1,5 @@
+import { camelToSnake, snakeToCamel } from './utils';
+
 const DTYPES = {
   uint8: Uint8Array,
   int8: Int8Array,
@@ -118,5 +120,45 @@ export function Numpy1D(dtype) {
         shape: [data.length],
       };
     }
+  }
+}
+
+export function Annotations() {
+  const pyToJsKey = { x_start: 'x1', x_end: 'x2', y_start: 'y1', y_end: 'y2' };
+  const jsToPyKey = { x1: 'x_start', x2: 'x_end', y1: 'y_start', y2: 'y_end' };
+  return {
+    /**
+     * @param {string[] | null} annotationStrs
+     * @returns {object[]}
+     */
+    deserialize: (annotationStrs) => {
+      if (annotationStrs === null) {
+        return null;
+      }
+      return annotationStrs.map((annotationStr) => {
+        return Object.entries(JSON.parse(annotationStr)).reduce((acc, [key, value]) => {
+          const jsKey = key in pyToJsKey ? pyToJsKey[key] : snakeToCamel(key);
+          acc[jsKey] = value;
+          return acc;
+        }, {})
+      });
+    },
+    /**
+     * @param {object[] | null} annotations
+     * @returns {string[]}
+     */
+    serialize: (annotations) => {
+      if (annotations === null) {
+        return null;
+      }
+      return annotations.map((annotation) => {
+        const pyAnnotation = Object.entries(annotation).reduce((acc, [key, value]) => {
+          const pyKey = key in jsToPyKey ? jsToPyKey[key] : camelToSnake(key);
+          acc[pyKey] = value;
+          return acc;
+        }, {});
+        return JSON.stringify(pyAnnotation);
+      })
+    },
   }
 }

@@ -10,7 +10,13 @@ import pathlib
 from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
 from traittypes import Array
 
-from .utils import to_hex, with_left_label
+from .annotations_traits import (
+    Line,
+    HLine,
+    VLine,
+    Rect,
+    serialization as annotation_serialization,
+)
 
 SELECTION_DTYPE = 'uint32'
 EVENT_TYPES = {
@@ -106,6 +112,13 @@ class JupyterScatter(anywidget.AnyWidget):
     color_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
     opacity_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
     size_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
+
+    # Annotations
+    annotations = List(
+        trait=Union([Line(), HLine(), VLine(), Rect()]),
+        default_value=None,
+        allow_none=True,
+    ).tag(sync=True, **annotation_serialization)
 
     # View properties
     camera_target = List([0, 0]).tag(sync=True)
