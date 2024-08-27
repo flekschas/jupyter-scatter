@@ -277,8 +277,9 @@ class JupyterScatterView {
       });
 
       this.scatterplot = createScatterplot(initialOptions);
-      // this.scatterplot.setSelectionManager('directional');
-
+      
+      
+    
       if (!window.jupyterScatter.versionLog) {
         // eslint-disable-next-line
         console.log(
@@ -303,6 +304,8 @@ class JupyterScatterView {
       this.externalViewChangeHandlerBound = this.externalViewChangeHandler.bind(this);
       this.viewChangeHandlerBound = this.viewChangeHandler.bind(this);
       this.resizeHandlerBound = this.resizeHandler.bind(this);
+      //This is Askar's code added on Aug 22 to try out
+      //if (this.model.get(mouse))
       this.scatterplot.subscribe('lassoEnd', ({ centerPositions }) => {
         // eslint-disable-next-line
         console.log("lassoEnd")
@@ -351,7 +354,29 @@ class JupyterScatterView {
       this.model.on('msg:custom', (event) => {
         this.customEventHandler.call(this, event);
       }, this);
+      
+      // this.model.on("msg:custom", (msg) => {
+      //   if (msg?.type === "setdirectional") this.scatterplot.setSelectionManager('directional');
+    //});
+      
+      //BS Code I added for now - Askar
+      // this.model.on('change:mouse_mode', () => {
+      //   const newMouseMode = this.model.get('mouse_mode');
+        
+      //   //Check if the new mouse mode is 'directional'
+      //   if (newMouseMode === 'directional') {
+      //     console.log('Directional Mode Activated');
+      //     this.scatterplot.setSelectionManager('directional');
 
+      //     //Subscribe to the 'dirEnd' event
+      //     this.scatterplot.subscribe('dirEnd', ({ dircenterPositions }) => {
+      //       console.log("dirEnd");
+      //       console.log({ dircenterPositions});
+      //       this.model.set("dir_center_positions", dircenterPositions);
+      //       this.model.save_changes();
+      //     })
+      // }});
+      
       this.colorCanvas();
 
       this.getOuterDimensions();
@@ -394,11 +419,37 @@ class JupyterScatterView {
   }
 
   customEventHandler(event) {
+    console.log("Event received: ", event.type);
     if (event.type === this.eventTypes.TOOLTIP) {
       if (event.index !== this.tooltipPointIdx && event.show !== true) return;
       this.tooltipDataHandlers(event)
       if (event.show) this.showTooltip(event.index);
     }
+    //Handle directional mode - added by askar and andres
+    if (event.type === 'setdirectional') {
+      console.log("switching to directional mode");
+      if (!this.scatterplot) return;
+      this.scatterplot.setSelectionManager('directional');
+    }
+    //Handle lasso mode - added by askar
+    if (event.type === 'setlasso') {
+      console.log("switching to lasso mode");
+      if (!this.scatterplot) return;
+      this.scatterplot.setSelectionManager('lasso');
+    }
+    //Handle pan zoom mode - added by askar
+    if (event.type === 'setpanzoom') {
+      console.log("switching to pan zoom mode");
+      if (!this.scatterplot) return;
+      this.scatterplot.setSelectionManager('panzoom');
+    }
+    //Handle rotate mode - added by askar
+    // if (event.type === 'setrotate') {
+    //   console.log("switching to rotate mode");
+    //   if (!this.scatterplot) return;
+    //   this.scatterplot.setSelectionManager('rotate');
+    // }
+    //
     if (event.type === this.eventTypes.VIEW_RESET) {
       if (!this.scatterplot) return;
       if (event.area) {

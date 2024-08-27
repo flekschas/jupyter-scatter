@@ -32,6 +32,7 @@ class MouseModes(Enum):
     PAN_ZOOM = 'panZoom'
     LASSO = 'lasso'
     ROTATE = 'rotate'
+    DIRECTIONAL = 'directional'
 
 class Auto(Enum):
     AUTO = 'auto'
