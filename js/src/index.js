@@ -7,7 +7,7 @@ import { format } from 'd3-format';
 import { scaleLinear } from 'd3-scale';
 import { select } from 'd3-selection';
 
-import { Numpy1D, Numpy2D, NumpyImage } from "./codecs";
+import { Annotations, Numpy1D, Numpy2D, NumpyImage } from "./codecs";
 import { createHistogram } from "./histogram";
 import { createLegend } from "./legend";
 import {
@@ -59,6 +59,7 @@ const TOOLTIP_OFFSET_REM = 0.5;
  * different. E.g., size (Python) vs pointSize (JavaScript)
  */
 const properties = {
+  annotations: 'annotations',
   backgroundColor: 'backgroundColor',
   backgroundImage: 'backgroundImage',
   cameraDistance: 'cameraDistance',
@@ -371,6 +372,9 @@ class JupyterScatterView {
         this.scatterplot
           .draw(this.points, options)
           .then(() => {
+            if (this.annotations) {
+              this.scatterplot.drawAnnotations(this.annotations);
+            }
             if (this.filter?.length && this.model.get('zoom_on_filter')) {
               this.zoomToHandler(this.filter);
             }
@@ -1766,6 +1770,10 @@ class JupyterScatterView {
     }
   }
 
+  annotationsHandler(annotations) {
+    this.scatterplot.drawAnnotations(annotations || []);
+  }
+
   // Event handlers for JS-triggered events
   pointoverHandler(pointIndex) {
     this.hoveringChangedByJs = true;
@@ -2426,6 +2434,7 @@ async function render({ model, el }) {
       filter: Numpy1D('uint32'),
       view_data: NumpyImage(),
       zoom_to: Numpy1D('uint32'),
+      annotations: Annotations(),
     }),
   });
   view.render();
