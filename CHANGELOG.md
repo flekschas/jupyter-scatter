@@ -1,3 +1,7 @@
+## v0.18.1
+
+- Fix: re-enable point transition and make it explicit via `scatter.options(transition_points=True, transition_points_duration=3000)`
+
 ## v0.18.0
 
 - Feat: add support for line-based annotations via `scatter.annotations()`
