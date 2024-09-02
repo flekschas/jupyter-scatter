@@ -3,7 +3,7 @@ import warnings
 
 from matplotlib.colors import LogNorm, PowerNorm, Normalize
 from numpy import histogram, isnan, sum
-from pandas.api.types import is_categorical_dtype, is_string_dtype
+from pandas import CategoricalDtype, StringDtype
 from urllib.parse import urlparse
 from typing import List, Union
 
@@ -78,13 +78,13 @@ def to_scale_type(norm = None):
     return 'categorical'
 
 def get_scale_type_from_df(data):
-    if is_categorical_dtype(data) or is_string_dtype(data):
+    if isinstance(data.dtype, CategoricalDtype) or isinstance(data.dtype, StringDtype):
         return 'categorical'
 
     return 'linear'
 
 def get_domain_from_df(data):
-    if is_categorical_dtype(data) or is_string_dtype(data):
+    if isinstance(data.dtype, CategoricalDtype) or isinstance(data.dtype, StringDtype):
         # We need to recreate the categorization in case the data is just a
         # filtered view, in which case it might contain "missing" indices
         _data = data.copy().astype(str).astype('category')
@@ -120,7 +120,7 @@ def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeli
     return labeling
 
 def get_histogram_from_df(data, bins=20, range=None):
-    if is_categorical_dtype(data) or is_string_dtype(data):
+    if isinstance(data.dtype, CategoricalDtype) or isinstance(data.dtype, StringDtype):
         # We need to recreate the categorization in case the data is just a
         # filtered view, in which case it might contain "missing" indices
         value_counts = data.copy().astype(str).astype('category').cat.codes.value_counts()
