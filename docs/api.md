@@ -6,7 +6,7 @@
     - [selection()](#scatter.selection) and [filter()](#scatter.filter)
     - [color()](#scatter.color), [opacity()](#scatter.opacity), and [size()](#scatter.size)
     - [connect()](#scatter.connect), [connection_color()](#scatter.connection_color), [connection_opacity()](#scatter.connection_opacity), and [connection_size()](#scatter.connection_size)
-    - [axes()](#scatter.axes) and [legend()](#scatter.legend)
+    - [axes()](#scatter.axes), [legend()](#scatter.legend), and [annotations()](#scatter.annotations)
     - [tooltip()](#scatter.tooltip) and [show_tooltip()](#scatter.show_tooltip)
     - [zoom()](#scatter.zoom) and [camera()](#scatter.camera)
     - [lasso()](#scatter.lasso), [reticle()](#scatter.reticle), and [mouse()](#scatter.mouse),
@@ -357,6 +357,21 @@ Set or get the legend settings.
 scatter.legend(True, 'top-right', 'small')
 ```
 
+### scatter.annotations(_annotations=Undefined_) {#scatter.annotations}
+
+Set or get annotations.
+
+**Arguments:**
+- `annotations` is a list of annotations (`Line`, `HLine`, `VLine`, or `Rect`)
+
+**Returns:** either the annotation properties when all arguments are `Undefined` or `self`.
+
+**Example:**
+
+```python
+from jscatter import HLine, VLine
+scatter.annotations([HLine(42), VLine(42)])
+```
 
 ### scatter.tooltip(_enable=Undefined_, _properties=Undefined_, _histograms=Undefined_, _histograms_bins=Undefined_, _histograms_ranges=Undefined_, _histograms_size=Undefined_, _preview=Undefined_, _preview_type=Undefined_, _preview_text_lines=Undefined_, _preview_image_background_color=Undefined_, _preview_image_position=Undefined_, _preview_image_size=Undefined_, _preview_audio_length=Undefined_, _preview_audio_loop=Undefined_, _preview_audio_controls=Undefined_, _size=Undefined_) {#scatter.tooltip}
 

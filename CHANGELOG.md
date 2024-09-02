@@ -1,3 +1,11 @@
+## v0.18.0
+
+- Feat: add support for line-based annotations via `scatter.annotations()`
+- Feat: the exported and saved images now include a background color instead of a transparent background. You can still still export or save images with a transparent background by holding down the ALT key while clicking on the download or camera button.
+- Refactor: When saving the current view as an image via the camera button on the left side bar, the image gets saved in `scatter.widget.view_data` as a 3D Numpy array (shape: `[height, width, 4]`) instead of a 1D Numpy array. Since the shape is now encoded by the 3D numpy array, `scatter.widget.view_shape` is no longer needed and is removed.
+- Fix: hide button for activating rotate mouse mode as the rotation did not work (which is easily fixable) and should not be available when axes are shown as the axes are not rotateable. However rotating the plot without rotating the axis leads to incorrect tick marks.
+- Fix: VSCode integration by updating regl-scatterplot to v1.10.4 ([#37](https://github.com/flekschas/jupyter-scatter/issues/37))
+
 ## v0.17.2
 
 - Fix: bump regl-scatterplot to v1.10.2 for a [hotfix related to rendering more than 1M points](https://github.com/flekschas/regl-scatterplot/pull/190)
@@ -8,7 +16,7 @@
 
 ## v0.17.0
 
-- Feat: Add `scatter.show_tooltip(point_idx)`
+- Feat: add `scatter.show_tooltip(point_idx)`
 - Fix: reset scale & norm ranges upon updating the data via `scatter.data()`
 - Fix: ensure `scatter.axes(labels=['x_label', 'y_label'])` works properly ([#137](https://github.com/flekschas/jupyter-scatter/issues/137]))
 

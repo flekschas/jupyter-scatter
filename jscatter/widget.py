@@ -10,12 +10,20 @@ import pathlib
 from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
 from traittypes import Array
 
-from .utils import to_hex, with_left_label
+from .annotations_traits import (
+    Line,
+    HLine,
+    VLine,
+    Rect,
+    serialization as annotation_serialization,
+)
 
 SELECTION_DTYPE = 'uint32'
 EVENT_TYPES = {
     "TOOLTIP": "tooltip",
+    "VIEW_DOWNLOAD": "view_download",
     "VIEW_RESET": "view_reset",
+    "VIEW_SAVE": "view_save",
 }
 
 def component_idx_to_name(idx):
@@ -104,6 +112,13 @@ class JupyterScatter(anywidget.AnyWidget):
     color_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
     opacity_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
     size_histogram_range = List(None, allow_none=True, minlen=2, maxlen=2).tag(sync=True)
+
+    # Annotations
+    annotations = List(
+        trait=Union([Line(), HLine(), VLine(), Rect()]),
+        default_value=None,
+        allow_none=True,
+    ).tag(sync=True, **annotation_serialization)
 
     # View properties
     camera_target = List([0, 0]).tag(sync=True)
@@ -219,7 +234,6 @@ class JupyterScatter(anywidget.AnyWidget):
 
     view_download = Unicode(None, allow_none=True).tag(sync=True) # Used for triggering a download
     view_data = Array(default_value=None, allow_none=True, read_only=True).tag(sync=True, **ndarray_serialization)
-    view_shape = List(None, allow_none=True, read_only=True).tag(sync=True)
 
     # For synchronyzing view changes across scatter plot instances
     view_sync = Unicode(None, allow_none=True).tag(sync=True)
@@ -252,32 +266,36 @@ class JupyterScatter(anywidget.AnyWidget):
             "properties": data[self.tooltip_properties_non_visual_info.keys()].to_dict() if self.tooltip_properties_non_visual_info is not None else {}
         })
 
-    def create_download_view_button(self, icon_only=False, width=None):
-        button = widgets.Button(
+    def create_download_view_button(self, icon_only=True, width=36):
+        button = Button(
             description='' if icon_only else 'Download View',
-            icon='download'
+            tooltip='Download View as PNG',
+            icon='download',
+            width=width,
         )
 
-        if width is not None:
-            button.layout.width = f'{width}px'
-
-        def click_handler(b):
-            self.download_view('file')
+        def click_handler(event):
+            self.send({
+                "type": EVENT_TYPES["VIEW_DOWNLOAD"],
+                "transparentBackgroundColor": bool(event["alt_key"]),
+            })
 
         button.on_click(click_handler)
         return button
 
-    def create_save_view_button(self, icon_only=False, width=None):
-        button = widgets.Button(
+    def create_save_view_button(self, icon_only=True, width=36):
+        button = Button(
             description='' if icon_only else 'Save View',
-            icon='camera'
+            tooltip='Save View to Widget Property',
+            icon='camera',
+            width=width,
         )
 
-        if width is not None:
-            button.layout.width = f'{width}px'
-
-        def click_handler(b):
-            self.download_view('property')
+        def click_handler(event):
+            self.send({
+                "type": EVENT_TYPES["VIEW_SAVE"],
+                "transparentBackgroundColor": bool(event["alt_key"]),
+            })
 
         button.on_click(click_handler)
         return button
@@ -300,10 +318,11 @@ class JupyterScatter(anywidget.AnyWidget):
                 "animation": animation
             })
 
-    def create_reset_view_button(self, icon_only=False, width=None):
+    def create_reset_view_button(self, icon_only=True, width=36):
         button = Button(
             description='' if icon_only else 'Reset View',
             icon='refresh',
+            tooltip='Reset View',
             width=width,
         )
 
@@ -312,9 +331,6 @@ class JupyterScatter(anywidget.AnyWidget):
 
         button.on_click(click_handler)
         return button
-
-    def download_view(self, target = 'file'):
-        self.view_download = target
 
     def create_mouse_mode_toggle_button(
         self,
@@ -344,23 +360,32 @@ class JupyterScatter(anywidget.AnyWidget):
         return button
 
     def show(self):
+        button_pan_zoom = self.create_mouse_mode_toggle_button(
+            mouse_mode='panZoom',
+            icon='arrows',
+            tooltip='Activate pan & zoom',
+        )
+        button_lasso = self.create_mouse_mode_toggle_button(
+            mouse_mode='lasso',
+            icon='crosshairs',
+            tooltip='Activate lasso selection',
+        )
+        # Hide the rotate button for now until we find a robust way to only use
+        # it while axes are hidden.
+        # button_rotate = self.create_mouse_mode_toggle_button(
+        #     mouse_mode='rotate',
+        #     icon='undo',
+        #     tooltip='Activate rotation',
+        # )
+        button_view_save = self.create_save_view_button()
+        button_view_download = self.create_download_view_button()
+        button_view_reset = self.create_reset_view_button()
+
         buttons = widgets.VBox(
             children=[
-                self.create_mouse_mode_toggle_button(
-                    mouse_mode='panZoom',
-                    icon='arrows',
-                    tooltip='Activate pan & zoom',
-                ),
-                self.create_mouse_mode_toggle_button(
-                    mouse_mode='lasso',
-                    icon='crosshairs',
-                    tooltip='Activate lasso selection',
-                ),
-                self.create_mouse_mode_toggle_button(
-                    mouse_mode='rotate',
-                    icon='undo',
-                    tooltip='Activate rotation',
-                ),
+                button_pan_zoom,
+                button_lasso,
+                # button_rotate,
                 widgets.Box(
                     children=[],
                     layout=widgets.Layout(
@@ -370,9 +395,9 @@ class JupyterScatter(anywidget.AnyWidget):
                         border='1px solid var(--jp-layout-color2)'
                     )
                 ),
-                self.create_save_view_button(icon_only=True, width=36),
-                self.create_download_view_button(icon_only=True, width=36),
-                self.create_reset_view_button(icon_only=True, width=36),
+                button_view_save,
+                button_view_download,
+                button_view_reset,
             ],
             layout=widgets.Layout(
                 display='flex',
@@ -404,6 +429,7 @@ class Button(anywidget.AnyWidget):
       const update = () => {
         const description = model.get('description');
         const icon = model.get('icon');
+        const tooltip = model.get('tooltip');
         const width = model.get('width');
 
         button.textContent = '';
@@ -421,6 +447,10 @@ class Button(anywidget.AnyWidget):
 
         if (description) {
           button.appendChild(document.createTextNode(description));
+        }
+
+        if (tooltip) {
+          button.title = tooltip;
         }
 
         if (width) {
@@ -446,6 +476,7 @@ class Button(anywidget.AnyWidget):
       model.on('change:description', update);
       model.on('change:icon', update);
       model.on('change:width', update);
+      model.on('change:tooltip', update);
 
       update();
 

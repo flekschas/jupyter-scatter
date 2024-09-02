@@ -5,8 +5,9 @@ import numpy as np
 import pandas as pd
 
 from matplotlib.colors import to_rgba, Normalize, LogNorm, PowerNorm, LinearSegmentedColormap, ListedColormap
-from typing import Dict, Optional, Union, List, Tuple, Literal
+from typing import Dict, Optional, Union, List, Tuple
 
+from .annotations import Line, HLine, VLine, Rect
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
@@ -119,6 +120,54 @@ def get_histogram_range(ranges, property):
 
     return None
 
+def normalize_annotation(annotation, x_scale, y_scale):
+    def to_ndc(value, norm):
+        return (norm(value) * 2) - 1
+
+    if isinstance(annotation, HLine):
+        return HLine(
+            y=to_ndc(annotation.y, y_scale),
+            x_start=None if annotation.x_start is None else to_ndc(annotation.x_start, x_scale),
+            x_end=None if annotation.x_end is None else to_ndc(annotation.x_end, x_scale),
+            line_color=annotation.line_color,
+            line_width=annotation.line_width,
+        )
+
+    if isinstance(annotation, VLine):
+        return VLine(
+            x=to_ndc(annotation.x, x_scale),
+            y_start=None if annotation.y_start is None else to_ndc(annotation.y_start, y_scale),
+            y_end=None if annotation.y_end is None else to_ndc(annotation.y_end, y_scale),
+            line_color=annotation.line_color,
+            line_width=annotation.line_width,
+        )
+
+
+    if isinstance(annotation, Line):
+        return Line(
+            vertices=[
+                (to_ndc(v[0], x_scale), to_ndc(v[1], y_scale)) for v in annotation.vertices
+            ],
+            line_color=annotation.line_color,
+            line_width=annotation.line_width,
+        )
+
+    if isinstance(annotation, Rect):
+        return Rect(
+            x_start=to_ndc(annotation.x_start, x_scale),
+            x_end=to_ndc(annotation.x_end, x_scale),
+            y_start=to_ndc(annotation.y_start, y_scale),
+            y_end=to_ndc(annotation.y_end, y_scale),
+            line_color=annotation.line_color,
+            line_width=annotation.line_width,
+        )
+
+def normalize_annotations(annotations, x_scale, y_scale):
+    if annotations is None:
+        return None
+    return [normalize_annotation(a, x_scale, y_scale) for a in annotations]
+
+
 
 class Scatter():
     def __init__(
@@ -198,6 +247,7 @@ class Scatter():
             kwargs.get('background_image', UNDEF),
         )
 
+        self._annotations = None
         self._lasso_color = (0, 0.666666667, 1, 1)
         self._lasso_on_long_press = True
         self._lasso_initiator = False
@@ -430,6 +480,9 @@ class Scatter():
             kwargs.get('zoom_on_selection', UNDEF),
             kwargs.get('zoom_on_filter', UNDEF),
         )
+        self.annotations(
+            kwargs.get('annotations', UNDEF)
+        )
         self.options(kwargs.get('options', UNDEF))
 
     def get_point_list(self):
@@ -649,6 +702,16 @@ class Scatter():
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('x_scale', to_scale_type(self._x_scale))
 
+                if self._annotations is not None:
+                    self.update_widget(
+                        'annotations',
+                        normalize_annotations(
+                            self._annotations,
+                            self._x_scale,
+                            self._y_scale
+                        )
+                    )
+
         if x is not UNDEF:
             self._x = x
             if isinstance(x, str):
@@ -764,6 +827,16 @@ class Scatter():
 
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('y_scale', to_scale_type(self._y_scale))
+
+                if self._annotations is not None:
+                    self.update_widget(
+                        'annotations',
+                        normalize_annotations(
+                            self._annotations,
+                            self._x_scale,
+                            self._y_scale
+                        )
+                    )
 
         if y is not UNDEF:
             self._y = y
@@ -884,6 +957,17 @@ class Scatter():
                 self.update_widget('y_title', self._y_by)
                 self.update_widget('axes_labels', self.get_axes_labels())
                 self.update_widget('points', self.get_point_list())
+
+                if self._annotations is not None:
+                    self.update_widget(
+                        'annotations',
+                        normalize_annotations(
+                            self._annotations,
+                            self._x_scale,
+                            self._y_scale
+                        )
+                    )
+
             return self
 
         return dict(
@@ -3658,6 +3742,51 @@ class Scatter():
             size = self._tooltip_size,
         )
 
+    def annotations(
+        self,
+        annotations: Optional[Union[List[Union[Line, HLine, VLine, Rect]], Undefined]] = UNDEF,
+    ):
+        """
+        Draw line-based annotatons
+
+        Parameters
+        ----------
+        annotations : list of `Line`, `HLine`, `VLine`, `Rect`, optional
+            A list of annotations (`Line`, `HLine`, `VLine`, `Rect`) or `None`.
+            When set to `None` or `[]` all annotations are removed.
+
+        Returns
+        -------
+        self or dict
+            If no parameters are provided the current annotation settings are
+            returned as a dictionary. Otherwise, `self` is returned.
+
+        Examples
+        --------
+        >>> scatter.annotations([HLine(0), VLine(0)])
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.annotations()
+        {'annotations': [HLine(0), VLine(0)]}
+        """
+
+        if annotations is not UNDEF:
+            self._annotations = annotations
+            self.update_widget(
+                'annotations',
+                normalize_annotations(
+                    self._annotations,
+                    self._x_scale,
+                    self._y_scale
+                )
+            )
+
+        if any_not([annotations], UNDEF):
+            return self
+
+        return dict(
+            annotations = self._annotations
+        )
 
     def zoom(
         self,
@@ -3937,6 +4066,11 @@ class Scatter():
 
         self._widget = JupyterScatter(
             data=self._data,
+            annotations=normalize_annotations(
+                self._annotations,
+                self._x_scale,
+                self._y_scale
+            ),
             axes=self._axes,
             axes_color=self.get_axes_color(),
             axes_grid=self._axes_grid,

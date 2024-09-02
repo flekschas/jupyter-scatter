@@ -7,7 +7,7 @@ import { format } from 'd3-format';
 import { scaleLinear } from 'd3-scale';
 import { select } from 'd3-selection';
 
-import { Numpy1D, Numpy2D } from "./codecs";
+import { Annotations, Numpy1D, Numpy2D, NumpyImage } from "./codecs";
 import { createHistogram } from "./histogram";
 import { createLegend } from "./legend";
 import {
@@ -23,6 +23,8 @@ import {
   createElementWithClass,
   remToPx,
   createTimeFormat,
+  addBackgroundColor,
+  imageDataToCanvas,
 } from "./utils";
 
 import { version } from "../package.json";
@@ -57,6 +59,7 @@ const TOOLTIP_OFFSET_REM = 0.5;
  * different. E.g., size (Python) vs pointSize (JavaScript)
  */
 const properties = {
+  annotations: 'annotations',
   backgroundColor: 'backgroundColor',
   backgroundImage: 'backgroundImage',
   cameraDistance: 'cameraDistance',
@@ -95,7 +98,6 @@ const properties = {
   connectionOpacityBy: 'pointConnectionOpacityBy',
   connectionSize: 'pointConnectionSize',
   connectionSizeBy: 'pointConnectionSizeBy',
-  viewDownload: 'viewDownload',
   viewSync: 'viewSync',
   hovering: 'hovering',
   axes: 'axes',
@@ -370,6 +372,9 @@ class JupyterScatterView {
         this.scatterplot
           .draw(this.points, options)
           .then(() => {
+            if (this.annotations) {
+              this.scatterplot.drawAnnotations(this.annotations);
+            }
             if (this.filter?.length && this.model.get('zoom_on_filter')) {
               this.zoomToHandler(this.filter);
             }
@@ -388,7 +393,14 @@ class JupyterScatterView {
       if (event.index !== this.tooltipPointIdx && event.show !== true) return;
       this.tooltipDataHandlers(event)
       if (event.show) this.showTooltip(event.index);
+      return;
     }
+
+    if (event.type === this.eventTypes.VIEW_DOWNLOAD) {
+      this.viewDownload(event.transparentBackgroundColor)
+      return;
+    }
+
     if (event.type === this.eventTypes.VIEW_RESET) {
       if (!this.scatterplot) return;
       if (event.area) {
@@ -409,6 +421,12 @@ class JupyterScatterView {
           }
         );
       }
+      return;
+    }
+
+    if (event.type === this.eventTypes.VIEW_SAVE) {
+      this.viewSave(event.transparentBackgroundColor)
+      return;
     }
   }
 
@@ -1739,11 +1757,21 @@ class JupyterScatterView {
   // Helper
   colorCanvas() {
     if (Array.isArray(this.backgroundColor)) {
-      this.container.style.backgroundColor = 'rgb(' +
-        this.backgroundColor.slice(0, 3).map((x) => x * 255).join(',') + ')';
+      const rgbStr =
+        this.backgroundColor.slice(0, 3).map((x) => x * 255).join(',');
+
+      const colorStr = this.backgroundColor.length === 4
+        ? `rgba(${rgbStr}, ${this.backgroundColor[3]})`
+        : `rgb(${rgbStr})`;
+
+      this.container.style.backgroundColor = colorStr;
     } else {
       this.container.style.backgroundColor = this.backgroundColor;
     }
+  }
+
+  annotationsHandler(annotations) {
+    this.scatterplot.drawAnnotations(annotations || []);
   }
 
   // Event handlers for JS-triggered events
@@ -2270,6 +2298,7 @@ class JupyterScatterView {
 
   mouseModeHandler(newValue) {
     this.withPropertyChangeHandler('mouseMode', newValue);
+    this.scatterplot.get('camera').config({ isRotate: newValue === 'rotate' });
   }
 
   axesHandler(newValue) {
@@ -2337,25 +2366,23 @@ class JupyterScatterView {
     this.zoomToHandler(this.model.get('zoom_to'));
   }
 
-  viewDownloadHandler(target) {
-    if (!target) return;
-
-    if (target === 'property') {
-      const image = this.scatterplot.export();
-      this.model.set('view_data', image.data);
-      this.model.set('view_shape', [image.width, image.height]);
-      this.model.set('view_download', null);
-      this.model.save_changes();
-      return;
-    }
-
-    this.scatterplot.get('canvas').toBlob((blob) => {
+  viewDownload(transparentBackgroundColor) {
+    const image = this.scatterplot.export();
+    const finalImage = transparentBackgroundColor
+      ? image
+      : addBackgroundColor(image, this.backgroundColor);
+    imageDataToCanvas(finalImage).toBlob((blob) => {
       downloadBlob(blob, 'scatter.png');
-      setTimeout(() => {
-        this.model.set('view_download', null);
-        this.model.save_changes();
-      }, 0);
     });
+  }
+
+  viewSave(transparentBackgroundColor) {
+    const image = this.scatterplot.export();
+    const finalImage = transparentBackgroundColor
+      ? image
+      : addBackgroundColor(image, this.backgroundColor);
+    this.model.set('view_data', finalImage);
+    this.model.save_changes();
   }
 
   optionsHandler(newOptions) {
@@ -2405,8 +2432,9 @@ async function render({ model, el }) {
       points: Numpy2D('float32'),
       selection: Numpy1D('uint32'),
       filter: Numpy1D('uint32'),
-      view_data: Numpy1D('uint8'),
+      view_data: NumpyImage(),
       zoom_to: Numpy1D('uint32'),
+      annotations: Annotations(),
     }),
   });
   view.render();
