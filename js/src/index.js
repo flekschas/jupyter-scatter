@@ -81,7 +81,7 @@ const properties = {
   opacity: 'opacity',
   opacityBy: 'opacityBy',
   opacityUnselected: 'opacityInactiveScale',
-  otherOptions: 'otherOptions',
+  reglScatterplotOptions: 'reglScatterplotOptions',
   points: 'points',
   reticle: 'showReticle',
   reticleColor: 'reticleColor',
@@ -271,7 +271,7 @@ class JupyterScatterView {
         if (this[pyName] !== null && reglScatterplotProperty.has(jsName)) {
           initialOptions[jsName] = this[pyName];
         }
-        if (this[pyName] !== null && jsName === 'otherOptions') {
+        if (this[pyName] !== null && jsName === 'reglScatterplotOptions') {
           Object.entries(this[pyName]).forEach(([key, value]) => {
             initialOptions[key] = value;
           })
@@ -335,8 +335,8 @@ class JupyterScatterView {
         }, this);
       });
 
-      this.model.on('change:other_options', () => {
-        this.options = this.model.get('other_options');
+      this.model.on('change:regl_scatterplot_options', () => {
+        this.options = this.model.get('regl_scatterplot_options');
         this.optionsHandler.call(this, this.options);
       }, this);
 
@@ -2059,7 +2059,7 @@ class JupyterScatterView {
       // We assume point correspondence
       this.scatterplot.draw(newPoints, {
         transition: this.model.get('transition_points'),
-        transitionDuration: 3000,
+        transitionDuration: this.model.get('transition_points_duration'),
         transitionEasing: 'quadInOut',
         preventFilterReset: this.model.get('prevent_filter_reset'),
       });

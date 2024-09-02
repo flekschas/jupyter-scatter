@@ -23,6 +23,7 @@ VALID_ENCODING_TYPES = [
     pd.api.types.is_string_dtype,
 ]
 DEFAULT_HISTOGRAM_BINS = 20
+DEFAULT_TRANSITION_POINTS_DURATION = 3000
 
 # An "undefined" value
 UNDEF = Undefined()
@@ -236,6 +237,9 @@ class Scatter():
         self._filtered_points_ids = None
         self._filtered_points_idxs = None
 
+        self._transition_points = True
+        self._transition_points_duration = DEFAULT_TRANSITION_POINTS_DURATION
+
         # We need to set the background first in order to choose sensible
         # default colors
         self._reticle_color = 'auto'
@@ -362,7 +366,7 @@ class Scatter():
         self._zoom_padding = 0.33
         self._zoom_on_selection = False
         self._zoom_on_filter = False
-        self._options = {}
+        self._regl_scatterplot_options = {}
 
         self.x(x, kwargs.get('x_scale', UNDEF))
         self.y(y, kwargs.get('y_scale', UNDEF))
@@ -481,9 +485,13 @@ class Scatter():
             kwargs.get('zoom_on_filter', UNDEF),
         )
         self.annotations(
-            kwargs.get('annotations', UNDEF)
+            kwargs.get('annotations', UNDEF),
         )
-        self.options(kwargs.get('options', UNDEF))
+        self.options(
+            kwargs.get('transition_points', UNDEF),
+            kwargs.get('transition_points_duration', UNDEF),
+            kwargs.get('options', UNDEF),
+        )
 
     def get_point_list(self):
         connect_by = bool(self._connect_by)
@@ -612,7 +620,6 @@ class Scatter():
 
             if 'skip_widget_update' not in kwargs:
                 self.update_widget('points', self.get_point_list())
-                self.update_widget('transition_points', animate == True)
                 self.update_widget('x_domain', self._x_domain)
                 self.update_widget('x_scale_domain', self._x_scale_domain)
                 self.update_widget('y_domain', self._y_domain)
@@ -646,6 +653,7 @@ class Scatter():
         self,
         x: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
         scale: Optional[Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        animate: Optional[Union[bool, Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -658,6 +666,9 @@ class Scatter():
             or a string referencing a column in `data`.
         scale : {'linear', 'time', 'log', 'pow'}, tuple of floats, matplotlib.color.LogNorm, or matplotlib.color.PowerNorm, optional
             The x scale
+        animate : bool, optional
+            If `True` or if `self._transition_points` is `True`, the points will
+            transition smoothly.
         kwargs : optional
             Options which can be used to skip updating the widget when
             `skip_widget_update` is set to `True`
@@ -752,6 +763,8 @@ class Scatter():
                 self.update_widget('x_title', self._x_by)
                 self.update_widget('x_domain', self._x_domain)
                 self.update_widget('x_scale_domain', self._x_scale_domain)
+                _animate = self._transition_points if animate is UNDEF else animate
+                self.update_widget('transition_points', _animate != False)
                 self.update_widget('points', self.get_point_list())
 
         if any_not([x, scale], UNDEF):
@@ -772,6 +785,7 @@ class Scatter():
         self,
         y: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
         scale: Optional[Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        animate: Optional[Union[bool, Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -784,6 +798,9 @@ class Scatter():
             or a string referencing a column in `data`.
         scale : {'linear', 'time', 'log', 'pow'}, tuple of floats, matplotlib.color.LogNorm, or matplotlib.color.PowerNorm, optional
             The y scale
+        animate : bool, optional
+            If `True` or if `self._transition_points` is `True`, the points will
+            transition smoothly.
         kwargs : optional
             Options which can be used to skip updating the widget when
             `skip_widget_update` is set to `True`
@@ -877,6 +894,8 @@ class Scatter():
                 self.update_widget('y_title', self._y_by)
                 self.update_widget('y_domain', self._y_domain)
                 self.update_widget('y_scale_domain', self._y_scale_domain)
+                _animate = self._transition_points if animate is UNDEF else animate
+                self.update_widget('transition_points', _animate != False)
                 self.update_widget('points', self.get_point_list())
 
         if any_not([y, scale], UNDEF):
@@ -893,6 +912,7 @@ class Scatter():
         y: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
         x_scale: Optional[Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
         y_scale: Optional[Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        animate: Optional[Union[bool, Undefined]] = UNDEF,
         **kwargs
     ) -> Union[Scatter, dict]:
         """
@@ -913,6 +933,9 @@ class Scatter():
             or a string referencing a column in `data`.
         y_scale : {'linear', 'log', 'pow'}, tuple of floats, matplotlib.color.LogNorm, or matplotlib.color.PowerNorm, optional
             The y scale
+        animate : bool, optional
+            If `True` or if `self._transition_points` is `True`, the points will
+            transition smoothly.
         kwargs : optional
             Options which can be used to skip updating the widget when
             `skip_widget_update` is set to `True`
@@ -956,6 +979,8 @@ class Scatter():
                 self.update_widget('y_domain', self._y_domain)
                 self.update_widget('y_title', self._y_by)
                 self.update_widget('axes_labels', self.get_axes_labels())
+                _animate = self._transition_points if animate is UNDEF else animate
+                self.update_widget('transition_points', _animate != False)
                 self.update_widget('points', self.get_point_list())
 
                 if self._annotations is not None:
@@ -3877,14 +3902,27 @@ class Scatter():
 
 
 
-    def options(self, options: Optional[Union[dict, Undefined]] = UNDEF):
+    def options(
+        self,
+        transition_points: Optional[Union[bool, Undefined]] = UNDEF,
+        transition_points_duration: Optional[Union[int, Undefined]] = UNDEF,
+        regl_scatterplot_options: Optional[Union[dict, Undefined]] = UNDEF
+    ):
         """
-        Set or get additional options to be passed to regl-scatterplot
+        Set or get additional options.
 
         Parameters
         ----------
-        options : dict, optional
-            A dictionary for specifying any kinds of custom options
+        transition_points : bool, optional
+            Whether to enable or disable the potential animated transitioning of
+            points as their coordinates update. If `False`, points will never be
+            animated.
+        transition_points_duration : int, optional
+            The time of the animated point transition in milliseconds. The
+            default value is `3000`.
+        regl_scatterplot_options : dict, optional
+            A dictionary for specifying any kinds of custom Regl-Scatterplot
+            options.
 
         Returns
         -------
@@ -3900,22 +3938,47 @@ class Scatter():
 
         Examples
         --------
-        >>> scatter.options(dict(deselectOnEscape=False))
+        >>> scatter.options(transition_points=True)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.options(transition_points_duration=500)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.options(regl_scatterplot_options=dict(deselectOnEscape=False))
         <jscatter.jscatter.Scatter>
 
         >>> scatter.options()
-        {deselectOnEscape=False}
+        {transition_points=True, transition_points_duration=500, regl_scatterplot_options={deselectOnEscape=False}}
         """
-        if options is not UNDEF:
+        if transition_points is not UNDEF:
+            self._transition_points = bool(transition_points)
+
+        if transition_points_duration is not UNDEF:
             try:
-                self._options = options
-                self.update_widget('other_options', options)
+                self._transition_points_duration = int(transition_points_duration)
+                assert self._transition_points_duration >= 0
+            except:
+                self._transition_points_duration = DEFAULT_TRANSITION_POINTS_DURATION
+
+            self.update_widget('transition_points_duration', self._transition_points_duration)
+
+        if regl_scatterplot_options is not UNDEF:
+            try:
+                self._regl_scatterplot_options = regl_scatterplot_options
+                self.update_widget('regl_scatterplot_options', regl_scatterplot_options)
             except:
                 pass
 
             return self
 
-        return self._options
+        if any_not([transition_points, transition_points_duration, regl_scatterplot_options], UNDEF):
+            return self
+
+        return dict(
+            transition_points=self._transition_points,
+            transition_points_duration=self._transition_points_duration,
+            regl_scatterplot_options=self._regl_scatterplot_options
+        )
 
     def pixels(self):
         """
@@ -4167,7 +4230,8 @@ class Scatter():
             zoom_on_selection=self._zoom_on_selection,
             zoom_padding=self._zoom_padding,
             zoom_to=self._zoom_to,
-            other_options=self._options
+            regl_scatterplot_options=self._regl_scatterplot_options,
+            transition_points_duration=self._transition_points_duration,
         )
 
         return self._widget

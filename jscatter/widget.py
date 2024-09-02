@@ -69,6 +69,7 @@ class JupyterScatter(anywidget.AnyWidget):
     # Data
     points = Array(default_value=None).tag(sync=True, **ndarray_serialization)
     transition_points = Bool(False).tag(sync=True)
+    transition_points_duration = Int(3000).tag(sync=True)
     prevent_filter_reset = Bool(False).tag(sync=True)
     selection = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
     filter = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
@@ -228,9 +229,7 @@ class JupyterScatter(anywidget.AnyWidget):
     reticle = Bool().tag(sync=True)
     reticle_color = Union([Unicode(), List(minlen=4, maxlen=4)]).tag(sync=True)
 
-    # For any kind of options. Note that whatever is defined in options will
-    # be overwritten by the short-hand options
-    other_options = Dict(dict()).tag(sync=True)
+    regl_scatterplot_options = Dict(dict()).tag(sync=True)
 
     view_download = Unicode(None, allow_none=True).tag(sync=True) # Used for triggering a download
     view_data = Array(default_value=None, allow_none=True, read_only=True).tag(sync=True, **ndarray_serialization)
