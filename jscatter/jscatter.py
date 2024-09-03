@@ -19,8 +19,8 @@ COMPONENT_CONNECT_ORDER = 5
 VALID_ENCODING_TYPES = [
     pd.api.types.is_float_dtype,
     pd.api.types.is_integer_dtype,
-    pd.api.types.is_categorical_dtype,
-    pd.api.types.is_string_dtype,
+    pd.CategoricalDtype.is_dtype,
+    pd.StringDtype.is_dtype,
 ]
 DEFAULT_HISTOGRAM_BINS = 20
 DEFAULT_TRANSITION_POINTS_DURATION = 3000
@@ -46,14 +46,14 @@ def check_encoding_dtype(series):
         raise ValueError(f'{series.name} is of an unsupported data type: {series.dtype}. Must be one of float*, int*, category, or string.')
 
 def is_categorical_data(data):
-    return pd.api.types.is_categorical_dtype(data) or pd.api.types.is_string_dtype(data)
+    return pd.CategoricalDtype.is_dtype(data) or pd.StringDtype.is_dtype(data)
 
 def get_categorical_data(data):
     categorical_data = None
 
-    if pd.api.types.is_categorical_dtype(data):
+    if pd.CategoricalDtype.is_dtype(data):
         categorical_data = data
-    elif pd.api.types.is_string_dtype(data):
+    elif pd.StringDtype.is_dtype(data):
         categorical_data = data.copy().astype('category')
 
     return categorical_data
@@ -4199,7 +4199,6 @@ class Scatter():
             tooltip_properties=self._tooltip_properties,
             tooltip_properties_non_visual_info=self._tooltip_properties_non_visual_info,
             tooltip_histograms=self._tooltip_histograms,
-            tooltip_histograms_bins=self._tooltip_histograms_bins,
             tooltip_histograms_ranges=self._tooltip_histograms_ranges,
             tooltip_histograms_size=self._tooltip_histograms_size,
             tooltip_preview=self._tooltip_preview,
