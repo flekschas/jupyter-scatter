@@ -2151,11 +2151,15 @@ class JupyterScatterView {
   }
 
   xTitleHandler(newTitle) {
-    this.tooltipPropertyXTitle.textContent = toTitleCase(newTitle || '');
+    if (this.tooltipPropertyXTitle) {
+      this.tooltipPropertyXTitle.textContent = toTitleCase(newTitle || '');
+    }
   }
 
   yTitleHandler(newTitle) {
-    this.tooltipPropertyYTitle.textContent = toTitleCase(newTitle || '');
+    if (this.tooltipPropertyYTitle) {
+      this.tooltipPropertyYTitle.textContent = toTitleCase(newTitle || '');
+    }
   }
 
   colorHandler(newValue) {
@@ -2179,7 +2183,9 @@ class JupyterScatterView {
   }
 
   colorTitleHandler(newTitle) {
-    this.tooltipPropertyColorTitle.textContent = toCapitalCase(newTitle || '');
+    if (this.tooltipPropertyColorTitle) {
+      this.tooltipPropertyColorTitle.textContent = toCapitalCase(newTitle || '');
+    }
   }
 
   opacityHandler(newValue) {
@@ -2199,7 +2205,9 @@ class JupyterScatterView {
   }
 
   opacityTitleHandler(newTitle) {
-    this.tooltipPropertyOpacityTitle.textContent = toCapitalCase(newTitle || '');
+    if (this.tooltipPropertyOpacityTitle) {
+      this.tooltipPropertyOpacityTitle.textContent = toCapitalCase(newTitle || '');
+    }
   }
 
   sizeHandler(newValue) {
@@ -2215,7 +2223,9 @@ class JupyterScatterView {
   }
 
   sizeTitleHandler(newTitle) {
-    this.tooltipPropertySizeTitle.textContent = toCapitalCase(newTitle || '');
+    if (this.tooltipPropertySizeTitle) {
+      this.tooltipPropertySizeTitle.textContent = toCapitalCase(newTitle || '');
+    }
   }
 
   connectHandler(newValue) {
