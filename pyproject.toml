@@ -88,3 +88,10 @@ test = "pytest ."
 
 [tool.ruff.format]
 quote-style = "single"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+  # Ignore unrelated DeprecationWarning from traitlets:
+  # Sentinel is not a public part of the traitlets API.
+  "ignore::DeprecationWarning:traitlets:28",
+]
