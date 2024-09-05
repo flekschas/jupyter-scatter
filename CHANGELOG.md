@@ -1,3 +1,9 @@
+## v0.18.1
+
+- Fix: Correctly render axes grid lines upon resizing
+- Fix: Reapply point color map when setting `color_by`
+- Fix: Do not set tooltip titles if the corresponding elements are undefined.
+
 ## v0.18.0
 
 - Feat: add support for line-based annotations via `scatter.annotations()`
