@@ -245,10 +245,7 @@ class JupyterScatterView {
 
     this.canvasWrapper = document.createElement('div');
     this.canvasWrapper.style.position = 'absolute';
-    this.canvasWrapper.style.top = '0';
-    this.canvasWrapper.style.left = '0';
-    this.canvasWrapper.style.right = '0';
-    this.canvasWrapper.style.bottom = '0';
+    this.canvasWrapper.style.inset = '0';
     this.container.appendChild(this.canvasWrapper);
 
     this.canvas = document.createElement('canvas');
@@ -318,7 +315,9 @@ class JupyterScatterView {
       this.viewSyncHandler(this.viewSync);
 
       if ('ResizeObserver' in window) {
-        this.canvasObserver = new ResizeObserver(this.resizeHandlerBound);
+        this.canvasObserver = new ResizeObserver(() => {
+          window.requestAnimationFrame(() => { this.resizeHandlerBound(); });
+        });
         this.canvasObserver.observe(this.canvas);
       } else {
         window.addEventListener('resize', this.resizeHandlerBound);
@@ -448,7 +447,7 @@ class JupyterScatterView {
     this.outerWidth = outerWidth;
     this.outerHeight = outerHeight;
 
-    return [outerWidth, outerHeight]
+    return [Math.max(1, outerWidth), Math.max(1, outerHeight)];
   }
 
   createAxes() {
@@ -579,6 +578,8 @@ class JupyterScatterView {
     if (this.model.get('axes_grid')) this.createAxesGrid();
 
     this.updateLegendWrapperPosition();
+
+    this.updateAxes(this.xScaleRegl.domain(), this.yScaleRegl.domain());
   }
 
   removeAxes() {
@@ -1682,7 +1683,7 @@ class JupyterScatterView {
       : (width + xPadding) + 'px';
     this.container.style.height = (height + yPadding) + 'px';
 
-    window.requestAnimationFrame(() => { this.resizeHandler(); });
+    window.requestAnimationFrame(() => { this.resizeHandlerBound(); });
   }
 
   resizeHandler() {
@@ -1723,6 +1724,9 @@ class JupyterScatterView {
     if (this.model.get('axes_grid')) {
       this.xAxis.tickSizeInner(-(height - yPadding));
       this.yAxis.tickSizeInner(-(width - xPadding));
+      this.axesSvg.selectAll('line')
+        .attr('stroke-opacity', 0.2)
+        .attr('stroke-dasharray', 2);
     }
 
     if (xLabel) {
@@ -2199,8 +2203,8 @@ class JupyterScatterView {
   }
 
   opacityByHandler(newValue) {
-    // this.createOpacityScale();
-    // this.createOpacityGetter();
+    this.createOpacityScale();
+    this.createOpacityGetter();
     this.withPropertyChangeHandler('opacityBy', newValue);
   }
 
