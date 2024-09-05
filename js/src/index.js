@@ -2181,9 +2181,16 @@ class JupyterScatterView {
   }
 
   colorByHandler(newValue) {
+    const currValue = this.scatterplot.get('colorBy');
     this.createColorScale();
     this.createColorGetter();
     this.withPropertyChangeHandler('colorBy', newValue);
+    if (!currValue && newValue) {
+      // We need to reapply the point color due to some internal
+      // regl-scatterplot logic which uses a different active point color when
+      // the point color is changed and colorBy is undefined
+      this.withPropertyChangeHandler('pointColor', this.model.get('color'));
+    }
   }
 
   colorTitleHandler(newTitle) {
