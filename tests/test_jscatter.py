@@ -65,6 +65,33 @@ def df2() -> pd.DataFrame:
     return df
 
 
+@pytest.fixture
+def df3() -> pd.DataFrame:
+    num_groups = 8
+
+    data = np.zeros((1000, 7))
+    data[:, 0] = np.linspace(0, 1, 1000)
+    data[:, 1] = np.linspace(0, 1, 1000)
+    data[:, 2] = np.random.rand(1000) * 100
+    data[:, 3] = (np.random.rand(1000) * 100).astype(int)
+    data[:, 4] = np.round(np.random.rand(1000) * (num_groups - 1)).astype(int)
+    data[:, 5] = np.repeat(np.arange(100), 10).astype(int)
+    data[:, 6] = np.resize(np.arange(5), 1000).astype(int)
+
+    df = pd.DataFrame(
+        data, columns=['a', 'b', 'c', 'd', 'group', 'connect', 'connect_order']
+    )
+    df['group'] = (
+        df['group']
+        .astype('int')
+        .astype('category')
+        .map(lambda c: chr(65 + c), na_action=None)
+    )
+    df['connect'] = df['connect'].astype('int')
+    df['connect_order'] = df['connect_order'].astype('int')
+
+    return df
+
 def test_component_idx_to_name():
     assert component_idx_to_name(2) == 'valueA'
     assert component_idx_to_name(3) == 'valueB'
@@ -322,6 +349,93 @@ def test_scatter_axes_labels(df: pd.DataFrame):
 
     scatter.axes(labels=['axis 1', 'axis 2'])
     assert scatter.widget.axes_labels == ['axis 1', 'axis 2']
+
+
+def test_scatter_transition_points(df: pd.DataFrame, df2: pd.DataFrame, df3: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    # Default settings
+    assert scatter._transition_points == True
+    assert scatter._transition_points_duration == 3000
+
+    scatter = Scatter(data=df, x='a', y='b', transition_points=False, transition_points_duration=500)
+    assert scatter._transition_points == False
+    assert scatter._transition_points_duration == 500
+
+    scatter = Scatter(data=df, x='a', y='b')
+
+    # Default widget state
+    assert scatter.widget.transition_points == False
+    assert scatter.widget.transition_points_duration == 3000
+
+    # Since `scatter._transition_points` is `True` and `animate` is undefined,
+    # points should be transitioned by default if the x or y channel changes
+    scatter.x('c')
+    assert scatter.widget.transition_points == True
+
+    scatter.y('d')
+    assert scatter.widget.transition_points == True
+
+    scatter.xy(x='a', y='b')
+    assert scatter.widget.transition_points == True
+
+    # Even though `scatter._transition_points` is still `True` but `animate` is
+    # now `False`, points should **not** be transitioned if the x or y channel
+    # changes
+    scatter.x('c', animate=False)
+    assert scatter.widget.transition_points == False
+
+    scatter.y('d', animate=False)
+    assert scatter.widget.transition_points == False
+
+    scatter.xy(x='a', y='b', animate=False)
+    assert scatter.widget.transition_points == False
+
+    # By changing the
+    scatter.options(transition_points=False)
+
+    # Since `scatter._transition_points` is now `False` and `animate` is still
+    # undefined, points should **not** be transitioned by default if the x or y
+    # channel changes
+    scatter.x('c')
+    assert scatter.widget.transition_points == False
+
+    scatter.y('d')
+    assert scatter.widget.transition_points == False
+
+    scatter.xy(x='a', y='b')
+    assert scatter.widget.transition_points == False
+
+    # Even though `scatter._transition_points` is still `False` but `animate` is
+    # now `True`, points should be transitioned if the x or y channel changes
+    scatter.x('c', animate=True)
+    assert scatter.widget.transition_points == True
+
+    scatter.y('d', animate=True)
+    assert scatter.widget.transition_points == True
+
+    scatter.xy(x='a', y='b', animate=True)
+    assert scatter.widget.transition_points == True
+
+    scatter.options(transition_points=True)
+
+    # When changing the data, the animated point transition has to be
+    # explicitely activated. By default, even if `scatter._transition_points` is
+    # `True`, points will not be animated.
+    scatter.data(df2)
+    assert scatter.widget.transition_points == False
+
+    scatter.data(df, animate=True)
+    assert scatter.widget.transition_points == True
+
+    # And even if the animation is explicitely actived, it'll only work if the
+    # number of points is the same.
+    scatter.data(df3, animate=True)
+    assert scatter.widget.transition_points == False
+
+    scatter.options(transition_points_duration=500)
+    assert scatter.widget.transition_points_duration == 500
+
 
 def test_scatter_check_encoding_dtype(df: pd.DataFrame):
     check_encoding_dtype(pd.Series([1], dtype='int'))
