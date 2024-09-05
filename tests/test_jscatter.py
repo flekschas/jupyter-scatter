@@ -5,7 +5,7 @@ import pytest
 from functools import partial
 from matplotlib.colors import AsinhNorm, LogNorm, Normalize, PowerNorm, SymLogNorm
 
-from jscatter.jscatter import Scatter, component_idx_to_name
+from jscatter.jscatter import Scatter, component_idx_to_name, check_encoding_dtype
 from jscatter.utils import create_default_norm, to_ndc, TimeNormalize
 
 
@@ -435,3 +435,17 @@ def test_scatter_transition_points(df: pd.DataFrame, df2: pd.DataFrame, df3: pd.
 
     scatter.options(transition_points_duration=500)
     assert scatter.widget.transition_points_duration == 500
+
+
+def test_scatter_check_encoding_dtype(df: pd.DataFrame):
+    check_encoding_dtype(pd.Series([1], dtype='int'))
+    check_encoding_dtype(pd.Series([0.5], dtype='float'))
+    check_encoding_dtype(pd.Series(['a'], dtype='string'))
+    check_encoding_dtype(pd.Series(['a']))
+    check_encoding_dtype(pd.Series(['a'], dtype='category'))
+
+    scatter = Scatter(data=df, x='a', y='b', color_by='group')
+    check_encoding_dtype(scatter.color_data)
+
+    with pytest.raises(ValueError):
+        check_encoding_dtype(pd.Series(np.array([1+0j])))

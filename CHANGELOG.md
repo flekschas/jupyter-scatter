@@ -1,6 +1,9 @@
 ## v0.18.1
 
 - Fix: re-enable point transition and make it explicit via `scatter.options(transition_points=True, transition_points_duration=3000)`
+- Fix: Correctly render axes grid lines upon resizing
+- Fix: Reapply point color map when setting `color_by`
+- Fix: Do not set tooltip titles if the corresponding elements are undefined.
 
 ## v0.18.0
 
