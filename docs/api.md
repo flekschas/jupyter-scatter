@@ -578,12 +578,14 @@ scatter.background(image='https://picsum.photos/640/640?random')
 ```
 
 
-### scatter.options(_options=Undefined_) {#scatter.options}
+### scatter.options(_transition_points=Undefined_, _transition_points_duration=Undefined_, _regl_scatterplot_options=Undefined_) {#scatter.options}
 
-Get or set other [regl-scatterplot](https://github.com/flekschas/regl-scatterplot) options.
+Get or set other Jupyter Scatter and [regl-scatterplot](https://github.com/flekschas/regl-scatterplot) options.
 
 **Arguments:**
-- `options` is a dictionary of [regl-scatterplot properties](https://github.com/flekschas/regl-scatterplot/#properties).
+- `transition_points` is a Boolean value to enable or disable the potential animated transitioning of points as their coordinates update. If `False`, points will never be animated.
+- `transition_points_duration` is an Integer value determining the time of the animated point transition in milliseconds. The default value is `3000`.
+- `regl_scatterplot_options` is a dictionary of [regl-scatterplot properties](https://github.com/flekschas/regl-scatterplot/#properties).
 
 **Returns:** either the options when options are `Undefined` or `self`.
 
