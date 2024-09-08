@@ -190,8 +190,6 @@ Although Jupyter Scatter is not tied to any specific application area and works 
 
 Finally, except for Plotly, none of the tools offer readily available interactive _two-way_ point selection that exposes the selected points for reading and writing in both the Python and JavaScript kernels. This is a key feature of Jupyter Scatter to enable follow-up analysis of subsets of the data. Also, no other library offers direct support for synchronized exploration of multiple scatterplots for comparison.
 
-[^1] [https://github.com/flekschas/jupyter-scatter-tutorial/blob/main/notebooks/5-Search.ipynb](https://github.com/flekschas/jupyter-scatter-tutorial/blob/main/notebooks/5-Search.ipynb)
-
 # Acknowledgements
 
 We acknowledge and appreciate contributions from Pablo Garcia-Nieto, Sehi L'Yi, Kurt McKee, and Dan Rosén. We also thank Nezar Abdennur for his feedback on the initial API design.
