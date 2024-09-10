@@ -281,13 +281,15 @@ If you use Jupyter Scatter in your research, please cite the following preprint:
 
 ```bibtex
 @article{lekschas2024jupyter,
-  title = {Jupyter Scatter: Interactive Exploration of Large-Scale Datasets},
-  url = {https://arxiv.org/abs/2406.14397},
-  doi = {10.48550/arXiv.2406.14397},
-  publisher = {arXiv},
-  journal = {arXiv},
-  author = {Lekschas, Fritz and Manz, Trevor},
+  title = {{Jupyter Scatter}: Interactive Exploration of Large-Scale Datasets},
+  author = {Fritz Lekschas and Trevor Manz},
+  journal = {Journal of Open Source Software},
+  publisher = {The Open Journal},
   year = {2024},
-  month = {6},
-}
+  volume = {9},
+  number = {101},
+  pages = {7059},
+  doi = {10.21105/joss.07059},
+  url = {https://doi.org/10.21105/joss.07059},
+} 
 ```
