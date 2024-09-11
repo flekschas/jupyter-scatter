@@ -1,3 +1,8 @@
+## v0.18.2
+
+- Refactor: rename the `reset_view` argument of `scatter.data()` to `zoom_view` for clarity
+- Docs: add API docs for `reset_scales`, `zoom_view`, and `animate` of `scatter.data()`
+
 ## v0.18.1
 
 - Fix: re-enable point transition and make it explicit via `scatter.options(transition_points=True, transition_points_duration=3000)`
