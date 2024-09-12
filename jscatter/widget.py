@@ -1,7 +1,4 @@
-import base64
-import IPython.display as ipydisplay
 import ipywidgets as widgets
-import matplotlib.pyplot as plt
 import numpy as np
 import anywidget
 import pandas as pd
