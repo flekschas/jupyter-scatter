@@ -1,3 +1,7 @@
+## v0.19.0
+
+- Feat: add contour line annotations
+
 ## v0.18.1
 
 - Fix: re-enable point transition and make it explicit via `scatter.options(transition_points=True, transition_points_duration=3000)`
