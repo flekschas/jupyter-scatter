@@ -362,7 +362,7 @@ scatter.legend(True, 'top-right', 'small')
 Set or get annotations.
 
 **Arguments:**
-- `annotations` is a list of annotations (`Line`, `HLine`, `VLine`, or `Rect`)
+- `annotations` is a list of annotations (`Line`, `HLine`, `VLine`, `Rect`, or `Contour`)
 
 **Returns:** either the annotation properties when all arguments are `Undefined` or `self`.
 
@@ -883,3 +883,125 @@ A categorical color map consisting of 256 maximally distinct colors optimized fo
 ### glasbey_dark {#glasbey-dark}
 
 A categorical color map consisting of 256 maximally distinct colors optimized for a _dark_ background. The colors were generated with the fantastic [Colorcet](https://colorcet.holoviz.org) package, which employs an algorithm developed by [Glasbey et al., 2007](https://strathprints.strath.ac.uk/30312/1/colorpaper_2006.pdf).
+
+## Annotations
+
+### HLine
+
+A horizontal line annotation.
+
+**Arguments:**
+
+- `y` is a float value in the data space specifying the y coordinate at which the horizontal line should be drawn.
+- `x_start` is a float value in the data space specifying the x coordinate at which the horizontal line should start. [optional]
+- `x_end` is a float value in the data space specifying the x coordinate at which the horizontal line should end. [optional]
+- `line_color` is a tuple of floats or string value specifying the line color. [optional]
+- `line_width` is an Integer value specifying the line width. [optional]
+
+**Examples:**
+
+```python
+from jscatter import plot, HLine
+from numpy.random import rand
+plot(
+  x=rand(500),
+  y=rand(500),
+  annotations=[HLine(0)]
+)
+```
+
+### VLine
+
+A vertical line annotation.
+
+**Arguments:**
+
+- `x` is a float value in the data space specifying the x coordinate at which the vertical line should be drawn.
+- `y_start` is a float value in the data space specifying the y coordinate at which the vertical line should start. [optional]
+- `y_end` is a float value in the data space specifying the y coordinate at which the vertical line should end. [optional]
+- `line_color` is a tuple of floats or string value specifying the line color. [optional]
+- `line_width` is an Integer value specifying the line width. [optional]
+
+**Examples:**
+
+```python
+from jscatter import plot, VLine
+from numpy.random import rand
+plot(
+  x=rand(500),
+  y=rand(500),
+  annotations=[VLine(0)]
+)
+```
+
+### Line
+
+A line annotation.
+
+**Arguments:**
+
+- `vertices` is a list of float tuples in the data space specifying the line vertices.
+- `line_color` is a tuple of floats or string value specifying the line color. [optional]
+- `line_width` is an Integer value specifying the line width. [optional]
+
+**Examples:**
+
+```python
+from jscatter import plot, Line
+from numpy.random import rand
+plot(
+  x=rand(500),
+  y=rand(500),
+  annotations=[Line([(-1, -1), (0, 0), (1, 1)])]
+)
+```
+
+### Rect
+
+A rectangle annotation.
+
+**Arguments:**
+
+- `x_start` is a float value in the data space specifying the x coordinate at which the rectangle should start.
+- `x_end` is a float value in the data space specifying the x coordinate at which the rectangle should end.
+- `y_start` is a float value in the data space specifying the y coordinate at which the rectangle line should start.
+- `y_end` is a float value in the data space specifying the y coordinate at which the rectangle line should end.
+- `line_color` is a tuple of floats or string value specifying the line color. [optional]
+- `line_width` is an Integer value specifying the line width. [optional]
+
+**Examples:**
+
+```python
+from jscatter import plot, Rect
+from numpy.random import rand
+plot(
+  x=rand(500),
+  y=rand(500),
+  annotations=[Rect(-1, 1, -1, 1)]
+)
+```
+
+### Contour
+
+A [contour line](https://en.wikipedia.org/wiki/Contour_line) annotation. Under
+the hood the annotation uses [Seaborn's `kdeplot`](https://seaborn.pydata.org/generated/seaborn.kdeplot.html).
+
+**Arguments:**
+
+- `by` is a string value specifying a column of categorical values for generating separate contour lines. [optional]
+- `line_color` is a tuple of floats or string value specifying the line color. [optional]
+- `line_width` is an Integer value specifying the line width. [optional]
+- `line_opacity_by_level` is a Boolean value specifying if the line opacity should be linearly increased from the lowest to the highest level such that the highest level is fully opaque. [optional]
+- `kwargs` is a dictionary of additional arguments for [Seaborn's `kdeplot`](https://seaborn.pydata.org/generated/seaborn.kdeplot.html). [optional]
+
+**Examples:**
+
+```python
+from jscatter import plot, Contour
+from numpy.random import rand
+plot(
+  x=rand(500),
+  y=rand(500),
+  annotations=[Contour()]
+)
+```
