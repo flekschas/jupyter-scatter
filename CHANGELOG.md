@@ -1,5 +1,7 @@
 ## v0.18.2
 
+- Refactor: rename the `reset_view` argument of `scatter.data()` to `zoom_view` for clarity
+- Docs: add API docs for `reset_scales`, `zoom_view`, and `animate` of `scatter.data()`
 - Fix: don't use external view domain (only the view) [#158](https://github.com/flekschas/jupyter-scatter/issues/158)
 
 ## v0.18.1
