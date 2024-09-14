@@ -6,10 +6,10 @@ authors:
 - family-names: Manz
   given-names: Trevor
   orcid: "https://orcid.org/0000-0001-7694-5164"
-doi: 10.48550/arXiv.2406.14397
-message: If you use Jupyter Scatter for an academic publication, please cite our preprint.
+doi: 10.5281/zenodo.13391017
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
 preferred-citation:
-  type: article
   authors:
   - family-names: Lekschas
     given-names: Fritz
@@ -17,13 +17,18 @@ preferred-citation:
   - family-names: Manz
     given-names: Trevor
     orcid: "https://orcid.org/0000-0001-7694-5164"
-  date-published: 2024-05-20
-  doi: 10.48550/arXiv.2406.14397
-  publisher: "arXiv"
-  journal: "arXiv"
-  year: 2024
-  month: 6
-  day: 20
-  title: "Jupyter Scatter: Interactive Exploration of Large-Scale Datasets"
-  url: "https://arxiv.org/abs/2406.14397"
-title: "Jupyter Scatter: Interactive Exploration of Large-Scale Datasets"
+  date-published: 2024-09-10
+  doi: 10.21105/joss.07059
+  issn: 2475-9066
+  issue: 101
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 7059
+  title: "Jupyter Scatter: Interactive Exploration of Large-Scale
+    Datasets"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.07059"
+  volume: 9
+title: "Jupyter Scatter: Interactive Exploration of Large-Scale
+  Datasets"

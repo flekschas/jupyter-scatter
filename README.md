@@ -5,10 +5,11 @@
 <div align="center">
   
   [![pypi version](https://img.shields.io/pypi/v/jupyter-scatter.svg?color=1a8cff&style=flat-square)](https://pypi.org/project/jupyter-scatter/)
-  [![build status](https://img.shields.io/github/actions/workflow/status/flekschas/jupyter-scatter/build.yml?branch=master&color=1a8cff&style=flat-square)](https://github.com/flekschas/jupyter-scatter/actions?query=workflow%3A%22Build+Python+%26+JavaScript%22)
+  [![build status](https://img.shields.io/github/actions/workflow/status/flekschas/jupyter-scatter/ci.yml?branch=main&color=1a8cff&style=flat-square)](https://github.com/flekschas/jupyter-scatter/actions/workflows/ci.yml)
   [![API docs](https://img.shields.io/badge/API-docs-1a8cff.svg?style=flat-square)](https://jupyter-scatter.dev/api)
   [![notebook examples](https://img.shields.io/badge/notebook-examples-1a8cff.svg?style=flat-square)](notebooks/get-started.ipynb)
   [![tutorial](https://img.shields.io/badge/SciPy_'23-tutorial-1a8cff.svg?style=flat-square)](https://github.com/flekschas/jupyter-scatter-tutorial)
+  [![DOI](https://img.shields.io/badge/JOSS-10.21105/joss.07059-1a8cff.svg?style=flat-square)](https://doi.org/10.21105/joss.07059)
   
 </div>
 
@@ -280,13 +281,15 @@ If you use Jupyter Scatter in your research, please cite the following preprint:
 
 ```bibtex
 @article{lekschas2024jupyter,
-  title = {Jupyter Scatter: Interactive Exploration of Large-Scale Datasets},
-  url = {https://arxiv.org/abs/2406.14397},
-  doi = {10.48550/arXiv.2406.14397},
-  publisher = {arXiv},
-  journal = {arXiv},
-  author = {Lekschas, Fritz and Manz, Trevor},
+  title = {{Jupyter Scatter}: Interactive Exploration of Large-Scale Datasets},
+  author = {Fritz Lekschas and Trevor Manz},
+  journal = {Journal of Open Source Software},
+  publisher = {The Open Journal},
   year = {2024},
-  month = {6},
-}
+  volume = {9},
+  number = {101},
+  pages = {7059},
+  doi = {10.21105/joss.07059},
+  url = {https://doi.org/10.21105/joss.07059},
+} 
 ```

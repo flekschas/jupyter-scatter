@@ -104,14 +104,17 @@ scatter.xy('size', 'speed') # Mirror plot along the diagonal
 ```
 
 
-### scatter.data(_data=Undefined_, _use_index=Undefined_, _\*\*kwargs_) {#scatter.data}
+### scatter.data(_data=Undefined_, _use_index=Undefined_, _reset_scales=False_, _zoom_view=False_, _animate=False_, _\*\*kwargs_) {#scatter.data}
 
-Get or set the referenced Pandas DataFrame. This is just a convenience function to animate a change in the x and y coordinate at the same time.
+Get or set the referenced Pandas DataFrame.
 
 **Arguments:**
 
 - `data` is a Pandas DataFrame.
 - `use_index` is a Boolean value indicating if the data frame's index should be used for referencing point by the `selection()` and `filter()` methods instead of the row index.
+- `reset_scales` is a Boolean value indicating whether all scales (and norms) will be reset to the extend of the the new data.
+- `zoom_view` is a Boolean value indicating if the view will zoom to the data extent.
+- `animate` is a Boolean value indicating if the points will transition smoothly. However, animated point transitions are only supported if the number of points remain the same, and if `reset_scales` is `False`. If `zoom_view` is `True`, the view will also transition smoothly.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
 

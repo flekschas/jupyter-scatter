@@ -1,6 +1,9 @@
 ## v0.19.0
 
-- Feat: add contour line annotations
+- Feat: add contour line annotations [#163](https://github.com/flekschas/jupyter-scatter/issues/163)
+- Refactor: rename the `reset_view` argument of `scatter.data()` to `zoom_view` for clarity [#162](https://github.com/flekschas/jupyter-scatter/issues/162)
+- Docs: add API docs for `reset_scales`, `zoom_view`, and `animate` of `scatter.data()`
+- Fix: don't use external view domain (only the view) [#161](https://github.com/flekschas/jupyter-scatter/issues/161)
 
 ## v0.18.1
 
