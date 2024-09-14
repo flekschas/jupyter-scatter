@@ -1,3 +1,7 @@
+## v0.18.2
+
+- Fix: don't use external view domain (only the view) [#158](https://github.com/flekschas/jupyter-scatter/issues/158)
+
 ## v0.18.1
 
 - Fix: re-enable point transition and make it explicit via `scatter.options(transition_points=True, transition_points_duration=3000)`

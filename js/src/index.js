@@ -1846,8 +1846,8 @@ class JupyterScatterView {
   externalViewChangeHandler(event) {
     if (event.uuid === this.viewSync && event.src !== this.randomStr) {
       this.scatterplot.view(event.view, { preventEvent: true });
-      if (this.model.get('axes') && event.xScaleDomain && event.yScaleDomain) {
-        this.updateAxes(event.xScaleDomain, event.yScaleDomain);
+      if (this.model.get('axes')) {
+        this.updateAxes(this.xScaleRegl.domain(), this.yScaleRegl.domain());
       }
     }
   }
