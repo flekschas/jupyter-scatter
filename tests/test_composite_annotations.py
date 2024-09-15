@@ -1,12 +1,15 @@
 import matplotlib
 matplotlib.use('Agg')
 
+import pytest
 import seaborn as sns
+import sys
 
 from jscatter.annotations import Line
 from jscatter.composite_annotations import Contour
 from jscatter.jscatter import Scatter
 
+@pytest.mark.skipif(sys.version_info < (3,9), reason="requires at least Python v3.9")
 def test_contour():
     c = Contour()
 
@@ -33,4 +36,3 @@ def test_contour():
 
     assert len(scatter._annotations) > 0
     assert len(scatter._annotations) != num_lines
-

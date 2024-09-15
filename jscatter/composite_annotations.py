@@ -4,6 +4,7 @@ import inspect
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+import sys
 
 from abc import ABCMeta, abstractmethod
 from matplotlib.colors import to_rgba
@@ -14,7 +15,7 @@ from .types import Color
 
 class CompositeAnnotation(metaclass=ABCMeta):
     @abstractmethod
-    def get_annotations(self) -> List[Union[HLine, VLine, Line, Rect]]:
+    def get_annotations(self, scatter) -> List[Union[HLine, VLine, Line, Rect]]:
         return []
 
 
@@ -53,6 +54,9 @@ class Contour(CompositeAnnotation):
         line_opacity_by_level: Optional[bool] = False,
         **kwargs
     ):
+        if sys.version_info < (3,9):
+            raise Exception('The contour line annotation requires at least Python v3.9')
+
         self.by = by
         self.line_color = line_color
         self.line_width = line_width
