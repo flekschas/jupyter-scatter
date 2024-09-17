@@ -9,6 +9,7 @@ from matplotlib.colors import to_rgba, Normalize, LogNorm, PowerNorm, LinearSegm
 from typing import Dict, Optional, Union, List, Tuple
 
 from .annotations import Line, HLine, VLine, Rect
+from .composite_annotations import CompositeAnnotation, Contour
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
@@ -169,7 +170,19 @@ def normalize_annotations(annotations, x_scale, y_scale):
         return None
     return [normalize_annotation(a, x_scale, y_scale) for a in annotations]
 
+def get_annotations(
+    scatter: Scatter,
+    annotations: List[Union[Line, VLine, HLine, Rect, Contour]]
+):
+    base_annotations = []
 
+    for annotation in annotations:
+        if isinstance(annotation, CompositeAnnotation):
+            base_annotations.extend(annotation.get_annotations(scatter))
+        else:
+            base_annotations.append(annotation)
+
+    return base_annotations
 
 class Scatter():
     def __init__(
@@ -3782,16 +3795,16 @@ class Scatter():
 
     def annotations(
         self,
-        annotations: Optional[Union[List[Union[Line, HLine, VLine, Rect]], Undefined]] = UNDEF,
+        annotations: Optional[Union[List[Union[Line, HLine, VLine, Rect, Contour]], Undefined]] = UNDEF,
     ):
         """
         Draw line-based annotatons
 
         Parameters
         ----------
-        annotations : list of `Line`, `HLine`, `VLine`, `Rect`, optional
-            A list of annotations (`Line`, `HLine`, `VLine`, `Rect`) or `None`.
-            When set to `None` or `[]` all annotations are removed.
+        annotations : list of `Line`, `HLine`, `VLine`, `Rect`, `Contour` optional
+            A list of annotations (`Line`, `HLine`, `VLine`, `Rect`, `Contour`)
+            or `None`. When set to `None` or `[]` all annotations are removed.
 
         Returns
         -------
@@ -3809,7 +3822,11 @@ class Scatter():
         """
 
         if annotations is not UNDEF:
-            self._annotations = annotations
+            if annotations is None:
+                self._annotations = []
+            else:
+                self._annotations = get_annotations(self, annotations)
+
             self.update_widget(
                 'annotations',
                 normalize_annotations(

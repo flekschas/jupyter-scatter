@@ -66,6 +66,62 @@ l = jscatter.Line(
 
 <div class="img styles"><div /></div>
 
+## Contour Line
+
+Beyond basic line-based annotations, Jupyter Scatter also supports composite
+annotations like [contour line](https://en.wikipedia.org/wiki/Contour_line).
+
+A contour line estimates the density and is internally computed with
+[Seaborn's kdeplot](https://seaborn.pydata.org/generated/seaborn.kdeplot.html).
+
+```py
+import jscatter
+import seaborn as sns
+
+jscatter.plot(
+    data=sns.load_dataset("geyser"),
+    x='waiting',
+    y='duration',
+    annotations=[jscatter.Contour()],
+)
+```
+
+<div class="img contour"><div /></div>
+
+To draw contour lines by a group of points, you can use the `by` argument of
+`Contour`. Internally, the `by` property maps to the `hue` argument of the
+kdeplot. When `color_by` is the same as the Contour's `by` property, the color
+of the contour lines match the color of the points. 
+
+
+```py{5-6}
+jscatter.plot(
+    data=sns.load_dataset("geyser"),
+    x='waiting',
+    y='duration',
+    color_by='kind',
+    annotations=[jscatter.Contour(by='kind')],
+)
+```
+
+<div class="img contour-by"><div /></div>
+
+To emphasize higher levels and deemphasize lower levels of the contour lines,
+you can set the `line_opacity_by_level` argument to `True`.
+
+
+```py{6}
+jscatter.plot(
+    data=sns.load_dataset("geyser"),
+    x='waiting',
+    y='duration',
+    color_by='kind',
+    annotations=[jscatter.Contour(by='kind', line_opacity_by_level=True)],
+)
+```
+
+<div class="img contour-level-opacity"><div /></div>
+
 <style scoped>
   .img {
     max-width: 100%;
@@ -93,4 +149,40 @@ l = jscatter.Line(
   :root.dark .img.styles {
     background-image: url(/images/annotations-styles-dark.png)
   }
+
+  .img.contour {
+    width: 1174px;
+    background-image: url(/images/annotations-contour-light.png)
+  }
+  .img.contour div { padding-top: 58.77342419% }
+
+  :root.dark .img.contour {
+    width: 1168px;
+    background-image: url(/images/annotations-contour-dark.png)
+  }
+  :root.dark .img.contour div { padding-top: 57.70547945% }
+
+  .img.contour-by {
+    width: 1168px;
+    background-image: url(/images/annotations-contour-by-light.png)
+  }
+  .img.contour-by div { padding-top: 59.07534247% }
+
+  :root.dark .img.contour-by {
+    width: 1170px;
+    background-image: url(/images/annotations-contour-by-dark.png)
+  }
+  :root.dark .img.contour-by div { padding-top: 57.60683761% }
+
+  .img.contour-level-opacity {
+    width: 1098px;
+    background-image: url(/images/annotations-contour-level-opacity-light.png)
+  }
+  .img.contour-level-opacity div { padding-top: 60.29143898% }
+
+  :root.dark .img.contour-level-opacity {
+    width: 1170px;
+    background-image: url(/images/annotations-contour-level-opacity-dark.png)
+  }
+  :root.dark .img.contour-level-opacity div { padding-top: 57.77777778% }
 </style>
