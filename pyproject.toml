@@ -38,6 +38,8 @@ dependencies = [
     "matplotlib",
     "numpy",
     "pandas",
+    "scipy",
+    "seaborn",
     "traittypes>=0.2.1",
     "typing_extensions",
 ]
