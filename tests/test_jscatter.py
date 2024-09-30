@@ -449,3 +449,65 @@ def test_scatter_check_encoding_dtype(df: pd.DataFrame):
 
     with pytest.raises(ValueError):
         check_encoding_dtype(pd.Series(np.array([1+0j])))
+
+
+def test_tooltip(df: pd.DataFrame):
+    # Test initializing a scatter plot with tooltip properties
+    scatter = Scatter(
+        data=df,
+        x="a",
+        y="b",
+        tooltip=True,
+        tooltip_properties=["a", "b", "c", "group"]
+    )
+    assert scatter.widget.tooltip_enable == True
+    assert scatter.widget.tooltip_properties == ["a", "b", "c", "group"]
+    assert scatter.widget.tooltip_histograms == True
+    assert scatter.widget.tooltip_histograms_size == "small"
+
+    normalized_x_histogram = np.histogram(df["a"].values, bins=20)[0]
+    normalized_x_histogram = normalized_x_histogram / normalized_x_histogram.max()
+    assert np.array_equal(scatter.widget.x_histogram, normalized_x_histogram)
+
+    normalized_y_histogram = np.histogram(df["b"].values, bins=20)[0]
+    normalized_y_histogram = normalized_y_histogram / normalized_y_histogram.max()
+    assert np.array_equal(scatter.widget.y_histogram, normalized_y_histogram)
+
+    assert "c" in scatter.widget.tooltip_properties_non_visual_info
+    assert "group" in scatter.widget.tooltip_properties_non_visual_info
+
+    normalized_c_histogram = np.histogram(df["c"].values, bins=20)[0]
+    normalized_c_histogram = normalized_c_histogram / normalized_c_histogram.max()
+    assert np.array_equal(
+        scatter.widget.tooltip_properties_non_visual_info["c"]["histogram"], 
+        normalized_c_histogram
+    )
+
+    normalized_group_histogram = df["group"].copy().astype(str).astype('category').cat.codes.value_counts()
+    normalized_group_histogram = [
+        y for _, y in sorted(
+            dict(normalized_group_histogram / normalized_group_histogram.sum()).items()
+        )
+    ]
+    assert np.array_equal(
+        scatter.widget.tooltip_properties_non_visual_info["group"]["histogram"], 
+        normalized_group_histogram
+    )
+
+    # Test updating tooltip properties
+    scatter.tooltip(properties=["a", "c"])
+    assert scatter.widget.tooltip_properties == ["a", "c"]
+
+    # Test disabling tooltip
+    scatter.tooltip(False)
+    assert scatter.widget.tooltip_enable == False
+
+    # Test enabling tooltip without specifying properties
+    scatter = Scatter(data=df, x="b", y="d")
+    scatter.tooltip(True)
+    assert scatter.widget.tooltip_enable == True
+    assert scatter.widget.tooltip_properties == ["x", "y", "color", "opacity", "size"]
+
+    # Test with invalid property
+    scatter.tooltip(properties=["color", "invalid_column"])
+    assert scatter.widget.tooltip_properties == ["color"]
