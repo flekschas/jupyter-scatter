@@ -29,8 +29,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: |
-          pip install -e '.[dev]'
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.x"
 
       - name: Run tests
-        run: pytest . --color=yes
+        run: uv run pytest . --color=yes
