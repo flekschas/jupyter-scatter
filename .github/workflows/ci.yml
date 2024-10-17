@@ -10,6 +10,17 @@ on:
 
 jobs:
 
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.x"
+      - run: |
+          uv run ruff format
+          uv run ruff check
+
   Test:
     runs-on: ubuntu-latest
     strategy:

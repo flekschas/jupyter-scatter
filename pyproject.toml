@@ -73,8 +73,6 @@ npm = "npm"
 build_cmd = "build"
 path = "js"
 
-[tool.ruff.format]
-quote-style = "single"
 
 [tool.pytest.ini_options]
 filterwarnings = [
@@ -90,3 +88,9 @@ dev-dependencies = [
     "pytest>=8.3.3",
     "ruff>=0.7.0",
 ]
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+ignore = ["E", "F"]
