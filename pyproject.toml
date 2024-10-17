@@ -8,7 +8,6 @@ description = "An interactive scatter plot widget for Jupyter Notebook, Lab, and
 authors = [
   { name = "Fritz Lekschas", email = "code@lekschas.de" }
 ]
-requires-python = ">=3.9"
 license = { text = "Apache-2.0" }
 readme = "README.md"
 classifiers = [
@@ -92,5 +91,7 @@ dev-dependencies = [
 [tool.ruff.format]
 quote-style = "single"
 
+# flake8 rules hadn't been enforced for a bit, so for now we are ignoring many
+# lints. Can enable by removing this section.
 [tool.ruff.lint]
 ignore = ["E", "F"]
