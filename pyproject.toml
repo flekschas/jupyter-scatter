@@ -8,7 +8,7 @@ description = "An interactive scatter plot widget for Jupyter Notebook, Lab, and
 authors = [
   { name = "Fritz Lekschas", email = "code@lekschas.de" }
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = { text = "Apache-2.0" }
 readme = "README.md"
 classifiers = [
@@ -83,10 +83,10 @@ filterwarnings = [
 
 [tool.uv]
 dev-dependencies = [
-    "anywidget[dev]>=0.9.13",
-    "jupyterlab>=4.2.5",
-    "pytest>=8.3.3",
-    "ruff>=0.7.0",
+    "anywidget[dev]",
+    "jupyterlab",
+    "pytest",
+    "ruff",
 ]
 
 [tool.ruff.format]
