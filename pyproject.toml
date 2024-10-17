@@ -8,6 +8,7 @@ description = "An interactive scatter plot widget for Jupyter Notebook, Lab, and
 authors = [
   { name = "Fritz Lekschas", email = "code@lekschas.de" }
 ]
+requires-python = ">=3.8"
 license = { text = "Apache-2.0" }
 readme = "README.md"
 classifiers = [
@@ -51,15 +52,6 @@ documentation = "https://jupyter-scatter.dev/api"
 repository = "https://github.com/flekschas/jupyter-scatter"
 changelog = "https://github.com/flekschas/jupyter-scatter/blob/main/CHANGELOG.md"
 
-[project.optional-dependencies]
-dev = [
-    "anywidget[dev]",
-    "black[jupyter]",
-    "jupyterlab",
-    "pytest",
-    "ruff",
-]
-
 # Configures hatchling build system to use the verison
 # found in the package.json file for the python package.
 [tool.hatch.version]
@@ -81,13 +73,6 @@ npm = "npm"
 build_cmd = "build"
 path = "js"
 
-[tool.hatch.envs.default]
-features = ["dev"]
-python = "3.12"
-
-[tool.hatch.envs.default.scripts]
-test = "pytest ."
-
 [tool.ruff.format]
 quote-style = "single"
 
@@ -96,4 +81,12 @@ filterwarnings = [
   # Ignore unrelated DeprecationWarning from traitlets:
   # Sentinel is not a public part of the traitlets API.
   "ignore::DeprecationWarning:traitlets:28",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "anywidget[dev]>=0.9.13",
+    "jupyterlab>=4.2.5",
+    "pytest>=8.3.3",
+    "ruff>=0.7.0",
 ]
