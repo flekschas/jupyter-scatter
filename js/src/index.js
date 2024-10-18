@@ -1,33 +1,33 @@
+import { debounce, getD3FormatSpecifier, max, min } from '@flekschas/utils';
+import { globalPubSub } from 'pub-sub-es';
 import createScatterplot, { createRenderer } from 'regl-scatterplot';
-import * as pubSub from 'pub-sub-es';
-import { debounce, min, max, getD3FormatSpecifier } from '@flekschas/utils';
 
 import { axisBottom, axisRight } from 'd3-axis';
 import { format } from 'd3-format';
 import { scaleLinear } from 'd3-scale';
 import { select } from 'd3-selection';
 
-import { Annotations, Numpy1D, Numpy2D, NumpyImage } from "./codecs";
-import { createHistogram } from "./histogram";
-import { createLegend } from "./legend";
+import { Annotations, Numpy1D, Numpy2D, NumpyImage } from './codecs.js';
+import { createHistogram } from './histogram.js';
+import { createLegend } from './legend.js';
 import {
+  addBackgroundColor,
   camelToSnake,
+  createElementWithClass,
+  createNumericalBinGetter,
+  createOrdinalScaleInverter,
+  createTimeFormat,
+  downloadBlob,
+  getScale,
+  getTooltipFontSize,
+  imageDataToCanvas,
+  remToPx,
   toCapitalCase,
   toHtmlClass,
   toTitleCase,
-  downloadBlob,
-  getScale,
-  createOrdinalScaleInverter,
-  getTooltipFontSize,
-  createNumericalBinGetter,
-  createElementWithClass,
-  remToPx,
-  createTimeFormat,
-  addBackgroundColor,
-  imageDataToCanvas,
-} from "./utils";
+} from './utils.js';
 
-import { version } from "../package.json";
+import { version } from '../package.json';
 
 const AXES_LABEL_SIZE = 12;
 const AXES_PADDING_X = 60;
@@ -35,22 +35,29 @@ const AXES_PADDING_X_WITH_LABEL = AXES_PADDING_X + AXES_LABEL_SIZE;
 const AXES_PADDING_Y = 20;
 const AXES_PADDING_Y_WITH_LABEL = AXES_PADDING_Y + AXES_LABEL_SIZE;
 const TOOLTIP_DEBOUNCE_TIME = 250;
-const TOOLTIP_MANDATORY_VISUAL_PROPERTIES = (/** @type {const} */ ({ x: 'X', y: 'Y' }));
-const TOOLTIP_OPTIONAL_VISUAL_PROPERTIES = (/** @type {const} */ ({ color: 'Col', opacity: 'Opa', size: 'Size' }));
-const TOOLTIP_ALL_VISUAL_PROPERTIES = (/** @type {const} */ ({
+const TOOLTIP_MANDATORY_VISUAL_PROPERTIES = /** @type {const} */ ({
+  x: 'X',
+  y: 'Y',
+});
+const TOOLTIP_OPTIONAL_VISUAL_PROPERTIES = /** @type {const} */ ({
+  color: 'Col',
+  opacity: 'Opa',
+  size: 'Size',
+});
+const TOOLTIP_ALL_VISUAL_PROPERTIES = /** @type {const} */ ({
   ...TOOLTIP_MANDATORY_VISUAL_PROPERTIES,
-  ...TOOLTIP_OPTIONAL_VISUAL_PROPERTIES
-}));
-const TOOLTIP_HISTOGRAM_WIDTH = (/** @type {const} */ ({
+  ...TOOLTIP_OPTIONAL_VISUAL_PROPERTIES,
+});
+const TOOLTIP_HISTOGRAM_WIDTH = /** @type {const} */ ({
   small: '6em',
   medium: '10em',
   large: '14em',
-}));
-const TOOLTIP_HISTOGRAM_HEIGHT = (/** @type {const} */ ({
+});
+const TOOLTIP_HISTOGRAM_HEIGHT = /** @type {const} */ ({
   small: '1em',
   medium: '1.25em',
   large: '1.5em',
-}));
+});
 const TOOLTIP_OFFSET_REM = 0.5;
 
 /**
@@ -203,7 +210,6 @@ const reglScatterplotProperty = new Set([
 
 // Custom View. Renders the widget model.
 class JupyterScatterView {
-
   constructor({ el, model }) {
     this.el = el;
     this.model = model;
@@ -215,32 +221,31 @@ class JupyterScatterView {
       window.jupyterScatter = {
         renderer: createRenderer(),
         versionLog: false,
-      }
+      };
     }
 
-    Object.keys(properties).forEach((propertyName) => {
+    for (const propertyName of Object.keys(properties)) {
       this[propertyName] = this.model.get(camelToSnake(propertyName));
-    });
+    }
 
-    this.width = !Number.isNaN(+this.model.get('width')) && +this.model.get('width') > 0
-      ? +this.model.get('width')
-      : 'auto';
+    this.width =
+      !Number.isNaN(+this.model.get('width')) && +this.model.get('width') > 0
+        ? +this.model.get('width')
+        : 'auto';
 
     // Create a random 6-letter string
     // From https://gist.github.com/6174/6062387
-    this.randomStr = (
+    this.randomStr =
       Math.random().toString(36).substring(2, 5) +
-      Math.random().toString(36).substring(2, 5)
-    );
+      Math.random().toString(36).substring(2, 5);
     this.model.set('dom_element_id', this.randomStr);
 
     this.container = document.createElement('div');
     this.container.setAttribute('id', this.randomStr);
-    this.container.style.position = 'relative'
-    this.container.style.width = this.width === 'auto'
-      ? '100%'
-      : this.width + 'px';
-    this.container.style.height = this.model.get('height') + 'px';
+    this.container.style.position = 'relative';
+    this.container.style.width =
+      this.width === 'auto' ? '100%' : `${this.width}px`;
+    this.container.style.height = `${this.model.get('height')}px`;
     this.el.appendChild(this.container);
 
     this.canvasWrapper = document.createElement('div');
@@ -253,44 +258,53 @@ class JupyterScatterView {
     this.canvas.style.height = '100%';
     this.canvasWrapper.appendChild(this.canvas);
 
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Will refactor this later
     window.requestAnimationFrame(() => {
       const initialOptions = {
         renderer: window.jupyterScatter.renderer,
         canvas: this.canvas,
         keyMap: { shift: 'merge' },
+      };
+
+      if (this.width !== 'auto') {
+        initialOptions.width = this.width;
       }
 
-      if (this.width !== 'auto') initialOptions.width = this.width;
-
-      Object.entries(properties).forEach((property) => {
+      for (const property of Object.entries(properties)) {
         const pyName = property[0];
         const jsName = property[1];
         if (this[pyName] !== null && reglScatterplotProperty.has(jsName)) {
           initialOptions[jsName] = this[pyName];
         }
         if (this[pyName] !== null && jsName === 'reglScatterplotOptions') {
-          Object.entries(this[pyName]).forEach(([key, value]) => {
+          for (const [key, value] of Object.entries(this[pyName])) {
             initialOptions[key] = value;
-          })
+          }
         }
-      });
+      }
 
       this.scatterplot = createScatterplot(initialOptions);
 
       if (!window.jupyterScatter.versionLog) {
-        // eslint-disable-next-line
+        // biome-ignore lint/suspicious/noConsole: We want to log the version once
+        // biome-ignore lint/suspicious/noConsoleLog: We want to log the version once
         console.log(
-          'jupyter-scatter v' + version +
-          ' with regl-scatterplot v' + this.scatterplot.get('version')
+          `jupyter-scatter v${version} with regl-scatterplot v${this.scatterplot.get('version')}`,
         );
         window.jupyterScatter.versionLog = true;
       }
 
       this.container.api = this.scatterplot;
 
-      if (this.model.get('axes')) this.createAxes();
-      if (this.model.get('axes_grid')) this.createAxesGrid();
-      if (this.model.get('legend')) this.showLegend();
+      if (this.model.get('axes')) {
+        this.createAxes();
+      }
+      if (this.model.get('axes_grid')) {
+        this.createAxesGrid();
+      }
+      if (this.model.get('legend')) {
+        this.showLegend();
+      }
 
       // Listen to events from the JavaScript world
       this.pointoverHandlerBound = this.pointoverHandler.bind(this);
@@ -298,7 +312,8 @@ class JupyterScatterView {
       this.selectHandlerBound = this.selectHandler.bind(this);
       this.deselectHandlerBound = this.deselectHandler.bind(this);
       this.filterEventHandlerBound = this.filterEventHandler.bind(this);
-      this.externalViewChangeHandlerBound = this.externalViewChangeHandler.bind(this);
+      this.externalViewChangeHandlerBound =
+        this.externalViewChangeHandler.bind(this);
       this.viewChangeHandlerBound = this.viewChangeHandler.bind(this);
       this.resizeHandlerBound = this.resizeHandler.bind(this);
 
@@ -309,14 +324,14 @@ class JupyterScatterView {
       this.scatterplot.subscribe('filter', this.filterEventHandlerBound);
       this.scatterplot.subscribe('view', this.viewChangeHandlerBound);
 
-      window.pubSub = pubSub;
-
       this.viewSync = this.model.get('view_sync');
       this.viewSyncHandler(this.viewSync);
 
       if ('ResizeObserver' in window) {
         this.canvasObserver = new ResizeObserver(() => {
-          window.requestAnimationFrame(() => { this.resizeHandlerBound(); });
+          window.requestAnimationFrame(() => {
+            this.resizeHandlerBound();
+          });
         });
         this.canvasObserver.observe(this.canvas);
       } else {
@@ -325,23 +340,37 @@ class JupyterScatterView {
       }
 
       // Listen to messages from the Python world
-      Object.keys(properties).forEach((propertyName) => {
-        const handler = this[propertyName + 'Handler'];
-        if (!handler) return;
-        this.model.on(`change:${camelToSnake(propertyName)}`, () => {
-          this[propertyName] = this.model.get(camelToSnake(propertyName));
-          handler.call(this, this[propertyName]);
-        }, this);
-      });
+      for (const propertyName of Object.keys(properties)) {
+        const handler = this[`${propertyName}Handler`];
+        if (!handler) {
+          return;
+        }
+        this.model.on(
+          `change:${camelToSnake(propertyName)}`,
+          () => {
+            this[propertyName] = this.model.get(camelToSnake(propertyName));
+            handler.call(this, this[propertyName]);
+          },
+          this,
+        );
+      }
 
-      this.model.on('change:regl_scatterplot_options', () => {
-        this.options = this.model.get('regl_scatterplot_options');
-        this.optionsHandler.call(this, this.options);
-      }, this);
+      this.model.on(
+        'change:regl_scatterplot_options',
+        () => {
+          this.options = this.model.get('regl_scatterplot_options');
+          this.optionsHandler.call(this, this.options);
+        },
+        this,
+      );
 
-      this.model.on('msg:custom', (event) => {
-        this.customEventHandler.call(this, event);
-      }, this);
+      this.model.on(
+        'msg:custom',
+        (event) => {
+          this.customEventHandler.call(this, event);
+        },
+        this,
+      );
 
       this.colorCanvas();
 
@@ -360,27 +389,32 @@ class JupyterScatterView {
 
       this.showTooltipDebounced = debounce(
         this.showTooltip.bind(this),
-        TOOLTIP_DEBOUNCE_TIME
+        TOOLTIP_DEBOUNCE_TIME,
       );
 
-      if (this.points.length) {
-        const options = {}
-        if (this.filter && this.filter.length) options.filter = this.filter;
-        if (this.selection.length) options.select = this.selection;
+      if (this.points.length > 0) {
+        const options = {};
+        if (this.filter?.length > 0) {
+          options.filter = this.filter;
+        }
+        if (this.selection.length > 0) {
+          options.select = this.selection;
+        }
 
-        this.scatterplot
-          .draw(this.points, options)
-          .then(() => {
-            if (this.annotations) {
-              this.scatterplot.drawAnnotations(this.annotations);
-            }
-            if (this.filter?.length && this.model.get('zoom_on_filter')) {
-              this.zoomToHandler(this.filter);
-            }
-            if (this.selection.length && this.model.get('zoom_on_selection')) {
-              this.zoomToHandler(this.selection);
-            }
-          });
+        this.scatterplot.draw(this.points, options).then(() => {
+          if (this.annotations) {
+            this.scatterplot.drawAnnotations(this.annotations);
+          }
+          if (this.filter?.length > 0 && this.model.get('zoom_on_filter')) {
+            this.zoomToHandler(this.filter);
+          }
+          if (
+            this.selection.length > 0 &&
+            this.model.get('zoom_on_selection')
+          ) {
+            this.zoomToHandler(this.selection);
+          }
+        });
       }
     });
 
@@ -389,42 +423,43 @@ class JupyterScatterView {
 
   customEventHandler(event) {
     if (event.type === this.eventTypes.TOOLTIP) {
-      if (event.index !== this.tooltipPointIdx && event.show !== true) return;
-      this.tooltipDataHandlers(event)
-      if (event.show) this.showTooltip(event.index);
+      if (event.index !== this.tooltipPointIdx && event.show !== true) {
+        return;
+      }
+      this.tooltipDataHandlers(event);
+      if (event.show) {
+        this.showTooltip(event.index);
+      }
       return;
     }
 
     if (event.type === this.eventTypes.VIEW_DOWNLOAD) {
-      this.viewDownload(event.transparentBackgroundColor)
+      this.viewDownload(event.transparentBackgroundColor);
       return;
     }
 
     if (event.type === this.eventTypes.VIEW_RESET) {
-      if (!this.scatterplot) return;
+      if (!this.scatterplot) {
+        return;
+      }
       if (event.area) {
-        this.scatterplot.zoomToArea(
-          event.area,
-          {
-            transition: event.animation > 0,
-            transitionDuration: event.animation,
-            transitionEasing: 'quadInOut',
-          }
-        );
+        this.scatterplot.zoomToArea(event.area, {
+          transition: event.animation > 0,
+          transitionDuration: event.animation,
+          transitionEasing: 'quadInOut',
+        });
       } else {
-        this.scatterplot.zoomToOrigin(
-          {
-            transition: event.animation > 0,
-            transitionDuration: event.animation,
-            transitionEasing: 'quadInOut',
-          }
-        );
+        this.scatterplot.zoomToOrigin({
+          transition: event.animation > 0,
+          transitionDuration: event.animation,
+          transitionEasing: 'quadInOut',
+        });
       }
       return;
     }
 
     if (event.type === this.eventTypes.VIEW_SAVE) {
-      this.viewSave(event.transparentBackgroundColor)
+      this.viewSave(event.transparentBackgroundColor);
       return;
     }
   }
@@ -438,9 +473,10 @@ class JupyterScatterView {
       yPadding = this.getYPadding();
     }
 
-    const outerWidth = this.model.get('width') === 'auto'
-      ? this.container.getBoundingClientRect().width
-      : this.model.get('width') + xPadding;
+    const outerWidth =
+      this.model.get('width') === 'auto'
+        ? this.container.getBoundingClientRect().width
+        : this.model.get('width') + xPadding;
 
     const outerHeight = this.model.get('height') + yPadding;
 
@@ -461,11 +497,16 @@ class JupyterScatterView {
     this.axesSvg.style('pointer-events', 'none');
     this.axesSvg.style('user-select', 'none');
     const color = this.model.get('axes_color').map((c) => Math.round(c * 255));
-    this.axesSvg.style('color', `rgba(${color[0]}, ${color[1]}, ${color[2]}, 1)`);
+    this.axesSvg.style(
+      'color',
+      `rgba(${color[0]}, ${color[1]}, ${color[2]}, 1)`,
+    );
 
     const [width, height] = this.getOuterDimensions();
 
+    // biome-ignore lint/style/useNamingConvention: XScale stands for x scale
     const currentXScaleRegl = this.scatterplot.get('xScale');
+    // biome-ignore lint/style/useNamingConvention: YScale stands for y scale
     const currentYScaleRegl = this.scatterplot.get('yScale');
 
     const [xLabel, yLabel] = this.model.get('axes_labels') || [];
@@ -502,13 +543,13 @@ class JupyterScatterView {
 
     if (currentXScaleRegl) {
       this.xScaleAxis.domain(
-        currentXScaleRegl.domain().map(this.xScaleRegl2Axis.invert)
+        currentXScaleRegl.domain().map(this.xScaleRegl2Axis.invert),
       );
     }
 
     if (currentYScaleRegl) {
       this.yScaleAxis.domain(
-        currentYScaleRegl.domain().map(this.yScaleRegl2Axis.invert)
+        currentYScaleRegl.domain().map(this.yScaleRegl2Axis.invert),
       );
     }
 
@@ -546,7 +587,7 @@ class JupyterScatterView {
         .attr('font-weight', 'bold')
         .attr('x', (width - xPadding) / 2)
         .attr('y', height);
-      }
+    }
 
     if (yLabel) {
       this.yAxisLabel = this.axesSvg.select('.y-axis-label').node()
@@ -562,7 +603,7 @@ class JupyterScatterView {
         .attr('y', -width)
         .attr('font-size', '12px')
         .attr('font-weight', 'bold')
-        .attr('transform', `rotate(90)`);
+        .attr('transform', 'rotate(90)');
     }
 
     this.updateContainerDimensions();
@@ -575,7 +616,9 @@ class JupyterScatterView {
     this.canvasWrapper.style.right = `${xPadding}px`;
     this.canvasWrapper.style.bottom = `${yPadding}px`;
 
-    if (this.model.get('axes_grid')) this.createAxesGrid();
+    if (this.model.get('axes_grid')) {
+      this.createAxesGrid();
+    }
 
     this.updateLegendWrapperPosition();
 
@@ -617,7 +660,8 @@ class JupyterScatterView {
       this.yAxisContainer.call(this.yAxis);
     }
     if (this.axesSvg) {
-      this.axesSvg.selectAll('line')
+      this.axesSvg
+        .selectAll('line')
         .attr('stroke-opacity', 0.2)
         .attr('stroke-dasharray', 2);
     }
@@ -633,7 +677,8 @@ class JupyterScatterView {
       this.yAxisContainer.call(this.yAxis);
     }
     if (this.axesSvg) {
-      this.axesSvg.selectAll('line')
+      this.axesSvg
+        .selectAll('line')
         .attr('stroke-opacity', null)
         .attr('stroke-dasharray', null);
     }
@@ -652,7 +697,7 @@ class JupyterScatterView {
       this.model.get('legend_encoding'),
       this.model.get('legend_color'),
       this.model.get('background_color'),
-      this.model.get('legend_size')
+      this.model.get('legend_size'),
     );
     this.updateLegendPosition();
 
@@ -661,7 +706,9 @@ class JupyterScatterView {
   }
 
   hideLegend() {
-    if (!this.legendWrapper) return;
+    if (!this.legendWrapper) {
+      return;
+    }
     this.container.removeChild(this.legendWrapper);
     this.legendWrapper = undefined;
     this.legend = undefined;
@@ -669,7 +716,7 @@ class JupyterScatterView {
 
   createTooltipPreviewDomElements() {
     this.tooltipPreviewValue = document.createElement(
-      this.model.get('tooltip_preview_type') === 'audio' ? 'audio' : 'div'
+      this.model.get('tooltip_preview_type') === 'audio' ? 'audio' : 'div',
     );
     this.tooltipPreviewValueHelper = document.createElement('div');
     this.tooltipPreviewBorder = document.createElement('div');
@@ -685,72 +732,83 @@ class JupyterScatterView {
 
     this[`tooltipProperty${capitalProperty}Title`] = createElementWithClass(
       'div',
-      ['title', `${htmlClassProperty}-title`]
+      ['title', `${htmlClassProperty}-title`],
     );
 
     this[`tooltipProperty${capitalProperty}Value`] = createElementWithClass(
       'div',
-      ['value', `${htmlClassProperty}-value`]
+      ['value', `${htmlClassProperty}-value`],
     );
 
     this[`tooltipProperty${capitalProperty}ValueText`] = createElementWithClass(
       'div',
-      ['value-text', `${htmlClassProperty}-value-text`]
+      ['value-text', `${htmlClassProperty}-value-text`],
     );
 
     this[`tooltipProperty${capitalProperty}Channel`] = createElementWithClass(
       'div',
-      ['channel', `${htmlClassProperty}-channel`]
+      ['channel', `${htmlClassProperty}-channel`],
     );
 
     if (property in TOOLTIP_ALL_VISUAL_PROPERTIES) {
-      this[`tooltipProperty${capitalProperty}ChannelName`] = createElementWithClass(
-        'div',
-        ['channel-name', `${htmlClassProperty}-channel-name`]
-      );
-      this[`tooltipProperty${capitalProperty}ChannelName`].textContent = TOOLTIP_ALL_VISUAL_PROPERTIES[property];
+      this[`tooltipProperty${capitalProperty}ChannelName`] =
+        createElementWithClass('div', [
+          'channel-name',
+          `${htmlClassProperty}-channel-name`,
+        ]);
+      this[`tooltipProperty${capitalProperty}ChannelName`].textContent =
+        TOOLTIP_ALL_VISUAL_PROPERTIES[property];
 
       this[`tooltipProperty${capitalProperty}Channel`].appendChild(
-        this[`tooltipProperty${capitalProperty}ChannelName`]
+        this[`tooltipProperty${capitalProperty}ChannelName`],
       );
 
-      this[`tooltipProperty${capitalProperty}ChannelBadge`] = createElementWithClass(
-        'div',
-        ['channel-badge', `${htmlClassProperty}-channel-badge`]
-      );
-      this[`tooltipProperty${capitalProperty}ChannelBadgeMark`] = createElementWithClass(
-        'div',
-        ['channel-badge-mark', `${htmlClassProperty}-channel-badge-mark`]
-      );
-      this[`tooltipProperty${capitalProperty}ChannelBadgeBg`] = createElementWithClass(
-        'div',
-        ['channel-badge-bg', `${htmlClassProperty}-channel-badge-bg`]
+      this[`tooltipProperty${capitalProperty}ChannelBadge`] =
+        createElementWithClass('div', [
+          'channel-badge',
+          `${htmlClassProperty}-channel-badge`,
+        ]);
+      this[`tooltipProperty${capitalProperty}ChannelBadgeMark`] =
+        createElementWithClass('div', [
+          'channel-badge-mark',
+          `${htmlClassProperty}-channel-badge-mark`,
+        ]);
+      this[`tooltipProperty${capitalProperty}ChannelBadgeBg`] =
+        createElementWithClass('div', [
+          'channel-badge-bg',
+          `${htmlClassProperty}-channel-badge-bg`,
+        ]);
+      this[`tooltipProperty${capitalProperty}ChannelBadge`].appendChild(
+        this[`tooltipProperty${capitalProperty}ChannelBadgeMark`],
       );
       this[`tooltipProperty${capitalProperty}ChannelBadge`].appendChild(
-        this[`tooltipProperty${capitalProperty}ChannelBadgeMark`]
-      );
-      this[`tooltipProperty${capitalProperty}ChannelBadge`].appendChild(
-        this[`tooltipProperty${capitalProperty}ChannelBadgeBg`]
+        this[`tooltipProperty${capitalProperty}ChannelBadgeBg`],
       );
       this[`tooltipProperty${capitalProperty}Channel`].appendChild(
-        this[`tooltipProperty${capitalProperty}ChannelBadge`]
+        this[`tooltipProperty${capitalProperty}ChannelBadge`],
       );
     }
 
     this[`tooltipProperty${capitalProperty}Value`].appendChild(
-      this[`tooltipProperty${capitalProperty}ValueText`]
+      this[`tooltipProperty${capitalProperty}ValueText`],
     );
 
     this[`tooltipProperty${capitalProperty}ValueHistogram`] = createHistogram(
-      TOOLTIP_HISTOGRAM_WIDTH[this.model.get('tooltip_histograms_size')] || TOOLTIP_HISTOGRAM_WIDTH.small,
-      TOOLTIP_HISTOGRAM_HEIGHT[this.model.get('tooltip_histograms_size')] || TOOLTIP_HISTOGRAM_HEIGHT.small,
+      TOOLTIP_HISTOGRAM_WIDTH[this.model.get('tooltip_histograms_size')] ||
+        TOOLTIP_HISTOGRAM_WIDTH.small,
+      TOOLTIP_HISTOGRAM_HEIGHT[this.model.get('tooltip_histograms_size')] ||
+        TOOLTIP_HISTOGRAM_HEIGHT.small,
     );
     this[`tooltipProperty${capitalProperty}Value`].appendChild(
-      this[`tooltipProperty${capitalProperty}ValueHistogram`].element
+      this[`tooltipProperty${capitalProperty}ValueHistogram`].element,
     );
 
-    const histogram = this.model.get(`${property}_histogram`) || this.model.get('tooltip_properties_non_visual_info')[property]?.histogram;
-    const scale = this.model.get(`${property}_scale`) || this.model.get('tooltip_properties_non_visual_info')[property]?.scale;
+    const histogram =
+      this.model.get(`${property}_histogram`) ||
+      this.model.get('tooltip_properties_non_visual_info')[property]?.histogram;
+    const scale =
+      this.model.get(`${property}_scale`) ||
+      this.model.get('tooltip_properties_non_visual_info')[property]?.scale;
 
     this[`tooltipProperty${capitalProperty}ValueHistogram`].init(
       histogram,
@@ -758,12 +816,18 @@ class JupyterScatterView {
     );
 
     this[`tooltipProperty${capitalProperty}Title`].textContent = toTitleCase(
-      this.model.get(`${property}_title`) || property || ''
+      this.model.get(`${property}_title`) || property || '',
     );
 
-    this.tooltipContentProperties.appendChild(this[`tooltipProperty${capitalProperty}Channel`]);
-    this.tooltipContentProperties.appendChild(this[`tooltipProperty${capitalProperty}Title`]);
-    this.tooltipContentProperties.appendChild(this[`tooltipProperty${capitalProperty}Value`]);
+    this.tooltipContentProperties.appendChild(
+      this[`tooltipProperty${capitalProperty}Channel`],
+    );
+    this.tooltipContentProperties.appendChild(
+      this[`tooltipProperty${capitalProperty}Title`],
+    );
+    this.tooltipContentProperties.appendChild(
+      this[`tooltipProperty${capitalProperty}Value`],
+    );
   }
 
   createTooltipContentsDomElements() {
@@ -784,30 +848,42 @@ class JupyterScatterView {
   }
 
   createTooltipContents() {
-    this.tooltipPropertiesVisual = new Set(this.model.get('tooltip_properties'));
+    this.tooltipPropertiesVisual = new Set(
+      this.model.get('tooltip_properties'),
+    );
 
     // Remove all but visual properties that are used for encoding data
     // properties
     for (const property of this.tooltipPropertiesVisual) {
-      if (property in TOOLTIP_MANDATORY_VISUAL_PROPERTIES) continue;
+      if (property in TOOLTIP_MANDATORY_VISUAL_PROPERTIES) {
+        continue;
+      }
       if (property in TOOLTIP_OPTIONAL_VISUAL_PROPERTIES) {
         const encoding = this.model.get(`${property}_by`);
-        if (property === 'opacity' && encoding !== 'density') continue
-        if (property !== 'opacity' && encoding) continue
+        if (property === 'opacity' && encoding !== 'density') {
+          continue;
+        }
+        if (property !== 'opacity' && encoding) {
+          continue;
+        }
       }
       this.tooltipPropertiesVisual.delete(property);
     }
     this.tooltipPropertiesVisual = Array.from(this.tooltipPropertiesVisual);
 
-    this.tooltipPropertiesNonVisual = new Set(this.model.get('tooltip_properties'));
+    this.tooltipPropertiesNonVisual = new Set(
+      this.model.get('tooltip_properties'),
+    );
     for (const property of Object.keys(TOOLTIP_ALL_VISUAL_PROPERTIES)) {
       this.tooltipPropertiesNonVisual.delete(property);
     }
-    this.tooltipPropertiesNonVisual = Array.from(this.tooltipPropertiesNonVisual);
+    this.tooltipPropertiesNonVisual = Array.from(
+      this.tooltipPropertiesNonVisual,
+    );
 
     this.tooltipPropertiesAll = [
       ...this.tooltipPropertiesVisual,
-      ...this.tooltipPropertiesNonVisual
+      ...this.tooltipPropertiesNonVisual,
     ];
 
     this.tooltipPreview = this.model.get('tooltip_preview');
@@ -851,7 +927,9 @@ class JupyterScatterView {
     this.tooltipContentProperties.style.userSelect = 'none';
     this.tooltipContentProperties.style.borderRadius = '0.2rem';
     this.tooltipContentProperties.style.padding = '0.25em';
-    this.tooltipContentProperties.style.fontSize = getTooltipFontSize(this.model.get('tooltip_size'));
+    this.tooltipContentProperties.style.fontSize = getTooltipFontSize(
+      this.model.get('tooltip_size'),
+    );
     this.tooltipContent.appendChild(this.tooltipContentProperties);
 
     this.container.appendChild(this.tooltip);
@@ -867,12 +945,13 @@ class JupyterScatterView {
     this.tooltipArrow.style.removeProperty('right');
     this.tooltipArrow.style.bottom = 0;
     this.tooltipArrow.style.left = '50%';
-    this.tooltipArrow.style.transform = 'translate(-50%, calc(50% - 1px)) rotate(-45deg)';
+    this.tooltipArrow.style.transform =
+      'translate(-50%, calc(50% - 1px)) rotate(-45deg)';
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
       this.tooltip.style.transform = `translate(calc(${x}px - 50%), calc(${y}px - ${TOOLTIP_OFFSET_REM}rem - 100%))`;
-    }
+    };
   }
 
   positionTooltipTopLeft() {
@@ -880,12 +959,13 @@ class JupyterScatterView {
     this.tooltipArrow.style.right = '0.125rem';
     this.tooltipArrow.style.bottom = 0;
     this.tooltipArrow.style.removeProperty('left');
-    this.tooltipArrow.style.transform = 'translate(-50%, calc(50% - 1px)) rotate(-45deg)';
+    this.tooltipArrow.style.transform =
+      'translate(-50%, calc(50% - 1px)) rotate(-45deg)';
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
       this.tooltip.style.transform = `translate(calc(${x}px - 100% + ${TOOLTIP_OFFSET_REM}rem), calc(${y}px - ${TOOLTIP_OFFSET_REM}rem - 100%))`;
-    }
+    };
   }
 
   positionTooltipTopRight() {
@@ -893,12 +973,13 @@ class JupyterScatterView {
     this.tooltipArrow.style.removeProperty('right');
     this.tooltipArrow.style.bottom = 0;
     this.tooltipArrow.style.left = '0.5rem';
-    this.tooltipArrow.style.transform = 'translate(-50%, calc(50% - 1px)) rotate(-45deg)';
+    this.tooltipArrow.style.transform =
+      'translate(-50%, calc(50% - 1px)) rotate(-45deg)';
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
       this.tooltip.style.transform = `translate(calc(${x}px - ${TOOLTIP_OFFSET_REM}rem), calc(${y}px - ${TOOLTIP_OFFSET_REM}rem - 100%))`;
-    }
+    };
   }
 
   positionTooltipBottomCenter() {
@@ -906,12 +987,13 @@ class JupyterScatterView {
     this.tooltipArrow.style.removeProperty('right');
     this.tooltipArrow.style.removeProperty('bottom');
     this.tooltipArrow.style.left = '50%';
-    this.tooltipArrow.style.transform = 'translate(-50%, calc(-50% + 1px)) rotate(-45deg)';
+    this.tooltipArrow.style.transform =
+      'translate(-50%, calc(-50% + 1px)) rotate(-45deg)';
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px -1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
       this.tooltip.style.transform = `translate(calc(${x}px - 50%), calc(${y}px + ${TOOLTIP_OFFSET_REM}rem))`;
-    }
+    };
   }
 
   positionTooltipBottomLeft() {
@@ -919,12 +1001,13 @@ class JupyterScatterView {
     this.tooltipArrow.style.right = '0.125rem';
     this.tooltipArrow.style.removeProperty('bottom');
     this.tooltipArrow.style.removeProperty('left');
-    this.tooltipArrow.style.transform = 'translate(-50%, calc(-50% + 1px)) rotate(-45deg)';
+    this.tooltipArrow.style.transform =
+      'translate(-50%, calc(-50% + 1px)) rotate(-45deg)';
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px -1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
       this.tooltip.style.transform = `translate(calc(${x}px - 100% + ${TOOLTIP_OFFSET_REM}rem), calc(${y}px + ${TOOLTIP_OFFSET_REM}rem))`;
-    }
+    };
   }
 
   positionTooltipBottomRight() {
@@ -932,12 +1015,13 @@ class JupyterScatterView {
     this.tooltipArrow.style.removeProperty('right');
     this.tooltipArrow.style.removeProperty('bottom');
     this.tooltipArrow.style.left = '0.5rem';
-    this.tooltipArrow.style.transform = 'translate(-50%, calc(-50% + 1px)) rotate(-45deg)';
+    this.tooltipArrow.style.transform =
+      'translate(-50%, calc(-50% + 1px)) rotate(-45deg)';
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px -1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
       this.tooltip.style.transform = `translate(calc(${x}px - ${TOOLTIP_OFFSET_REM}rem), calc(${y}px + ${TOOLTIP_OFFSET_REM}rem))`;
-    }
+    };
   }
 
   positionTooltipLeftCenter() {
@@ -945,12 +1029,13 @@ class JupyterScatterView {
     this.tooltipArrow.style.right = 0;
     this.tooltipArrow.style.removeProperty('bottom');
     this.tooltipArrow.style.removeProperty('left');
-    this.tooltipArrow.style.transform = 'translate(calc(50% - 1px), -50%) rotate(-45deg)';
+    this.tooltipArrow.style.transform =
+      'translate(calc(50% - 1px), -50%) rotate(-45deg)';
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), -1px -1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
 
     this.moveTooltip = (x, y) => {
       this.tooltip.style.transform = `translate(calc(${x}px - ${TOOLTIP_OFFSET_REM}rem - 100%), calc(${y}px - 50%))`;
-    }
+    };
   }
 
   positionTooltipRightCenter() {
@@ -958,11 +1043,12 @@ class JupyterScatterView {
     this.tooltipArrow.style.removeProperty('right');
     this.tooltipArrow.style.removeProperty('bottom');
     this.tooltipArrow.style.left = 0;
-    this.tooltipArrow.style.transform = 'translate(calc(-50% + 1px), -50%) rotate(-45deg)';
+    this.tooltipArrow.style.transform =
+      'translate(calc(-50% + 1px), -50%) rotate(-45deg)';
     this.tooltipArrow.style.boxShadow = `0 0 1px rgba(0, 0, 0, ${this.tooltipOpacity}), 1px 1px 2px rgba(0, 0, 0, ${this.tooltipOpacity})`;
     this.moveTooltip = (x, y) => {
       this.tooltip.style.transform = `translate(calc(${x}px + ${TOOLTIP_OFFSET_REM}rem), calc(${y}px - 50%))`;
-    }
+    };
   }
 
   positionTooltip(position) {
@@ -993,34 +1079,50 @@ class JupyterScatterView {
     const tooltipOffset = remToPx(TOOLTIP_OFFSET_REM);
 
     if (x < xCutoff + tooltipOffset) {
-      if (y < yCutoff + tooltipOffset) return 'bottom-right';
-      if (y > this.outerHeight - yCutoff - tooltipOffset) return 'top-right';
+      if (y < yCutoff + tooltipOffset) {
+        return 'bottom-right';
+      }
+      if (y > this.outerHeight - yCutoff - tooltipOffset) {
+        return 'top-right';
+      }
       return 'right-center';
     }
 
     if (x > this.outerWidth - xCutoff - tooltipOffset) {
-      if (y < yCutoff + tooltipOffset) return 'bottom-left';
-      if (y > this.outerHeight - yCutoff - tooltipOffset) return 'top-left';
+      if (y < yCutoff + tooltipOffset) {
+        return 'bottom-left';
+      }
+      if (y > this.outerHeight - yCutoff - tooltipOffset) {
+        return 'top-left';
+      }
       return 'left-center';
     }
 
-    if (y < yCutoff + tooltipOffset) return 'bottom-center';
+    if (y < yCutoff + tooltipOffset) {
+      return 'bottom-center';
+    }
 
     return 'top-center';
   }
 
   enableTooltipHistograms() {
     const display = this.model.get('tooltip_histograms') ? 'block' : 'none';
-    const histograms = this.tooltipContentProperties.querySelectorAll('.histogram');
+    const histograms =
+      this.tooltipContentProperties.querySelectorAll('.histogram');
 
     for (const histogram of histograms) {
       histogram.style.display = display;
     }
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Will refactor this later
   styleTooltip() {
-    if (!this.tooltip) this.createTooltip();
-    const color = this.model.get('tooltip_color').map((c) => Math.round(c * 255));
+    if (!this.tooltip) {
+      this.createTooltip();
+    }
+    const color = this.model
+      .get('tooltip_color')
+      .map((c) => Math.round(c * 255));
 
     const isDark = color[0] <= 127;
     const contrast = isDark ? 255 : 0;
@@ -1030,16 +1132,20 @@ class JupyterScatterView {
     for (const property of this.tooltipPropertiesAll) {
       this[`tooltipProperty${toCapitalCase(property)}ValueHistogram`]?.style(
         fg,
-        `rgb(${contrast}, ${contrast}, ${contrast}, 0.2)`
+        `rgb(${contrast}, ${contrast}, ${contrast}, 0.2)`,
       );
     }
 
-    if (this.tooltipPropertiesVisual.length) {
-      this.tooltipContentProperties.style.gridTemplateColumns = 'max-content max-content max-content';
+    if (this.tooltipPropertiesVisual.length > 0) {
+      this.tooltipContentProperties.style.gridTemplateColumns =
+        'max-content max-content max-content';
     } else {
       // Let's hide the channel column since no properties is visually encoded
-      this.tooltipContentProperties.style.gridTemplateColumns = 'max-content max-content';
-      for (const channel of this.tooltipContentProperties.querySelectorAll('.channel')) {
+      this.tooltipContentProperties.style.gridTemplateColumns =
+        'max-content max-content';
+      for (const channel of this.tooltipContentProperties.querySelectorAll(
+        '.channel',
+      )) {
         channel.style.display = 'none';
       }
     }
@@ -1073,7 +1179,9 @@ class JupyterScatterView {
           this.tooltipPreviewValueHelper.style.overflow = 'hidden';
         }
       } else if (previewType === 'image') {
-        const backgroundColor = this.model.get('tooltip_preview_image_background_color');
+        const backgroundColor = this.model.get(
+          'tooltip_preview_image_background_color',
+        );
         const position = this.model.get('tooltip_preview_image_position');
         const size = this.model.get('tooltip_preview_image_size');
 
@@ -1099,7 +1207,7 @@ class JupyterScatterView {
         this.tooltipPreviewValue.loop = loop;
 
         if (length) {
-          this.tooltipPreviewValue.addEventListener("timeupdate", () => {
+          this.tooltipPreviewValue.addEventListener('timeupdate', () => {
             if (this.tooltipPreviewValue.currentTime > length) {
               this.tooltipPreviewValue.pause();
               if (loop) {
@@ -1112,7 +1220,8 @@ class JupyterScatterView {
       }
     }
 
-    const channelBadges = this.tooltipContentProperties.querySelectorAll('.channel-badge');
+    const channelBadges =
+      this.tooltipContentProperties.querySelectorAll('.channel-badge');
 
     for (const channelBadge of channelBadges) {
       channelBadge.style.position = 'relative';
@@ -1122,7 +1231,8 @@ class JupyterScatterView {
       channelBadge.style.marginRight = '0.125rem';
     }
 
-    const channelBadgeBgs = this.tooltipContentProperties.querySelectorAll('.channel-badge-bg');
+    const channelBadgeBgs =
+      this.tooltipContentProperties.querySelectorAll('.channel-badge-bg');
 
     for (const channelBadgeBg of channelBadgeBgs) {
       channelBadgeBg.style.position = 'absolute';
@@ -1136,7 +1246,8 @@ class JupyterScatterView {
     if (this.tooltipPropertyXChannelBadgeBg) {
       this.tooltipPropertyXChannelBadgeBg.style.zIndex = 0;
       this.tooltipPropertyXChannelBadgeBg.style.top = '50%';
-      this.tooltipPropertyXChannelBadgeBg.style.transform = 'translate(0, -50%)';
+      this.tooltipPropertyXChannelBadgeBg.style.transform =
+        'translate(0, -50%)';
       this.tooltipPropertyXChannelBadgeBg.style.height = '2px';
       this.tooltipPropertyXChannelBadgeBg.style.background = `rgba(${contrast}, ${contrast}, ${contrast}, 0.2)`;
 
@@ -1151,7 +1262,8 @@ class JupyterScatterView {
     if (this.tooltipPropertyYChannelBadgeBg) {
       this.tooltipPropertyYChannelBadgeBg.style.zIndex = 0;
       this.tooltipPropertyYChannelBadgeBg.style.left = '50%';
-      this.tooltipPropertyYChannelBadgeBg.style.transform = 'translate(-50%, 0)';
+      this.tooltipPropertyYChannelBadgeBg.style.transform =
+        'translate(-50%, 0)';
       this.tooltipPropertyYChannelBadgeBg.style.width = '2px';
       this.tooltipPropertyYChannelBadgeBg.style.background = `rgba(${contrast}, ${contrast}, ${contrast}, 0.2)`;
 
@@ -1163,68 +1275,79 @@ class JupyterScatterView {
       this.tooltipPropertyYChannelBadgeMark.style.background = `rgb(${contrast}, ${contrast}, ${contrast})`;
     }
 
-    [
+    const opacitySizeBadgeBgElements = [
       this.tooltipPropertyOpacityChannelBadgeBg,
       this.tooltipPropertySizeChannelBadgeBg,
-    ].filter((x) => x).forEach((element) => {
+    ].filter((x) => x);
+
+    for (const element of opacitySizeBadgeBgElements) {
       element.style.borderRadius = '1em';
       element.style.boxShadow = `inset 0 0 0 1px rgba(${contrast}, ${contrast}, ${contrast}, 0.2)`;
-    });
+    }
 
-    [
+    const badgeMarkElements = [
       this.tooltipPropertyColorChannelBadgeMark,
       this.tooltipPropertyOpacityChannelBadgeMark,
       this.tooltipPropertySizeChannelBadgeMark,
-    ].filter((x) => x).forEach((element) => {
+    ].filter((x) => x);
+
+    for (const element of badgeMarkElements) {
       element.style.width = '1em';
       element.style.height = '1em';
       element.style.borderRadius = '1em';
-    });
+      element.style.background = `rgb(${contrast}, ${contrast}, ${contrast})`;
+    }
 
-    [
+    const opacitySizeBadgeMarkElements = [
       this.tooltipPropertyOpacityChannelBadgeMark,
       this.tooltipPropertySizeChannelBadgeMark,
-    ].filter((x) => x).forEach((element) => {
+    ].filter((x) => x);
+
+    for (const element of opacitySizeBadgeMarkElements) {
       element.style.background = `rgb(${contrast}, ${contrast}, ${contrast})`;
-    });
+    }
 
     const channelBg = `rgba(${contrast}, ${contrast}, ${contrast}, 0.075)`;
     const channelColor = `rgba(${contrast}, ${contrast}, ${contrast}, 0.5)`;
 
-    [
+    const channelElements = [
       this.tooltipPropertyXChannel,
       this.tooltipPropertyYChannel,
       this.tooltipPropertyColorChannel,
       this.tooltipPropertyOpacityChannel,
       this.tooltipPropertySizeChannel,
-    ].filter((x) => x).forEach((el) => {
-      el.style.display = 'flex';
-      el.style.gap = '0 0.33em';
-      el.style.justifyContent = 'center';
-      el.style.alignItems = 'center';
-      el.style.padding = '0 0.25em';
-      el.style.borderRadius = '0.25rem';
-      el.style.color = channelColor;
-      el.style.height = '1.3em';
-      el.style.fontWeight = 'bold';
-      el.style.textTransform = 'uppercase';
-      el.style.background = channelBg;
-    });
+    ].filter((x) => x);
 
-    [
+    for (const element of channelElements) {
+      element.style.display = 'flex';
+      element.style.gap = '0 0.33em';
+      element.style.justifyContent = 'center';
+      element.style.alignItems = 'center';
+      element.style.padding = '0 0.25em';
+      element.style.borderRadius = '0.25rem';
+      element.style.color = channelColor;
+      element.style.height = '1.3em';
+      element.style.fontWeight = 'bold';
+      element.style.textTransform = 'uppercase';
+      element.style.background = channelBg;
+    }
+
+    const channelNameElements = [
       this.tooltipPropertyXChannelName,
       this.tooltipPropertyYChannelName,
       this.tooltipPropertyColorChannelName,
       this.tooltipPropertyOpacityChannelName,
       this.tooltipPropertySizeChannelName,
-    ].filter((x) => x).forEach((el) => {
-      el.style.display = 'flex';
-      el.style.flexGrow = '1';
-      el.style.justifyContent = 'center';
-      el.style.alignItems = 'center';
-      el.style.fontSize = '0.75em';
-      el.style.lineHeight = '1em';
-    });
+    ].filter((x) => x);
+
+    for (const element of channelNameElements) {
+      element.style.display = 'flex';
+      element.style.flexGrow = '1';
+      element.style.justifyContent = 'center';
+      element.style.alignItems = 'center';
+      element.style.fontSize = '0.75em';
+      element.style.lineHeight = '1em';
+    }
 
     const values = this.tooltipContentProperties.querySelectorAll('.value');
 
@@ -1235,7 +1358,8 @@ class JupyterScatterView {
       value.style.alignItems = 'top';
     }
 
-    const valueTexts = this.tooltipContentProperties.querySelectorAll('.value-text');
+    const valueTexts =
+      this.tooltipContentProperties.querySelectorAll('.value-text');
 
     for (const valueText of valueTexts) {
       valueText.style.flexGrow = '1';
@@ -1255,8 +1379,11 @@ class JupyterScatterView {
     return this.scatterplot.get('points');
   }
 
+  // biome-ignore lint/style/useNamingConvention: XGetter stands for X Getter
   createXGetter() {
-    if (!this.xScale) this.createXScale();
+    if (!this.xScale) {
+      this.createXScale();
+    }
 
     this.getXBin = createNumericalBinGetter(
       this.model.get('x_histogram'),
@@ -1270,16 +1397,15 @@ class JupyterScatterView {
     this.getX = (i) => {
       const ndc = this.getPoint(i)[0];
       const value = this.xScale.invert(ndc);
-      return [
-        toRelValue(value),
-        this.xFormat(value),
-        this.getXBin(value)
-      ];
-    }
+      return [toRelValue(value), this.xFormat(value), this.getXBin(value)];
+    };
   }
 
+  // biome-ignore lint/style/useNamingConvention: YGetter stands for Y Getter
   createYGetter() {
-    if (!this.yScale) this.createYScale();
+    if (!this.yScale) {
+      this.createYScale();
+    }
 
     this.getYBin = createNumericalBinGetter(
       this.model.get('y_histogram'),
@@ -1293,23 +1419,27 @@ class JupyterScatterView {
     this.getY = (i) => {
       const ndc = this.getPoint(i)[1];
       const value = this.yScale.invert(ndc);
-      return [
-        toRelValue(value),
-        this.yFormat(value),
-        this.getYBin(value),
-      ];
-    }
+      return [toRelValue(value), this.yFormat(value), this.getYBin(value)];
+    };
   }
 
   createColorGetter() {
-    if (!this.colorScale) this.createColorScale();
+    if (!this.colorScale) {
+      this.createColorScale();
+    }
     if (!this.colorScale) {
       this.getColor = () => ['#808080', 'Unknown', 0];
       return;
     }
 
     const dim = this.model.get('color_by') === 'valueA' ? 2 : 3;
-    const colors = this.model.get('color').map((color) => `rgb(${color.slice(0, 3).map((v) => Math.round(v * 255)).join(', ')})`);
+    const colors = this.model.get('color').map(
+      (color) =>
+        `rgb(${color
+          .slice(0, 3)
+          .map((v) => Math.round(v * 255))
+          .join(', ')})`,
+    );
 
     if (this.model.get('color_scale') === 'categorical') {
       this.getColor = (i) => {
@@ -1317,9 +1447,9 @@ class JupyterScatterView {
         return [
           colors[value] || '#808080',
           this.colorFormat(this.colorScale.invert(value)),
-          value
-        ]
-      }
+          value,
+        ];
+      };
     } else {
       const numColors = colors.length;
 
@@ -1330,19 +1460,24 @@ class JupyterScatterView {
 
       this.getColor = (i) => {
         const normalizedValue = this.getPoint(i)[dim];
-        const colorIdx = Math.min(numColors - 1, Math.floor(numColors * normalizedValue));
+        const colorIdx = Math.min(
+          numColors - 1,
+          Math.floor(numColors * normalizedValue),
+        );
         const value = this.colorScale.invert(normalizedValue);
         return [
           colors[colorIdx] || '#808080',
           this.colorFormat(value),
           this.getColorBin(value),
-        ]
-      }
+        ];
+      };
     }
   }
 
   createOpacityGetter() {
-    if (!this.opacityScale) this.createOpacityScale();
+    if (!this.opacityScale) {
+      this.createOpacityScale();
+    }
     if (!this.opacityScale) {
       this.getOpacity = () => [0.5, 'Unknown', 0];
       return;
@@ -1358,8 +1493,8 @@ class JupyterScatterView {
           opacities[value] || '#808080',
           this.opacityFormat(this.opacityScale.invert(value)),
           value,
-        ]
-      }
+        ];
+      };
     } else {
       const numOpacities = opacities.length;
 
@@ -1370,19 +1505,24 @@ class JupyterScatterView {
 
       this.getOpacity = (i) => {
         const normalizedValue = this.getPoint(i)[dim];
-        const idx = Math.min(numOpacities - 1, Math.floor(numOpacities * normalizedValue));
+        const idx = Math.min(
+          numOpacities - 1,
+          Math.floor(numOpacities * normalizedValue),
+        );
         const value = this.opacityScale.invert(normalizedValue);
         return [
           opacities[idx] || 0.5,
           this.opacityFormat(value),
           this.getOpacityBin(value),
-        ]
-      }
+        ];
+      };
     }
   }
 
   createSizeGetter() {
-    if (!this.sizeScale) this.createSizeScale();
+    if (!this.sizeScale) {
+      this.createSizeScale();
+    }
     if (!this.sizeScale) {
       this.getSize = () => [0.5, 'Unknown', 0];
       return;
@@ -1392,7 +1532,7 @@ class JupyterScatterView {
     const sizes = this.model.get('size');
     const sizesMin = Array.isArray(sizes) ? min(sizes) : sizes;
     const sizesMax = Array.isArray(sizes) ? max(sizes) : sizes;
-    const sizesExtent = (sizesMax - sizesMin) || 1;
+    const sizesExtent = sizesMax - sizesMin || 1;
 
     if (this.model.get('size_scale') === 'categorical') {
       this.getSize = (i) => {
@@ -1403,8 +1543,8 @@ class JupyterScatterView {
             : '#808080',
           this.sizeFormat(this.sizeScale.invert(value)),
           value,
-        ]
-      }
+        ];
+      };
     } else {
       const numSizes = sizes.length;
 
@@ -1415,74 +1555,89 @@ class JupyterScatterView {
 
       this.getSize = (i) => {
         const normalizedValue = this.getPoint(i)[dim];
-        const idx = Math.min(numSizes - 1, Math.floor(numSizes * normalizedValue));
+        const idx = Math.min(
+          numSizes - 1,
+          Math.floor(numSizes * normalizedValue),
+        );
         const value = this.sizeScale.invert(normalizedValue);
         return [
           Math.max(0.1, (sizes[idx] - sizesMin) / sizesExtent),
           this.sizeFormat(value),
           this.getSizeBin(value),
-        ]
-      }
+        ];
+      };
     }
   }
 
   createTooltipContentUpdater() {
-    const visualUpdaters = this.tooltipPropertiesVisual
-      .map((property) => {
-        const propertyTitle = toCapitalCase(property);
-        const get = (pointIdx) => this[`get${propertyTitle}`](pointIdx);
+    const visualUpdaters = this.tooltipPropertiesVisual.map((property) => {
+      const propertyTitle = toCapitalCase(property);
+      const get = (pointIdx) => this[`get${propertyTitle}`](pointIdx);
 
-        const textElement = this[`tooltipProperty${propertyTitle}ValueText`];
-        const badgeElement = this[`tooltipProperty${propertyTitle}ChannelBadgeMark`];
-        const histogram = this[`tooltipProperty${propertyTitle}ValueHistogram`];
+      const textElement = this[`tooltipProperty${propertyTitle}ValueText`];
+      const badgeElement =
+        this[`tooltipProperty${propertyTitle}ChannelBadgeMark`];
+      const histogram = this[`tooltipProperty${propertyTitle}ValueHistogram`];
 
-        if (property === 'x') {
-          return (pointIdx) => {
-            const [x, text, histogramKey] = get(pointIdx);
-            badgeElement.style.transform = `translate(calc(${x}em - 50%), -50%)`;
-            textElement.textContent = text;
-            if (this.model.get('tooltip_histograms')) histogram.draw(histogramKey);
+      if (property === 'x') {
+        return (pointIdx) => {
+          const [x, text, histogramKey] = get(pointIdx);
+          badgeElement.style.transform = `translate(calc(${x}em - 50%), -50%)`;
+          textElement.textContent = text;
+          if (this.model.get('tooltip_histograms')) {
+            histogram.draw(histogramKey);
           }
-        }
+        };
+      }
 
-        if (property === 'y') {
-          return (pointIdx) => {
-            const [y, text, histogramKey] = get(pointIdx);
-            badgeElement.style.transform = `translate(-50%, calc(${1 - y}em - 50%))`;
-            textElement.textContent = text;
-            if (this.model.get('tooltip_histograms')) histogram.draw(histogramKey);
+      if (property === 'y') {
+        return (pointIdx) => {
+          const [y, text, histogramKey] = get(pointIdx);
+          badgeElement.style.transform = `translate(-50%, calc(${1 - y}em - 50%))`;
+          textElement.textContent = text;
+          if (this.model.get('tooltip_histograms')) {
+            histogram.draw(histogramKey);
           }
-        }
+        };
+      }
 
-        if (property === 'color') {
-          return (pointIdx) => {
-            const [color, text, histogramKey] = get(pointIdx);
-            badgeElement.style.background = color;
-            textElement.textContent = text;
-            if (this.model.get('tooltip_histograms')) histogram.draw(histogramKey);
+      if (property === 'color') {
+        return (pointIdx) => {
+          const [color, text, histogramKey] = get(pointIdx);
+          badgeElement.style.background = color;
+          textElement.textContent = text;
+          if (this.model.get('tooltip_histograms')) {
+            histogram.draw(histogramKey);
           }
-        }
+        };
+      }
 
-        if (property === 'opacity') {
-          return (pointIdx) => {
-            const [opacity, text, histogramKey] = get(pointIdx);
-            badgeElement.style.opacity = opacity;
-            textElement.textContent = text;
-            if (this.model.get('tooltip_histograms')) histogram.draw(histogramKey);
+      if (property === 'opacity') {
+        return (pointIdx) => {
+          const [opacity, text, histogramKey] = get(pointIdx);
+          badgeElement.style.opacity = opacity;
+          textElement.textContent = text;
+          if (this.model.get('tooltip_histograms')) {
+            histogram.draw(histogramKey);
           }
-        }
+        };
+      }
 
-        if (property === 'size') {
-          return (pointIdx) => {
-            const [scale, text, histogramKey] = get(pointIdx);
-            badgeElement.style.transform = `scale(${scale})`;
-            textElement.textContent = text;
-            if (this.model.get('tooltip_histograms')) histogram.draw(histogramKey);
+      if (property === 'size') {
+        return (pointIdx) => {
+          const [scale, text, histogramKey] = get(pointIdx);
+          badgeElement.style.transform = `scale(${scale})`;
+          textElement.textContent = text;
+          if (this.model.get('tooltip_histograms')) {
+            histogram.draw(histogramKey);
           }
-        }
+        };
+      }
 
-        return (pointIdx) => textElement.textContent = get(pointIdx);
-      });
+      return (pointIdx) => {
+        textElement.textContent = get(pointIdx);
+      };
+    });
 
     const nonVisualInfo = this.model.get('tooltip_properties_non_visual_info');
     const nonVisualData = this.tooltipPropertiesNonVisual.map((property) => {
@@ -1497,13 +1652,18 @@ class JupyterScatterView {
         property,
         textElement,
         histogram,
-        getHistogramKey: info.scale === 'categorical'
-          ? (v) => info.domain[v]
-          : createNumericalBinGetter(info.histogram, info.range || info.domain),
-        format: info.scale === 'categorical'
-          ? (s) => s
-          : format(getD3FormatSpecifier(info.domain))
-      }
+        getHistogramKey:
+          info.scale === 'categorical'
+            ? (v) => info.domain[v]
+            : createNumericalBinGetter(
+                info.histogram,
+                info.range || info.domain,
+              ),
+        format:
+          info.scale === 'categorical'
+            ? (s) => s
+            : format(getD3FormatSpecifier(info.domain)),
+      };
     });
 
     const previewType = this.model.get('tooltip_preview_type');
@@ -1513,31 +1673,35 @@ class JupyterScatterView {
     if (previewType === 'text') {
       previewUpdater = (text) => {
         this.tooltipPreviewValueHelper.textContent = text;
-      }
+      };
     }
 
     if (previewType === 'image') {
       previewUpdater = (imageUrl) => {
         this.tooltipPreviewValue.style.backgroundImage = `url(${imageUrl})`;
-      }
+      };
     }
 
     if (previewType === 'audio') {
       previewUpdater = (audioSrc) => {
         this.tooltipPreviewValue.src = audioSrc;
         this.tooltipPreviewValue.currentTime = 0;
-      }
+      };
     }
 
     this.tooltipDataHandlers = (event) => {
       for (const d of nonVisualData) {
-        if (!(d.property in event.properties)) continue;
+        if (!(d.property in event.properties)) {
+          continue;
+        }
         const value = event.properties[d.property];
         d.textElement.textContent = d.format(value);
         d.histogram.draw(d.getHistogramKey(value));
       }
-      if (event.preview) previewUpdater(event.preview);
-    }
+      if (event.preview) {
+        previewUpdater(event.preview);
+      }
+    };
 
     this.tooltipContentsUpdater = (pointIdx) => {
       this.model.send({
@@ -1546,8 +1710,10 @@ class JupyterScatterView {
         properties: this.tooltipPropertiesNonVisual,
         preview: this.tooltipPreview,
       });
-      visualUpdaters.forEach((updater) => { updater(pointIdx); });
-    }
+      for (const updater of visualUpdaters) {
+        updater(pointIdx);
+      }
+    };
   }
 
   showTooltip(pointIdx) {
@@ -1576,7 +1742,9 @@ class JupyterScatterView {
   }
 
   tooltipEnableHandler(tooltip) {
-    if (!tooltip) this.hideTooltip;
+    if (!tooltip) {
+      this.hideTooltip;
+    }
   }
 
   tooltipSizeHandler(newSize) {
@@ -1621,16 +1789,20 @@ class JupyterScatterView {
   }
 
   updateLegendWrapperPosition() {
-    if (!this.legendWrapper) return;
+    if (!this.legendWrapper) {
+      return;
+    }
 
     this.legendWrapper.style.top = 0;
-    this.legendWrapper.style.bottom = this.getYPadding() + 'px';
+    this.legendWrapper.style.bottom = `${this.getYPadding()}px`;
     this.legendWrapper.style.left = 0;
-    this.legendWrapper.style.right = this.getXPadding() + 'px';
+    this.legendWrapper.style.right = `${this.getXPadding()}px`;
   }
 
   updateLegendPosition() {
-    if (!this.legend) return;
+    if (!this.legend) {
+      return;
+    }
 
     this.legend.style.position = 'absolute';
     this.legend.style.top = null;
@@ -1678,16 +1850,19 @@ class JupyterScatterView {
       yPadding = this.getYPadding();
     }
 
-    this.container.style.width = width === 'auto'
-      ? '100%'
-      : (width + xPadding) + 'px';
-    this.container.style.height = (height + yPadding) + 'px';
+    this.container.style.width =
+      width === 'auto' ? '100%' : `${width + xPadding}px`;
+    this.container.style.height = `${height + yPadding}px`;
 
-    window.requestAnimationFrame(() => { this.resizeHandlerBound(); });
+    window.requestAnimationFrame(() => {
+      this.resizeHandlerBound();
+    });
   }
 
   resizeHandler() {
-    if (!this.model.get('axes')) return;
+    if (!this.model.get('axes')) {
+      return;
+    }
 
     const [width, height] = this.getOuterDimensions();
 
@@ -1724,7 +1899,8 @@ class JupyterScatterView {
     if (this.model.get('axes_grid')) {
       this.xAxis.tickSizeInner(-(height - yPadding));
       this.yAxis.tickSizeInner(-(width - xPadding));
-      this.axesSvg.selectAll('line')
+      this.axesSvg
+        .selectAll('line')
         .attr('stroke-opacity', 0.2)
         .attr('stroke-dasharray', 2);
     }
@@ -1744,9 +1920,9 @@ class JupyterScatterView {
       window.removeEventListener('resize', this.resizeHandlerBound);
       window.removeEventListener('orientationchange', this.resizeHandlerBound);
     }
-    pubSub.globalPubSub.unsubscribe(
+    globalPubSub.unsubscribe(
       'jscatter::view',
-      this.externalViewChangeHandlerBound
+      this.externalViewChangeHandlerBound,
     );
     this.scatterplot.unsubscribe('pointover', this.pointoverHandlerBound);
     this.scatterplot.unsubscribe('pointout', this.pointoutHandlerBound);
@@ -1761,12 +1937,15 @@ class JupyterScatterView {
   // Helper
   colorCanvas() {
     if (Array.isArray(this.backgroundColor)) {
-      const rgbStr =
-        this.backgroundColor.slice(0, 3).map((x) => x * 255).join(',');
+      const rgbStr = this.backgroundColor
+        .slice(0, 3)
+        .map((x) => x * 255)
+        .join(',');
 
-      const colorStr = this.backgroundColor.length === 4
-        ? `rgba(${rgbStr}, ${this.backgroundColor[3]})`
-        : `rgb(${rgbStr})`;
+      const colorStr =
+        this.backgroundColor.length === 4
+          ? `rgba(${rgbStr}, ${this.backgroundColor[3]})`
+          : `rgb(${rgbStr})`;
 
       this.container.style.backgroundColor = colorStr;
     } else {
@@ -1781,7 +1960,9 @@ class JupyterScatterView {
   // Event handlers for JS-triggered events
   pointoverHandler(pointIndex) {
     this.hoveringChangedByJs = true;
-    if (this.model.get('tooltip_enable')) this.showTooltipDebounced(pointIndex);
+    if (this.model.get('tooltip_enable')) {
+      this.showTooltipDebounced(pointIndex);
+    }
     this.model.set('hovering', pointIndex);
     this.model.save_changes();
   }
@@ -1796,39 +1977,49 @@ class JupyterScatterView {
 
   selectHandler(event) {
     this.selectionChangedByJs = true;
-    if (this.model.get('zoom_on_selection')) this.zoomToHandler(event.points);
+    if (this.model.get('zoom_on_selection')) {
+      this.zoomToHandler(event.points);
+    }
     this.model.set('selection', [...event.points]);
     this.model.save_changes();
   }
 
   deselectHandler() {
     this.selectionChangedByJs = true;
-    if (this.model.get('zoom_on_selection')) this.zoomToHandler();
+    if (this.model.get('zoom_on_selection')) {
+      this.zoomToHandler();
+    }
     this.model.set('selection', []);
     this.model.save_changes();
   }
 
   filterEventHandler(event) {
     this.filterChangedByJs = true;
-    if (this.model.get('zoom_on_filter')) this.zoomToHandler(event.points);
+    if (this.model.get('zoom_on_filter')) {
+      this.zoomToHandler(event.points);
+    }
     this.model.set('filter', [...event.points]);
     this.model.save_changes();
   }
 
   viewSyncHandler(viewSync) {
     if (viewSync) {
-      pubSub.globalPubSub.subscribe(
-        'jscatter::view', this.externalViewChangeHandlerBound
+      globalPubSub.subscribe(
+        'jscatter::view',
+        this.externalViewChangeHandlerBound,
       );
     } else {
-      pubSub.globalPubSub.unsubscribe(
-        'jscatter::view', this.externalViewChangeHandlerBound
+      globalPubSub.unsubscribe(
+        'jscatter::view',
+        this.externalViewChangeHandlerBound,
       );
     }
   }
 
   updateAxes(xScaleDomain, yScaleDomain) {
-    if (!this.model.get('axes')) return;
+    if (!this.model.get('axes')) {
+      return;
+    }
 
     this.xScaleAxis.domain(xScaleDomain.map(this.xScaleRegl2Axis.invert));
     this.yScaleAxis.domain(yScaleDomain.map(this.yScaleRegl2Axis.invert));
@@ -1837,7 +2028,8 @@ class JupyterScatterView {
     this.yAxisContainer.call(this.yAxis.scale(this.yScaleAxis));
 
     if (this.model.get('axes_grid')) {
-      this.axesSvg.selectAll('line')
+      this.axesSvg
+        .selectAll('line')
         .attr('stroke-opacity', 0.2)
         .attr('stroke-dasharray', 2);
     }
@@ -1854,7 +2046,7 @@ class JupyterScatterView {
 
   viewChangeHandler(event) {
     if (this.viewSync) {
-      pubSub.globalPubSub.publish(
+      globalPubSub.publish(
         'jscatter::view',
         {
           src: this.randomStr,
@@ -1863,7 +2055,7 @@ class JupyterScatterView {
           xScaleDomain: event.xScale?.domain(),
           yScaleDomain: event.yScale?.domain(),
         },
-        { async: true }
+        { async: true },
       );
     }
     if (this.model.get('axes')) {
@@ -1871,27 +2063,24 @@ class JupyterScatterView {
     }
   }
 
+  // biome-ignore lint/style/useNamingConvention: XScale stands for X Scale
   createXScale() {
     const domain = this.model.get('x_scale_domain');
     const scale = this.model.get('x_scale');
-    this.xScale = getScale(scale)
-      .domain(domain)
-      .range([-1, 1]);
+    this.xScale = getScale(scale).domain(domain).range([-1, 1]);
     this.xFormat =
       scale === 'time'
-        ? createTimeFormat(
-            this.points,
-            (point) => Math.floor(this.xScale.invert(point[0]).getTime() / 1000)
+        ? createTimeFormat(this.points, (point) =>
+            Math.floor(this.xScale.invert(point[0]).getTime() / 1000),
           )
         : format(getD3FormatSpecifier(domain));
   }
 
+  // biome-ignore lint/style/useNamingConvention: YScale stands for Y Scale
   createYScale() {
     const domain = this.model.get('y_scale_domain');
     const scale = this.model.get('y_scale');
-    this.yScale = getScale(scale)
-      .domain(domain)
-      .range([-1, 1]);
+    this.yScale = getScale(scale).domain(domain).range([-1, 1]);
     this.yFormat =
       scale === 'time'
         ? createTimeFormat(this.points, (p) => this.yScale.invert(p[1]))
@@ -1911,9 +2100,7 @@ class JupyterScatterView {
         this.colorScale.invert = createOrdinalScaleInverter(domain);
         this.colorFormat = (s) => s;
       } else {
-        this.colorScale = scale
-          .domain(domain)
-          .range([0, 1]);
+        this.colorScale = scale.domain(domain).range([0, 1]);
         this.colorFormat = format(getD3FormatSpecifier(domain));
       }
     } else {
@@ -1936,9 +2123,7 @@ class JupyterScatterView {
         this.opacityScale.invert = createOrdinalScaleInverter(domain);
         this.opacityFormat = (s) => s;
       } else {
-        this.opacityScale = scale
-          .domain(domain)
-          .range([0, 1]);
+        this.opacityScale = scale.domain(domain).range([0, 1]);
         this.opacityFormat = format(getD3FormatSpecifier(domain));
       }
     } else {
@@ -1960,9 +2145,7 @@ class JupyterScatterView {
         this.sizeScale.invert = createOrdinalScaleInverter(domain);
         this.sizeFormat = (s) => s;
       } else {
-        this.sizeScale = scale
-          .domain(domain)
-          .range([0, 1]);
+        this.sizeScale = scale.domain(domain).range([0, 1]);
         this.sizeFormat = format(getD3FormatSpecifier(domain));
       }
     } else {
@@ -1973,22 +2156,30 @@ class JupyterScatterView {
 
   xScaleHandler() {
     this.createXScale();
-    if (this.model.get('axes')) this.createAxes();
+    if (this.model.get('axes')) {
+      this.createAxes();
+    }
   }
 
   yScaleHandler() {
     this.createYScale();
-    if (this.model.get('axes')) this.createAxes();
+    if (this.model.get('axes')) {
+      this.createAxes();
+    }
   }
 
   xScaleDomainHandler() {
     this.createXScale();
-    if (this.model.get('axes')) this.createAxes();
+    if (this.model.get('axes')) {
+      this.createAxes();
+    }
   }
 
   yScaleDomainHandler() {
     this.createYScale();
-    if (this.model.get('axes')) this.createAxes();
+    if (this.model.get('axes')) {
+      this.createAxes();
+    }
   }
 
   colorDomainHandler() {
@@ -2081,16 +2272,19 @@ class JupyterScatterView {
       return;
     }
 
-    const selection = pointIdxs?.length > 0
-      ? pointIdxs
-      : undefined;
+    const selection = pointIdxs?.length > 0 ? pointIdxs : undefined;
 
     const options = { preventEvent: true };
 
-    if (selection) this.scatterplot.select(selection, options);
-    else this.scatterplot.deselect(options);
+    if (selection) {
+      this.scatterplot.select(selection, options);
+    } else {
+      this.scatterplot.deselect(options);
+    }
 
-    if (this.model.get('zoom_on_selection')) this.zoomToHandler(selection);
+    if (this.model.get('zoom_on_selection')) {
+      this.zoomToHandler(selection);
+    }
   }
 
   filterHandler(pointIdxs) {
@@ -2103,10 +2297,14 @@ class JupyterScatterView {
 
     if (pointIdxs) {
       this.scatterplot.filter(pointIdxs, { preventEvent: true });
-      if (this.model.get('zoom_on_filter')) this.zoomToHandler(pointIdxs);
+      if (this.model.get('zoom_on_filter')) {
+        this.zoomToHandler(pointIdxs);
+      }
     } else {
       this.scatterplot.unfilter({ preventEvent: true });
-      if (this.model.get('zoom_on_filter')) this.zoomToHandler();
+      if (this.model.get('zoom_on_filter')) {
+        this.zoomToHandler();
+      }
     }
   }
 
@@ -2195,7 +2393,9 @@ class JupyterScatterView {
 
   colorTitleHandler(newTitle) {
     if (this.tooltipPropertyColorTitle) {
-      this.tooltipPropertyColorTitle.textContent = toCapitalCase(newTitle || '');
+      this.tooltipPropertyColorTitle.textContent = toCapitalCase(
+        newTitle || '',
+      );
     }
   }
 
@@ -2217,7 +2417,9 @@ class JupyterScatterView {
 
   opacityTitleHandler(newTitle) {
     if (this.tooltipPropertyOpacityTitle) {
-      this.tooltipPropertyOpacityTitle.textContent = toCapitalCase(newTitle || '');
+      this.tooltipPropertyOpacityTitle.textContent = toCapitalCase(
+        newTitle || '',
+      );
     }
   }
 
@@ -2323,8 +2525,11 @@ class JupyterScatterView {
   }
 
   axesHandler(newValue) {
-    if (newValue) this.createAxes();
-    else this.removeAxes();
+    if (newValue) {
+      this.createAxes();
+    } else {
+      this.removeAxes();
+    }
   }
 
   axesColorHandler() {
@@ -2332,18 +2537,26 @@ class JupyterScatterView {
   }
 
   axesGridHandler(newValue) {
-    if (newValue) this.createAxesGrid();
-    else this.removeAxesGrid();
+    if (newValue) {
+      this.createAxesGrid();
+    } else {
+      this.removeAxesGrid();
+    }
   }
 
   axesLabelsHandler(newValue) {
-    if (!newValue) this.removeAxes();
+    if (!newValue) {
+      this.removeAxes();
+    }
     this.createAxes();
   }
 
   legendHandler(newValue) {
-    if (newValue) this.showLegend();
-    else this.hideLegend();
+    if (newValue) {
+      this.showLegend();
+    } else {
+      this.hideLegend();
+    }
   }
 
   legendColorHandler() {
@@ -2361,7 +2574,9 @@ class JupyterScatterView {
   }
 
   legendEncodingHandler() {
-    if (!this.model.get('legend')) return;
+    if (!this.model.get('legend')) {
+      return;
+    }
     this.showLegend();
   }
 
@@ -2376,7 +2591,7 @@ class JupyterScatterView {
       ? { padding, transition, transitionDuration }
       : { padding };
 
-    if (points && points.length) {
+    if (points?.length > 0) {
       this.scatterplot.zoomToPoints(points, options);
     } else {
       this.scatterplot.zoomToOrigin(options);
@@ -2416,34 +2631,41 @@ class JupyterScatterView {
     this.scatterplot.set(p);
   }
 
+  // biome-ignore lint/style/useNamingConvention: XPadding stands for X Padding
   getXPadding() {
     const yLabel = this.model.get('axes_labels')?.[1];
     return yLabel ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
   }
 
+  // biome-ignore lint/style/useNamingConvention: YPadding stands for Y Padding
   getYPadding() {
     const xLabel = this.model.get('axes_labels')?.[0];
     return xLabel ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
   }
-};
+}
 
 function modelWithSerializers(model, serializers) {
   return {
     get(key) {
       const value = model.get(key);
       const serializer = serializers[key];
-      if (serializer) return serializer.deserialize(value);
+      if (serializer) {
+        return serializer.deserialize(value);
+      }
       return value;
     },
     set(key, value) {
-      const serializer = serializers[key];
-      if (serializer) value = serializer.serialize(value);
-      model.set(key, value);
+      if (key in serializers) {
+        model.set(key, serializers[key].serialize(value));
+      } else {
+        model.set(key, value);
+      }
     },
     on: model.on.bind(model),
+    // biome-ignore lint/style/useNamingConvention: coming from Python-land
     save_changes: model.save_changes.bind(model),
     send: model.send.bind(model),
-  }
+  };
 }
 
 async function render({ model, el }) {
@@ -2453,7 +2675,9 @@ async function render({ model, el }) {
       points: Numpy2D('float32'),
       selection: Numpy1D('uint32'),
       filter: Numpy1D('uint32'),
+      // biome-ignore lint/style/useNamingConvention: coming from Python-land
       view_data: NumpyImage(),
+      // biome-ignore lint/style/useNamingConvention: coming from Python-land
       zoom_to: Numpy1D('uint32'),
       annotations: Annotations(),
     }),
@@ -2462,4 +2686,5 @@ async function render({ model, el }) {
   return () => view.destroy();
 }
 
+// biome-ignore lint/style/noDefaultExport: coming from anywidget
 export default { render };
