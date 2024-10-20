@@ -1,0 +1,8 @@
+{
+  "biome.enabled": true,
+  "biome.projects": [
+    {
+      "path": "js"
+    }
+  ]
+}

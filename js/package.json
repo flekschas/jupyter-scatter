@@ -12,7 +12,7 @@
     "clean": "rm ../jscatter/bundle.js",
     "prepare": "npm run lint && npm run build",
     "build": "esbuild --bundle --format=esm --outfile=../jscatter/bundle.js src/index.js",
-    "lint": "eslint src/*",
+    "lint": "biome check --write .",
     "watch": "npm run build -- --watch",
     "test": "npm run lint"
   },
@@ -30,13 +30,10 @@
     "gl-matrix": "~3.3.0",
     "pub-sub-es": "~3.0.0",
     "regl": "~2.1.0",
-    "regl-scatterplot": "~1.10.4"
+    "regl-scatterplot": "~1.11.0"
   },
   "devDependencies": {
-    "esbuild": "^0.19.5",
-    "eslint": "^8.52.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.1",
-    "prettier": "^3.0.3"
+    "@biomejs/biome": "^1.9.3",
+    "esbuild": "^0.24.0"
   }
 }
