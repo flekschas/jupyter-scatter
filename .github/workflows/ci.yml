@@ -10,6 +10,17 @@ on:
 
 jobs:
 
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.x"
+      - run: |
+          uv run ruff check
+          # uv run ruff format --check # uncomment when we want to enforce formatting
+
   Test:
     runs-on: ubuntu-latest
     strategy:
@@ -26,11 +37,11 @@ jobs:
           npm update
           npm ci
 
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v3
         with:
-          python-version: ${{ matrix.python-version }}
-      - run: |
-          pip install -e '.[dev]'
+          version: "0.4.x"
 
       - name: Run tests
-        run: pytest . --color=yes
+        run: uv run pytest . --color=yes
+        env:
+          UV_PYTHON: ${{ matrix.python-version }}
