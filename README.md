@@ -276,7 +276,7 @@ Run `uv run pytest`.
 
 ## Citation
 
-If you use Jupyter Scatter in your research, please cite the following preprint:
+If you use Jupyter Scatter in your research, please cite our JOSS paper:
 
 ```bibtex
 @article{lekschas2024jupyter,
