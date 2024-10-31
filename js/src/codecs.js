@@ -1,4 +1,4 @@
-import { camelToSnake, snakeToCamel } from './utils';
+import { camelToSnake, snakeToCamel } from './utils.js';
 
 const DTYPES = {
   uint8: Uint8Array,
@@ -25,7 +25,9 @@ export function NumpyImage() {
      * @returns {ImageData | null}
      */
     deserialize(data) {
-      if (data == null) return null;
+      if (data == null) {
+        return null;
+      }
       // Take full view of data buffer
       const dataArray = new Uint8ClampedArray(data.view.buffer);
       // Chunk single TypedArray into nested Array of points
@@ -42,8 +44,8 @@ export function NumpyImage() {
         dtype: 'uint8',
         shape: [imageData.height, imageData.width, 4],
       };
-    }
-  }
+    },
+  };
 }
 
 /**
@@ -55,7 +57,7 @@ export function NumpyImage() {
  */
 export function Numpy2D(dtype) {
   if (!(dtype in DTYPES)) {
-    throw Error(`Dtype not supported, got ${JSON.stringify(dtype)}.`);
+    throw new Error(`Dtype not supported, got ${JSON.stringify(dtype)}.`);
   }
   return {
     /**
@@ -63,14 +65,16 @@ export function Numpy2D(dtype) {
      * @returns {number[][] | null}
      */
     deserialize(data) {
-      if (data == null) return null;
+      if (data == null) {
+        return null;
+      }
       // Take full view of data buffer
       const arr = new DTYPES[dtype](data.view.buffer);
       // Chunk single TypedArray into nested Array of points
       const [height, width] = data.shape;
       // Float32Array(width * height) -> [Array(width), Array(width), ...]
       const points = Array.from({ length: height }).map((_, i) =>
-        Array.from(arr.subarray(i * width, (i + 1) * width))
+        Array.from(arr.subarray(i * width, (i + 1) * width)),
       );
       return points;
     },
@@ -90,13 +94,13 @@ export function Numpy2D(dtype) {
         dtype: dtype,
         shape: [height, width],
       };
-    }
-  }
+    },
+  };
 }
 
 export function Numpy1D(dtype) {
   if (!(dtype in DTYPES)) {
-    throw Error(`Dtype not supported, got ${JSON.stringify(dtype)}.`);
+    throw new Error(`Dtype not supported, got ${JSON.stringify(dtype)}.`);
   }
   return {
     /**
@@ -104,7 +108,9 @@ export function Numpy1D(dtype) {
      * @returns {number[] | null}
      */
     deserialize(data) {
-      if (data == null) return null;
+      if (data == null) {
+        return null;
+      }
       // for some reason can't be a typed array
       return Array.from(new DTYPES[dtype](data.view.buffer));
     },
@@ -119,11 +125,12 @@ export function Numpy1D(dtype) {
         dtype: dtype,
         shape: [data.length],
       };
-    }
-  }
+    },
+  };
 }
 
 export function Annotations() {
+  // biome-ignore lint/style/useNamingConvention: the whole point here is to convert Python-based snake_case props to JavaScript-based camelCase
   const pyToJsKey = { x_start: 'x1', x_end: 'x2', y_start: 'y1', y_end: 'y2' };
   const jsToPyKey = { x1: 'x_start', x2: 'x_end', y1: 'y_start', y2: 'y_end' };
   return {
@@ -136,11 +143,14 @@ export function Annotations() {
         return null;
       }
       return annotationStrs.map((annotationStr) => {
-        return Object.entries(JSON.parse(annotationStr)).reduce((acc, [key, value]) => {
-          const jsKey = key in pyToJsKey ? pyToJsKey[key] : snakeToCamel(key);
-          acc[jsKey] = value;
-          return acc;
-        }, {})
+        return Object.entries(JSON.parse(annotationStr)).reduce(
+          (acc, [key, value]) => {
+            const jsKey = key in pyToJsKey ? pyToJsKey[key] : snakeToCamel(key);
+            acc[jsKey] = value;
+            return acc;
+          },
+          {},
+        );
       });
     },
     /**
@@ -152,13 +162,16 @@ export function Annotations() {
         return null;
       }
       return annotations.map((annotation) => {
-        const pyAnnotation = Object.entries(annotation).reduce((acc, [key, value]) => {
-          const pyKey = key in jsToPyKey ? jsToPyKey[key] : camelToSnake(key);
-          acc[pyKey] = value;
-          return acc;
-        }, {});
+        const pyAnnotation = Object.entries(annotation).reduce(
+          (acc, [key, value]) => {
+            const pyKey = key in jsToPyKey ? jsToPyKey[key] : camelToSnake(key);
+            acc[pyKey] = value;
+            return acc;
+          },
+          {},
+        );
         return JSON.stringify(pyAnnotation);
-      })
+      });
     },
-  }
+  };
 }
