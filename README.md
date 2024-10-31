@@ -226,15 +226,14 @@ While jscatter is primarily developed for Jupyter Lab and Notebook, it also runs
 
 **Requirements:**
 
-- [Hatch](https://hatch.pypa.io/latest/) >= v1.7.0
+- [uv](https://astral.sh/uv) >= v0.4.0
 - [Node](https://nodejs.org) [Active LTS or Maintenance LTS release](https://nodejs.org/en/about/previous-releases)
 
 **Installation:**
 
 ```bash
 git clone https://github.com/flekschas/jupyter-scatter/ jscatter && cd jscatter
-hatch shell
-pip install -e ".[dev]"
+uv run jupyter lab
 ```
 
 **After Changing Python code:** restart the kernel.
@@ -270,7 +269,7 @@ Go to [test-environments](test-environments) and follow the instructions.
 <details><summary>Running tests</summary>
 <p>
 
-Run `pytest` after activating `hatch shell`.
+Run `uv run pytest`.
 
 </p>
 </details>

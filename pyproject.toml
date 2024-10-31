@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 keywords = [
     "scatter",
@@ -51,15 +52,6 @@ documentation = "https://jupyter-scatter.dev/api"
 repository = "https://github.com/flekschas/jupyter-scatter"
 changelog = "https://github.com/flekschas/jupyter-scatter/blob/main/CHANGELOG.md"
 
-[project.optional-dependencies]
-dev = [
-    "anywidget[dev]",
-    "black[jupyter]",
-    "jupyterlab",
-    "pytest",
-    "ruff",
-]
-
 # Configures hatchling build system to use the verison
 # found in the package.json file for the python package.
 [tool.hatch.version]
@@ -81,15 +73,6 @@ npm = "npm"
 build_cmd = "build"
 path = "js"
 
-[tool.hatch.envs.default]
-features = ["dev"]
-python = "3.12"
-
-[tool.hatch.envs.default.scripts]
-test = "pytest ."
-
-[tool.ruff.format]
-quote-style = "single"
 
 [tool.pytest.ini_options]
 filterwarnings = [
@@ -97,3 +80,19 @@ filterwarnings = [
   # Sentinel is not a public part of the traitlets API.
   "ignore::DeprecationWarning:traitlets:28",
 ]
+
+[tool.uv]
+dev-dependencies = [
+    "anywidget[dev]",
+    "jupyterlab",
+    "pytest",
+    "ruff",
+]
+
+[tool.ruff.format]
+quote-style = "single"
+
+# flake8 rules hadn't been enforced for a bit, so for now we are ignoring many
+# lints. Can enable by removing this section.
+[tool.ruff.lint]
+ignore = ["E", "F"]
