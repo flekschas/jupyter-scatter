@@ -1,3 +1,8 @@
+## v0.19.2
+
+- Chore: switch from ESLint+Prettier to Biome [#170](https://github.com/flekschas/jupyter-scatter/pull/170)
+- Chore: migrate from hatch to uv [#169](https://github.com/flekschas/jupyter-scatter/pull/169)
+
 ## v0.19.1
 
 - Fix: revert back to `pd.api.types.is_string_dtype` from `pd.StringDType` because the two function, albeit looking semantically identical, do not do the same thing. The former detects object and string types while the latter only strictly detects string types. This is confusing as `pd.Series(['a', 'b'])` is of type `object`. So `pd.StringDtype.is_dtype(pd.Series(['a', 'b'])) == False` but `pd.api.types.is_string_dtype(pd.Series(['a', 'b'])) == True`. [Wat](https://www.destroyallsoftware.com/talks/wat)?!

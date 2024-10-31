@@ -1,33 +1,56 @@
-import { scaleLog, scalePow, scaleLinear, scaleOrdinal, scaleTime } from 'd3-scale';
+import {
+  scaleLinear,
+  scaleLog,
+  scaleOrdinal,
+  scalePow,
+  scaleTime,
+} from 'd3-scale';
 import { utcFormat } from 'd3-time-format';
 
+const camelToSnakeRegex = /[\w]([A-Z])/g;
 export function camelToSnake(string) {
-  return string.replace(/[\w]([A-Z])/g, (m) => m[0] + "_" + m[1]).toLowerCase();
+  return string
+    .replace(camelToSnakeRegex, (m) => `${m[0]}_${m[1]}`)
+    .toLowerCase();
 }
 
+const snakeToCamelRegex = /[-_][a-z]/g;
 export function snakeToCamel(string) {
-  return string.toLowerCase().replace(/[-_][a-z]/g, (group) => group.slice(-1).toUpperCase());
+  return string
+    .toLowerCase()
+    .replace(snakeToCamelRegex, (group) => group.slice(-1).toUpperCase());
 }
 
 export function toCapitalCase(string) {
-  if (string.length === 0) return string;
+  if (string.length === 0) {
+    return string;
+  }
   return string.at(0).toUpperCase() + string.slice(1);
 }
 
+const titleCaseRegex = /[\s_]/;
 export function toTitleCase(string) {
-  return string.split(/[\s_]/).map((s) => toCapitalCase(s)).join(' ').split('-').map((s) => toCapitalCase(s)).join('-')
+  return string
+    .split(titleCaseRegex)
+    .map((s) => toCapitalCase(s))
+    .join(' ')
+    .split('-')
+    .map((s) => toCapitalCase(s))
+    .join('-');
 }
 
 export function toHtmlClass(string) {
-  return string
-    // Lower case the string for simplicity
-    .toLowerCase()
-    // Replace any leading characters that are not a-z
-    .replace(/^[^a-z]*/g, '')
-    // Replace any white space with a hyphen
-    .replace(/\s/g, '-')
-    // Remove any character other than alphabetical, numerical, underscore, or hyphen
-    .replace( /[^a-z0-9_-]/g, '');
+  return (
+    string
+      // Lower case the string for simplicity
+      .toLowerCase()
+      // Replace any leading characters that are not a-z
+      .replace(/^[^a-z]*/g, '')
+      // Replace any white space with a hyphen
+      .replace(/\s/g, '-')
+      // Remove any character other than alphabetical, numerical, underscore, or hyphen
+      .replace(/[^a-z0-9_-]/g, '')
+  );
 }
 
 export function downloadBlob(blob, name) {
@@ -42,24 +65,28 @@ export function downloadBlob(blob, name) {
       bubbles: true,
       cancelable: true,
       view: window,
-    })
+    }),
   );
 
   document.body.removeChild(link);
 }
 
 export function getScale(scaleType) {
-  if (scaleType.startsWith('log'))
+  if (scaleType.startsWith('log')) {
     return scaleLog().base(scaleType.split('_')[1] || 10);
+  }
 
-  if (scaleType.startsWith('pow'))
+  if (scaleType.startsWith('pow')) {
     return scalePow().exponent(scaleType.split('_')[1] || 2);
+  }
 
-  if (scaleType === 'time')
+  if (scaleType === 'time') {
     return scaleTime();
+  }
 
-  if (scaleType === 'linear')
+  if (scaleType === 'linear') {
     return scaleLinear();
+  }
 
   return scaleOrdinal();
 }
@@ -77,8 +104,12 @@ export function createOrdinalScaleInverter(domain) {
 }
 
 export function getTooltipFontSize(size) {
-  if (size === 'large') return '1rem';
-  if (size === 'medium') return '0.85rem';
+  if (size === 'large') {
+    return '1rem';
+  }
+  if (size === 'medium') {
+    return '0.85rem';
+  }
   return '0.675rem';
 }
 
@@ -94,7 +125,9 @@ export function createElementWithClass(tagName, className) {
 
   if (className) {
     if (Array.isArray(className)) {
-      className.forEach((name) => element.classList.add(name));
+      for (const name of className) {
+        element.classList.add(name);
+      }
     } else {
       element.classList.add(className);
     }
@@ -104,17 +137,19 @@ export function createElementWithClass(tagName, className) {
 }
 
 export function remToPx(rem) {
-  return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+  return (
+    rem * Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
+  );
 }
 
-const formatMillisecond = utcFormat("%a, %b %e, %Y %H:%M:%S.%L");
-const formatSecond = utcFormat("%a, %b %e, %Y %H:%M:%S");
-const formatMinute = utcFormat("%a, %b %e, %Y %H:%M");
-const formatHour = utcFormat("%a, %b %e, %Y %H");
-const formatDay = utcFormat("%a, %b %e, %Y");
-const formatWeek = utcFormat("%b %e, %Y");
-const formatMonth = utcFormat("%b %Y");
-const formatYear = utcFormat("%Y");
+const formatMillisecond = utcFormat('%a, %b %e, %Y %H:%M:%S.%L');
+const formatSecond = utcFormat('%a, %b %e, %Y %H:%M:%S');
+const formatMinute = utcFormat('%a, %b %e, %Y %H:%M');
+const formatHour = utcFormat('%a, %b %e, %Y %H');
+const formatDay = utcFormat('%a, %b %e, %Y');
+const formatWeek = utcFormat('%b %e, %Y');
+const formatMonth = utcFormat('%b %Y');
+const formatYear = utcFormat('%Y');
 
 const SEC_MSEC = 1000;
 const MIN_MSEC = 60 * SEC_MSEC;
@@ -131,7 +166,7 @@ export function medianTimeInterval(points, accessor) {
   }
   values.sort();
 
-  const intervals = []
+  const intervals = [];
   for (let i = 1; i < values.length; i++) {
     const interval = values[i] - values[i - 1];
     if (interval > 0) {
@@ -145,22 +180,38 @@ export function medianTimeInterval(points, accessor) {
 
 export function createTimeFormat(points, accessor) {
   const medianInterval = medianTimeInterval(points, accessor);
-  if (medianInterval > YEAR_MSEC) return formatYear;
-  if (medianInterval > MONTH_MSEC) return formatMonth;
-  if (medianInterval > WEEK_MSEC) return formatWeek;
-  if (medianInterval > DAY_MSEC) return formatDay;
-  if (medianInterval > HOUR_MSEC) return formatHour;
-  if (medianInterval > MIN_MSEC) return formatMinute;
-  if (medianInterval > SEC_MSEC) return formatSecond;
+  if (medianInterval > YEAR_MSEC) {
+    return formatYear;
+  }
+  if (medianInterval > MONTH_MSEC) {
+    return formatMonth;
+  }
+  if (medianInterval > WEEK_MSEC) {
+    return formatWeek;
+  }
+  if (medianInterval > DAY_MSEC) {
+    return formatDay;
+  }
+  if (medianInterval > HOUR_MSEC) {
+    return formatHour;
+  }
+  if (medianInterval > MIN_MSEC) {
+    return formatMinute;
+  }
+  if (medianInterval > SEC_MSEC) {
+    return formatSecond;
+  }
   return formatMillisecond;
 }
 
+// biome-ignore lint/style/useNamingConvention: XTime stands for x time
 export function createXTimeFormat(points) {
-  return createTimeFormat(points, (point) => point[0])
+  return createTimeFormat(points, (point) => point[0]);
 }
 
+// biome-ignore lint/style/useNamingConvention: YTime stands for y time
 export function createYTimeFormat(points) {
-  return createTimeFormat(points, (point) => point[1])
+  return createTimeFormat(points, (point) => point[1]);
 }
 
 const toRgbaElement = document.createElement('div');
@@ -178,7 +229,10 @@ export function toRgba(color) {
   document.body.appendChild(toRgbaElement);
   const rgba = getComputedStyle(toRgbaElement)['background-color'];
   document.body.removeChild(toRgbaElement);
-  return rgba.slice(rgba.indexOf('(') + 1, rgba.indexOf(')')).split(',').map(Number);
+  return rgba
+    .slice(rgba.indexOf('(') + 1, rgba.indexOf(')'))
+    .split(',')
+    .map(Number);
 }
 
 export function addBackgroundColor(imageData, backgroundColor) {
@@ -199,11 +253,11 @@ export function addBackgroundColor(imageData, backgroundColor) {
 }
 
 export function imageDataToCanvas(imageData) {
-  const canvas = document.createElement("canvas");
-  canvas.width = imageData.width;;
+  const canvas = document.createElement('canvas');
+  canvas.width = imageData.width;
   canvas.height = imageData.height;
 
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
   ctx.putImageData(imageData, 0, 0);
 
   return canvas;
