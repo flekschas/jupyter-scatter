@@ -287,8 +287,7 @@ class JupyterScatterView {
 
       if (!window.jupyterScatter.versionLog) {
         // biome-ignore lint/suspicious/noConsole: We want to log the version once
-        // biome-ignore lint/suspicious/noConsoleLog: We want to log the version once
-        console.log(
+        console.info(
           `jupyter-scatter v${version} with regl-scatterplot v${this.scatterplot.get('version')}`,
         );
         window.jupyterScatter.versionLog = true;
@@ -343,7 +342,7 @@ class JupyterScatterView {
       for (const propertyName of Object.keys(properties)) {
         const handler = this[`${propertyName}Handler`];
         if (!handler) {
-          return;
+          continue;
         }
         this.model.on(
           `change:${camelToSnake(propertyName)}`,
