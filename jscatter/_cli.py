@@ -51,7 +51,7 @@ def main():
     subparsers.add_parser("demo", help=f"Run the demo notebook in JupyterLab")
     args = parser.parse_args()
 
-    notebook_path = Path("notebooks/demo.ipynb")
+    notebook_path = Path(__file__).parent / "../notebooks/demo.ipynb"
     if args.command == "demo":
         run_notebook(notebook_path)
     else:
