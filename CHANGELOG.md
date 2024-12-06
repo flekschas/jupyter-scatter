@@ -1,5 +1,6 @@
 ## v0.19.2
 
+- Feat: add CLI for quick-starting a demo via `uvx jupyter-scatter demo`
 - Chore: switch from ESLint+Prettier to Biome [#170](https://github.com/flekschas/jupyter-scatter/pull/170)
 - Chore: migrate from hatch to uv [#169](https://github.com/flekschas/jupyter-scatter/pull/169)
 
