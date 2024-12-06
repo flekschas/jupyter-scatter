@@ -5,44 +5,43 @@ build-backend = "hatchling.build"
 [project]
 name = "jupyter-scatter"
 description = "An interactive scatter plot widget for Jupyter Notebook, Lab, and Google Colab that can handle millions of points and supports view linking"
-authors = [
-  { name = "Fritz Lekschas", email = "code@lekschas.de" }
-]
+authors = [{ name = "Fritz Lekschas", email = "code@lekschas.de" }]
 license = { text = "Apache-2.0" }
 readme = "README.md"
+requires-python = ">=3.9"
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
-    "Topic :: Multimedia :: Graphics",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Topic :: Multimedia :: Graphics",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 keywords = [
-    "scatter",
-    "scatter plot",
-    "jupyter",
-    "ipython",
-    "ipywidgets",
-    "jupyterlab",
-    "jupyterlab-extension",
-    "widgets",
+  "scatter",
+  "scatter plot",
+  "jupyter",
+  "ipython",
+  "ipywidgets",
+  "jupyterlab",
+  "jupyterlab-extension",
+  "widgets",
 ]
 dependencies = [
-    "anywidget>=0.9.0",
-    "ipywidgets>=7.6,<9",
-    "ipython",
-    "matplotlib",
-    "numpy",
-    "pandas",
-    "scipy",
-    "seaborn",
-    "traittypes>=0.2.1",
-    "typing_extensions",
+  "anywidget>=0.9.0",
+  "ipywidgets>=7.6,<9",
+  "ipython",
+  "matplotlib",
+  "numpy",
+  "pandas",
+  "pyarrow",
+  "scipy",
+  "seaborn",
+  "traittypes>=0.2.1",
+  "typing_extensions",
 ]
 dynamic = ["version"]
 
@@ -51,6 +50,9 @@ homepage = "https://jupyter-scatter.dev"
 documentation = "https://jupyter-scatter.dev/api"
 repository = "https://github.com/flekschas/jupyter-scatter"
 changelog = "https://github.com/flekschas/jupyter-scatter/blob/main/CHANGELOG.md"
+
+[project.scripts]
+jupyter-scatter = "jscatter._cli:main"
 
 # Configures hatchling build system to use the verison
 # found in the package.json file for the python package.
@@ -73,7 +75,6 @@ npm = "npm"
 build_cmd = "build"
 path = "js"
 
-
 [tool.pytest.ini_options]
 filterwarnings = [
   # Ignore unrelated DeprecationWarning from traitlets:
@@ -82,12 +83,7 @@ filterwarnings = [
 ]
 
 [tool.uv]
-dev-dependencies = [
-    "anywidget[dev]",
-    "jupyterlab",
-    "pytest",
-    "ruff",
-]
+dev-dependencies = ["anywidget[dev]", "jupyterlab", "pyarrow", "pytest", "ruff"]
 
 [tool.ruff.format]
 quote-style = "single"

@@ -44,6 +44,14 @@ Imagine trying to explore a dataset of millions of data points as a 2D scatter. 
 
 Internally, Jupyter Scatter uses [regl-scatterplot](https://github.com/flekschas/regl-scatterplot/) for WebGL rendering, [traitlets](https://traitlets.readthedocs.io/en/stable/) for two-way communication between the JS and iPython kernels, and [anywidget](https://anywidget.dev/) for composing the widget.
 
+**Quick Start**
+
+Try out Jupyter Scatter with our one-liner. This requires [uv](https://astral.sh/uv).
+
+```bash
+uvx jupyter-scatter demo
+```
+
 **Docs**
 
 Visit [https://jupyter-scatter.dev](https://jupyter-scatter.dev) for detailed documentation including examples and a complete API description.
