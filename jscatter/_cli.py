@@ -1,14 +1,12 @@
 import argparse
-import json
 import os
 import shutil
 import sys
-import textwrap
 from pathlib import Path
 
 from jscatter import __version__
 
-_DEV = True
+_DEV = False
 
 
 def check_uv_available():
