@@ -18,8 +18,7 @@ jobs:
         with:
           version: "0.4.x"
       - run: |
-          uv run ruff check
-          # uv run ruff format --check # uncomment when we want to enforce formatting
+          uv run ruff format --check
 
   Test:
     runs-on: ubuntu-latest
