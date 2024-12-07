@@ -4,10 +4,10 @@
 
 <div align="center">
   
-  [![pypi version](https://img.shields.io/pypi/v/jupyter-scatter.svg?color=1a8cff&style=flat-square)](https://pypi.org/project/jupyter-scatter/)
+  [![pypi version](https://img.shields.io/pypi/v/jupyter-scatter.svg?color=1a8cff&style=flat-square)](https://pypi.org/project/jupyter-scatter)
+  [![python versions](https://img.shields.io/pypi/pyversions/jupyter-scatter.svg?color=1a8cff&style=flat-square)](https://pypi.python.org/project/jupyter-scatter)
   [![build status](https://img.shields.io/github/actions/workflow/status/flekschas/jupyter-scatter/ci.yml?branch=main&color=1a8cff&style=flat-square)](https://github.com/flekschas/jupyter-scatter/actions/workflows/ci.yml)
-  [![API docs](https://img.shields.io/badge/API-docs-1a8cff.svg?style=flat-square)](https://jupyter-scatter.dev/api)
-  [![notebook examples](https://img.shields.io/badge/notebook-examples-1a8cff.svg?style=flat-square)](notebooks/get-started.ipynb)
+  [![API docs](https://img.shields.io/badge/API-docs-1a8cff.svg?style=flat-square)](https://jupyter-scatter.dev)
   [![tutorial](https://img.shields.io/badge/SciPy_'23-tutorial-1a8cff.svg?style=flat-square)](https://github.com/flekschas/jupyter-scatter-tutorial)
   [![DOI](https://img.shields.io/badge/JOSS-10.21105/joss.07059-1a8cff.svg?style=flat-square)](https://doi.org/10.21105/joss.07059)
   
