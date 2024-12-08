@@ -5,9 +5,10 @@ from typing import List, Optional, Union, Tuple
 
 from .jscatter import Scatter
 
-TITLE_HEIGHT = 28;
-AXES_LABEL_SIZE = 16;
-AXES_PADDING_Y = 20;
+TITLE_HEIGHT = 28
+AXES_LABEL_SIZE = 16
+AXES_PADDING_Y = 20
+
 
 def compose(
     scatters: Union[List[Scatter], List[Tuple[Scatter, str]]],
@@ -68,7 +69,9 @@ def compose(
         rows = 1
 
     if isinstance(match_by, list):
-        assert len(scatters) == len(match_by), 'The number of scatters and match_bys need to be the same'
+        assert len(scatters) == len(
+            match_by
+        ), 'The number of scatters and match_bys need to be the same'
     elif match_by != 'index':
         match_by = [match_by] * len(scatters)
 
@@ -82,10 +85,12 @@ def compose(
     def get_title(i: int) -> str:
         if has_titles and isinstance(scatters[i], tuple):
             return scatters[i][1]
-        return "&nbsp;"
+        return '&nbsp;'
 
     if isinstance(match_by, list):
-        assert all([match_by[i] in get_scatter(i)._data for i, _ in enumerate(scatters)])
+        assert all(
+            [match_by[i] in get_scatter(i)._data for i, _ in enumerate(scatters)]
+        )
 
     # We need to store the specific handlers created by called
     # `create_select_handler(index)` and `create_hover_handler(index)` to
@@ -127,7 +132,9 @@ def compose(
                 return matched_id
 
             try:
-                return scatter._data.query(f'{match_by[index]} == @matched_id').index.tolist()[0]
+                return scatter._data.query(
+                    f'{match_by[index]} == @matched_id'
+                ).index.tolist()[0]
             except IndexError:
                 return -1
 
@@ -135,7 +142,9 @@ def compose(
             if match_by == 'index':
                 return matched_ids
 
-            return scatter._data.query(f'{match_by[index]} in @matched_ids').index.tolist()
+            return scatter._data.query(
+                f'{match_by[index]} in @matched_ids'
+            ).index.tolist()
 
         return map_multiple if multiple else map_single
 
@@ -201,19 +210,13 @@ def compose(
 
         return hover_handler
 
-    has_axes = any([
-        get_scatter(i)._axes != False
-        for i, _
-        in enumerate(scatters)
-    ])
+    has_axes = any([get_scatter(i)._axes != False for i, _ in enumerate(scatters)])
     y_padding = AXES_PADDING_Y if has_axes else 0
 
     if has_axes:
-        has_labels = any([
-            get_scatter(i)._axes_labels != False
-            for i, _
-            in enumerate(scatters)
-        ])
+        has_labels = any(
+            [get_scatter(i)._axes_labels != False for i, _ in enumerate(scatters)]
+        )
         y_padding = y_padding + AXES_LABEL_SIZE if has_labels else y_padding
 
     y_padding = y_padding + TITLE_HEIGHT if has_titles else y_padding
@@ -261,16 +264,17 @@ def compose(
         layout=Layout(
             grid_template_columns=' '.join(['1fr' for x in range(cols)]),
             grid_template_rows=' '.join([f'{row_height}px' for x in range(rows)]),
-            grid_gap='2px'
-        )
+            grid_gap='2px',
+        ),
     )
+
 
 def link(
     scatters: Union[List[Scatter], List[Tuple[Scatter, str]]],
     match_by: Union[str, List[str]] = 'index',
     rows: Optional[int] = 1,
     row_height: int = 320,
-    cols: Optional[int] = None
+    cols: Optional[int] = None,
 ):
     """
     A short-hand function for `compose` that composes multiple `Scatter`

@@ -84,7 +84,14 @@ filterwarnings = [
 ]
 
 [tool.uv]
-dev-dependencies = ["anywidget[dev]", "jupyterlab", "pyarrow", "pytest", "ruff"]
+dev-dependencies = [
+  "anywidget[dev]",
+  "jupyterlab",
+  "pre-commit",
+  "pyarrow",
+  "pytest",
+  "ruff",
+]
 
 [tool.ruff.format]
 quote-style = "single"

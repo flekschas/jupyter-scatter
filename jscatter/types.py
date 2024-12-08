@@ -15,32 +15,39 @@ TooltipPreviewImageSize = Literal['contain', 'cover']
 Undefined = type(
     'Undefined',
     (object,),
-    { '__str__': lambda s: 'Undefined', '__repr__': lambda s: 'Undefined' }
+    {'__str__': lambda s: 'Undefined', '__repr__': lambda s: 'Undefined'},
 )
+
 
 class Scales(Enum):
     LINEAR = 'linear'
     LOG = 'log'
     POW = 'pow'
 
+
 class Size(Enum):
     S = 'small'
     M = 'medium'
     L = 'large'
+
 
 class MouseModes(Enum):
     PAN_ZOOM = 'panZoom'
     LASSO = 'lasso'
     ROTATE = 'rotate'
 
+
 class Auto(Enum):
     AUTO = 'auto'
+
 
 class Reverse(Enum):
     REVERSE = 'reverse'
 
+
 class Segment(Enum):
     SEGMENT = 'segment'
+
 
 class LegendPosition(Enum):
     TOP = 'top'
@@ -53,12 +60,14 @@ class LegendPosition(Enum):
     LEFT = 'left'
     CENTER = 'center'
 
+
 class VisualProperty(Enum):
     X = 'x'
     Y = 'y'
     COLOR = 'color'
     OPACITY = 'opacity'
     SIZE = 'size'
+
 
 class Labeling(TypedDict):
     variable: NotRequired[str]
