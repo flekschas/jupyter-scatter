@@ -92,6 +92,7 @@ def df3() -> pd.DataFrame:
 
     return df
 
+
 def test_component_idx_to_name():
     assert component_idx_to_name(2) == 'valueA'
     assert component_idx_to_name(3) == 'valueB'
@@ -127,10 +128,18 @@ def test_scatter_pandas_update(df, df2):
     x = 'a'
     y = 'b'
     scatter = Scatter(data=df, x=x, y=y)
-    assert np.allclose(np.array([df[x].min(), df[x].max()]), np.array(scatter.widget.x_domain))
-    assert np.allclose(np.array([df[y].min(), df[y].max()]), np.array(scatter.widget.y_domain))
-    assert np.allclose(np.array([df[x].min(), df[x].max()]), np.array(scatter.widget.x_scale_domain))
-    assert np.allclose(np.array([df[y].min(), df[y].max()]), np.array(scatter.widget.y_scale_domain))
+    assert np.allclose(
+        np.array([df[x].min(), df[x].max()]), np.array(scatter.widget.x_domain)
+    )
+    assert np.allclose(
+        np.array([df[y].min(), df[y].max()]), np.array(scatter.widget.y_domain)
+    )
+    assert np.allclose(
+        np.array([df[x].min(), df[x].max()]), np.array(scatter.widget.x_scale_domain)
+    )
+    assert np.allclose(
+        np.array([df[y].min(), df[y].max()]), np.array(scatter.widget.y_scale_domain)
+    )
 
     prev_x_scale_domain = np.array(scatter.widget.x_scale_domain)
     prev_y_scale_domain = np.array(scatter.widget.y_scale_domain)
@@ -138,8 +147,12 @@ def test_scatter_pandas_update(df, df2):
     scatter.data(df2)
 
     # The data domain updated by the scale domain remain unchanged as the view was not reset
-    assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_domain))
-    assert np.allclose(np.array([df2[y].min(), df2[y].max()]), np.array(scatter.widget.y_domain))
+    assert np.allclose(
+        np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_domain)
+    )
+    assert np.allclose(
+        np.array([df2[y].min(), df2[y].max()]), np.array(scatter.widget.y_domain)
+    )
     assert np.allclose(prev_x_scale_domain, np.array(scatter.widget.x_scale_domain))
     assert np.allclose(prev_y_scale_domain, np.array(scatter.widget.y_scale_domain))
 
@@ -147,16 +160,28 @@ def test_scatter_pandas_update(df, df2):
     scatter.data(df2, reset_scales=True)
 
     # Now that we reset the view, both the data and scale domain updated properly
-    assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_domain))
-    assert np.allclose(np.array([df2[y].min(), df2[y].max()]), np.array(scatter.widget.y_domain))
-    assert np.allclose(np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_scale_domain))
-    assert np.allclose(np.array([df2[y].min(), df2[y].max()]), np.array(scatter.widget.y_scale_domain))
+    assert np.allclose(
+        np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_domain)
+    )
+    assert np.allclose(
+        np.array([df2[y].min(), df2[y].max()]), np.array(scatter.widget.y_domain)
+    )
+    assert np.allclose(
+        np.array([df2[x].min(), df2[x].max()]), np.array(scatter.widget.x_scale_domain)
+    )
+    assert np.allclose(
+        np.array([df2[y].min(), df2[y].max()]), np.array(scatter.widget.y_scale_domain)
+    )
 
     assert df[x].max() != df2[x].max()
     assert df[y].max() != df2[y].max()
 
-    assert np.allclose(to_ndc(df2[x].values, create_default_norm()), scatter.widget.points[:, 0])
-    assert np.allclose(to_ndc(df2[y].values, create_default_norm()), scatter.widget.points[:, 1])
+    assert np.allclose(
+        to_ndc(df2[x].values, create_default_norm()), scatter.widget.points[:, 0]
+    )
+    assert np.allclose(
+        to_ndc(df2[y].values, create_default_norm()), scatter.widget.points[:, 1]
+    )
 
 
 def test_xy_scale_shorthands(df):
@@ -200,26 +225,26 @@ def test_scatter_point_encoding_updates(df: pd.DataFrame):
     widget_data = np.asarray(widget.points)
 
     assert len(scatter._encodings.data) == 0
-    assert np.sum(widget_data[:,2]) == 0
+    assert np.sum(widget_data[:, 2]) == 0
 
     scatter.color(by='group')
     widget_data = np.asarray(widget.points)
     assert 'color' in scatter._encodings.visual
     assert 'group:linear' in scatter._encodings.data
-    assert np.sum(widget_data[:,2]) > 0
-    assert np.sum(widget_data[:,3]) == 0
+    assert np.sum(widget_data[:, 2]) > 0
+    assert np.sum(widget_data[:, 3]) == 0
 
     scatter.opacity(by='c')
     widget_data = np.asarray(widget.points)
     assert 'opacity' in scatter._encodings.visual
     assert 'c:linear' in scatter._encodings.data
-    assert np.sum(widget_data[:,3]) > 0
+    assert np.sum(widget_data[:, 3]) > 0
 
     scatter.size(by='c')
     widget_data = np.asarray(widget.points)
     assert 'size' in scatter._encodings.visual
     assert 'c:linear' in scatter._encodings.data
-    assert np.sum(widget_data[:,3]) > 0
+    assert np.sum(widget_data[:, 3]) > 0
 
 
 def test_scatter_connection_by(df: pd.DataFrame):
@@ -249,90 +274,84 @@ def test_missing_values_handling():
     with_nan = np.array([0, 0.25, 0.5, np.nan, 1])
     no_nan = np.array([0, 0.25, 0.5, 0.75, 1])
 
-    df = pd.DataFrame({
-        'x': with_nan,
-        'y': with_nan,
-        'z': with_nan,
-        'w': with_nan,
-    })
+    df = pd.DataFrame(
+        {
+            'x': with_nan,
+            'y': with_nan,
+            'z': with_nan,
+            'w': with_nan,
+        }
+    )
 
     base_warning = 'data contains missing values. Those missing values will be replaced with zeros.'
 
     with pytest.warns(UserWarning, match=f'X {base_warning}'):
-        scatter = Scatter(
-            data=pd.DataFrame({ 'x': with_nan, 'y': no_nan }),
-            x='x',
-            y='y'
-        )
+        scatter = Scatter(data=pd.DataFrame({'x': with_nan, 'y': no_nan}), x='x', y='y')
         print(scatter.widget.points)
         assert np.isfinite(scatter.widget.points).all()
         assert scatter.widget.points[3, 0] == -1
 
     with pytest.warns(UserWarning, match=f'Y {base_warning}'):
-        scatter = Scatter(
-            data=pd.DataFrame({ 'x': no_nan, 'y': with_nan }),
-            x='x',
-            y='y'
-        )
+        scatter = Scatter(data=pd.DataFrame({'x': no_nan, 'y': with_nan}), x='x', y='y')
         assert np.isfinite(scatter.widget.points).all()
         assert scatter.widget.points[3, 1] == -1
 
     with pytest.warns(UserWarning, match=f'Color {base_warning}'):
         scatter = Scatter(
-            data=pd.DataFrame({ 'x': no_nan, 'y': no_nan, 'z': with_nan }),
+            data=pd.DataFrame({'x': no_nan, 'y': no_nan, 'z': with_nan}),
             x='x',
             y='y',
-            color_by='z'
+            color_by='z',
         )
         assert np.isfinite(scatter.widget.points).all()
         assert scatter.widget.points[3, 2] == 0
 
     with pytest.warns(UserWarning, match=f'Opacity {base_warning}'):
         scatter = Scatter(
-            data=pd.DataFrame({ 'x': no_nan, 'y': no_nan, 'z': with_nan }),
+            data=pd.DataFrame({'x': no_nan, 'y': no_nan, 'z': with_nan}),
             x='x',
             y='y',
-            opacity_by='z'
+            opacity_by='z',
         )
         assert np.isfinite(scatter.widget.points).all()
         assert scatter.widget.points[3, 2] == 0
 
     with pytest.warns(UserWarning, match=f'Size {base_warning}'):
         scatter = Scatter(
-            data=pd.DataFrame({ 'x': no_nan, 'y': no_nan, 'z': with_nan }),
+            data=pd.DataFrame({'x': no_nan, 'y': no_nan, 'z': with_nan}),
             x='x',
             y='y',
-            size_by='z'
+            size_by='z',
         )
         assert np.isfinite(scatter.widget.points).all()
         assert scatter.widget.points[3, 2] == 0
 
     with pytest.warns(UserWarning, match=f'Connection color {base_warning}'):
         scatter = Scatter(
-            data=pd.DataFrame({ 'x': no_nan, 'y': no_nan, 'z': with_nan }),
+            data=pd.DataFrame({'x': no_nan, 'y': no_nan, 'z': with_nan}),
             x='x',
             y='y',
-            connection_color_by='z'
+            connection_color_by='z',
         )
         assert np.isfinite(scatter.widget.points).all()
         assert scatter.widget.points[3, 2] == 0
 
     with pytest.warns(UserWarning, match=f'Connection opacity {base_warning}'):
         scatter = Scatter(
-            data=pd.DataFrame({ 'x': no_nan, 'y': no_nan, 'z': with_nan }),
+            data=pd.DataFrame({'x': no_nan, 'y': no_nan, 'z': with_nan}),
             x='x',
             y='y',
-            connection_opacity_by='z'
+            connection_opacity_by='z',
         )
         assert np.isfinite(scatter.widget.points).all()
         assert scatter.widget.points[3, 2] == 0
 
     with pytest.warns(UserWarning, match=f'Connection size {base_warning}'):
         scatter = Scatter(
-            data=pd.DataFrame({ 'x': no_nan, 'y': no_nan, 'z': with_nan }),
+            data=pd.DataFrame({'x': no_nan, 'y': no_nan, 'z': with_nan}),
             x='x',
             y='y',
-            connection_size_by='z'
+            connection_size_by='z',
         )
         assert np.isfinite(scatter.widget.points).all()
         assert scatter.widget.points[3, 2] == 0
@@ -351,14 +370,18 @@ def test_scatter_axes_labels(df: pd.DataFrame):
     assert scatter.widget.axes_labels == ['axis 1', 'axis 2']
 
 
-def test_scatter_transition_points(df: pd.DataFrame, df2: pd.DataFrame, df3: pd.DataFrame):
+def test_scatter_transition_points(
+    df: pd.DataFrame, df2: pd.DataFrame, df3: pd.DataFrame
+):
     scatter = Scatter(data=df, x='a', y='b')
 
     # Default settings
     assert scatter._transition_points == True
     assert scatter._transition_points_duration == 3000
 
-    scatter = Scatter(data=df, x='a', y='b', transition_points=False, transition_points_duration=500)
+    scatter = Scatter(
+        data=df, x='a', y='b', transition_points=False, transition_points_duration=500
+    )
     assert scatter._transition_points == False
     assert scatter._transition_points_duration == 500
 
@@ -448,66 +471,65 @@ def test_scatter_check_encoding_dtype(df: pd.DataFrame):
     check_encoding_dtype(scatter.color_data)
 
     with pytest.raises(ValueError):
-        check_encoding_dtype(pd.Series(np.array([1+0j])))
+        check_encoding_dtype(pd.Series(np.array([1 + 0j])))
 
 
 def test_tooltip(df: pd.DataFrame):
     # Test initializing a scatter plot with tooltip properties
     scatter = Scatter(
-        data=df,
-        x="a",
-        y="b",
-        tooltip=True,
-        tooltip_properties=["a", "b", "c", "group"]
+        data=df, x='a', y='b', tooltip=True, tooltip_properties=['a', 'b', 'c', 'group']
     )
     assert scatter.widget.tooltip_enable == True
-    assert scatter.widget.tooltip_properties == ["a", "b", "c", "group"]
+    assert scatter.widget.tooltip_properties == ['a', 'b', 'c', 'group']
     assert scatter.widget.tooltip_histograms == True
-    assert scatter.widget.tooltip_histograms_size == "small"
+    assert scatter.widget.tooltip_histograms_size == 'small'
 
-    normalized_x_histogram = np.histogram(df["a"].values, bins=20)[0]
+    normalized_x_histogram = np.histogram(df['a'].values, bins=20)[0]
     normalized_x_histogram = normalized_x_histogram / normalized_x_histogram.max()
     assert np.array_equal(scatter.widget.x_histogram, normalized_x_histogram)
 
-    normalized_y_histogram = np.histogram(df["b"].values, bins=20)[0]
+    normalized_y_histogram = np.histogram(df['b'].values, bins=20)[0]
     normalized_y_histogram = normalized_y_histogram / normalized_y_histogram.max()
     assert np.array_equal(scatter.widget.y_histogram, normalized_y_histogram)
 
-    assert "c" in scatter.widget.tooltip_properties_non_visual_info
-    assert "group" in scatter.widget.tooltip_properties_non_visual_info
+    assert 'c' in scatter.widget.tooltip_properties_non_visual_info
+    assert 'group' in scatter.widget.tooltip_properties_non_visual_info
 
-    normalized_c_histogram = np.histogram(df["c"].values, bins=20)[0]
+    normalized_c_histogram = np.histogram(df['c'].values, bins=20)[0]
     normalized_c_histogram = normalized_c_histogram / normalized_c_histogram.max()
     assert np.array_equal(
-        scatter.widget.tooltip_properties_non_visual_info["c"]["histogram"], 
-        normalized_c_histogram
+        scatter.widget.tooltip_properties_non_visual_info['c']['histogram'],
+        normalized_c_histogram,
     )
 
-    normalized_group_histogram = df["group"].copy().astype(str).astype('category').cat.codes.value_counts()
+    normalized_group_histogram = (
+        df['group'].copy().astype(str).astype('category').cat.codes.value_counts()
+    )
     normalized_group_histogram = [
-        y for _, y in sorted(
+        y
+        for _, y in sorted(
             dict(normalized_group_histogram / normalized_group_histogram.sum()).items()
         )
     ]
     assert np.array_equal(
-        scatter.widget.tooltip_properties_non_visual_info["group"]["histogram"], 
-        normalized_group_histogram
+        scatter.widget.tooltip_properties_non_visual_info['group']['histogram'],
+        normalized_group_histogram,
     )
 
     # Test updating tooltip properties
-    scatter.tooltip(properties=["a", "c"])
-    assert scatter.widget.tooltip_properties == ["a", "c"]
+    scatter.tooltip(properties=['a', 'c'])
+    assert scatter.widget.tooltip_properties == ['a', 'c']
 
     # Test disabling tooltip
     scatter.tooltip(False)
     assert scatter.widget.tooltip_enable == False
 
     # Test enabling tooltip without specifying properties
-    scatter = Scatter(data=df, x="b", y="d")
+    scatter = Scatter(data=df, x='b', y='d')
     scatter.tooltip(True)
     assert scatter.widget.tooltip_enable == True
-    assert scatter.widget.tooltip_properties == ["x", "y", "color", "opacity", "size"]
+    assert scatter.widget.tooltip_properties == ['x', 'y', 'color', 'opacity', 'size']
 
     # Test with invalid property
-    scatter.tooltip(properties=["color", "invalid_column"])
-    assert scatter.widget.tooltip_properties == ["color"]
+    scatter.tooltip(properties=['color', 'invalid_column'])
+    assert scatter.widget.tooltip_properties == ['color']

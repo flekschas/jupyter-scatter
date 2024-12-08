@@ -1,4 +1,5 @@
 import matplotlib
+
 matplotlib.use('Agg')
 
 import pytest
@@ -9,7 +10,8 @@ from jscatter.annotations import Line
 from jscatter.composite_annotations import Contour
 from jscatter.jscatter import Scatter
 
-@pytest.mark.skipif(sys.version_info < (3,9), reason="requires at least Python v3.9")
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason='requires at least Python v3.9')
 def test_contour():
     c = Contour()
 
@@ -19,7 +21,7 @@ def test_contour():
     assert c.line_opacity_by_level is False
 
     scatter = Scatter(
-        data=sns.load_dataset("geyser"),
+        data=sns.load_dataset('geyser'),
         x='waiting',
         y='duration',
         color_by='kind',

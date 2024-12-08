@@ -9,8 +9,9 @@ from typing import List, Union
 
 from .types import Labeling
 
+
 def to_uint8(x):
-  return int(max(0, min(x * 255, 255)))
+    return int(max(0, min(x * 255, 255)))
 
 
 def to_hex(color):
@@ -29,14 +30,17 @@ def with_left_label(label_text, widget, label_width: int = 128):
 
     return container
 
-def any_not(l, value = None):
+
+def any_not(l, value=None):
     return any([x is not value for x in l])
+
 
 def tolist(l):
     try:
         return l.tolist()
     except Exception:
         return l
+
 
 def uri_validator(x):
     try:
@@ -45,43 +49,50 @@ def uri_validator(x):
     except Exception:
         return False
 
+
 def sorting_to_dict(sorting):
     out = dict()
     for order_idx, original_idx in enumerate(sorting):
         out[original_idx] = order_idx
     return out
 
+
 class TimeNormalize(Normalize):
     is_time = True
+
 
 def create_default_norm(is_time=False):
     if is_time:
         return TimeNormalize()
     return Normalize()
 
+
 def to_ndc(X, norm):
     return (norm(X).data * 2) - 1
 
-def to_scale_type(norm = None):
-    if (isinstance(norm, LogNorm)):
+
+def to_scale_type(norm=None):
+    if isinstance(norm, LogNorm):
         return 'log_10'
 
-    if (isinstance(norm, PowerNorm)):
+    if isinstance(norm, PowerNorm):
         return f'pow_{norm.gamma}'
 
-    if (isinstance(norm, TimeNormalize)):
+    if isinstance(norm, TimeNormalize):
         return 'time'
 
-    if (isinstance(norm, Normalize)):
+    if isinstance(norm, Normalize):
         return 'linear'
 
     return 'categorical'
+
 
 def get_scale_type_from_df(data):
     if pd.CategoricalDtype.is_dtype(data) or pd.api.types.is_string_dtype(data):
         return 'categorical'
 
     return 'linear'
+
 
 def get_domain_from_df(data):
     if pd.CategoricalDtype.is_dtype(data) or pd.api.types.is_string_dtype(data):
@@ -91,6 +102,7 @@ def get_domain_from_df(data):
         return dict(zip(_data, _data.cat.codes))
 
     return [data.min(), data.max()]
+
 
 def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeling:
     labeling: Labeling = {}
@@ -119,16 +131,20 @@ def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeli
 
     return labeling
 
+
 def get_histogram_from_df(data, bins=20, range=None):
     if pd.CategoricalDtype.is_dtype(data) or pd.api.types.is_string_dtype(data):
         # We need to recreate the categorization in case the data is just a
         # filtered view, in which case it might contain "missing" indices
-        value_counts = data.copy().astype(str).astype('category').cat.codes.value_counts()
+        value_counts = (
+            data.copy().astype(str).astype('category').cat.codes.value_counts()
+        )
         return [y for _, y in sorted(dict(value_counts / value_counts.sum()).items())]
 
     hist = histogram(data[~isnan(data)], bins=bins, range=range)
 
     return list(hist[0] / hist[0].max())
+
 
 def sanitize_tooltip_properties(
     df,
@@ -145,11 +161,12 @@ def sanitize_tooltip_properties(
 
     return sanitized_properties
 
+
 def zerofy_missing_values(values, dtype):
     if isnan(sum(values)):
         warnings.warn(
             f'{dtype} data contains missing values. Those missing values will be replaced with zeros.',
-            UserWarning
+            UserWarning,
         )
         values[isnan(values)] = 0
     return values

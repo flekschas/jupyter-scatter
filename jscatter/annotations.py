@@ -11,8 +11,9 @@ DEFAULT_1D_LINE_END = None
 DEFAULT_LINE_COLOR = '#000000'
 DEFAULT_LINE_WIDTH = 1
 
+
 @dataclass
-class HLine():
+class HLine:
     """
     A horizontal line annotation.
 
@@ -41,6 +42,7 @@ class HLine():
     >>> HLine(0)
     HLine(y=0, x_start=None, x_end=None, line_color=(0.0, 0.0, 0.0, 1.0), line_width=1)
     """
+
     y: float
     x_start: Optional[float] = DEFAULT_1D_LINE_START
     x_end: Optional[float] = DEFAULT_1D_LINE_END
@@ -50,8 +52,9 @@ class HLine():
     def __post_init__(self):
         self.line_color = to_rgba(self.line_color)
 
+
 @dataclass
-class VLine():
+class VLine:
     """
     A vertical line annotation.
 
@@ -80,6 +83,7 @@ class VLine():
     >>> VLine(0)
     VLine(x=0, y_start=None, y_end=None, line_color=(0.0, 0.0, 0.0, 1.0), line_width=1)
     """
+
     x: float
     y_start: Optional[float] = DEFAULT_1D_LINE_START
     y_end: Optional[float] = DEFAULT_1D_LINE_END
@@ -89,8 +93,9 @@ class VLine():
     def __post_init__(self):
         self.line_color = to_rgba(self.line_color)
 
+
 @dataclass
-class Rect():
+class Rect:
     """
     A rectangle annotation.
 
@@ -122,6 +127,7 @@ class Rect():
     >>> Rect(0)
     Rect(x_start=-1, x_end=1, y_start=-1, y_end=1, line_color=(0.0, 0.0, 0.0, 1.0), line_width=1)
     """
+
     x_start: float
     x_end: float
     y_start: float
@@ -132,8 +138,9 @@ class Rect():
     def __post_init__(self):
         self.line_color = to_rgba(self.line_color)
 
+
 @dataclass
-class Line():
+class Line:
     """
     A line annotation.
 
@@ -156,6 +163,7 @@ class Line():
     >>> Line([(-1, -1), (0, 0), (1, 1)])
     Line(vertices=[(-1, -1), (0, 0), (1, 1)], line_color=(0.0, 0.0, 0.0, 1.0), line_width=1)
     """
+
     vertices: List[Tuple[float]]
     line_color: Color = DEFAULT_LINE_COLOR
     line_width: int = DEFAULT_LINE_WIDTH

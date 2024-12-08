@@ -1,14 +1,14 @@
 from matplotlib.colors import to_rgba
 
 okabe_ito = [
-    to_rgba('#56B4E9'), # sky blue
-    to_rgba('#E69F00'), # orange
-    to_rgba('#009E73'), # blueish green
-    to_rgba('#F0E442'), # yellow
-    to_rgba('#0072B2'), # blue
-    to_rgba('#D55E00'), # vermilion
-    to_rgba('#CC79A7'), # reddish purple
-    to_rgba('#000000'), # black
+    to_rgba('#56B4E9'),  # sky blue
+    to_rgba('#E69F00'),  # orange
+    to_rgba('#009E73'),  # blueish green
+    to_rgba('#F0E442'),  # yellow
+    to_rgba('#0072B2'),  # blue
+    to_rgba('#D55E00'),  # vermilion
+    to_rgba('#CC79A7'),  # reddish purple
+    to_rgba('#000000'),  # black
 ]
 
 glasbey_light = [
@@ -267,7 +267,7 @@ glasbey_light = [
     to_rgba('#247c2a'),
     to_rgba('#826723'),
     to_rgba('#bfbc4d'),
-    to_rgba('#ddd3a5')
+    to_rgba('#ddd3a5'),
 ]
 
 glasbey_dark = [
@@ -526,5 +526,5 @@ glasbey_dark = [
     to_rgba('#a7423b'),
     to_rgba('#006e70'),
     to_rgba('#97833d'),
-    to_rgba('#dbafc8')
+    to_rgba('#dbafc8'),
 ]
