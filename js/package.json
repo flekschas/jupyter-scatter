@@ -33,7 +33,7 @@
     "regl-scatterplot": "~1.11.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.3",
+    "@biomejs/biome": "^1.9.4",
     "esbuild": "^0.24.0"
   }
 }
