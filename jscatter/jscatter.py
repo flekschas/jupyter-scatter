@@ -5,7 +5,14 @@ import numpy as np
 import pandas as pd
 import warnings
 
-from matplotlib.colors import to_rgba, Normalize, LogNorm, PowerNorm, LinearSegmentedColormap, ListedColormap
+from matplotlib.colors import (
+    to_rgba,
+    Normalize,
+    LogNorm,
+    PowerNorm,
+    LinearSegmentedColormap,
+    ListedColormap,
+)
 from typing import Dict, Optional, Union, List, Tuple
 
 from .annotations import Line, HLine, VLine, Rect
@@ -13,8 +20,37 @@ from .composite_annotations import CompositeAnnotation, Contour
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
-from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_scale_type_from_df, get_domain_from_df, create_default_norm, create_labeling, get_histogram_from_df, sanitize_tooltip_properties, zerofy_missing_values
-from .types import Auto, Color, Scales, MouseModes, Auto, Reverse, Segment, Size, LegendPosition, VisualProperty, Labeling, TooltipPreviewType, TooltipPreviewImagePosition, TooltipPreviewImageSize, Undefined
+from .utils import (
+    any_not,
+    to_ndc,
+    tolist,
+    uri_validator,
+    to_scale_type,
+    get_scale_type_from_df,
+    get_domain_from_df,
+    create_default_norm,
+    create_labeling,
+    get_histogram_from_df,
+    sanitize_tooltip_properties,
+    zerofy_missing_values,
+)
+from .types import (
+    Auto,
+    Color,
+    Scales,
+    MouseModes,
+    Auto,
+    Reverse,
+    Segment,
+    Size,
+    LegendPosition,
+    VisualProperty,
+    Labeling,
+    TooltipPreviewType,
+    TooltipPreviewImagePosition,
+    TooltipPreviewImageSize,
+    Undefined,
+)
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -40,15 +76,21 @@ visual_properties = [
     'size',
 ]
 
+
 def get_non_visual_properties(properties):
     return [c for c in properties if c not in visual_properties]
 
+
 def check_encoding_dtype(series):
     if not any([check(series.dtype) for check in VALID_ENCODING_TYPES]):
-        raise ValueError(f'{series.name} is of an unsupported data type: {series.dtype}. Must be one of float*, int*, category, or string.')
+        raise ValueError(
+            f'{series.name} is of an unsupported data type: {series.dtype}. Must be one of float*, int*, category, or string.'
+        )
+
 
 def is_categorical_data(data):
     return pd.CategoricalDtype.is_dtype(data) or pd.api.types.is_string_dtype(data)
+
 
 def get_categorical_data(data):
     categorical_data = None
@@ -60,6 +102,7 @@ def get_categorical_data(data):
 
     return categorical_data
 
+
 def component_idx_to_name(idx):
     if idx == 2:
         return 'valueA'
@@ -68,6 +111,7 @@ def component_idx_to_name(idx):
         return 'valueB'
 
     return None
+
 
 def order_map(map, order):
     ordered_map = map
@@ -78,7 +122,8 @@ def order_map(map, order):
     except TypeError:
         pass
 
-    return ordered_map[::(1 + (-2 * (order == 'reverse')))]
+    return ordered_map[:: (1 + (-2 * (order == 'reverse')))]
+
 
 def get_map_order(map, categories):
     map_keys = list(map.keys())
@@ -90,6 +135,7 @@ def get_map_order(map, categories):
 
     return order
 
+
 def get_scale(scatter: Scatter, channel: str):
     return to_scale_type(
         getattr(scatter, f'_{channel}_norm')
@@ -97,13 +143,15 @@ def get_scale(scatter: Scatter, channel: str):
         else None
     )
 
+
 def get_domain(scatter: Scatter, channel: str):
     if getattr(scatter, f'_{channel}_categories') is None:
         return (
             getattr(scatter, f'_{channel}_norm').vmin,
-            getattr(scatter, f'_{channel}_norm').vmax
+            getattr(scatter, f'_{channel}_norm').vmax,
         )
     return getattr(scatter, f'_{channel}_categories')
+
 
 def get_histogram_bins(bins: Union[int, Dict[str, int]], property: str):
     if isinstance(bins, dict):
@@ -114,6 +162,7 @@ def get_histogram_bins(bins: Union[int, Dict[str, int]], property: str):
 
     return DEFAULT_HISTOGRAM_BINS
 
+
 def get_histogram_range(ranges, property):
     if isinstance(ranges, dict):
         return ranges.get(property)
@@ -123,6 +172,7 @@ def get_histogram_range(ranges, property):
 
     return None
 
+
 def normalize_annotation(annotation, x_scale, y_scale):
     def to_ndc(value, norm):
         return (norm(value) * 2) - 1
@@ -130,8 +180,12 @@ def normalize_annotation(annotation, x_scale, y_scale):
     if isinstance(annotation, HLine):
         return HLine(
             y=to_ndc(annotation.y, y_scale),
-            x_start=None if annotation.x_start is None else to_ndc(annotation.x_start, x_scale),
-            x_end=None if annotation.x_end is None else to_ndc(annotation.x_end, x_scale),
+            x_start=None
+            if annotation.x_start is None
+            else to_ndc(annotation.x_start, x_scale),
+            x_end=None
+            if annotation.x_end is None
+            else to_ndc(annotation.x_end, x_scale),
             line_color=annotation.line_color,
             line_width=annotation.line_width,
         )
@@ -139,17 +193,21 @@ def normalize_annotation(annotation, x_scale, y_scale):
     if isinstance(annotation, VLine):
         return VLine(
             x=to_ndc(annotation.x, x_scale),
-            y_start=None if annotation.y_start is None else to_ndc(annotation.y_start, y_scale),
-            y_end=None if annotation.y_end is None else to_ndc(annotation.y_end, y_scale),
+            y_start=None
+            if annotation.y_start is None
+            else to_ndc(annotation.y_start, y_scale),
+            y_end=None
+            if annotation.y_end is None
+            else to_ndc(annotation.y_end, y_scale),
             line_color=annotation.line_color,
             line_width=annotation.line_width,
         )
 
-
     if isinstance(annotation, Line):
         return Line(
             vertices=[
-                (to_ndc(v[0], x_scale), to_ndc(v[1], y_scale)) for v in annotation.vertices
+                (to_ndc(v[0], x_scale), to_ndc(v[1], y_scale))
+                for v in annotation.vertices
             ],
             line_color=annotation.line_color,
             line_width=annotation.line_width,
@@ -165,14 +223,15 @@ def normalize_annotation(annotation, x_scale, y_scale):
             line_width=annotation.line_width,
         )
 
+
 def normalize_annotations(annotations, x_scale, y_scale):
     if annotations is None:
         return None
     return [normalize_annotation(a, x_scale, y_scale) for a in annotations]
 
+
 def get_annotations(
-    scatter: Scatter,
-    annotations: List[Union[Line, VLine, HLine, Rect, Contour]]
+    scatter: Scatter, annotations: List[Union[Line, VLine, HLine, Rect, Contour]]
 ):
     base_annotations = []
 
@@ -184,13 +243,14 @@ def get_annotations(
 
     return base_annotations
 
-class Scatter():
+
+class Scatter:
     def __init__(
         self,
         x: Union[str, List[float], np.ndarray],
         y: Union[str, List[float], np.ndarray],
         data: Optional[pd.DataFrame] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Create a scatter instance.
@@ -277,9 +337,15 @@ class Scatter():
         self._y_data = None
         self._y_by = None
         self._y_histogram = None
-        self._color = (0, 0, 0, 0.66) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.66)
+        self._color = (
+            (0, 0, 0, 0.66)
+            if self._background_color_luminance > 0.5
+            else (1, 1, 1, 0.66)
+        )
         self._color_selected = (0, 0.55, 1, 1)
-        self._color_hover = (0, 0, 0, 1) if self._background_color_luminance > 0.5 else (1, 1, 1, 1)
+        self._color_hover = (
+            (0, 0, 0, 1) if self._background_color_luminance > 0.5 else (1, 1, 1, 1)
+        )
         self._color_data = None
         self._color_by = None
         self._color_map = None
@@ -314,9 +380,15 @@ class Scatter():
         self._connect_by_data = None
         self._connect_order = None
         self._connect_order_data = None
-        self._connection_color = (0, 0, 0, 0.1) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.1)
+        self._connection_color = (
+            (0, 0, 0, 0.1) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.1)
+        )
         self._connection_color_selected = (0, 0.55, 1, 1)
-        self._connection_color_hover = (0, 0, 0, 0.66) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.66)
+        self._connection_color_hover = (
+            (0, 0, 0, 0.66)
+            if self._background_color_luminance > 0.5
+            else (1, 1, 1, 0.66)
+        )
         self._connection_color_data = None
         self._connection_color_by = None
         self._connection_color_map = None
@@ -417,8 +489,7 @@ class Scatter():
             kwargs.get('size_labeling', UNDEF),
         )
         self.connect(
-            kwargs.get('connect_by', UNDEF),
-            kwargs.get('connect_order', UNDEF)
+            kwargs.get('connect_by', UNDEF), kwargs.get('connect_order', UNDEF)
         )
         self.connection_color(
             kwargs.get('connection_color', UNDEF),
@@ -452,10 +523,7 @@ class Scatter():
             kwargs.get('lasso_min_dist', UNDEF),
             kwargs.get('lasso_on_long_press', UNDEF),
         )
-        self.reticle(
-            kwargs.get('reticle', UNDEF),
-            kwargs.get('reticle_color', UNDEF)
-        )
+        self.reticle(kwargs.get('reticle', UNDEF), kwargs.get('reticle_color', UNDEF))
         self.mouse(kwargs.get('mouse_mode', UNDEF))
         self.camera(
             kwargs.get('camera_target', UNDEF),
@@ -515,11 +583,11 @@ class Scatter():
 
         if not connect_by:
             # To avoid having to serialize unused data
-            view = view[:,:4]
+            view = view[:, :4]
 
         if not connect_order:
             # To avoid having to serialize unused data
-            view = view[:,:5]
+            view = view[:, :5]
 
         return view.copy()
 
@@ -530,7 +598,7 @@ class Scatter():
         reset_scales: Optional[bool] = False,
         zoom_view: Optional[bool] = False,
         animate: Optional[bool] = False,
-        **kwargs
+        **kwargs,
     ) -> Union[Scatter, dict]:
         """
         Set or get the referenced Pandas DataFrame
@@ -629,7 +697,9 @@ class Scatter():
             self.size(skip_widget_update=True, **self.size())
             self.connect(skip_widget_update=True, **self.connect())
             self.connection_color(skip_widget_update=True, **self.connection_color())
-            self.connection_opacity(skip_widget_update=True, **self.connection_opacity())
+            self.connection_opacity(
+                skip_widget_update=True, **self.connection_opacity()
+            )
             self.connection_size(skip_widget_update=True, **self.connection_size())
 
             if 'skip_widget_update' not in kwargs:
@@ -667,7 +737,7 @@ class Scatter():
         if any_not([data, use_index], UNDEF):
             return self
 
-        return dict(data = self._data)
+        return dict(data=self._data)
 
     @property
     def x_data(self):
@@ -678,9 +748,11 @@ class Scatter():
     def x(
         self,
         x: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        scale: Optional[Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        scale: Optional[
+            Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]
+        ] = UNDEF,
         animate: Optional[Union[bool, Undefined]] = UNDEF,
-        **kwargs
+        **kwargs,
     ) -> Union[Scatter, dict]:
         """
         Set or get the x coordinates.
@@ -727,7 +799,11 @@ class Scatter():
                 self._x_scale = LogNorm()
             elif scale == 'pow':
                 self._x_scale = PowerNorm(2)
-            elif isinstance(scale, LogNorm) or isinstance(scale, PowerNorm) or isinstance(scale, Normalize):
+            elif (
+                isinstance(scale, LogNorm)
+                or isinstance(scale, PowerNorm)
+                or isinstance(scale, Normalize)
+            ):
                 self._x_scale = scale
             else:
                 try:
@@ -743,10 +819,8 @@ class Scatter():
                     self.update_widget(
                         'annotations',
                         normalize_annotations(
-                            self._annotations,
-                            self._x_scale,
-                            self._y_scale
-                        )
+                            self._annotations, self._x_scale, self._y_scale
+                        ),
                     )
 
         if x is not UNDEF:
@@ -768,8 +842,8 @@ class Scatter():
             self._x_domain = [self._x_min, self._x_max]
             self._x_histogram = get_histogram_from_df(
                 self._points[:, 0],
-                self.get_histogram_bins("x"),
-                self.get_histogram_range("x")
+                self.get_histogram_bins('x'),
+                self.get_histogram_range('x'),
             )
 
             # Reset scale to new domain
@@ -796,10 +870,7 @@ class Scatter():
         if any_not([x, scale], UNDEF):
             return self
 
-        return dict(
-            x = self._x,
-            scale = self._x_scale
-        )
+        return dict(x=self._x, scale=self._x_scale)
 
     @property
     def y_data(self):
@@ -810,9 +881,11 @@ class Scatter():
     def y(
         self,
         y: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        scale: Optional[Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        scale: Optional[
+            Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]
+        ] = UNDEF,
         animate: Optional[Union[bool, Undefined]] = UNDEF,
-        **kwargs
+        **kwargs,
     ) -> Union[Scatter, dict]:
         """
         Set or get the y coordinates.
@@ -859,7 +932,11 @@ class Scatter():
                 self._y_scale = LogNorm()
             elif scale == 'pow':
                 self._y_scale = PowerNorm(2)
-            elif isinstance(scale, LogNorm) or isinstance(scale, PowerNorm) or isinstance(scale, Normalize):
+            elif (
+                isinstance(scale, LogNorm)
+                or isinstance(scale, PowerNorm)
+                or isinstance(scale, Normalize)
+            ):
                 self._y_scale = scale
             else:
                 try:
@@ -875,10 +952,8 @@ class Scatter():
                     self.update_widget(
                         'annotations',
                         normalize_annotations(
-                            self._annotations,
-                            self._x_scale,
-                            self._y_scale
-                        )
+                            self._annotations, self._x_scale, self._y_scale
+                        ),
                     )
 
         if y is not UNDEF:
@@ -899,8 +974,8 @@ class Scatter():
             self._y_domain = [self._y_min, self._y_max]
             self._y_histogram = get_histogram_from_df(
                 self._points[:, 1],
-                self.get_histogram_bins("y"),
-                self.get_histogram_range("y")
+                self.get_histogram_bins('y'),
+                self.get_histogram_range('y'),
             )
 
             # Reset scale to new domain
@@ -927,19 +1002,20 @@ class Scatter():
         if any_not([y, scale], UNDEF):
             return self
 
-        return dict(
-            y = self._y,
-            scale = self._y_scale
-        )
+        return dict(y=self._y, scale=self._y_scale)
 
     def xy(
         self,
         x: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
         y: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        x_scale: Optional[Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
-        y_scale: Optional[Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]] = UNDEF,
+        x_scale: Optional[
+            Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]
+        ] = UNDEF,
+        y_scale: Optional[
+            Union[Scales, Tuple[float, float], LogNorm, PowerNorm, None, Undefined]
+        ] = UNDEF,
         animate: Optional[Union[bool, Undefined]] = UNDEF,
-        **kwargs
+        **kwargs,
     ) -> Union[Scatter, dict]:
         """
         Set the x and y coordinates.
@@ -1013,24 +1089,21 @@ class Scatter():
                     self.update_widget(
                         'annotations',
                         normalize_annotations(
-                            self._annotations,
-                            self._x_scale,
-                            self._y_scale
-                        )
+                            self._annotations, self._x_scale, self._y_scale
+                        ),
                     )
 
             return self
 
         return dict(
-            x = self._x,
-            y = self._y,
-            x_scale = self._x_scale,
-            y_scale = self._y_scale,
+            x=self._x,
+            y=self._y,
+            x_scale=self._x_scale,
+            y_scale=self._y_scale,
         )
 
     def selection(
-        self,
-        point_ids: Optional[Union[List[int], np.ndarray, None, Undefined]] = UNDEF
+        self, point_ids: Optional[Union[List[int], np.ndarray, None, Undefined]] = UNDEF
     ) -> Union[Scatter, np.ndarray]:
         """
         Set or get selected points.
@@ -1064,10 +1137,16 @@ class Scatter():
             try:
                 if self._data is not None and self._data_use_index:
                     row_idxs = self._data.index.get_indexer(point_ids)
-                    self._selected_points_idxs = np.asarray(row_idxs[row_idxs >= 0], dtype=SELECTION_DTYPE)
-                    self._selected_points_ids = self._data.iloc[self._selected_points_idxs].index
+                    self._selected_points_idxs = np.asarray(
+                        row_idxs[row_idxs >= 0], dtype=SELECTION_DTYPE
+                    )
+                    self._selected_points_ids = self._data.iloc[
+                        self._selected_points_idxs
+                    ].index
                 else:
-                    self._selected_points_idxs = np.asarray(point_ids, dtype=SELECTION_DTYPE)
+                    self._selected_points_idxs = np.asarray(
+                        point_ids, dtype=SELECTION_DTYPE
+                    )
                     self._selected_points_ids = self._selected_points_idxs
             except:
                 if point_ids is None:
@@ -1088,8 +1167,7 @@ class Scatter():
         return self._selected_points_ids
 
     def filter(
-        self,
-        point_ids: Optional[Union[List[int], np.ndarray, None, Undefined]] = UNDEF
+        self, point_ids: Optional[Union[List[int], np.ndarray, None, Undefined]] = UNDEF
     ) -> Union[Scatter, np.ndarray, None]:
         """
         Set or get filtered points. When filtering down to a set of points, all
@@ -1121,12 +1199,15 @@ class Scatter():
                 if self._data is not None and self._data_use_index:
                     row_idxs = self._data.index.get_indexer(point_ids)
                     self._filtered_points_idxs = np.asarray(
-                        row_idxs[row_idxs >= 0],
-                        dtype=SELECTION_DTYPE
+                        row_idxs[row_idxs >= 0], dtype=SELECTION_DTYPE
                     )
-                    self._filtered_points_ids = self._data.iloc[self._filtered_points_idxs].index
+                    self._filtered_points_ids = self._data.iloc[
+                        self._filtered_points_idxs
+                    ].index
                 else:
-                    self._filtered_points_idxs = np.asarray(point_ids, dtype=SELECTION_DTYPE)
+                    self._filtered_points_idxs = np.asarray(
+                        point_ids, dtype=SELECTION_DTYPE
+                    )
                     self._filtered_points_ids = self._filtered_points_idxs
             except:
                 if point_ids is None:
@@ -1158,11 +1239,23 @@ class Scatter():
         selected: Optional[Union[Color, Undefined]] = UNDEF,
         hover: Optional[Union[Color, Auto, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Auto, str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
+        map: Optional[
+            Union[
+                Auto,
+                str,
+                dict,
+                list,
+                LinearSegmentedColormap,
+                ListedColormap,
+                Undefined,
+            ]
+        ] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
         order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
-        labeling: Optional[Union[Tuple[str, str], Tuple[str, str, str], Labeling, Undefined]] = UNDEF,
-        **kwargs
+        labeling: Optional[
+            Union[Tuple[str, str], Tuple[str, str, str], Labeling, Undefined]
+        ] = UNDEF,
+        **kwargs,
     ) -> Union[Scatter, dict]:
         """
         Set or get the color encoding of the points.
@@ -1239,7 +1332,11 @@ class Scatter():
         """
         if default is not UNDEF:
             if default == 'auto':
-                self._color = (0, 0, 0, 0.66) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.66)
+                self._color = (
+                    (0, 0, 0, 0.66)
+                    if self._background_color_luminance > 0.5
+                    else (1, 1, 1, 0.66)
+                )
             else:
                 try:
                     self._color = to_rgba(default)
@@ -1255,7 +1352,11 @@ class Scatter():
 
         if hover is not UNDEF:
             if hover == 'auto':
-                self._color_hover = (0, 0, 0, 1) if self._background_color_luminance > 0.5 else (1, 1, 1, 1)
+                self._color_hover = (
+                    (0, 0, 0, 1)
+                    if self._background_color_luminance > 0.5
+                    else (1, 1, 1, 1)
+                )
             else:
                 try:
                     self._color_hover = to_rgba(hover)
@@ -1301,7 +1402,9 @@ class Scatter():
                 component = self._encodings.data[self._color_data_dimension].component
 
                 if categorical_data is not None:
-                    self._color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    self._color_categories = dict(
+                        zip(categorical_data, categorical_data.cat.codes)
+                    )
                     self._points[:, component] = categorical_data.cat.codes
                     self._color_histogram = get_histogram_from_df(categorical_data)
                 else:
@@ -1311,8 +1414,8 @@ class Scatter():
                     )
                     self._color_histogram = get_histogram_from_df(
                         self._points[:, component],
-                        self.get_histogram_bins("color"),
-                        self.get_histogram_range("color")
+                        self.get_histogram_bins('color'),
+                        self.get_histogram_range('color'),
                     )
 
                 if not self._encodings.data[self._color_data_dimension].prepared:
@@ -1374,7 +1477,9 @@ class Scatter():
                 self._color_map = okabe_ito
 
         if self._color_categories is not None:
-            assert len(self._color_categories) <= len(self._color_map), 'More categories than colors'
+            assert len(self._color_categories) <= len(
+                self._color_map
+            ), 'More categories than colors'
 
         if labeling is not UNDEF:
             if labeling is None:
@@ -1413,14 +1518,14 @@ class Scatter():
             return self
 
         return dict(
-            default = self._color,
-            selected = self._color_selected,
-            hover = self._color_hover,
-            by = self._color_by,
-            map = self._color_map,
-            norm = self._color_norm,
-            order = self._color_order,
-            labeling = self._color_labeling,
+            default=self._color,
+            selected=self._color_selected,
+            hover=self._color_hover,
+            by=self._color_by,
+            map=self._color_map,
+            norm=self._color_norm,
+            order=self._color_order,
+            labeling=self._color_labeling,
         )
 
     @property
@@ -1434,11 +1539,13 @@ class Scatter():
         default: Optional[Union[float, Undefined]] = UNDEF,
         unselected: Optional[Union[float, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
+        map: Optional[
+            Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]
+        ] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
         order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
         labeling: Optional[Union[Labeling, Undefined]] = UNDEF,
-        **kwargs
+        **kwargs,
     ):
         """
         Set or get the opacity encoding of the points.
@@ -1513,14 +1620,18 @@ class Scatter():
         if default is not UNDEF:
             try:
                 self._opacity = float(default)
-                assert self._opacity >= 0 and self._opacity <= 1, 'Opacity must be in [0,1]'
+                assert (
+                    self._opacity >= 0 and self._opacity <= 1
+                ), 'Opacity must be in [0,1]'
             except ValueError:
                 pass
 
         if unselected is not UNDEF:
             try:
                 self._opacity_unselected = float(unselected)
-                assert self._opacity_unselected >= 0 and self._opacity_unselected <= 1, 'Opacity scaling of unselected points must be in [0,1]'
+                assert (
+                    self._opacity_unselected >= 0 and self._opacity_unselected <= 1
+                ), 'Opacity scaling of unselected points must be in [0,1]'
                 self.update_widget('opacity_unselected', self._opacity_unselected)
             except ValueError:
                 pass
@@ -1565,7 +1676,9 @@ class Scatter():
 
                 if categorical_data is not None:
                     self._points[:, component] = categorical_data.cat.codes
-                    self._opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    self._opacity_categories = dict(
+                        zip(categorical_data, categorical_data.cat.codes)
+                    )
                     self._opacity_histogram = get_histogram_from_df(categorical_data)
                 else:
                     self._points[:, component] = self._opacity_norm(
@@ -1573,8 +1686,8 @@ class Scatter():
                     )
                     self._opacity_histogram = get_histogram_from_df(
                         self._points[:, component],
-                        self.get_histogram_bins("opacity"),
-                        self.get_histogram_range("opacity")
+                        self.get_histogram_bins('opacity'),
+                        self.get_histogram_range('opacity'),
                     )
                     self._opacity_categories = None
 
@@ -1609,17 +1722,23 @@ class Scatter():
             else:
                 self._opacity_map = np.asarray(map)
 
-        if (self._opacity_map is None or map == 'auto') and self._opacity_by is not None:
+        if (
+            self._opacity_map is None or map == 'auto'
+        ) and self._opacity_by is not None:
             # The best we can do is provide a linear opacity map
             if self._opacity_categories is not None:
-                self._opacity_map = np.linspace(1/len(self._opacity_categories), 1, len(self._opacity_categories))
+                self._opacity_map = np.linspace(
+                    1 / len(self._opacity_categories), 1, len(self._opacity_categories)
+                )
             else:
-                self._opacity_map = np.linspace(1/256, 1, 256)
+                self._opacity_map = np.linspace(1 / 256, 1, 256)
 
         self._opacity_map = tolist(self._opacity_map)
 
         if self._opacity_categories is not None:
-            assert len(self._opacity_categories) <= len(self._opacity_map), 'More categories than opacities'
+            assert len(self._opacity_categories) <= len(
+                self._opacity_map
+            ), 'More categories than opacities'
 
         if labeling is not UNDEF:
             if labeling is None:
@@ -1659,13 +1778,13 @@ class Scatter():
             return self
 
         return dict(
-            default = self._opacity,
-            unselected = self._opacity_unselected,
-            by = self._opacity_by,
-            map = self._opacity_map,
-            norm = self._opacity_norm,
-            order = self._opacity_order,
-            labeling = self._opacity_labeling,
+            default=self._opacity,
+            unselected=self._opacity_unselected,
+            by=self._opacity_by,
+            map=self._opacity_map,
+            norm=self._opacity_norm,
+            order=self._opacity_order,
+            labeling=self._opacity_labeling,
         )
 
     @property
@@ -1678,11 +1797,13 @@ class Scatter():
         self,
         default: Optional[Union[float, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
+        map: Optional[
+            Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]
+        ] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
         order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
         labeling: Optional[Union[Labeling, Undefined]] = UNDEF,
-        **kwargs
+        **kwargs,
     ):
         """
         Set or get the size encoding of the points.
@@ -1797,7 +1918,9 @@ class Scatter():
 
                 if categorical_data is not None:
                     self._points[:, component] = categorical_data.cat.codes
-                    self._size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    self._size_categories = dict(
+                        zip(categorical_data, categorical_data.cat.codes)
+                    )
                     self._size_histogram = get_histogram_from_df(categorical_data)
                 else:
                     self._points[:, component] = self._size_norm(
@@ -1805,8 +1928,8 @@ class Scatter():
                     )
                     self._size_histogram = get_histogram_from_df(
                         self._points[:, component],
-                        self.get_histogram_bins("size"),
-                        self.get_histogram_range("size")
+                        self.get_histogram_bins('size'),
+                        self.get_histogram_range('size'),
                     )
                     self._size_categories = None
 
@@ -1826,7 +1949,9 @@ class Scatter():
                 self._size_order = order
             elif self._size_categories is not None:
                 # Define order of the sizes instead of changing `points[:, component_idx]`
-                self._size_order = [self._size_categories[cat] for cat in self._size_order]
+                self._size_order = [
+                    self._size_categories[cat] for cat in self._size_order
+                ]
 
         if map is not UNDEF and map != 'auto' and map is not None:
             self._size_map_order = None
@@ -1851,7 +1976,9 @@ class Scatter():
         self._size_map = tolist(self._size_map)
 
         if self._size_categories is not None:
-            assert len(self._size_categories) <= len(self._size_map), 'More categories than sizes'
+            assert len(self._size_categories) <= len(
+                self._size_map
+            ), 'More categories than sizes'
 
         if labeling is not UNDEF:
             if labeling is None:
@@ -1890,12 +2017,12 @@ class Scatter():
             return self
 
         return dict(
-            default = self._size,
-            by = self._size_by,
-            map = self._size_map,
-            norm = self._size_norm,
-            order = self._size_order,
-            labeling = self._size_labeling,
+            default=self._size,
+            by=self._size_by,
+            map=self._size_map,
+            norm=self._size_norm,
+            order=self._size_order,
+            labeling=self._size_labeling,
         )
 
     @property
@@ -1914,7 +2041,7 @@ class Scatter():
         self,
         by: Optional[Union[str, List[int], np.ndarray[int], None, Undefined]] = UNDEF,
         order: Optional[Union[List[int], np.ndarray[int], None, Undefined]] = UNDEF,
-        **kwargs
+        **kwargs,
     ):
         """
         Set or get the line-connection encoding of points.
@@ -1964,9 +2091,7 @@ class Scatter():
                     self._connect_by_data = None
                 else:
                     self._connect_by_data = pd.Series(
-                        by,
-                        index=self._data_index,
-                        dtype='category'
+                        by, index=self._data_index, dtype='category'
                     )
                     self._connect_by = 'Custom Connect-By Data'
 
@@ -1989,9 +2114,7 @@ class Scatter():
                     self._connect_order_data = None
                 else:
                     self._connect_order_data = pd.Series(
-                        order,
-                        index=self._data_index,
-                        dtype='int'
+                        order, index=self._data_index, dtype='int'
                     )
                     self._connect_order = 'Custom Connect-Order Data'
 
@@ -2012,8 +2135,8 @@ class Scatter():
             return self
 
         return dict(
-            by = self._connect_by,
-            order = self._connect_order,
+            by=self._connect_by,
+            order=self._connect_order,
         )
 
     @property
@@ -2028,11 +2151,21 @@ class Scatter():
         selected: Optional[Union[Color, Undefined]] = UNDEF,
         hover: Optional[Union[Color, Undefined]] = UNDEF,
         by: Optional[Union[Segment, str, List[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Auto, str, dict, list, LinearSegmentedColormap, ListedColormap, Undefined]] = UNDEF,
+        map: Optional[
+            Union[
+                Auto,
+                str,
+                dict,
+                list,
+                LinearSegmentedColormap,
+                ListedColormap,
+                Undefined,
+            ]
+        ] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
         order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
         labeling: Optional[Union[Labeling, Undefined]] = UNDEF,
-        **kwargs
+        **kwargs,
     ):
         """
         Set or get the color encoding of the point-connecting lines.
@@ -2126,14 +2259,18 @@ class Scatter():
         if selected is not UNDEF:
             try:
                 self._connection_color_selected = to_rgba(selected)
-                self.update_widget('connection_color_selected', self._connection_color_selected)
+                self.update_widget(
+                    'connection_color_selected', self._connection_color_selected
+                )
             except ValueError:
                 pass
 
         if hover is not UNDEF:
             try:
                 self._connection_color_hover = to_rgba(hover)
-                self.update_widget('connection_color_hover', self._connection_color_hover)
+                self.update_widget(
+                    'connection_color_hover', self._connection_color_hover
+                )
             except ValueError:
                 pass
 
@@ -2175,26 +2312,38 @@ class Scatter():
                     )
                     self._connection_color_by = 'Custom Connection-Color Data'
 
-                self._encodings.set('connection_color', self._connection_color_data_dimension)
+                self._encodings.set(
+                    'connection_color', self._connection_color_data_dimension
+                )
 
                 check_encoding_dtype(self.connection_color_data)
 
-                component = self._encodings.data[self._connection_color_data_dimension].component
+                component = self._encodings.data[
+                    self._connection_color_data_dimension
+                ].component
                 categorical_data = get_categorical_data(self.connection_color_data)
 
                 if categorical_data is not None:
-                    self._connection_color_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    self._connection_color_categories = dict(
+                        zip(categorical_data, categorical_data.cat.codes)
+                    )
                     self._points[:, component] = categorical_data.cat.codes
                 else:
                     self._connection_color_categories = None
                     self._points[:, component] = self._connection_color_norm(
-                        zerofy_missing_values(self.connection_color_data.values, 'Connection color')
+                        zerofy_missing_values(
+                            self.connection_color_data.values, 'Connection color'
+                        )
                     )
 
-                if not self._encodings.data[self._connection_color_data_dimension].prepared:
+                if not self._encodings.data[
+                    self._connection_color_data_dimension
+                ].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._connection_color_data_dimension].prepared = True
+                    self._encodings.data[
+                        self._connection_color_data_dimension
+                    ].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static color encoding
@@ -2206,7 +2355,9 @@ class Scatter():
                 self._connection_color_order = order
             elif self._connection_color_categories is not None:
                 # Define order of the colors instead of changing `points[:, component_idx]`
-                self._connection_color_order = [self._connection_color_categories[cat] for cat in order]
+                self._connection_color_order = [
+                    self._connection_color_categories[cat] for cat in order
+                ]
 
         if map is not UNDEF and map != 'auto' and map is not None:
             if self._connection_color_categories is None:
@@ -2226,20 +2377,28 @@ class Scatter():
                     self._connection_color_map = [to_rgba(c) for c in map.colors]
                 elif isinstance(map, str):
                     # Assuming `map` is the name of a Matplotlib ListedColormap
-                    self._connection_color_map = [to_rgba(c) for c in plt.get_cmap(map).colors]
+                    self._connection_color_map = [
+                        to_rgba(c) for c in plt.get_cmap(map).colors
+                    ]
                 elif isinstance(map, dict):
                     # Assuming `map` is a dictionary of colors
                     self._connection_color_map = [to_rgba(c) for c in map.values()]
                     self._connection_color_map_order = list(map.keys())
-                    self._connection_color_order = get_map_order(map, self._connection_color_categories)
+                    self._connection_color_order = get_map_order(
+                        map, self._connection_color_categories
+                    )
                 else:
                     # Assuming `map` is a list of colors
                     self._connection_color_map = [to_rgba(c) for c in map]
 
-        if (self._connection_color_map is None or map == 'auto') and self._connection_color_by is not None:
+        if (
+            self._connection_color_map is None or map == 'auto'
+        ) and self._connection_color_by is not None:
             # Assign default color maps
             if self._connection_color_categories is None:
-                self._connection_color_map = plt.get_cmap('viridis')(range(256)).tolist()
+                self._connection_color_map = plt.get_cmap('viridis')(
+                    range(256)
+                ).tolist()
             elif len(self._connection_color_categories) > 8:
                 if self._background_color_luminance < 0.5:
                     self._connection_color_map = glasbey_light
@@ -2249,17 +2408,26 @@ class Scatter():
                 self._connection_color_map = okabe_ito
 
         if self._connection_color_categories is not None:
-            assert len(self._connection_color_categories) <= len(self._connection_color_map), 'More categories than connection colors'
+            assert len(self._connection_color_categories) <= len(
+                self._connection_color_map
+            ), 'More categories than connection colors'
 
         if labeling is not UNDEF:
             if labeling is None:
                 self._connection_color_labeling = None
             else:
-                column = self._connection_color_by if isinstance(self._connection_color_by, str) else None
+                column = (
+                    self._connection_color_by
+                    if isinstance(self._connection_color_by, str)
+                    else None
+                )
                 self._connection_color_labeling = create_labeling(labeling, column)
 
         # Update widget and legend encoding
-        if self._connection_color_by is not None and self._connection_color_map is not None:
+        if (
+            self._connection_color_by is not None
+            and self._connection_color_map is not None
+        ):
             final_connection_color_map = order_map(
                 self._connection_color_map,
                 self._connection_color_order,
@@ -2287,14 +2455,14 @@ class Scatter():
             return self
 
         return dict(
-            default = self._connection_color,
-            selected = self._connection_color_selected,
-            hover = self._connection_color_hover,
-            by = self._connection_color_by,
-            map = self._connection_color_map,
-            norm = self._connection_color_norm,
-            order = self._connection_color_order,
-            labeling = self._connection_color_labeling,
+            default=self._connection_color,
+            selected=self._connection_color_selected,
+            hover=self._connection_color_hover,
+            by=self._connection_color_by,
+            map=self._connection_color_map,
+            norm=self._connection_color_norm,
+            order=self._connection_color_order,
+            labeling=self._connection_color_labeling,
         )
 
     @property
@@ -2307,11 +2475,13 @@ class Scatter():
         self,
         default: Optional[Union[float, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
+        map: Optional[
+            Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]
+        ] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
         order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
         labeling: Optional[Union[Labeling, Undefined]] = UNDEF,
-        **kwargs
+        **kwargs,
     ):
         """
         Set or get the opacity encoding of the point-connecting lines.
@@ -2383,8 +2553,13 @@ class Scatter():
         if default is not UNDEF:
             try:
                 self._connection_opacity = float(default)
-                assert self._connection_opacity >= 0 and self._connection_opacity <= 1, 'Connection opacity must be in [0,1]'
-                self.update_widget('connection_opacity', self._connection_opacity_map or self._connection_opacity)
+                assert (
+                    self._connection_opacity >= 0 and self._connection_opacity <= 1
+                ), 'Connection opacity must be in [0,1]'
+                self.update_widget(
+                    'connection_opacity',
+                    self._connection_opacity_map or self._connection_opacity,
+                )
             except ValueError:
                 pass
 
@@ -2420,26 +2595,38 @@ class Scatter():
                     )
                     self._connection_opacity_by = 'Custom Connection-Opacity Data'
 
-                self._encodings.set('connection_opacity', self._connection_opacity_data_dimension)
+                self._encodings.set(
+                    'connection_opacity', self._connection_opacity_data_dimension
+                )
 
                 check_encoding_dtype(self.connection_opacity_data)
 
-                component = self._encodings.data[self._connection_opacity_data_dimension].component
+                component = self._encodings.data[
+                    self._connection_opacity_data_dimension
+                ].component
                 categorical_data = get_categorical_data(self.connection_opacity_data)
 
                 if categorical_data is not None:
                     self._points[:, component] = categorical_data.cat.codes
-                    self._connection_opacity_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    self._connection_opacity_categories = dict(
+                        zip(categorical_data, categorical_data.cat.codes)
+                    )
                 else:
                     self._points[:, component] = self._connection_opacity_norm(
-                        zerofy_missing_values(self.connection_opacity_data.values, 'Connection opacity')
+                        zerofy_missing_values(
+                            self.connection_opacity_data.values, 'Connection opacity'
+                        )
                     )
                     self._connection_opacity_categories = None
 
-                if not self._encodings.data[self._connection_opacity_data_dimension].prepared:
+                if not self._encodings.data[
+                    self._connection_opacity_data_dimension
+                ].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._connection_opacity_data_dimension].prepared = True
+                    self._encodings.data[
+                        self._connection_opacity_data_dimension
+                    ].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static opacity encoding
@@ -2464,35 +2651,48 @@ class Scatter():
                 # Assuming `map` is a dictionary of opacities
                 self._connection_opacity_map = list(map.values())
                 self._connection_opacity_map_order = list(map.keys())
-                self._connection_opacity_order = get_map_order(map, self._connection_opacity_categories)
+                self._connection_opacity_order = get_map_order(
+                    map, self._connection_opacity_categories
+                )
             else:
                 self._connection_opacity_map = np.asarray(map)
 
-        if (self._connection_opacity_map is None or map == 'auto') and self._connection_opacity_by is not None:
+        if (
+            self._connection_opacity_map is None or map == 'auto'
+        ) and self._connection_opacity_by is not None:
             # The best we can do is provide a linear opacity map
             if self._connection_opacity_categories is not None:
                 self._connection_opacity_map = np.linspace(
                     1 / len(self._connection_opacity_categories),
                     1,
-                    len(self._connection_opacity_categories)
+                    len(self._connection_opacity_categories),
                 )
             else:
-                self._connection_opacity_map = np.linspace(1/256, 1, 256)
+                self._connection_opacity_map = np.linspace(1 / 256, 1, 256)
 
         self._connection_opacity_map = tolist(self._connection_opacity_map)
 
         if self._connection_opacity_categories is not None:
-            assert len(self._connection_opacity_categories) <= len(self._connection_opacity_map), 'More categories than connection opacities'
+            assert len(self._connection_opacity_categories) <= len(
+                self._connection_opacity_map
+            ), 'More categories than connection opacities'
 
         if labeling is not UNDEF:
             if labeling is None:
                 self._connection_opacity_labeling = None
             else:
-                column = self._connection_opacity_by if isinstance(self._connection_opacity_by, str) else None
+                column = (
+                    self._connection_opacity_by
+                    if isinstance(self._connection_opacity_by, str)
+                    else None
+                )
                 self._connection_opacity_labeling = create_labeling(labeling, column)
 
         # Update widget and legend encoding
-        if self._connection_opacity_by is not None and self._connection_opacity_map is not None:
+        if (
+            self._connection_opacity_by is not None
+            and self._connection_opacity_map is not None
+        ):
             final_opacity_map = order_map(
                 self._connection_opacity_map,
                 self._connection_opacity_order,
@@ -2520,12 +2720,12 @@ class Scatter():
             return self
 
         return dict(
-            default = self._connection_opacity,
-            by = self._connection_opacity_by,
-            map = self._connection_opacity_map,
-            norm = self._connection_opacity_norm,
-            order = self._connection_opacity_order,
-            labeling = self._connection_opacity_labeling,
+            default=self._connection_opacity,
+            by=self._connection_opacity_by,
+            map=self._connection_opacity_map,
+            norm=self._connection_opacity_norm,
+            order=self._connection_opacity_order,
+            labeling=self._connection_opacity_labeling,
         )
 
     @property
@@ -2538,11 +2738,13 @@ class Scatter():
         self,
         default: Optional[Union[float, Undefined]] = UNDEF,
         by: Optional[Union[str, List[float], np.ndarray, Undefined]] = UNDEF,
-        map: Optional[Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]] = UNDEF,
+        map: Optional[
+            Union[Auto, dict, List[float], Tuple[float, float, int], Undefined]
+        ] = UNDEF,
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
         order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
         labeling: Optional[Union[Labeling, Undefined]] = UNDEF,
-        **kwargs
+        **kwargs,
     ):
         """
         Set or get the size encoding of the point-connecting lines.
@@ -2614,7 +2816,9 @@ class Scatter():
         if default is not UNDEF:
             try:
                 self._connection_size = int(default)
-                assert self._connection_size > 0, 'Connection size must be a positive integer'
+                assert (
+                    self._connection_size > 0
+                ), 'Connection size must be a positive integer'
             except ValueError:
                 pass
 
@@ -2650,26 +2854,38 @@ class Scatter():
                     )
                     self._connection_size_by = 'Custom Connection-Size Data'
 
-                self._encodings.set('connection_size', self._connection_size_data_dimension)
+                self._encodings.set(
+                    'connection_size', self._connection_size_data_dimension
+                )
 
                 check_encoding_dtype(self.connection_size_data)
 
-                component = self._encodings.data[self._connection_size_data_dimension].component
+                component = self._encodings.data[
+                    self._connection_size_data_dimension
+                ].component
                 categorical_data = get_categorical_data(self.connection_size_data)
 
                 if categorical_data is not None:
                     self._points[:, component] = categorical_data.cat.codes
-                    self._connection_size_categories = dict(zip(categorical_data, categorical_data.cat.codes))
+                    self._connection_size_categories = dict(
+                        zip(categorical_data, categorical_data.cat.codes)
+                    )
                 else:
                     self._points[:, component] = self._connection_size_norm(
-                        zerofy_missing_values(self.connection_size_data.values, 'Connection size')
+                        zerofy_missing_values(
+                            self.connection_size_data.values, 'Connection size'
+                        )
                     )
                     self._connection_size_categories = None
 
-                if not self._encodings.data[self._connection_size_data_dimension].prepared:
+                if not self._encodings.data[
+                    self._connection_size_data_dimension
+                ].prepared:
                     data_updated = True
                     # Make sure we don't prepare the data twice
-                    self._encodings.data[self._connection_size_data_dimension].prepared = True
+                    self._encodings.data[
+                        self._connection_size_data_dimension
+                    ].prepared = True
 
         elif default is not UNDEF:
             # Presumably the user wants to switch to a static size encoding
@@ -2681,7 +2897,9 @@ class Scatter():
                 self._connection_size_order = order
             elif self._connection_size_categories is not None:
                 # Define order of the sizes instead of changing `points[:, component_idx]`
-                self._connection_size_order = [self._connection_size_categories[cat] for cat in order]
+                self._connection_size_order = [
+                    self._connection_size_categories[cat] for cat in order
+                ]
 
         if map is not UNDEF and map != 'auto' and map is not None:
             self._connection_size_map_order = None
@@ -2692,16 +2910,22 @@ class Scatter():
                 # Assuming `map` is a dictionary of sizes
                 self._connection_size_map = list(map.values())
                 self._connection_size_map_order = list(map.keys())
-                self._connection_size_order = get_map_order(map, self._connection_size_categories)
+                self._connection_size_order = get_map_order(
+                    map, self._connection_size_categories
+                )
             else:
                 self._connection_size_map = np.asarray(map)
 
-        if (self._connection_size_map is None or map == 'auto') and self._connection_size_by is not None:
+        if (
+            self._connection_size_map is None or map == 'auto'
+        ) and self._connection_size_by is not None:
             # The best we can do is provide a linear size map
             if self._connection_size_categories is None:
                 self._connection_size_map = np.linspace(1, 10, 19)
             else:
-                self._connection_size_map = np.arange(1, len(self._connection_size_categories) + 1)
+                self._connection_size_map = np.arange(
+                    1, len(self._connection_size_categories) + 1
+                )
 
         self._connection_size_map = tolist(self._connection_size_map)
 
@@ -2709,14 +2933,20 @@ class Scatter():
             if labeling is None:
                 self._connection_size_labeling = None
             else:
-                column = self._connection_size_by if isinstance(self._connection_size_by, str) else None
+                column = (
+                    self._connection_size_by
+                    if isinstance(self._connection_size_by, str)
+                    else None
+                )
                 self._connection_size_labeling = create_labeling(labeling, column)
 
         # Update widget and legend encoding
-        if self._connection_size_by is not None and self._connection_size_map is not None:
+        if (
+            self._connection_size_by is not None
+            and self._connection_size_map is not None
+        ):
             final_connection_size_map = order_map(
-                self._connection_size_map,
-                self._connection_size_order
+                self._connection_size_map, self._connection_size_order
             )
             self.update_widget('connection_size', final_connection_size_map)
             self._encodings.set_legend(
@@ -2738,25 +2968,27 @@ class Scatter():
             self.update_widget('points', self.get_point_list())
 
         if self._connection_size_categories is not None:
-            assert len(self._connection_size_categories) <= len(self._connection_size_map), 'More categories than connection sizes'
+            assert len(self._connection_size_categories) <= len(
+                self._connection_size_map
+            ), 'More categories than connection sizes'
 
         if any_not([default, by, map, norm, order, labeling], UNDEF):
             return self
 
         return dict(
-            default = self._connection_size,
-            by = self._connection_size_by,
-            map = self._connection_size_map,
-            norm = self._connection_size_norm,
-            order = self._connection_size_order,
-            labeling = self._connection_size_labeling,
+            default=self._connection_size,
+            by=self._connection_size_by,
+            map=self._connection_size_map,
+            norm=self._connection_size_norm,
+            order=self._connection_size_order,
+            labeling=self._connection_size_labeling,
         )
 
     def background(
         self,
         color: Optional[Union[Color, Undefined]] = UNDEF,
         image: Optional[Union[str, bytes, Undefined]] = UNDEF,
-        **kwargs
+        **kwargs,
     ):
         """
         Set or get the scatter plot's background.
@@ -2834,7 +3066,9 @@ class Scatter():
 
                     x = im.make_image()
                     h, w, d = x.as_rgba_str()
-                    self._background_image = np.fromstring(d, dtype=np.uint8).reshape(h, w, 4)
+                    self._background_image = np.fromstring(d, dtype=np.uint8).reshape(
+                        h, w, 4
+                    )
                     self.update_widget('background_image', self._background_image)
                 except:
                     if image is None:
@@ -2846,8 +3080,8 @@ class Scatter():
             return self
 
         return dict(
-            color = self._background_color,
-            image = self._background_image,
+            color=self._background_color,
+            image=self._background_image,
         )
 
     def camera(
@@ -2933,10 +3167,10 @@ class Scatter():
             return self
 
         return dict(
-            target = self._camera_target,
-            distance = self._camera_distance,
-            rotation = self._camera_rotation,
-            view = self._camera_view,
+            target=self._camera_target,
+            distance=self._camera_distance,
+            rotation=self._camera_rotation,
+            view=self._camera_view,
         )
 
     def lasso(
@@ -2944,8 +3178,8 @@ class Scatter():
         color: Optional[Union[Color, Undefined]] = UNDEF,
         initiator: Optional[Union[bool, Undefined]] = UNDEF,
         min_delay: Optional[Union[int, Undefined]] = UNDEF,
-        min_dist: Optional[Union[float, Undefined]]  = UNDEF,
-        on_long_press: Optional[Union[bool, Undefined]]  = UNDEF,
+        min_dist: Optional[Union[float, Undefined]] = UNDEF,
+        on_long_press: Optional[Union[bool, Undefined]] = UNDEF,
     ):
         """
         Set or get the lasso settings.
@@ -3050,17 +3284,14 @@ class Scatter():
             return self
 
         return dict(
-            color = self._lasso_color,
-            initiator = self._lasso_initiator,
-            min_delay = self._lasso_min_delay,
-            min_dist = self._lasso_min_dist,
-            on_long_press = self._lasso_on_long_press,
+            color=self._lasso_color,
+            initiator=self._lasso_initiator,
+            min_delay=self._lasso_min_delay,
+            min_dist=self._lasso_min_dist,
+            on_long_press=self._lasso_on_long_press,
         )
 
-    def width(
-        self,
-        width: Optional[Union[Auto, int, Undefined]] = UNDEF
-    ):
+    def width(self, width: Optional[Union[Auto, int, Undefined]] = UNDEF):
         """
         Set or get the width of the scatter plot.
 
@@ -3153,7 +3384,7 @@ class Scatter():
             elif self._background_color_luminance < 0.75:
                 return (0, 0, 0, 0.2)
 
-            return (0, 0, 0, 0.1) # Defaut
+            return (0, 0, 0, 0.1)  # Defaut
 
     def get_axes_color(self):
         if self._background_color_luminance < 0.5:
@@ -3176,14 +3407,13 @@ class Scatter():
     def get_legend_encoding(self):
         return {
             channel: self._encodings.get_legend(channel)
-            for channel
-            in self._encodings.visual.keys()
+            for channel in self._encodings.visual.keys()
         }
 
     def reticle(
         self,
         show: Optional[Union[bool, Undefined]] = UNDEF,
-        color: Optional[Union[Color, Undefined]] = UNDEF
+        color: Optional[Union[Color, Undefined]] = UNDEF,
     ):
         """
         Set or get the reticle setting.
@@ -3234,14 +3464,11 @@ class Scatter():
             return self
 
         return dict(
-            show = self._reticle,
-            color = self._reticle_color,
+            show=self._reticle,
+            color=self._reticle_color,
         )
 
-    def mouse(
-        self,
-        mode: Optional[Union[MouseModes, Undefined]] = UNDEF
-    ):
+    def mouse(self, mode: Optional[Union[MouseModes, Undefined]] = UNDEF):
         """
         Set or get the mouse mode.
 
@@ -3334,9 +3561,7 @@ class Scatter():
             if isinstance(labels, bool):
                 self._axes_labels = labels
             elif isinstance(labels, dict):
-                self._axes_labels = [
-                    labels.get('x', ''), labels.get('y', '')
-                ]
+                self._axes_labels = [labels.get('x', ''), labels.get('y', '')]
             else:
                 self._axes_labels = labels
 
@@ -3349,9 +3574,9 @@ class Scatter():
             return self
 
         return dict(
-            axes = self._axes,
-            grid = self._axes_grid,
-            labels = self._axes_labels,
+            axes=self._axes,
+            grid=self._axes_grid,
+            labels=self._axes_labels,
         )
 
     def legend(
@@ -3398,9 +3623,7 @@ class Scatter():
                 self._legend = legend
                 self.update_widget('legend', legend)
                 if legend:
-                    self.update_widget(
-                        'legend_encoding', self.get_legend_encoding()
-                    )
+                    self.update_widget('legend_encoding', self.get_legend_encoding())
             except:
                 pass
 
@@ -3422,9 +3645,9 @@ class Scatter():
             return self
 
         return dict(
-            legend = self._legend,
-            position = self._legend_position,
-            size = self._legend_size,
+            legend=self._legend,
+            position=self._legend_position,
+            size=self._legend_size,
         )
 
     def tooltip(
@@ -3433,13 +3656,17 @@ class Scatter():
         properties: Optional[Union[List[VisualProperty], Undefined]] = UNDEF,
         histograms: Optional[Union[bool, Undefined]] = UNDEF,
         histograms_bins: Optional[Union[int, Dict[str, int], Undefined]] = UNDEF,
-        histograms_ranges: Optional[Union[Tuple[float], Dict[str, Tuple[float]], Undefined]] = UNDEF,
+        histograms_ranges: Optional[
+            Union[Tuple[float], Dict[str, Tuple[float]], Undefined]
+        ] = UNDEF,
         histograms_size: Optional[Union[Size, Undefined]] = UNDEF,
         preview: Optional[Union[str, Undefined]] = UNDEF,
         preview_type: Optional[Union[TooltipPreviewType, Undefined]] = UNDEF,
         preview_text_lines: Optional[Union[int, Undefined]] = UNDEF,
         preview_image_background_color: Optional[Union[Auto, Color, Undefined]] = UNDEF,
-        preview_image_position: Optional[Union[TooltipPreviewImagePosition, str, Undefined]] = UNDEF,
+        preview_image_position: Optional[
+            Union[TooltipPreviewImagePosition, str, Undefined]
+        ] = UNDEF,
         preview_image_size: Optional[Union[TooltipPreviewImageSize, Undefined]] = UNDEF,
         preview_audio_length: Optional[Union[int, Undefined]] = UNDEF,
         preview_audio_loop: Optional[Union[bool, int, Undefined]] = UNDEF,
@@ -3613,8 +3840,12 @@ class Scatter():
             self.update_widget('tooltip_preview_text_lines', self._preview_text_lines)
 
         if preview_image_background_color is not UNDEF:
-            self._tooltip_preview_image_background_color = preview_image_background_color
-            self.update_widget('tooltip_preview_image_background_color', preview_image_background_color)
+            self._tooltip_preview_image_background_color = (
+                preview_image_background_color
+            )
+            self.update_widget(
+                'tooltip_preview_image_background_color', preview_image_background_color
+            )
 
         if preview_image_position is not UNDEF:
             self._tooltip_preview_image_position = preview_image_position
@@ -3629,7 +3860,9 @@ class Scatter():
                 self._tooltip_preview_audio_length = max(0, preview_audio_length)
             except TypeError:
                 self._tooltip_preview_audio_length = None
-            self.update_widget('tooltip_preview_audio_length', self._tooltip_preview_audio_length)
+            self.update_widget(
+                'tooltip_preview_audio_length', self._tooltip_preview_audio_length
+            )
 
         if preview_audio_loop is not UNDEF:
             self._tooltip_preview_audio_loop = preview_audio_loop
@@ -3649,27 +3882,17 @@ class Scatter():
 
         if properties is not UNDEF:
             self._tooltip_properties = sanitize_tooltip_properties(
-                self._data,
-                visual_properties,
-                properties
+                self._data, visual_properties, properties
             )
 
             self._tooltip_histograms_bins = {
-                property: get_histogram_bins(
-                    self._tooltip_histograms_bins,
-                    property
-                )
-                for property
-                in self._tooltip_properties
+                property: get_histogram_bins(self._tooltip_histograms_bins, property)
+                for property in self._tooltip_properties
             }
 
             self._tooltip_histograms_ranges = {
-                property: get_histogram_range(
-                    self._tooltip_histograms_ranges,
-                    property
-                )
-                for property
-                in self._tooltip_properties
+                property: get_histogram_range(self._tooltip_histograms_ranges, property)
+                for property in self._tooltip_properties
             }
 
         if size is not UNDEF:
@@ -3687,69 +3910,77 @@ class Scatter():
         if histograms_bins is not UNDEF:
             self._tooltip_histograms_bins = {
                 property: get_histogram_bins(histograms_bins, property)
-                for property
-                in self._tooltip_properties
+                for property in self._tooltip_properties
             }
 
         if histograms_ranges is not UNDEF:
             self._tooltip_histograms_ranges = {
                 property: get_histogram_range(histograms_ranges, property)
-                for property
-                in self._tooltip_properties
+                for property in self._tooltip_properties
             }
 
         if histograms_bins is not UNDEF or histograms_ranges is not UNDEF:
             # Re-create histograms
             self._x_histogram = get_histogram_from_df(
                 self._points[:, 0],
-                self.get_histogram_bins("x"),
-                self.get_histogram_range("x"),
+                self.get_histogram_bins('x'),
+                self.get_histogram_range('x'),
             )
-            self.update_widget('x_histogram_range', self.get_histogram_range("x"))
+            self.update_widget('x_histogram_range', self.get_histogram_range('x'))
             self.update_widget('x_histogram', self._x_histogram)
 
             self._y_histogram = get_histogram_from_df(
                 self._points[:, 1],
-                self.get_histogram_bins("y"),
-                self.get_histogram_range("y")
+                self.get_histogram_bins('y'),
+                self.get_histogram_range('y'),
             )
-            self.update_widget('y_histogram_range', self.get_histogram_range("y"))
+            self.update_widget('y_histogram_range', self.get_histogram_range('y'))
             self.update_widget('y_histogram', self._y_histogram)
 
             if self._color_by is not None and self._color_categories is None:
                 component = self._encodings.data[self._color_by].component
                 self._color_histogram = get_histogram_from_df(
                     self._points[:, component],
-                    self.get_histogram_bins("color"),
-                    self.get_histogram_range("color")
+                    self.get_histogram_bins('color'),
+                    self.get_histogram_range('color'),
                 )
-                self.update_widget('color_histogram_range', self.get_histogram_range("color"))
+                self.update_widget(
+                    'color_histogram_range', self.get_histogram_range('color')
+                )
                 self.update_widget('color_histogram', self._color_histogram)
 
-            if self._opacity_by is not None and self._opacity_by != "density" and self._opacity_categories is None:
+            if (
+                self._opacity_by is not None
+                and self._opacity_by != 'density'
+                and self._opacity_categories is None
+            ):
                 component = self._encodings.data[self._opacity_by].component
                 self._opacity_histogram = get_histogram_from_df(
                     self._points[:, component],
-                    self.get_histogram_bins("opacity"),
-                    self.get_histogram_range("opacity")
+                    self.get_histogram_bins('opacity'),
+                    self.get_histogram_range('opacity'),
                 )
-                self.update_widget('opacity_histogram_range', self.get_histogram_range("opacity"))
+                self.update_widget(
+                    'opacity_histogram_range', self.get_histogram_range('opacity')
+                )
                 self.update_widget('opacity_histogram', self._opacity_histogram)
 
             if self._size_by is not None and self._size_categories is None:
                 component = self._encodings.data[self._size_by].component
                 self._size_histogram = get_histogram_from_df(
                     self._points[:, component],
-                    self.get_histogram_bins("size"),
-                    self.get_histogram_range("size")
+                    self.get_histogram_bins('size'),
+                    self.get_histogram_range('size'),
                 )
-                self.update_widget('size_histogram_range', self.get_histogram_range("size"))
+                self.update_widget(
+                    'size_histogram_range', self.get_histogram_range('size')
+                )
                 self.update_widget('size_histogram', self._size_histogram)
 
         if (
-            self._tooltip_properties_non_visual is None or
-            properties is not UNDEF or
-            histograms_bins is not UNDEF
+            self._tooltip_properties_non_visual is None
+            or properties is not UNDEF
+            or histograms_bins is not UNDEF
         ):
             self._tooltip_properties_non_visual = get_non_visual_properties(
                 self._tooltip_properties
@@ -3758,44 +3989,60 @@ class Scatter():
             self._tooltip_properties_non_visual_info = {}
             for property in self._tooltip_properties_non_visual:
                 self._tooltip_properties_non_visual_info[property] = dict(
-                    scale = get_scale_type_from_df(self._data[property]),
-                    domain = get_domain_from_df(self._data[property]),
-                    range = self.get_histogram_range(property),
-                    histogram = get_histogram_from_df(
+                    scale=get_scale_type_from_df(self._data[property]),
+                    domain=get_domain_from_df(self._data[property]),
+                    range=self.get_histogram_range(property),
+                    histogram=get_histogram_from_df(
                         self._data[property],
                         self.get_histogram_bins(property),
-                        self.get_histogram_range(property)
+                        self.get_histogram_range(property),
                     ),
                 )
 
-            self.update_widget('tooltip_properties_non_visual_info', self._tooltip_properties_non_visual_info)
+            self.update_widget(
+                'tooltip_properties_non_visual_info',
+                self._tooltip_properties_non_visual_info,
+            )
             self.update_widget('tooltip_properties', self._tooltip_properties)
 
-        if any_not([enable, properties, size, histograms, histograms_bins, histograms_ranges, histograms_size], UNDEF):
+        if any_not(
+            [
+                enable,
+                properties,
+                size,
+                histograms,
+                histograms_bins,
+                histograms_ranges,
+                histograms_size,
+            ],
+            UNDEF,
+        ):
             return self
 
         return dict(
-            enable = self._tooltip,
-            properties = self._tooltip_properties,
-            histograms = self._tooltip_histograms,
-            histograms_bins = self._tooltip_histograms_bins,
-            histograms_ranges = self._tooltip_histograms_ranges,
-            histograms_size = self._tooltip_histograms_size,
-            preview = self._tooltip_preview,
-            preview_type = self._tooltip_preview_type,
-            preview_text_lines = self._tooltip_preview_text_lines,
-            preview_image_background_color = self._tooltip_preview_image_background_color,
-            preview_image_position = self._tooltip_preview_image_position,
-            preview_image_size = self._tooltip_preview_image_size,
-            preview_audio_length = self._tooltip_preview_audio_length,
-            preview_audio_loop = self._tooltip_preview_audio_loop,
-            preview_audio_controls = self._tooltip_preview_audio_controls,
-            size = self._tooltip_size,
+            enable=self._tooltip,
+            properties=self._tooltip_properties,
+            histograms=self._tooltip_histograms,
+            histograms_bins=self._tooltip_histograms_bins,
+            histograms_ranges=self._tooltip_histograms_ranges,
+            histograms_size=self._tooltip_histograms_size,
+            preview=self._tooltip_preview,
+            preview_type=self._tooltip_preview_type,
+            preview_text_lines=self._tooltip_preview_text_lines,
+            preview_image_background_color=self._tooltip_preview_image_background_color,
+            preview_image_position=self._tooltip_preview_image_position,
+            preview_image_size=self._tooltip_preview_image_size,
+            preview_audio_length=self._tooltip_preview_audio_length,
+            preview_audio_loop=self._tooltip_preview_audio_loop,
+            preview_audio_controls=self._tooltip_preview_audio_controls,
+            size=self._tooltip_size,
         )
 
     def annotations(
         self,
-        annotations: Optional[Union[List[Union[Line, HLine, VLine, Rect, Contour]], Undefined]] = UNDEF,
+        annotations: Optional[
+            Union[List[Union[Line, HLine, VLine, Rect, Contour]], Undefined]
+        ] = UNDEF,
     ):
         """
         Draw line-based annotatons
@@ -3829,19 +4076,13 @@ class Scatter():
 
             self.update_widget(
                 'annotations',
-                normalize_annotations(
-                    self._annotations,
-                    self._x_scale,
-                    self._y_scale
-                )
+                normalize_annotations(self._annotations, self._x_scale, self._y_scale),
             )
 
         if any_not([annotations], UNDEF):
             return self
 
-        return dict(
-            annotations = self._annotations
-        )
+        return dict(annotations=self._annotations)
 
     def zoom(
         self,
@@ -3923,20 +4164,18 @@ class Scatter():
             return self
 
         return dict(
-            to = self._zoom_to,
-            animation = self._zoom_animation,
-            padding = self._zoom_padding,
-            on_selection = self._zoom_on_selection,
-            on_filter = self._zoom_on_filter,
+            to=self._zoom_to,
+            animation=self._zoom_animation,
+            padding=self._zoom_padding,
+            on_selection=self._zoom_on_selection,
+            on_filter=self._zoom_on_filter,
         )
-
-
 
     def options(
         self,
         transition_points: Optional[Union[bool, Undefined]] = UNDEF,
         transition_points_duration: Optional[Union[int, Undefined]] = UNDEF,
-        regl_scatterplot_options: Optional[Union[dict, Undefined]] = UNDEF
+        regl_scatterplot_options: Optional[Union[dict, Undefined]] = UNDEF,
     ):
         """
         Set or get additional options.
@@ -3990,7 +4229,9 @@ class Scatter():
             except:
                 self._transition_points_duration = DEFAULT_TRANSITION_POINTS_DURATION
 
-            self.update_widget('transition_points_duration', self._transition_points_duration)
+            self.update_widget(
+                'transition_points_duration', self._transition_points_duration
+            )
 
         if regl_scatterplot_options is not UNDEF:
             try:
@@ -4001,13 +4242,16 @@ class Scatter():
 
             return self
 
-        if any_not([transition_points, transition_points_duration, regl_scatterplot_options], UNDEF):
+        if any_not(
+            [transition_points, transition_points_duration, regl_scatterplot_options],
+            UNDEF,
+        ):
             return self
 
         return dict(
             transition_points=self._transition_points,
             transition_points_duration=self._transition_points_duration,
-            regl_scatterplot_options=self._regl_scatterplot_options
+            regl_scatterplot_options=self._regl_scatterplot_options,
         )
 
     def pixels(self):
@@ -4039,8 +4283,13 @@ class Scatter():
                 [0, 0, 0, 0]]], dtype=uint8)
         """
         if self._widget is not None:
-            assert self._widget.view_data is not None and len(self._widget.view_data) > 0, 'Download pixels first by clicking on the button with the camera icon.'
-            assert self._widget.view_shape is not None and len(self._widget.view_shape) == 2, 'Download pixels first by clicking on the button with the camera icon.'
+            assert (
+                self._widget.view_data is not None and len(self._widget.view_data) > 0
+            ), 'Download pixels first by clicking on the button with the camera icon.'
+            assert (
+                self._widget.view_shape is not None
+                and len(self._widget.view_shape) == 2
+            ), 'Download pixels first by clicking on the button with the camera icon.'
 
             self._pixels = np.asarray(self._widget.view_data).astype(np.uint8)
             self._pixels = self._pixels.reshape([*self._widget.view_shape, 4])
@@ -4075,7 +4324,9 @@ class Scatter():
     def _connection_color_data_dimension(self):
         if self._connection_color_by is None or self._connection_color_by == 'segment':
             return None
-        return f'{self._connection_color_by}:{to_scale_type(self._connection_color_norm)}'
+        return (
+            f'{self._connection_color_by}:{to_scale_type(self._connection_color_norm)}'
+        )
 
     @property
     def _connection_opacity_data_dimension(self):
@@ -4124,7 +4375,10 @@ class Scatter():
         if self._connection_color_by == 'segment':
             return 'segment'
 
-        if self._connection_color == 'inherit' or self._connection_color_by == 'inherit':
+        if (
+            self._connection_color == 'inherit'
+            or self._connection_color_by == 'inherit'
+        ):
             return 'inherit'
 
         if self._connection_color_data_dimension is not None:
@@ -4160,9 +4414,7 @@ class Scatter():
         self._widget = JupyterScatter(
             data=self._data,
             annotations=normalize_annotations(
-                self._annotations,
-                self._x_scale,
-                self._y_scale
+                self._annotations, self._x_scale, self._y_scale
             ),
             axes=self._axes,
             axes_color=self.get_axes_color(),
@@ -4174,23 +4426,37 @@ class Scatter():
             camera_rotation=self._camera_rotation,
             camera_target=self._camera_target,
             camera_view=self._camera_view,
-            color=order_map(self._color_map, self._color_order) if self._color_map else self._color,
+            color=order_map(self._color_map, self._color_order)
+            if self._color_map
+            else self._color,
             color_by=self.js_color_by,
             color_domain=get_domain(self, 'color'),
             color_histogram=self._color_histogram,
-            color_histogram_range=self.get_histogram_range("color"),
+            color_histogram_range=self.get_histogram_range('color'),
             color_hover=self._color_hover,
             color_scale=get_scale(self, 'color'),
             color_selected=self._color_selected,
             color_title=self._color_by,
             connect=bool(self._connect_by),
-            connection_color=order_map(self._connection_color_map, self._connection_color_order) if self._connection_color_map else self._connection_color,
+            connection_color=order_map(
+                self._connection_color_map, self._connection_color_order
+            )
+            if self._connection_color_map
+            else self._connection_color,
             connection_color_by=self.js_connection_color_by,
             connection_color_hover=self._connection_color_hover,
             connection_color_selected=self._connection_color_selected,
-            connection_opacity=order_map(self._connection_opacity_map, self._connection_opacity_order) if self._connection_opacity_map else self._connection_opacity,
+            connection_opacity=order_map(
+                self._connection_opacity_map, self._connection_opacity_order
+            )
+            if self._connection_opacity_map
+            else self._connection_opacity,
             connection_opacity_by=self.js_connection_opacity_by,
-            connection_size=order_map(self._connection_size_map, self._connection_size_order) if self._connection_size_map else self._connection_size,
+            connection_size=order_map(
+                self._connection_size_map, self._connection_size_order
+            )
+            if self._connection_size_map
+            else self._connection_size,
             connection_size_by=self.js_connection_size_by,
             filter=self._filtered_points_idxs,
             height=self._height,
@@ -4205,11 +4471,13 @@ class Scatter():
             legend_position=self._legend_position,
             legend_size=self._legend_size,
             mouse_mode=self._mouse_mode,
-            opacity=order_map(self._opacity_map, self._opacity_order) if self._opacity_map else self._opacity,
+            opacity=order_map(self._opacity_map, self._opacity_order)
+            if self._opacity_map
+            else self._opacity,
             opacity_by=self.js_opacity_by,
             opacity_domain=get_domain(self, 'opacity'),
             opacity_histogram=self._opacity_histogram,
-            opacity_histogram_range=self.get_histogram_range("opacity"),
+            opacity_histogram_range=self.get_histogram_range('opacity'),
             opacity_scale=get_scale(self, 'opacity'),
             opacity_title=self._opacity_by,
             opacity_unselected=self._opacity_unselected,
@@ -4217,11 +4485,13 @@ class Scatter():
             reticle=self._reticle,
             reticle_color=self.get_reticle_color(),
             selection=self._selected_points_idxs,
-            size=order_map(self._size_map, self._size_order) if self._size_map else self._size,
+            size=order_map(self._size_map, self._size_order)
+            if self._size_map
+            else self._size,
             size_by=self.js_size_by,
             size_domain=get_domain(self, 'size'),
             size_histogram=self._size_histogram,
-            size_histogram_range=self.get_histogram_range("size"),
+            size_histogram_range=self.get_histogram_range('size'),
             size_scale=get_scale(self, 'size'),
             size_title=self._size_by,
             tooltip_enable=self._tooltip,
@@ -4244,13 +4514,13 @@ class Scatter():
             width=self._width,
             x_domain=self._x_domain,
             x_histogram=self._x_histogram,
-            x_histogram_range=self.get_histogram_range("x"),
+            x_histogram_range=self.get_histogram_range('x'),
             x_scale=to_scale_type(self._x_scale),
             x_scale_domain=self._x_scale_domain,
             x_title=self._x_by,
             y_domain=self._y_domain,
             y_histogram=self._y_histogram,
-            y_histogram_range=self.get_histogram_range("y"),
+            y_histogram_range=self.get_histogram_range('y'),
             y_scale=to_scale_type(self._y_scale),
             y_scale_domain=self._y_scale_domain,
             y_title=self._y_by,
@@ -4326,7 +4596,7 @@ def plot(
     x: Union[str, List[float], np.ndarray],
     y: Union[str, List[float], np.ndarray],
     data: Optional[pd.DataFrame] = None,
-    **kwargs
+    **kwargs,
 ):
     """
     Create a scatter instance and immediately show it as a widget.

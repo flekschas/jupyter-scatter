@@ -10,8 +10,16 @@ from abc import ABCMeta, abstractmethod
 from matplotlib.colors import to_rgba
 from typing import List, Optional, Union
 
-from .annotations import HLine, VLine, Line, Rect, DEFAULT_LINE_COLOR, DEFAULT_LINE_WIDTH
+from .annotations import (
+    HLine,
+    VLine,
+    Line,
+    Rect,
+    DEFAULT_LINE_COLOR,
+    DEFAULT_LINE_WIDTH,
+)
 from .types import Color
+
 
 class CompositeAnnotation(metaclass=ABCMeta):
     @abstractmethod
@@ -46,15 +54,16 @@ class Contour(CompositeAnnotation):
     See https://en.wikipedia.org/wiki/Contour_line for more information on what
     a contour line plot is.
     """
+
     def __init__(
         self,
         by: Optional[str] = None,
         line_color: Optional[Color] = None,
         line_width: Optional[int] = None,
         line_opacity_by_level: Optional[bool] = False,
-        **kwargs
+        **kwargs,
     ):
-        if sys.version_info < (3,9):
+        if sys.version_info < (3, 9):
             raise Exception('The contour line annotation requires at least Python v3.9')
 
         self.by = by
@@ -64,8 +73,7 @@ class Contour(CompositeAnnotation):
 
         self.sns_kdeplot_kws = {
             key: value
-            for key, value
-            in kwargs
+            for key, value in kwargs
             if key in inspect.getfullargspec(sns.kdeplot).kwonlyargs
         }
 
@@ -101,17 +109,10 @@ class Contour(CompositeAnnotation):
 
             return self.line_width
 
-        axes = sns.kdeplot(
-            data=data,
-            x=x,
-            y=y,
-            hue=hue,
-            **self.sns_kdeplot_kws
-        )
+        axes = sns.kdeplot(data=data, x=x, y=y, hue=hue, **self.sns_kdeplot_kws)
         # The `;` is important! Otherwise the plot will be rendered in Jupyter
         # Notebook/Lab
-        plt.close();
-
+        plt.close()
         lines = []
 
         for k, collection in enumerate(axes.collections):
@@ -125,12 +126,12 @@ class Contour(CompositeAnnotation):
                 subpaths = np.vsplit(path.vertices, polygon_end + 1)
 
                 for subpath in subpaths:
-                    vertices = list(zip(subpath[:,0], subpath[:,1]))
+                    vertices = list(zip(subpath[:, 0], subpath[:, 1]))
                     lines.append(
                         Line(
                             vertices,
                             line_color=get_color(k, l + 1),
-                            line_width=get_width()
+                            line_width=get_width(),
                         )
                     )
 

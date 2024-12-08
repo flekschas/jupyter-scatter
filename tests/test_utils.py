@@ -91,7 +91,7 @@ def test_any_not(list_input, value, expected_result):
     'uri_input,expected_validity',
     [
         ('http://example.com/foo', True),
-        ('http://example.com', False), # Must have a path
+        ('http://example.com', False),  # Must have a path
         ('not a uri', False),
     ],
 )

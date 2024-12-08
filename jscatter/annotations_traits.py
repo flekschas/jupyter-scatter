@@ -13,6 +13,7 @@ from .annotations import (
     Rect as ARect,
 )
 
+
 class Line(TraitType):
     info_text = 'line annotation'
 
@@ -20,6 +21,7 @@ class Line(TraitType):
         if isinstance(value, ALine):
             return value
         self.error(obj, value)
+
 
 class HLine(TraitType):
     info_text = 'horizontal line annotation'
@@ -29,6 +31,7 @@ class HLine(TraitType):
             return value
         self.error(obj, value)
 
+
 class VLine(TraitType):
     info_text = 'vertical line annotation'
 
@@ -36,6 +39,7 @@ class VLine(TraitType):
         if isinstance(value, AVLine):
             return value
         self.error(obj, value)
+
 
 class Rect(TraitType):
     info_text = 'rectangle annotation'
@@ -45,14 +49,17 @@ class Rect(TraitType):
             return value
         self.error(obj, value)
 
+
 def to_json(value, *args, **kwargs):
     d = None if value is None else asdict(value)
     return json.dumps(d, allow_nan=False)
+
 
 def annotations_to_json(value, *args, **kwargs):
     if value is None:
         return None
     return [to_json(v) for v in value]
+
 
 def from_json(value, *args, **kwargs):
     d = json.loads(value)
@@ -71,6 +78,7 @@ def from_json(value, *args, **kwargs):
 
     return None
 
+
 def annotations_from_json(value):
     value = json.loads(value)
 
@@ -78,6 +86,7 @@ def annotations_from_json(value):
         return None
 
     return [from_json(v) for v in value]
+
 
 serialization = dict(
     to_json=annotations_to_json,
