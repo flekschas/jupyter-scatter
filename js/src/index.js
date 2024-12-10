@@ -96,6 +96,7 @@ const properties = {
   filter: 'filteredPoints',
   size: 'pointSize',
   sizeBy: 'sizeBy',
+  sizeScaleFunction: 'pointScaleMode',
   connect: 'showPointConnections',
   connectionColor: 'pointConnectionColor',
   connectionColorSelected: 'pointConnectionColorActive',
@@ -197,6 +198,7 @@ const reglScatterplotProperty = new Set([
   'filteredPoints',
   'pointSize',
   'sizeBy',
+  'pointScaleMode',
   'showPointConnections',
   'pointConnectionColor',
   'pointConnectionColorActive',
@@ -2432,6 +2434,10 @@ class JupyterScatterView {
     this.createSizeScale();
     this.createSizeGetter();
     this.withPropertyChangeHandler('sizeBy', newValue);
+  }
+
+  sizeScaleFunctionHandler(newValue) {
+    this.withPropertyChangeHandler('pointScaleMode', newValue);
   }
 
   sizeTitleHandler(newTitle) {

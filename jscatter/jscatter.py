@@ -49,6 +49,7 @@ from .types import (
     TooltipPreviewType,
     TooltipPreviewImagePosition,
     TooltipPreviewImageSize,
+    SizeScaleFunction,
     Undefined,
 )
 
@@ -376,6 +377,7 @@ class Scatter:
         self._size_categories = None
         self._size_labeling = None
         self._size_histogram = None
+        self._size_scale_function = 'asinh'
         self._connect_by = None
         self._connect_by_data = None
         self._connect_order = None
@@ -487,6 +489,7 @@ class Scatter:
             kwargs.get('size_norm', UNDEF),
             kwargs.get('size_order', UNDEF),
             kwargs.get('size_labeling', UNDEF),
+            kwargs.get('size_scale_function', UNDEF),
         )
         self.connect(
             kwargs.get('connect_by', UNDEF), kwargs.get('connect_order', UNDEF)
@@ -1803,6 +1806,7 @@ class Scatter:
         norm: Optional[Union[Tuple[float, float], Normalize, Undefined]] = UNDEF,
         order: Optional[Union[Reverse, List[int], List[str], Undefined]] = UNDEF,
         labeling: Optional[Union[Labeling, Undefined]] = UNDEF,
+        scale_function: Optional[Union[SizeScaleFunction, Undefined]] = UNDEF,
         **kwargs,
     ):
         """
@@ -1833,6 +1837,11 @@ class Scatter:
             variable. If defined, labels are shown with the legend. The labeling
             can either be a list of strings (`[minValue, maxValue, variable]`)
             or a dictionary (`{ min: label, max: label, variable: label }`).
+        scale_function : str, optional
+            The scale function used for adjusting the size of points when
+            zooming in. It can either be `asinh`, `linear`, or `constant`.
+            The default is `asinh`. `constant` is a special case that does not
+            scale the size of points when zooming in.
         kwargs : optional
             Options which can be used to skip updating the widget when
             `skip_widget_update` is set to `True`
@@ -1869,7 +1878,8 @@ class Scatter:
          'map': [2.0, 8.0, 14.0, 20.0],
          'norm': <matplotlib.colors.Normalize at 0x12fa8b580>,
          'order': None,
-         'labeling': None}
+         'labeling': None,
+         'scale_function': 'asinh'}
         """
         if default is not UNDEF:
             try:
@@ -1987,6 +1997,10 @@ class Scatter:
                 column = self._size_by if isinstance(self._size_by, str) else None
                 self._size_labeling = create_labeling(labeling, column)
 
+        if scale_function is not UNDEF:
+            self._size_scale_function = scale_function
+            self.update_widget('size_scale_function', self._size_scale_function)
+
         # Update widget and encoding domain-range
         if self._size_by is not None and self._size_map is not None:
             final_size_map = order_map(self._size_map, self._size_order)
@@ -2013,7 +2027,7 @@ class Scatter:
             self.update_widget('prevent_filter_reset', True)
             self.update_widget('points', self.get_point_list())
 
-        if any_not([default, by, map, norm, order, labeling], UNDEF):
+        if any_not([default, by, map, norm, order, labeling, scale_function], UNDEF):
             return self
 
         return dict(
@@ -2023,6 +2037,7 @@ class Scatter:
             norm=self._size_norm,
             order=self._size_order,
             labeling=self._size_labeling,
+            scale_function=self._size_scale_function,
         )
 
     @property
@@ -4494,6 +4509,7 @@ class Scatter:
             size_histogram_range=self.get_histogram_range('size'),
             size_scale=get_scale(self, 'size'),
             size_title=self._size_by,
+            size_scale_function=self._size_scale_function,
             tooltip_enable=self._tooltip,
             tooltip_color=self.get_tooltip_color(),
             tooltip_properties=self._tooltip_properties,
