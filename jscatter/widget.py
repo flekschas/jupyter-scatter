@@ -259,6 +259,9 @@ class JupyterScatter(anywidget.AnyWidget):
     size_by = Enum([None, 'valueA', 'valueB'], allow_none=True, default_value=None).tag(
         sync=True
     )
+    size_scale_function = Enum(
+        ['asinh', 'constant', 'linear'], default_value='asinh'
+    ).tag(sync=True)
     connect = Bool().tag(sync=True)
     connection_color = Union(
         [
