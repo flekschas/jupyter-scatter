@@ -242,7 +242,7 @@ scatter.opacity(by='density')
 ```
 
 
-### scatter.size(_default=Undefined_, _by=Undefined_, _map=Undefined_, _norm=Undefined_, _order=Undefined_, _labeling=Undefined_, _\*\*kwargs_) {#scatter.size}
+### scatter.size(_default=Undefined_, _by=Undefined_, _map=Undefined_, _norm=Undefined_, _order=Undefined_, _labeling=Undefined_, _scale_function=Undefined_, _\*\*kwargs_) {#scatter.size}
 
 Get or set the point size.
 
@@ -254,6 +254,7 @@ Get or set the point size.
 - `norm` is either a tuple defining a value range that's map to `[0, 1]` with `matplotlib.colors.Normalize` or a [matplotlib normalizer](https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.colors.Normalize.html).
 - `order` is either a list of values (for categorical size encoding) or `reverse` to reverse the size map.
 - `labeling` is either a tuple of three strings specyfing a label for the minimum value, maximum value, and variable that the size encodes or a dictionary of the form `{'minValue': 'label', 'maxValue': 'label', 'variable': 'label'}`. The specified labels are only used for continuous size encoding and are displayed together with the legend.
+- `scale_function` is the function used for adjusting the size of points when zooming in. It can either be `asinh`, `linear`, or `constant`. The default is `asinh`. `constant` is a special case that does not scale the size of points when zooming in.
 - `kwargs`:
   - `skip_widget_update` allows to skip the dynamic widget update when `True`. This can be useful when you want to animate the transition of multiple properties at once instead of animating one after the other.
 
