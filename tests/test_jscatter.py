@@ -569,16 +569,32 @@ def test_point_size_scale(df: pd.DataFrame):
 
 def test_camera_is_fixed(df: pd.DataFrame):
     scatter = Scatter(data=df, x='a', y='b')
+    pan_zoom_button = scatter.show().children[0].children[0]
 
     # Check that by default, the camera is not fixed
     assert scatter.widget.camera_is_fixed == False
+    assert scatter.widget.mouse_mode == 'panZoom'
+    assert pan_zoom_button.disabled == False
 
     # Test fixing the camera
     scatter.camera(is_fixed=True)
     assert scatter.widget.camera_is_fixed == True
+    assert scatter.widget.mouse_mode == 'lasso'
+    assert pan_zoom_button.disabled == True
+
+    # Test unfixing the camera
+    scatter.camera(is_fixed=False)
+    assert scatter.widget.camera_is_fixed == False
+    assert scatter.widget.mouse_mode == 'panZoom'
+    assert pan_zoom_button.disabled == False
+
+    scatter.mouse(mode='lasso')
+    scatter.camera(is_fixed=True)
+    scatter.camera(is_fixed=False)
+    assert scatter.widget.mouse_mode == 'lasso'
+
+    scatter_b = Scatter(data=df, x='a', y='b', camera_is_fixed=True)
 
     # Test initializing a Scatter with a fixed camera
-    assert (
-        Scatter(data=df, x='a', y='b', camera_is_fixed=True).widget.camera_is_fixed
-        == True
-    )
+    assert scatter_b.widget.camera_is_fixed == True
+    assert scatter_b.widget.mouse_mode == 'lasso'

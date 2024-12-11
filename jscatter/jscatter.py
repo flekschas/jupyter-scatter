@@ -426,6 +426,7 @@ class Scatter:
         self._camera_view = None
         self._camera_is_fixed = False
         self._mouse_mode = 'panZoom'
+        self._mouse_mode_prev = self._mouse_mode
         self._axes = True
         self._axes_grid = False
         self._axes_labels = False
@@ -3194,6 +3195,12 @@ class Scatter:
 
         if is_fixed is not UNDEF:
             self._camera_is_fixed = is_fixed
+            if is_fixed:
+                self._mouse_mode_prev = self._mouse_mode
+                self._mouse_mode = 'lasso'
+            else:
+                self._mouse_mode = self._mouse_mode_prev
+            self.update_widget('mouse_mode', self._mouse_mode)
             self.update_widget('camera_is_fixed', self._camera_is_fixed)
 
         if any_not([target, distance, rotation, view, is_fixed], UNDEF):
@@ -3529,6 +3536,7 @@ class Scatter:
         if mode is not UNDEF:
             try:
                 self._mouse_mode = mode
+                self._mouse_mode_prev = mode
                 self.update_widget('mouse_mode', mode)
             except:
                 pass
