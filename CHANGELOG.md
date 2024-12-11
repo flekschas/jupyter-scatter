@@ -1,5 +1,6 @@
 ## v0.20.0
 
+- Feat: add ability to change the point size zoom scale function via `scatter.size(scale_function='asinh')`
 - Feat: add CLI for quick-starting a demo via `uvx jupyter-scatter demo`
 - Chore: switch from ESLint+Prettier to Biome [#170](https://github.com/flekschas/jupyter-scatter/pull/170)
 - Chore: migrate from hatch to uv [#169](https://github.com/flekschas/jupyter-scatter/pull/169)
