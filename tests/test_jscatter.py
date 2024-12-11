@@ -533,3 +533,35 @@ def test_tooltip(df: pd.DataFrame):
     # Test with invalid property
     scatter.tooltip(properties=['color', 'invalid_column'])
     assert scatter.widget.tooltip_properties == ['color']
+
+
+def test_point_size_scale(df: pd.DataFrame):
+    # Test initializing a scatter plot with tooltip properties
+    scatter = Scatter(data=df, x='a', y='b')
+
+    # Default size scale function is 'asinh'
+    assert scatter.widget.size_scale_function == 'asinh'
+
+    # Test changing the size scale function to 'linear'
+    scatter.size(scale_function='linear')
+    assert scatter.widget.size_scale_function == 'linear'
+
+    # Test changing the size scale function to 'constant'
+    scatter.size(scale_function='constant')
+    assert scatter.widget.size_scale_function == 'constant'
+
+    # Test initializing with the size scale function to 'constant'
+    assert (
+        Scatter(
+            data=df, x='a', y='b', size_scale_function='linear'
+        ).widget.size_scale_function
+        == 'linear'
+    )
+
+    # Test initializing with the size scale function to 'constant'
+    assert (
+        Scatter(
+            data=df, x='a', y='b', size_scale_function='constant'
+        ).widget.size_scale_function
+        == 'constant'
+    )

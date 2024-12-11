@@ -9,6 +9,7 @@ Color = Union[str, Rgb, Rgba]
 TooltipPreviewType = Literal['text', 'image', 'audio']
 TooltipPreviewImagePosition = Literal['top', 'bottom', 'left', 'right', 'center']
 TooltipPreviewImageSize = Literal['contain', 'cover']
+SizeScaleFunction = Literal['asinh', 'linear', 'constant']
 
 # To distinguish between None and an undefined (optional) argument, where None
 # is used for unsetting and Undefined is used for skipping.
