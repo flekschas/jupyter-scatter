@@ -347,7 +347,7 @@ class JupyterScatter(anywidget.AnyWidget):
         data = self.data.iloc[point_idx]
         self.send(
             {
-                'type': TOOLTIP_EVENT_TYPE,
+                'type': EVENT_TYPES['TOOLTIP'],
                 'show': True,
                 'index': point_idx,
                 'preview': data[self.tooltip_preview]
