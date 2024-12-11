@@ -145,6 +145,7 @@ class JupyterScatter(anywidget.AnyWidget):
     camera_distance = Float(1).tag(sync=True)
     camera_rotation = Float(1).tag(sync=True)
     camera_view = List(None, allow_none=True).tag(sync=True)
+    camera_is_fixed = Bool(False).tag(sync=True)
 
     # Zoom properties
     zoom_to = Array(default_value=None, allow_none=True).tag(

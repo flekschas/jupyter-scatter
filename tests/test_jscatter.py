@@ -565,3 +565,20 @@ def test_point_size_scale(df: pd.DataFrame):
         ).widget.size_scale_function
         == 'constant'
     )
+
+
+def test_camera_is_fixed(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    # Check that by default, the camera is not fixed
+    assert scatter.widget.camera_is_fixed == False
+
+    # Test fixing the camera
+    scatter.camera(is_fixed=True)
+    assert scatter.widget.camera_is_fixed == True
+
+    # Test initializing a Scatter with a fixed camera
+    assert (
+        Scatter(data=df, x='a', y='b', camera_is_fixed=True).widget.camera_is_fixed
+        == True
+    )

@@ -491,7 +491,7 @@ scatter.zoom(to=scatter.selection(), animation=2000, padding=0.1)
 ```
 
 
-### scatter.camera(_target=Undefined_, _distance=Undefined_, _rotation=Undefined_, _view=Undefined_) {#scatter.camera}
+### scatter.camera(_target=Undefined_, _distance=Undefined_, _rotation=Undefined_, _view=Undefined_, _is_fixed=Undefined_) {#scatter.camera}
 
 Get or set the camera view.
 
@@ -500,6 +500,7 @@ Get or set the camera view.
 - `distance` is a float value defining the distance of the camera from the scatter plot (imagine as a 2D plane in a 3D world).
 - `rotation` is a float value defining the rotation in radians.
 - `view` is an array-like list of 16 floats defining a view matrix.
+- `is_fixed` is a Boolean value specifying whether the camera position is fixed to it's current location. If `True`, manual pan and zoom interactions are disabled. Note, you can still programmatically zoom via `scatter.zoom()`.
 
 **Returns:** either the camera properties when all arguments are `Undefined` or `self`.
 
