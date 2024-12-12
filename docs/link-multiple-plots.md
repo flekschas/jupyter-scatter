@@ -24,7 +24,7 @@ import jscatter
 import numpy as np
 
 x, y = np.random.rand(500), np.random.rand(500)
-a, b = jscatter.Scatter(x=x, y=y), Scatter(x=x, y=y)
+a, b = jscatter.Scatter(x=x, y=y), jscatter.Scatter(x=x, y=y)
 
 jscatter.compose([a, b])
 ```

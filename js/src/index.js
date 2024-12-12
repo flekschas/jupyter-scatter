@@ -73,6 +73,7 @@ const properties = {
   cameraRotation: 'cameraRotation',
   cameraTarget: 'cameraTarget',
   cameraView: 'cameraView',
+  cameraIsFixed: 'cameraIsFixed',
   color: 'pointColor',
   colorSelected: 'pointColorActive',
   colorBy: 'colorBy',
@@ -176,6 +177,7 @@ const reglScatterplotProperty = new Set([
   'cameraRotation',
   'cameraTarget',
   'cameraView',
+  'cameraIsFixed',
   'pointColor',
   'pointColorActive',
   'colorBy',
@@ -2514,6 +2516,10 @@ class JupyterScatterView {
 
   cameraViewHandler(newValue) {
     this.withPropertyChangeHandler('cameraView', newValue);
+  }
+
+  cameraIsFixedHandler(newValue) {
+    this.withPropertyChangeHandler('cameraIsFixed', newValue);
   }
 
   lassoInitiatorHandler(newValue) {

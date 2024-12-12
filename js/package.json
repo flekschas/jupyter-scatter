@@ -26,11 +26,10 @@
     "d3-selection": "~3.0.0",
     "d3-time": "~3.1.0",
     "d3-time-format": "~4.1.0",
-    "dom-2d-camera": "~2.2.5",
     "gl-matrix": "~3.3.0",
     "pub-sub-es": "~3.0.0",
     "regl": "~2.1.0",
-    "regl-scatterplot": "~1.11.1"
+    "regl-scatterplot": "~1.11.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
