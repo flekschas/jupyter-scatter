@@ -424,7 +424,9 @@ class Scatter:
         self._camera_distance = 1.0
         self._camera_rotation = 0.0
         self._camera_view = None
+        self._camera_is_fixed = False
         self._mouse_mode = 'panZoom'
+        self._mouse_mode_prev = self._mouse_mode
         self._axes = True
         self._axes_grid = False
         self._axes_labels = False
@@ -533,6 +535,7 @@ class Scatter:
             kwargs.get('camera_distance', UNDEF),
             kwargs.get('camera_rotation', UNDEF),
             kwargs.get('camera_view', UNDEF),
+            kwargs.get('camera_is_fixed', UNDEF),
         )
         self.axes(
             kwargs.get('axes', UNDEF),
@@ -3105,6 +3108,7 @@ class Scatter:
         distance: Optional[Union[float, Undefined]] = UNDEF,
         rotation: Optional[Union[float, Undefined]] = UNDEF,
         view: Optional[Union[List[float], np.ndarray, Undefined]] = UNDEF,
+        is_fixed: Optional[Union[bool, Undefined]] = UNDEF,
     ):
         """
         Set or get the camera settings.
@@ -3121,6 +3125,11 @@ class Scatter:
         view : float, optional
             Columnar 4x4 camera's view matrix. The matrix is an array-like list
             of 16 floats where the first numbers represent the first column etc.
+            The camera rotation in radians.
+        is_fixed : bool, optional
+            If `True`, the camera position is fixed to it's current location. As
+            a consequence, manual pan and zoom interactions are disabled. Note,
+            you can still programmatically zoom via `scatter.zoom()`.
 
         Returns
         -------
@@ -3153,7 +3162,13 @@ class Scatter:
         <jscatter.jscatter.Scatter>
 
         >>> scatter.camera()
-        {'target': [0, 0], 'distance': 1.0, 'rotation': 0.0, 'view': None}
+        {
+          'target': [0, 0],
+          'distance': 1.0,
+          'rotation': 0.0,
+          'view': None,
+          'is_fixed': True,
+        }
         """
         if target is not UNDEF:
             self._camera_target = target
@@ -3178,7 +3193,17 @@ class Scatter:
             self._camera_view = view
             self.update_widget('camera_view', self._camera_view)
 
-        if any_not([target, distance, rotation, view], UNDEF):
+        if is_fixed is not UNDEF:
+            self._camera_is_fixed = is_fixed
+            if is_fixed:
+                self._mouse_mode_prev = self._mouse_mode
+                self._mouse_mode = 'lasso'
+            else:
+                self._mouse_mode = self._mouse_mode_prev
+            self.update_widget('mouse_mode', self._mouse_mode)
+            self.update_widget('camera_is_fixed', self._camera_is_fixed)
+
+        if any_not([target, distance, rotation, view, is_fixed], UNDEF):
             return self
 
         return dict(
@@ -3186,6 +3211,7 @@ class Scatter:
             distance=self._camera_distance,
             rotation=self._camera_rotation,
             view=self._camera_view,
+            is_fixed=self._camera_is_fixed,
         )
 
     def lasso(
@@ -3510,6 +3536,7 @@ class Scatter:
         if mode is not UNDEF:
             try:
                 self._mouse_mode = mode
+                self._mouse_mode_prev = mode
                 self.update_widget('mouse_mode', mode)
             except:
                 pass
@@ -4441,6 +4468,7 @@ class Scatter:
             camera_rotation=self._camera_rotation,
             camera_target=self._camera_target,
             camera_view=self._camera_view,
+            camera_is_fixed=self._camera_is_fixed,
             color=order_map(self._color_map, self._color_order)
             if self._color_map
             else self._color,

@@ -145,6 +145,7 @@ class JupyterScatter(anywidget.AnyWidget):
     camera_distance = Float(1).tag(sync=True)
     camera_rotation = Float(1).tag(sync=True)
     camera_view = List(None, allow_none=True).tag(sync=True)
+    camera_is_fixed = Bool(False).tag(sync=True)
 
     # Zoom properties
     zoom_to = Array(default_value=None, allow_none=True).tag(
@@ -463,6 +464,7 @@ class JupyterScatter(anywidget.AnyWidget):
             icon='arrows',
             tooltip='Activate pan & zoom',
         )
+        button_pan_zoom.disabled = self.camera_is_fixed
         button_lasso = self.create_mouse_mode_toggle_button(
             mouse_mode='lasso',
             icon='crosshairs',
@@ -505,6 +507,11 @@ class JupyterScatter(anywidget.AnyWidget):
         plots = widgets.VBox(
             children=[self], layout=widgets.Layout(flex='1', width='auto')
         )
+
+        def camera_is_fixed_change_handler(change):
+            button_pan_zoom.disabled = change['new']
+
+        self.observe(camera_is_fixed_change_handler, names=['camera_is_fixed'])
 
         return widgets.HBox([buttons, plots])
 
