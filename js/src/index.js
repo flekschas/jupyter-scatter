@@ -2885,7 +2885,7 @@ class JupyterScatterView {
     widthInput.disabled = true;
     widthInput.step = '1';
     widthInput.min = '1';
-    widthInput.max = `${this.fullscreenWidth}`;
+    widthInput.max = `${this.fullscreenWidthMax}`;
     widthInput.style.userSelect = 'auto';
     widthInput.addEventListener(
       'change',
@@ -2914,7 +2914,7 @@ class JupyterScatterView {
     heightInput.disabled = true;
     heightInput.step = '1';
     heightInput.min = '1';
-    heightInput.max = `${this.fullscreenHeight}`;
+    heightInput.max = `${this.fullscreenHeightMax}`;
     heightInput.style.userSelect = 'auto';
     heightInput.addEventListener(
       'change',
