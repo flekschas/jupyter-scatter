@@ -3,6 +3,7 @@ import numpy as np
 import anywidget
 import pandas as pd
 import pathlib
+import typing as t
 
 from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
 from traittypes import Array
@@ -14,14 +15,26 @@ from .annotations_traits import (
     Rect,
     serialization as annotation_serialization,
 )
+from .types import UNDEF, Undefined, WidgetButtons
 
 SELECTION_DTYPE = 'uint32'
 EVENT_TYPES = {
+    'FULL_SCREEN': 'full_screen',
     'TOOLTIP': 'tooltip',
     'VIEW_DOWNLOAD': 'view_download',
     'VIEW_RESET': 'view_reset',
     'VIEW_SAVE': 'view_save',
 }
+
+divider = widgets.Box(
+    children=[],
+    layout=widgets.Layout(
+        margin='10px 0',
+        width='100%',
+        height='0',
+        border='1px solid var(--jp-layout-color2)',
+    ),
+)
 
 
 def component_idx_to_name(idx):
@@ -431,6 +444,20 @@ class JupyterScatter(anywidget.AnyWidget):
         button.on_click(click_handler)
         return button
 
+    def create_full_screen_button(self, icon_only=True, width=36):
+        button = Button(
+            description='' if icon_only else 'Full Screen',
+            icon='expand',
+            tooltip='Full Screen',
+            width=width,
+        )
+
+        def click_handler(event):
+            self.send({'type': EVENT_TYPES['FULL_SCREEN']})
+
+        button.on_click(click_handler)
+        return button
+
     def create_mouse_mode_toggle_button(
         self,
         mouse_mode,
@@ -458,7 +485,9 @@ class JupyterScatter(anywidget.AnyWidget):
         button.on_click(click_handler)
         return button
 
-    def show(self):
+    def show(
+        self, buttons: t.Optional[t.Union[t.List[WidgetButtons], Undefined]] = UNDEF
+    ):
         button_pan_zoom = self.create_mouse_mode_toggle_button(
             mouse_mode='panZoom',
             icon='arrows',
@@ -480,25 +509,36 @@ class JupyterScatter(anywidget.AnyWidget):
         button_view_save = self.create_save_view_button()
         button_view_download = self.create_download_view_button()
         button_view_reset = self.create_reset_view_button()
+        button_full_screen = self.create_full_screen_button()
 
-        buttons = widgets.VBox(
-            children=[
+        button_map = {
+            'pan_zoom': button_pan_zoom,
+            'lasso': button_lasso,
+            'save': button_view_save,
+            'download': button_view_download,
+            'reset': button_view_reset,
+            'full_screen': button_full_screen,
+            'divider': divider,
+        }
+
+        if buttons is not UNDEF:
+            button_widgets = [
+                button_map[button] for button in buttons if button in button_map
+            ]
+        else:
+            button_widgets = [
                 button_pan_zoom,
                 button_lasso,
                 # button_rotate,
-                widgets.Box(
-                    children=[],
-                    layout=widgets.Layout(
-                        margin='10px 0',
-                        width='100%',
-                        height='0',
-                        border='1px solid var(--jp-layout-color2)',
-                    ),
-                ),
+                divider,
+                button_full_screen,
                 button_view_save,
                 button_view_download,
                 button_view_reset,
-            ],
+            ]
+
+        buttons = widgets.VBox(
+            children=button_widgets,
             layout=widgets.Layout(
                 display='flex', flex_flow='column', align_items='stretch', width='40px'
             ),
@@ -513,7 +553,7 @@ class JupyterScatter(anywidget.AnyWidget):
 
         self.observe(camera_is_fixed_change_handler, names=['camera_is_fixed'])
 
-        return widgets.HBox([buttons, plots])
+        return widgets.VBox([widgets.HBox([buttons, plots])])
 
 
 class Button(anywidget.AnyWidget):

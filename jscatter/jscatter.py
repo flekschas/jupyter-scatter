@@ -50,7 +50,9 @@ from .types import (
     TooltipPreviewImagePosition,
     TooltipPreviewImageSize,
     SizeScaleFunction,
+    UNDEF,
     Undefined,
+    WidgetButtons,
 )
 
 COMPONENT_CONNECT = 4
@@ -63,9 +65,6 @@ VALID_ENCODING_TYPES = [
 ]
 DEFAULT_HISTOGRAM_BINS = 20
 DEFAULT_TRANSITION_POINTS_DURATION = 3000
-
-# An "undefined" value
-UNDEF = Undefined()
 
 default_background_color = 'white'
 
@@ -4598,7 +4597,7 @@ class Scatter:
 
         return self._axes_labels
 
-    def show(self):
+    def show(self, buttons: Optional[Union[List[WidgetButtons], Undefined]] = UNDEF):
         """
         Show the scatter plot widget
 
@@ -4606,6 +4605,15 @@ class Scatter:
         -------
         widget
             The widget that is being rendering by Jupyter
+        buttons : WidgetButtons, optional
+            The buttons to show in the widget. Can be one of the following:
+            - `"pan_zoom"`: Button to activate the pan and zoom mode.
+            - `"lasso"`: Button to activate the lasso mode.
+            - `"full_screen"`: Button to enter full screen mode.
+            - `"save"`: Button to save the current view in `scatter.widget.view_data`.
+            - `"download"`: Button to download the current view as a PNG image.
+            - `"reset"`: Button to reset the view.
+            - `"divider"`: Not a button, but a divider between buttons.
 
         Examples
         --------
