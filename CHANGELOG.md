@@ -3,6 +3,7 @@
 - Feat: add ability to change the point size zoom scale function via `scatter.size(scale_function='asinh')`
 - Feat: add `scatter.camera(is_fixed=True)` to allow fixing the camera (i.e., disable pan/zoom) [#176](https://github.com/flekschas/jupyter-scatter/issues/176)
 - Feat: add CLI for quick-starting a demo via `uvx jupyter-scatter demo`
+- Fix: properly alpha blend when saving a view as PNG
 - Chore: switch from ESLint+Prettier to Biome [#170](https://github.com/flekschas/jupyter-scatter/pull/170)
 - Chore: migrate from hatch to uv [#169](https://github.com/flekschas/jupyter-scatter/pull/169)
 - Chore: bump minimum Python version to 3.9
