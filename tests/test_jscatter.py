@@ -569,7 +569,7 @@ def test_point_size_scale(df: pd.DataFrame):
 
 def test_camera_is_fixed(df: pd.DataFrame):
     scatter = Scatter(data=df, x='a', y='b')
-    pan_zoom_button = scatter.show().children[0].children[0]
+    pan_zoom_button = scatter.show().children[0].children[0].children[0]
 
     # Check that by default, the camera is not fixed
     assert scatter.widget.camera_is_fixed == False
