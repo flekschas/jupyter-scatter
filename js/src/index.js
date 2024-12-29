@@ -2778,10 +2778,10 @@ class JupyterScatterView {
       this.fullscreenWidthInput.style.color = 'var(--jp-content-font-color3)';
       this.fullscreenHeightInput.style.color = 'var(--jp-content-font-color3)';
     } else {
-      this.fullscreenWidthLabel.style.color = null;
-      this.fullscreenHeightLabel.style.color = null;
-      this.fullscreenWidthInput.style.color = null;
-      this.fullscreenHeightInput.style.color = null;
+      this.fullscreenWidthLabel.style.color = 'var(--jp-content-font-color)';
+      this.fullscreenHeightLabel.style.color = 'var(--jp-content-font-color)';
+      this.fullscreenWidthInput.style.color = 'var(--jp-content-font-color)';
+      this.fullscreenHeightInput.style.color = 'var(--jp-content-font-color)';
     }
 
     if (!this.fullscreenFullWidthHeight) {
@@ -2942,6 +2942,8 @@ class JupyterScatterView {
     widthInput.max = `${this.fullscreenWidthMax}`;
     widthInput.style.userSelect = 'auto';
     widthInput.style.color = 'var(--jp-content-font-color3)';
+    widthInput.style.border = 'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
+    widthInput.style.backgroundColor = 'var(--jp-widgets-input-background-color)';
     widthInput.addEventListener(
       'change',
       this.fullscreenWidthChangeHandlerBound,
@@ -2974,6 +2976,8 @@ class JupyterScatterView {
     heightInput.max = `${this.fullscreenHeightMax}`;
     heightInput.style.userSelect = 'auto';
     heightInput.style.color = 'var(--jp-content-font-color3)';
+    heightInput.style.border = 'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
+    heightInput.style.backgroundColor = 'var(--jp-widgets-input-background-color)';
     heightInput.addEventListener(
       'change',
       this.fullscreenHeightChangeHandlerBound,
@@ -3000,6 +3004,8 @@ class JupyterScatterView {
     container.append(scale);
 
     const scaleSelect = document.createElement('select');
+    scaleSelect.style.backgroundColor = 'var(--jp-widgets-input-background-color)';
+    scaleSelect.style.color = 'var(--jp-widgets-input-color)';
     this.fullscreenExportScale = 1;
     scaleSelect.addEventListener(
       'change',
@@ -3035,6 +3041,8 @@ class JupyterScatterView {
     dprInput.value = window.devicePixelRatio;
     dprInput.disabled = true;
     dprInput.style.color = 'var(--jp-content-font-color3)';
+    dprInput.style.border = 'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
+    dprInput.style.backgroundColor = 'var(--jp-widgets-input-background-color)';
     dpr.append(dprInput);
 
     const download = document.createElement('button');
