@@ -241,12 +241,12 @@ export function addBackgroundColor(imageData, backgroundColor) {
   const bg = toRgba(backgroundColor);
 
   for (let i = 0; i < newData.length; i += 4) {
-    const bgAlpha = 1 - imageData.data[i + 3];
-    const fgAlpha = imageData.data[i + 3];
+    const bgAlpha = 1 - imageData.data[i + 3] / 255;
+    const fgAlpha = imageData.data[i + 3] / 255;
     newData[i] = bg[0] * bgAlpha + imageData.data[i] * fgAlpha;
     newData[i + 1] = bg[1] * bgAlpha + imageData.data[i + 1] * fgAlpha;
     newData[i + 2] = bg[2] * bgAlpha + imageData.data[i + 2] * fgAlpha;
-    newData[i + 3] = bg[3] * bgAlpha + imageData.data[i + 3] * fgAlpha;
+    newData[i + 3] = 255;
   }
 
   return new ImageData(newData, imageData.width, imageData.height);

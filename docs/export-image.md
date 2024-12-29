@@ -7,7 +7,8 @@ it as a PNG or save it to the widget's `view_data` property.
 Image exports follow [WYSIWYG](https://en.wikipedia.org/wiki/WYSIWYG), meaning
 that the exported image will have the exact same size and viewport as the
 widget. Hence, if you want to export a higher resolution image you have to
-increase the scatter's width and height.
+increase the scatter's width and height. See [custom PNG export](#customize-png-export)
+on how to easily adjust the export resolution.
 :::
 
 ## Export as PNG
@@ -38,6 +39,22 @@ By default, the background color of the image is the same as
 `scatter.widget.background_color`. However, you can also download the view with
 a transparent background by holding down <kbd>Alt</kbd> while clicking on the
 camera button.
+:::
+
+### Customize PNG Export
+
+To better control the resolution of the exported PNG, enter the full-screen mode
+(via the widget button on the left) and open up the resize panel (via the up
+arrow button in the bottom-left corner). This panel allows you to easily
+customize the width/height of the scatter plot and offers the ability to
+up-scale the exported image.
+
+<div class="img export-download-png-advanced"><div /></div>
+
+::: info
+Note, the exported image is subject to your [device pixel ratio](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio), which cannot be changed. This means that if your plot is 
+100 by 100 pixels in size and your display has a pixel ratio of `2`, the
+exported PNG is going to be 200 by 200 pixels.
 :::
 
 ## Export to `widget.view_data`
@@ -99,6 +116,16 @@ plt.show()
 
   :root.dark .img.export-download-png {
     background-image: url(/images/export-download-png-dark.png)
+  }
+
+  .img.export-download-png-advanced {
+    width: 3024px;
+    background-image: url(/images/full-screen-light.png)
+  }
+  .img.export-download-png-advanced div { padding-top: 62.5% }
+
+  :root.dark .img.export-download-png-advanced {
+    background-image: url(/images/full-screen-dark.png)
   }
 
   .img.export-save {
