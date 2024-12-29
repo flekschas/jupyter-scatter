@@ -4601,10 +4601,8 @@ class Scatter:
         """
         Show the scatter plot widget
 
-        Returns
-        -------
-        widget
-            The widget that is being rendering by Jupyter
+        Parameters
+        ----------
         buttons : WidgetButtons, optional
             The buttons to show in the widget. Can be one of the following:
             - `"pan_zoom"`: Button to activate the pan and zoom mode.
@@ -4614,6 +4612,11 @@ class Scatter:
             - `"download"`: Button to download the current view as a PNG image.
             - `"reset"`: Button to reset the view.
             - `"divider"`: Not a button, but a divider between buttons.
+
+        Returns
+        -------
+        widget
+            The widget that is being rendering by Jupyter
 
         Examples
         --------
