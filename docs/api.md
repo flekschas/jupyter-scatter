@@ -42,6 +42,32 @@ scatter.show()
 
 ## Methods {#methods}
 
+### scatter.show(_buttons=Undefined_) {#scatter.show}
+
+Show the scatter plot widget.
+
+**Arguments:**
+- `buttons`: The buttons to show in the widget. Can be one of the following:
+  - `"pan_zoom"`: Button to activate the pan and zoom mode.
+  - `"lasso"`: Button to activate the lasso mode.
+  - `"full_screen"`: Button to enter full screen mode.
+  - `"save"`: Button to save the current view in `scatter.widget.view_data`.
+  - `"download"`: Button to download the current view as a PNG image.
+  - `"reset"`: Button to reset the view.
+  - `"divider"`: Not a button, but a divider between buttons.
+
+**Returns:** either the x coordinate when x is `Undefined` or `self`.
+
+**Examples:**
+
+```python
+# Show the widget with all buttons
+scatter.show()
+
+# Show the widget with only a subset of buttons
+scatter.show(['full_screen', 'download', 'reset'])
+```
+
 ### scatter.x(_x=Undefined_, _scale=Undefined_, _\*\*kwargs_) {#scatter.x}
 
 Get or set the x coordinate.

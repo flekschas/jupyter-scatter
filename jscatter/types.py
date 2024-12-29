@@ -10,6 +10,9 @@ TooltipPreviewType = Literal['text', 'image', 'audio']
 TooltipPreviewImagePosition = Literal['top', 'bottom', 'left', 'right', 'center']
 TooltipPreviewImageSize = Literal['contain', 'cover']
 SizeScaleFunction = Literal['asinh', 'linear', 'constant']
+WidgetButtons = Literal[
+    'pan_zoom', 'lasso', 'full_screen', 'screenshot', 'download', 'reset', 'divider'
+]
 
 # To distinguish between None and an undefined (optional) argument, where None
 # is used for unsetting and Undefined is used for skipping.
@@ -18,6 +21,9 @@ Undefined = type(
     (object,),
     {'__str__': lambda s: 'Undefined', '__repr__': lambda s: 'Undefined'},
 )
+
+# An "undefined" value
+UNDEF = Undefined()
 
 
 class Scales(Enum):
