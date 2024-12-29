@@ -4622,7 +4622,7 @@ class Scatter:
         --------
         >>> scatter.show()
         """
-        return self.widget.show()
+        return self.widget.show(buttons)
 
     def show_tooltip(self, pointIdx: int):
         """
