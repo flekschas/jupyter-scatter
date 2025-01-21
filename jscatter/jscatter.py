@@ -326,11 +326,13 @@ class Scatter:
         )
 
         self._annotations = None
+        self._lasso_type = 'freeform'
         self._lasso_color = (0, 0.666666667, 1, 1)
         self._lasso_on_long_press = True
         self._lasso_initiator = False
         self._lasso_min_delay = 10
         self._lasso_min_dist = 3
+        self._lasso_brush_size = 24
         self._x_data = None
         self._x_by = None
         self._x_histogram = None
@@ -521,11 +523,13 @@ class Scatter:
             kwargs.get('connection_size_labeling', UNDEF),
         )
         self.lasso(
+            kwargs.get('lasso_type', UNDEF),
             kwargs.get('lasso_color', UNDEF),
             kwargs.get('lasso_initiator', UNDEF),
             kwargs.get('lasso_min_delay', UNDEF),
             kwargs.get('lasso_min_dist', UNDEF),
             kwargs.get('lasso_on_long_press', UNDEF),
+            kwargs.get('lasso_brush_size', UNDEF),
         )
         self.reticle(kwargs.get('reticle', UNDEF), kwargs.get('reticle_color', UNDEF))
         self.mouse(kwargs.get('mouse_mode', UNDEF))
@@ -3215,17 +3219,22 @@ class Scatter:
 
     def lasso(
         self,
+        type: Optional[Union[bool, Undefined]] = UNDEF,
         color: Optional[Union[Color, Undefined]] = UNDEF,
         initiator: Optional[Union[bool, Undefined]] = UNDEF,
         min_delay: Optional[Union[int, Undefined]] = UNDEF,
         min_dist: Optional[Union[float, Undefined]] = UNDEF,
         on_long_press: Optional[Union[bool, Undefined]] = UNDEF,
+        brush_size: Optional[Union[bool, Undefined]] = UNDEF,
     ):
         """
         Set or get the lasso settings.
 
         Parameters
         ----------
+        type : str, optional
+            The lasso type. Must be one of `'freeform'`, `'brush'`, or
+            `'rectangle'`. Defaults to `'freeform'`.
         color : matplotlib compatible color, optional
             The lasso color
         initiator : bool, optional
@@ -3245,6 +3254,9 @@ class Scatter:
             a high-resolution lasso.
         on_long_press : bool, optional
             When set to `True`, the lasso is activated upon a long press.
+        brush_size : int, optional
+            The size of the brush in pixel. This has only an effect if `type` is
+            set to `'brush'`'. Defaults to `24`.
 
         Returns
         -------
@@ -3263,6 +3275,9 @@ class Scatter:
 
         Examples
         --------
+        >>> scatter.lasso(type='brush')
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.lasso(color='red')
         <jscatter.jscatter.Scatter>
 
@@ -3278,13 +3293,25 @@ class Scatter:
         >>> scatter.lasso(on_long_press=False)
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.lasso(brush_size=64)
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.lasso()
-        {'color': (0, 0.666666667, 1, 1),
+        {'type': 'brush',
+         'color': (0, 0.666666667, 1, 1),
          'initiator': False,
          'min_delay': 10,
          'min_dist': 3,
-         'on_long_press': True}
+         'on_long_press': True,
+         'brush_size': 64}
         """
+        if type is not UNDEF:
+            try:
+                self._lasso_type = type
+                self.update_widget('lasso_type', self._lasso_type)
+            except:
+                pass
+
         if color is not UNDEF:
             try:
                 self._lasso_color = to_rgba(color)
@@ -3320,15 +3347,27 @@ class Scatter:
             except:
                 pass
 
-        if any_not([color, initiator, min_delay, min_dist], UNDEF):
+        if brush_size is not UNDEF:
+            try:
+                self._lasso_brush_size = brush_size
+                self.update_widget('lasso_brush_size', self._lasso_brush_size)
+            except:
+                pass
+
+        if any_not(
+            [type, color, initiator, min_delay, min_dist, on_long_press, brush_size],
+            UNDEF,
+        ):
             return self
 
         return dict(
+            type=self._lasso_type,
             color=self._lasso_color,
             initiator=self._lasso_initiator,
             min_delay=self._lasso_min_delay,
             min_dist=self._lasso_min_dist,
             on_long_press=self._lasso_on_long_press,
+            brush_size=self._lasso_brush_size,
         )
 
     def width(self, width: Optional[Union[Auto, int, Undefined]] = UNDEF):
@@ -4507,6 +4546,8 @@ class Scatter:
             lasso_min_delay=self._lasso_min_delay,
             lasso_min_dist=self._lasso_min_dist,
             lasso_on_long_press=self._lasso_on_long_press,
+            lasso_type=self._lasso_type,
+            lasso_brush_size=self._lasso_brush_size,
             legend=self._legend,
             legend_color=self.get_legend_color(),
             legend_encoding=self.get_legend_encoding(),

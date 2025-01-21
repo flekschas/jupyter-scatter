@@ -91,6 +91,8 @@ const properties = {
   lassoOnLongPress: 'lassoOnLongPress',
   lassoMinDelay: 'lassoMinDelay',
   lassoMinDist: 'lassoMinDist',
+  lassoType: 'lassoType',
+  lassoBrushSize: 'lassoBrushSize',
   mouseMode: 'mouseMode',
   opacity: 'opacity',
   opacityBy: 'opacityBy',
@@ -195,6 +197,8 @@ const reglScatterplotProperty = new Set([
   'lassoOnLongPress',
   'lassoMinDelay',
   'lassoMinDist',
+  'lassoType',
+  'lassoBrushSize',
   'mouseMode',
   'opacity',
   'opacityBy',
@@ -298,7 +302,7 @@ class JupyterScatterView {
       const initialOptions = {
         renderer: window.jupyterScatter.renderer,
         canvas: this.canvas,
-        keyMap: { shift: 'merge' },
+        actionKeyMap: { merge: 'meta', remove: 'alt' },
       };
 
       if (this.width !== 'auto') {
@@ -345,6 +349,7 @@ class JupyterScatterView {
       this.pointoutHandlerBound = this.pointoutHandler.bind(this);
       this.selectHandlerBound = this.selectHandler.bind(this);
       this.deselectHandlerBound = this.deselectHandler.bind(this);
+      this.lassoEndHandlerBound = this.lassoEndHandler.bind(this);
       this.filterEventHandlerBound = this.filterEventHandler.bind(this);
       this.externalViewChangeHandlerBound =
         this.externalViewChangeHandler.bind(this);
@@ -374,6 +379,7 @@ class JupyterScatterView {
       this.scatterplot.subscribe('pointout', this.pointoutHandlerBound);
       this.scatterplot.subscribe('select', this.selectHandlerBound);
       this.scatterplot.subscribe('deselect', this.deselectHandlerBound);
+      this.scatterplot.subscribe('lassoEnd', this.lassoEndHandlerBound);
       this.scatterplot.subscribe('filter', this.filterEventHandlerBound);
       this.scatterplot.subscribe('view', this.viewChangeHandlerBound);
 
@@ -2086,6 +2092,15 @@ class JupyterScatterView {
       this.zoomToHandler();
     }
     this.model.set('selection', []);
+    this.model.set('lasso_selection_polygon', []);
+    this.model.save_changes();
+  }
+
+  lassoEndHandler(event) {
+    const dataCoordinates = event.coordinates.map(([x, y]) => {
+      return [this.xScale.invert(x), this.yScale.invert(y)];
+    })
+    this.model.set('lasso_selection_polygon', dataCoordinates);
     this.model.save_changes();
   }
 
@@ -2446,6 +2461,14 @@ class JupyterScatterView {
 
   lassoMinDistHandler(newValue) {
     this.withPropertyChangeHandler('lassoMinDist', newValue);
+  }
+
+  lassoTypeHandler(newValue) {
+    this.withPropertyChangeHandler('lassoType', newValue);
+  }
+
+  lassoBrushSizeHandler(newValue) {
+    this.withPropertyChangeHandler('lassoBrushSize', newValue);
   }
 
   xTitleHandler(newTitle) {
@@ -2942,8 +2965,10 @@ class JupyterScatterView {
     widthInput.max = `${this.fullscreenWidthMax}`;
     widthInput.style.userSelect = 'auto';
     widthInput.style.color = 'var(--jp-content-font-color3)';
-    widthInput.style.border = 'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
-    widthInput.style.backgroundColor = 'var(--jp-widgets-input-background-color)';
+    widthInput.style.border =
+      'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
+    widthInput.style.backgroundColor =
+      'var(--jp-widgets-input-background-color)';
     widthInput.addEventListener(
       'change',
       this.fullscreenWidthChangeHandlerBound,
@@ -2976,8 +3001,10 @@ class JupyterScatterView {
     heightInput.max = `${this.fullscreenHeightMax}`;
     heightInput.style.userSelect = 'auto';
     heightInput.style.color = 'var(--jp-content-font-color3)';
-    heightInput.style.border = 'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
-    heightInput.style.backgroundColor = 'var(--jp-widgets-input-background-color)';
+    heightInput.style.border =
+      'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
+    heightInput.style.backgroundColor =
+      'var(--jp-widgets-input-background-color)';
     heightInput.addEventListener(
       'change',
       this.fullscreenHeightChangeHandlerBound,
@@ -3004,7 +3031,8 @@ class JupyterScatterView {
     container.append(scale);
 
     const scaleSelect = document.createElement('select');
-    scaleSelect.style.backgroundColor = 'var(--jp-widgets-input-background-color)';
+    scaleSelect.style.backgroundColor =
+      'var(--jp-widgets-input-background-color)';
     scaleSelect.style.color = 'var(--jp-widgets-input-color)';
     this.fullscreenExportScale = 1;
     scaleSelect.addEventListener(
@@ -3041,7 +3069,8 @@ class JupyterScatterView {
     dprInput.value = window.devicePixelRatio;
     dprInput.disabled = true;
     dprInput.style.color = 'var(--jp-content-font-color3)';
-    dprInput.style.border = 'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
+    dprInput.style.border =
+      'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
     dprInput.style.backgroundColor = 'var(--jp-widgets-input-background-color)';
     dpr.append(dprInput);
 
@@ -3214,6 +3243,8 @@ async function render({ model, el }) {
       // biome-ignore lint/style/useNamingConvention: coming from Python-land
       zoom_to: Numpy1D('uint32'),
       annotations: Annotations(),
+      // biome-ignore lint/style/useNamingConvention: coming from Python-land
+      lasso_selection_polygon: Numpy2D('float32'),
     }),
   });
   view.render();

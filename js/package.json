@@ -29,7 +29,7 @@
     "gl-matrix": "~3.3.0",
     "pub-sub-es": "~3.0.0",
     "regl": "~2.1.0",
-    "regl-scatterplot": "~1.12.0"
+    "regl-scatterplot": "~1.13.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
