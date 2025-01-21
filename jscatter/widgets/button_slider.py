@@ -1,6 +1,6 @@
 import anywidget
 
-from traitlets import Dict, Int, Unicode
+from traitlets import Bool, Dict, Int, Unicode
 
 
 class ButtonIntSlider(anywidget.AnyWidget):
@@ -165,6 +165,19 @@ class ButtonIntSlider(anywidget.AnyWidget):
 
       update();
 
+      const updateVisibility = () => {
+        const visible = model.get('visible');
+        if (visible) {
+          el.style.display = 'block';
+        } else {
+          el.style.display = 'none';
+        }
+      }
+
+      model.on('change:visible', updateVisibility);
+
+      updateVisibility();
+
       sliderLabel.appendChild(sliderLabelValue);
       sliderLabel.appendChild(sliderLabelText);
       container.appendChild(slider);
@@ -242,3 +255,4 @@ class ButtonIntSlider(anywidget.AnyWidget):
     slider_label_value_suffix = Unicode(allow_none=True, default_value=None).tag(
         sync=True
     )
+    visible = Bool(True).tag(sync=True)

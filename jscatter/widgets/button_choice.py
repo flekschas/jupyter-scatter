@@ -1,6 +1,6 @@
 import anywidget
 
-from traitlets import Dict, Int, List, Unicode, Union
+from traitlets import Bool, Dict, Int, List, Unicode, Union
 
 
 class ButtonChoice(anywidget.AnyWidget):
@@ -131,6 +131,19 @@ class ButtonChoice(anywidget.AnyWidget):
 
       update();
 
+      const updateVisibility = () => {
+        const visible = model.get('visible');
+        if (visible) {
+          el.style.display = 'block';
+        } else {
+          el.style.display = 'none';
+        }
+      }
+
+      model.on('change:visible', updateVisibility);
+
+      updateVisibility();
+
       el.appendChild(button);
       dialog.appendChild(container);
       el.appendChild(dialog);
@@ -196,6 +209,7 @@ class ButtonChoice(anywidget.AnyWidget):
     icon = Union([Unicode(), Dict()]).tag(sync=True)
     width = Int(allow_none=True).tag(sync=True)
     label = Unicode(allow_none=True, default_value=None).tag(sync=True)
+    visible = Bool(True).tag(sync=True)
 
 
 ButtonChoice(

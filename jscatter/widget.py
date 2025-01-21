@@ -582,6 +582,12 @@ class JupyterScatter(anywidget.AnyWidget):
         button_full_screen = self.create_full_screen_button()
         button_lasso_type = self.create_lasso_type_button()
         button_lasso_brush_size = self.create_lasso_brush_size_button()
+        button_lasso_brush_size.visible = self.lasso_type == 'brush'
+
+        def lasso_type_change_handler(change):
+            button_lasso_brush_size.visible = change['new'] == 'brush'
+
+        self.observe(lasso_type_change_handler, names=['lasso_type'])
 
         button_map = {
             'pan_zoom': button_pan_zoom,

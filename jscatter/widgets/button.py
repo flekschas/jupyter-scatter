@@ -1,6 +1,6 @@
 import anywidget
 
-from traitlets import Int, Unicode
+from traitlets import Bool, Int, Unicode
 
 
 class Button(anywidget.AnyWidget):
@@ -73,6 +73,19 @@ class Button(anywidget.AnyWidget):
 
       update();
 
+      const updateVisibility = () => {
+        const visible = model.get('visible');
+        if (visible) {
+          el.style.display = 'block';
+        } else {
+          el.style.display = 'none';
+        }
+      }
+
+      model.on('change:visible', updateVisibility);
+
+      updateVisibility();
+
       el.appendChild(button);
 
       return () => {
@@ -97,6 +110,7 @@ class Button(anywidget.AnyWidget):
     description = Unicode().tag(sync=True)
     icon = Unicode().tag(sync=True)
     width = Int(allow_none=True).tag(sync=True)
+    visible = Bool(True).tag(sync=True)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
