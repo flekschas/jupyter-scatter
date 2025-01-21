@@ -553,16 +553,18 @@ scatter.mouse(mode='lasso')
 ```
 
 
-### scatter.lasso(_color=Undefined_, _initiator=Undefined_, _min_delay=Undefined_, _min_dist=Undefined_, _on_long_press=Undefined_) {#scatter.lasso}
+### scatter.lasso(_type=Undefined_, _color=Undefined_, _initiator=Undefined_, _min_delay=Undefined_, _min_dist=Undefined_, _on_long_press=Undefined_, _brush_size=Undefined_) {#scatter.lasso}
 
 Get or set the lasso for selecting multiple points.
 
 **Arguments:**
+- `type` is a string specifying the lasso type. Must be one of `'freeform'`, `'brush'`, or `'rectangle'`.
 - `color` is a string referring to a Matplotlib-compatible color.
 - `initiator` is a Boolean value to specify if the click-based lasso initiator should be enabled or not.
 - `min_delay` is an integer specifying the minimal delay in milliseconds before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant. 
 - `min_dist` is an integer specifying the minimal distance in pixels that the mouse has to move before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant.
 - `on_long_press` is a Boolean value specifying if the lasso should be activated upon a long press.
+- `brush_size` is an integer specifying the size of the brush in pixels. This has only an effect if `type` is set to `'brush'`'. Defaults to `24`.
 
 **Returns:** either the lasso properties when all arguments are `Undefined` or `self`.
 
