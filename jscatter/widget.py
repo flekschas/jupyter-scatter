@@ -16,7 +16,7 @@ from .annotations_traits import (
     serialization as annotation_serialization,
 )
 from .types import UNDEF, Undefined, WidgetButtons
-from .widgets import Button, ButtonChoice, ButtonIntSlider
+from .widgets import Button, ButtonChoice, ButtonIntSlider, Divider
 
 SELECTION_DTYPE = 'uint32'
 EVENT_TYPES = {
@@ -29,15 +29,7 @@ EVENT_TYPES = {
 BRUSH_SIZE_MIN = 1
 BRUSH_SIZE_MAX = 128
 
-divider = widgets.Box(
-    children=[],
-    layout=widgets.Layout(
-        margin='10px 0',
-        width='100%',
-        height='0',
-        border='1px solid var(--jp-layout-color2)',
-    ),
-)
+divider = Divider()
 
 
 def component_idx_to_name(idx):
@@ -472,27 +464,21 @@ class JupyterScatter(anywidget.AnyWidget):
         button.on_click(click_handler)
         return button
 
-    def create_mouse_mode_toggle_button(
-        self,
-        mouse_mode,
-        icon,
-        tooltip,
-    ):
-        button = widgets.Button(
+    def create_mouse_mode_toggle_button(self, mouse_mode, icon, tooltip, width=36):
+        button = Button(
             description='',
             icon=icon,
             tooltip=tooltip,
-            button_style='primary' if self.mouse_mode == mouse_mode else '',
+            width=width,
+            style='primary' if self.mouse_mode == mouse_mode else '',
         )
 
-        button.layout.width = '36px'
-
         def click_handler(b):
-            button.button_style = 'primary'
+            button.style = 'primary'
             self.mouse_mode = mouse_mode
 
         def change_handler(change):
-            button.button_style = 'primary' if change['new'] == mouse_mode else ''
+            button.style = 'primary' if change['new'] == mouse_mode else ''
 
         self.observe(change_handler, names=['mouse_mode'])
 

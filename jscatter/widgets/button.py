@@ -1,6 +1,6 @@
 import anywidget
 
-from traitlets import Bool, Int, Unicode
+from traitlets import Bool, Enum, Int, Unicode
 
 
 class Button(anywidget.AnyWidget):
@@ -20,6 +20,7 @@ class Button(anywidget.AnyWidget):
         const icon = model.get('icon');
         const tooltip = model.get('tooltip');
         const width = model.get('width');
+        const style = model.get('style');
 
         button.textContent = '';
 
@@ -49,6 +50,16 @@ class Button(anywidget.AnyWidget):
         if (width) {
           button.style.width = `${width}px`;
         }
+
+        for (const className of button.classList) {
+          if (className.startsWith('mod')) {
+            button.classList.remove(className);
+          }
+        }
+
+        if (style) {
+          button.classList.add(`mod-${style}`);
+        }
       }
 
       const createEventHandler = (eventType) => (event) => {
@@ -70,6 +81,7 @@ class Button(anywidget.AnyWidget):
       model.on('change:icon', update);
       model.on('change:width', update);
       model.on('change:tooltip', update);
+      model.on('change:style', update);
 
       update();
 
@@ -111,6 +123,9 @@ class Button(anywidget.AnyWidget):
     icon = Unicode().tag(sync=True)
     width = Int(allow_none=True).tag(sync=True)
     visible = Bool(True).tag(sync=True)
+    style = Enum(
+        ['', 'success', 'info', 'warning', 'danger', 'primary'], default_value=''
+    ).tag(sync=True)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
