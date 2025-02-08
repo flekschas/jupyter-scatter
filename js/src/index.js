@@ -141,6 +141,7 @@ const properties = {
   tooltipPreviewTextMarkdown: 'tooltipPreviewTextMarkdown',
   tooltipPreviewImagePosition: 'tooltipPreviewImagePosition',
   tooltipPreviewImageSize: 'tooltipPreviewImageSize',
+  tooltipPreviewImageHeight: 'tooltipPreviewImageHeight',
   tooltipPreviewAudioLength: 'tooltipPreviewAudioLength',
   tooltipPreviewAudioLoop: 'tooltipPreviewAudioLoop',
   xScale: 'xScale',
@@ -880,26 +881,34 @@ class JupyterScatterView {
       this[`tooltipProperty${capitalProperty}ValueText`],
     );
 
-    this[`tooltipProperty${capitalProperty}ValueHistogram`] = createHistogram(
-      TOOLTIP_HISTOGRAM_WIDTH[this.model.get('tooltip_histograms_size')] ||
-        TOOLTIP_HISTOGRAM_WIDTH.small,
-      TOOLTIP_HISTOGRAM_HEIGHT[this.model.get('tooltip_histograms_size')] ||
-        TOOLTIP_HISTOGRAM_HEIGHT.small,
-    );
-    this[`tooltipProperty${capitalProperty}Value`].appendChild(
-      this[`tooltipProperty${capitalProperty}ValueHistogram`].element,
-    );
+    if (this.showHistogram(property)) {
+      const histogram =
+        this.model.get(`${property}_histogram`) ||
+        this.model.get('tooltip_properties_non_visual_info')[property]
+          ?.histogram;
+      const scale =
+        this.model.get(`${property}_scale`) ||
+        this.model.get('tooltip_properties_non_visual_info')[property]?.scale;
 
-    const histogram =
-      this.model.get(`${property}_histogram`) ||
-      this.model.get('tooltip_properties_non_visual_info')[property]?.histogram;
-    const scale =
-      this.model.get(`${property}_scale`) ||
-      this.model.get('tooltip_properties_non_visual_info')[property]?.scale;
+      this[`tooltipProperty${capitalProperty}ValueHistogram`] = createHistogram(
+        TOOLTIP_HISTOGRAM_WIDTH[this.model.get('tooltip_histograms_size')] ||
+          TOOLTIP_HISTOGRAM_WIDTH.small,
+        TOOLTIP_HISTOGRAM_HEIGHT[this.model.get('tooltip_histograms_size')] ||
+          TOOLTIP_HISTOGRAM_HEIGHT.small,
+      );
+      this[`tooltipProperty${capitalProperty}Value`].appendChild(
+        this[`tooltipProperty${capitalProperty}ValueHistogram`].element,
+      );
 
-    this[`tooltipProperty${capitalProperty}ValueHistogram`].init(
-      histogram,
-      scale === 'categorical',
+      this[`tooltipProperty${capitalProperty}ValueHistogram`].init(
+        histogram,
+        scale === 'categorical',
+      );
+    }
+
+    this[`tooltipProperty${capitalProperty}ValueText`].classList.toggle(
+      'value-only',
+      !this.showHistogram(property),
     );
 
     this[`tooltipProperty${capitalProperty}Title`].textContent = toTitleCase(
@@ -1193,7 +1202,11 @@ class JupyterScatterView {
   }
 
   enableTooltipHistograms() {
-    const display = this.model.get('tooltip_histograms') ? 'block' : 'none';
+    const display = Object.values(this.model.get('tooltip_histograms')).some(
+      (show) => show,
+    )
+      ? 'block'
+      : 'none';
     const histograms =
       this.tooltipContentProperties.querySelectorAll('.histogram');
 
@@ -1280,7 +1293,10 @@ class JupyterScatterView {
         this.tooltipPreviewValue.style.backgroundSize = size;
         this.tooltipPreviewValue.style.borderRadius = '0.2rem 0.2rem 0 0';
 
-        this.tooltipPreviewValueHelper.style.paddingTop = '6em';
+        const height = this.model.get('tooltip_preview_image_height');
+        this.tooltipPreviewValueHelper.style.paddingTop = height
+          ? `${height}px`
+          : '6em';
 
         this.tooltipPreviewBorder.style.height = '1px';
         this.tooltipPreviewBorder.style.marginBottom = '0.25em';
@@ -1450,7 +1466,9 @@ class JupyterScatterView {
 
     for (const valueText of valueTexts) {
       valueText.style.flexGrow = '1';
-      valueText.style.maxWidth = '12em';
+      valueText.style.maxWidth = valueText.classList.contains('value-only')
+        ? '16em'
+        : '12em';
       valueText.style.display = '-webkit-box';
       valueText.style.webkitLineClamp = 3;
       valueText.style.webkitBoxOrient = 'vertical';
@@ -1671,7 +1689,7 @@ class JupyterScatterView {
           const [x, text, histogramKey] = get(pointIdx);
           badgeElement.style.transform = `translate(calc(${x}em - 50%), -50%)`;
           textElement.textContent = text;
-          if (this.model.get('tooltip_histograms')) {
+          if (this.showHistogram(property)) {
             histogram.draw(histogramKey);
           }
         };
@@ -1682,7 +1700,7 @@ class JupyterScatterView {
           const [y, text, histogramKey] = get(pointIdx);
           badgeElement.style.transform = `translate(-50%, calc(${1 - y}em - 50%))`;
           textElement.textContent = text;
-          if (this.model.get('tooltip_histograms')) {
+          if (this.showHistogram(property)) {
             histogram.draw(histogramKey);
           }
         };
@@ -1693,7 +1711,7 @@ class JupyterScatterView {
           const [color, text, histogramKey] = get(pointIdx);
           badgeElement.style.background = color;
           textElement.textContent = text;
-          if (this.model.get('tooltip_histograms')) {
+          if (this.showHistogram(property)) {
             histogram.draw(histogramKey);
           }
         };
@@ -1704,7 +1722,7 @@ class JupyterScatterView {
           const [opacity, text, histogramKey] = get(pointIdx);
           badgeElement.style.opacity = opacity;
           textElement.textContent = text;
-          if (this.model.get('tooltip_histograms')) {
+          if (this.showHistogram(property)) {
             histogram.draw(histogramKey);
           }
         };
@@ -1715,7 +1733,7 @@ class JupyterScatterView {
           const [scale, text, histogramKey] = get(pointIdx);
           badgeElement.style.transform = `scale(${scale})`;
           textElement.textContent = text;
-          if (this.model.get('tooltip_histograms')) {
+          if (this.showHistogram(property)) {
             histogram.draw(histogramKey);
           }
         };
@@ -1740,16 +1758,18 @@ class JupyterScatterView {
         textElement,
         histogram,
         getHistogramKey:
-          info.scale === 'categorical'
-            ? (v) => info.domain[v]
-            : createNumericalBinGetter(
-                info.histogram,
-                info.range || info.domain,
-              ),
+          info.scale === null
+            ? undefined
+            : info.scale === 'categorical'
+              ? (v) => info.domain[v]
+              : createNumericalBinGetter(
+                  info.histogram,
+                  info.range || info.domain,
+                ),
         format:
-          info.scale === 'categorical'
-            ? (s) => s
-            : format(getD3FormatSpecifier(info.domain)),
+          info.scale === 'linear'
+            ? format(getD3FormatSpecifier(info.domain))
+            : (s) => s,
       };
     });
 
@@ -1783,7 +1803,10 @@ class JupyterScatterView {
         }
         const value = event.properties[d.property];
         d.textElement.textContent = d.format(value);
-        d.histogram.draw(d.getHistogramKey(value));
+
+        if (this.showHistogram(d.property)) {
+          d.histogram?.draw(d.getHistogramKey(value));
+        }
       }
       if (event.preview) {
         previewUpdater(event.preview);
@@ -2099,7 +2122,7 @@ class JupyterScatterView {
   lassoEndHandler(event) {
     const dataCoordinates = event.coordinates.map(([x, y]) => {
       return [this.xScale.invert(x), this.yScale.invert(y)];
-    })
+    });
     this.model.set('lasso_selection_polygon', dataCoordinates);
     this.model.save_changes();
   }
@@ -2391,6 +2414,8 @@ class JupyterScatterView {
       this.scatterplot.select(selection, options);
     } else {
       this.scatterplot.deselect(options);
+      this.model.set('lasso_selection_polygon', []);
+      this.model.save_changes();
     }
 
     if (this.model.get('zoom_on_selection')) {
@@ -3204,6 +3229,11 @@ class JupyterScatterView {
   getYPadding() {
     const xLabel = this.model.get('axes_labels')?.[0];
     return xLabel ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+  }
+
+  showHistogram(property) {
+    const histogram = this.model.get('tooltip_histograms');
+    return histogram.includes(property);
   }
 }
 

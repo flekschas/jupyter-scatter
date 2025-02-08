@@ -221,7 +221,7 @@ class JupyterScatter(anywidget.AnyWidget):
         sync=True
     )
     tooltip_properties_non_visual_info = Dict(dict()).tag(sync=True)
-    tooltip_histograms = Bool().tag(sync=True)
+    tooltip_histograms = List().tag(sync=True)
     tooltip_histograms_ranges = Dict(dict()).tag(sync=True)
     tooltip_histograms_size = Enum(
         ['small', 'medium', 'large'], default_value='small'
@@ -242,6 +242,7 @@ class JupyterScatter(anywidget.AnyWidget):
     tooltip_preview_image_size = Enum(
         ['contain', 'cover'], allow_none=True, default_value=None
     ).tag(sync=True)
+    tooltip_preview_image_height = Int(None, allow_none=True).tag(sync=True)
     tooltip_preview_audio_length = Int(None, allow_none=True).tag(sync=True)
     tooltip_preview_audio_loop = Bool().tag(sync=True)
     tooltip_preview_audio_controls = Bool().tag(sync=True)

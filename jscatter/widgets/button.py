@@ -1,6 +1,6 @@
 import anywidget
 
-from traitlets import Bool, Enum, Int, Unicode
+from traitlets import Bool, Enum, Int, List, Unicode, Union
 
 
 class Button(anywidget.AnyWidget):
@@ -20,7 +20,10 @@ class Button(anywidget.AnyWidget):
         const icon = model.get('icon');
         const tooltip = model.get('tooltip');
         const width = model.get('width');
+        const fullWidth = model.get('full_width');
         const style = model.get('style');
+        const background = model.get('background');
+        const rounded = model.get('rounded');
 
         button.textContent = '';
 
@@ -48,8 +51,14 @@ class Button(anywidget.AnyWidget):
         }
 
         if (width) {
-          button.style.width = `${width}px`;
+          if (typeof width === 'string') {
+            button.style.width = width;
+          } else {
+            button.style.width = `${width}px`;
+          }
         }
+
+        button.classList.toggle('full-width', fullWidth);
 
         for (const className of button.classList) {
           if (className.startsWith('mod')) {
@@ -59,6 +68,23 @@ class Button(anywidget.AnyWidget):
 
         if (style) {
           button.classList.add(`mod-${style}`);
+        }
+
+        button.style.background = background || '';
+
+        if (rounded?.length) {
+          button.style.borderTopLeftRadius = rounded.includes('top-left')
+            ? 'var(--jp-border-radius)'
+            : 0;
+          button.style.borderTopRightRadius = rounded.includes('top-right')
+            ? 'var(--jp-border-radius)'
+            : 0;
+          button.style.borderBottomLeftRadius = rounded.includes('bottom-left')
+            ? 'var(--jp-border-radius)'
+            : 0;
+          button.style.borderBottomRightRadius = rounded.includes('bottom-right')
+            ? 'var(--jp-border-radius)'
+            : 0;
         }
       }
 
@@ -80,8 +106,11 @@ class Button(anywidget.AnyWidget):
       model.on('change:description', update);
       model.on('change:icon', update);
       model.on('change:width', update);
+      model.on('change:full_width', update);
       model.on('change:tooltip', update);
       model.on('change:style', update);
+      model.on('change:background', update);
+      model.on('change:rounded', update);
 
       update();
 
@@ -98,6 +127,14 @@ class Button(anywidget.AnyWidget):
 
       updateVisibility();
 
+      const updateDisabled = () => {
+        button.disabled = model.get('disabled');
+      }
+
+      model.on('change:disabled', updateDisabled);
+
+      updateDisabled();
+
       el.appendChild(button);
 
       return () => {
@@ -112,20 +149,35 @@ class Button(anywidget.AnyWidget):
     .jupyter-scatter-button {
       position: relative;
     }
+    .jupyter-scatter-button:disabled {
+      cursor: default;
+      pointer-events: none;
+    }
     .jupyter-scatter-button > svg {
       display: block;
       width: 100%;
       height: 100%;
     }
+    .jupyter-scatter-button.full-width {
+      width: calc(100% - var(--jp-widgets-margin) * 2);
+      padding-left: 0;
+      padding-right: 0;
+    }
     """
 
     description = Unicode().tag(sync=True)
     icon = Unicode().tag(sync=True)
-    width = Int(allow_none=True).tag(sync=True)
+    width = Union([Int(), Unicode()], allow_none=True).tag(sync=True)
+    full_width = Bool(True).tag(sync=True)
     visible = Bool(True).tag(sync=True)
+    disabled = Bool(False).tag(sync=True)
     style = Enum(
         ['', 'success', 'info', 'warning', 'danger', 'primary'], default_value=''
     ).tag(sync=True)
+    rounded = List(
+        Enum(['top-left', 'top-right', 'bottom-right', 'bottom-left'], default_value='')
+    ).tag(sync=True)
+    background = Unicode().tag(sync=True)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
