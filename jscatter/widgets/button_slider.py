@@ -13,13 +13,16 @@ class ButtonIntSlider(anywidget.AnyWidget):
       const sliderLabel = document.createElement('label');
       const sliderLabelValue = document.createElement('span');
       const sliderLabelText = document.createElement('span');
+      const sliderCircle = document.createElement('div');
 
       button.classList.add('jupyter-widgets', 'jupyter-button', 'widget-button', 'jupyter-scatter-slider-toggler');
       dialog.classList.add('jupyter-scatter-slider-dialog');
       container.classList.add('jupyter-widgets', 'jupyter-scatter-slider-container');
       slider.type = 'range';
+      slider.classList.add('jupyter-scatter-slider-input');
       sliderLabel.classList.add('jupyter-scatter-slider-label');
       sliderLabelText.classList.add('jupyter-scatter-slider-label-text');
+      sliderCircle.classList.add('jupyter-scatter-slider-circle');
 
       let open = false;
 
@@ -133,17 +136,37 @@ class ButtonIntSlider(anywidget.AnyWidget):
           ? `${value}${suffix}`
           : value;
 
+        sliderCircle.style.opacity = '0';
+
         model.set('value', Number(value));
         model.save_changes();
       }
 
       const inputHandler = (event) => {
+        console.log('slider input', event);
         const value = event.target.value;
         const suffix = model.get('slider_label_value_suffix');
 
         sliderLabelValue.textContent = suffix
           ? `${value}${suffix}`
           : value;
+
+        const computedStyle = window.getComputedStyle(event.target);
+        const bBox = event.target.getBoundingClientRect();
+        const relValue = (Number(value) - Number(event.target.min)) / Number(event.target.max);
+
+        const baseFontSize = Number(window.getComputedStyle(document.body).getPropertyValue('--jp-ui-font-size1').slice(0,-2));
+
+        const relTop = bBox.top - Number(dialog.style.top.slice(0,-2));
+        const relLeft = Math.ceil(baseFontSize / 2) + bBox.left - Number(dialog.style.left.slice(0,-2));
+
+        const effectiveWidth = bBox.width - baseFontSize;
+
+        sliderCircle.style.opacity = '0.5';
+        sliderCircle.style.top = `${relTop + bBox.height / 2}px`;
+        sliderCircle.style.left = `${relLeft + effectiveWidth * relValue}px`;
+        sliderCircle.style.width = `${value}px`;
+        sliderCircle.style.height = `${value}px`;
       }
 
       button.addEventListener('click', clickHandler);
@@ -183,6 +206,7 @@ class ButtonIntSlider(anywidget.AnyWidget):
       container.appendChild(slider);
       container.appendChild(sliderLabel);
       dialog.appendChild(container);
+      dialog.appendChild(sliderCircle);
 
       el.appendChild(button);
       el.appendChild(dialog);
@@ -211,6 +235,7 @@ class ButtonIntSlider(anywidget.AnyWidget):
       padding: 0;
       margin: 0;
       border: none;
+      overflow: visible;
     }
     .jupyter-scatter-slider-container {
       width: min-content;
@@ -230,12 +255,39 @@ class ButtonIntSlider(anywidget.AnyWidget):
       border: none;
       margin: 0;
     }
+
+    .jupyter-scatter-slider-input {
+      margin-left: 0;
+      margin-right: 0;
+    }
+    .jupyter-scatter-slider-input::-webkit-slider-thumb {
+      height: 0.75rem;
+      width: 0.75rem;
+    }
+    .jupyter-scatter-slider-input::-moz-range-thumb {
+      height: 0.75rem;
+      width: 0.75rem;
+    }
+
     .jupyter-scatter-slider-label {
       display: flex;
       align-items: center;
       gap: 0 0.5rem;
       white-space: nowrap;
     }
+
+    .jupyter-scatter-slider-circle {
+      position: absolute;
+      display: block;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      border: 1px dashed var(--jp-ui-font-color1);
+      border-radius: 100%;
+      pointer-events: none;
+      user-select: none;
+      transition: opacity 0.2s ease;
+    }
+
     ::backdrop{
       background: var(--jp-layout-color0);
       opacity: 0.33;
