@@ -437,7 +437,7 @@ class Scatter:
         self._tooltip_properties = visual_properties.copy()
         self._tooltip_properties_non_visual = None
         self._tooltip_size = 'small'
-        self._tooltip_histograms = self._tooltip_properties.copy()
+        self._tooltip_histograms = True
         self._tooltip_histograms_bins = DEFAULT_HISTOGRAM_BINS
         self._tooltip_histograms_ranges = {}
         self._tooltip_histograms_size = 'small'
@@ -3970,16 +3970,9 @@ class Scatter:
             self.update_widget('tooltip_preview', preview)
 
         if properties is not UNDEF:
-            current_tooltip_properties = self._tooltip_properties.copy()
-
             self._tooltip_properties = sanitize_tooltip_properties(
                 self._data, visual_properties, properties
             )
-
-            # Let's automatically enable histograms for newly added properties
-            for prop in self._tooltip_properties:
-                if prop not in current_tooltip_properties:
-                    self._tooltip_histograms.append(prop)
 
             self._tooltip_histograms_bins = {
                 property: get_histogram_bins(self._tooltip_histograms_bins, property)
@@ -3996,15 +3989,8 @@ class Scatter:
             self.update_widget('tooltip_size', size)
 
         if histograms is not UNDEF:
-            if type(histograms) is bool:
-                if histograms:
-                    self._tooltip_histograms = self._tooltip_properties.copy()
-                else:
-                    self._tooltip_histograms = []
-            else:
-                self._tooltip_histograms = histograms
-
-        self.update_widget('tooltip_histograms', self._tooltip_histograms)
+            self._tooltip_histograms = histograms
+            self.update_widget('tooltip_histograms', self._tooltip_histograms)
 
         if histograms_size is not UNDEF:
             self._tooltip_histograms_size = histograms_size
@@ -4096,7 +4082,10 @@ class Scatter:
                 range = None
                 histogram = None
 
-                if property in self._tooltip_histograms:
+                if (
+                    self._tooltip_histograms == True
+                    or property in self._tooltip_histograms
+                ):
                     scale = get_scale_type_from_df(self._data[property])
 
                 if scale is not None:

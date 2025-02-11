@@ -1202,11 +1202,9 @@ class JupyterScatterView {
   }
 
   enableTooltipHistograms() {
-    const display = Object.values(this.model.get('tooltip_histograms')).some(
-      (show) => show,
-    )
-      ? 'block'
-      : 'none';
+    const showHistograms = this.model.get('tooltip_histograms');
+    const display =
+      showHistograms === true || showHistograms.length > 0 ? 'block' : 'none';
     const histograms =
       this.tooltipContentProperties.querySelectorAll('.histogram');
 
@@ -3232,8 +3230,14 @@ class JupyterScatterView {
   }
 
   showHistogram(property) {
-    const histogram = this.model.get('tooltip_histograms');
-    return histogram.includes(property);
+    const histograms = this.model.get('tooltip_histograms');
+    if (histograms === true) {
+      return true;
+    }
+    if (histograms === false) {
+      return false;
+    }
+    return histograms.includes(property);
   }
 }
 
