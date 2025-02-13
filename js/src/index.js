@@ -475,6 +475,9 @@ class JupyterScatterView {
             this.zoomToHandler(this.selection);
           }
         });
+
+        this.lassoStartHandlerBound = this.lassoStartHandler.bind(this);
+        this.scatterplot.subscribe('lassoStart', this.lassoStartHandlerBound);
       }
     });
 
@@ -529,6 +532,10 @@ class JupyterScatterView {
       this.toggleFullscreen();
       return;
     }
+  }
+
+  lassoStartHandler() {
+    this.hideTooltip();
   }
 
   getWidth() {
