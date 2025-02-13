@@ -146,7 +146,7 @@ const createNumericalHistogramBackground = (canvas, data) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = state.color;
     for (const rect of state.rects) {
-      ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+      ctx.fillRect(rect.x, rect.y, state.binWidth, rect.height);
     }
   };
 

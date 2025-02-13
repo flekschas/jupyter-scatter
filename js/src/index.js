@@ -91,6 +91,8 @@ const properties = {
   lassoOnLongPress: 'lassoOnLongPress',
   lassoMinDelay: 'lassoMinDelay',
   lassoMinDist: 'lassoMinDist',
+  lassoType: 'lassoType',
+  lassoBrushSize: 'lassoBrushSize',
   mouseMode: 'mouseMode',
   opacity: 'opacity',
   opacityBy: 'opacityBy',
@@ -139,6 +141,7 @@ const properties = {
   tooltipPreviewTextMarkdown: 'tooltipPreviewTextMarkdown',
   tooltipPreviewImagePosition: 'tooltipPreviewImagePosition',
   tooltipPreviewImageSize: 'tooltipPreviewImageSize',
+  tooltipPreviewImageHeight: 'tooltipPreviewImageHeight',
   tooltipPreviewAudioLength: 'tooltipPreviewAudioLength',
   tooltipPreviewAudioLoop: 'tooltipPreviewAudioLoop',
   xScale: 'xScale',
@@ -195,6 +198,8 @@ const reglScatterplotProperty = new Set([
   'lassoOnLongPress',
   'lassoMinDelay',
   'lassoMinDist',
+  'lassoType',
+  'lassoBrushSize',
   'mouseMode',
   'opacity',
   'opacityBy',
@@ -298,7 +303,7 @@ class JupyterScatterView {
       const initialOptions = {
         renderer: window.jupyterScatter.renderer,
         canvas: this.canvas,
-        keyMap: { shift: 'merge' },
+        actionKeyMap: { merge: 'meta', remove: 'alt' },
       };
 
       if (this.width !== 'auto') {
@@ -345,6 +350,7 @@ class JupyterScatterView {
       this.pointoutHandlerBound = this.pointoutHandler.bind(this);
       this.selectHandlerBound = this.selectHandler.bind(this);
       this.deselectHandlerBound = this.deselectHandler.bind(this);
+      this.lassoEndHandlerBound = this.lassoEndHandler.bind(this);
       this.filterEventHandlerBound = this.filterEventHandler.bind(this);
       this.externalViewChangeHandlerBound =
         this.externalViewChangeHandler.bind(this);
@@ -374,6 +380,7 @@ class JupyterScatterView {
       this.scatterplot.subscribe('pointout', this.pointoutHandlerBound);
       this.scatterplot.subscribe('select', this.selectHandlerBound);
       this.scatterplot.subscribe('deselect', this.deselectHandlerBound);
+      this.scatterplot.subscribe('lassoEnd', this.lassoEndHandlerBound);
       this.scatterplot.subscribe('filter', this.filterEventHandlerBound);
       this.scatterplot.subscribe('view', this.viewChangeHandlerBound);
 
@@ -468,6 +475,9 @@ class JupyterScatterView {
             this.zoomToHandler(this.selection);
           }
         });
+
+        this.lassoStartHandlerBound = this.lassoStartHandler.bind(this);
+        this.scatterplot.subscribe('lassoStart', this.lassoStartHandlerBound);
       }
     });
 
@@ -522,6 +532,10 @@ class JupyterScatterView {
       this.toggleFullscreen();
       return;
     }
+  }
+
+  lassoStartHandler() {
+    this.hideTooltip();
   }
 
   getWidth() {
@@ -874,26 +888,34 @@ class JupyterScatterView {
       this[`tooltipProperty${capitalProperty}ValueText`],
     );
 
-    this[`tooltipProperty${capitalProperty}ValueHistogram`] = createHistogram(
-      TOOLTIP_HISTOGRAM_WIDTH[this.model.get('tooltip_histograms_size')] ||
-        TOOLTIP_HISTOGRAM_WIDTH.small,
-      TOOLTIP_HISTOGRAM_HEIGHT[this.model.get('tooltip_histograms_size')] ||
-        TOOLTIP_HISTOGRAM_HEIGHT.small,
-    );
-    this[`tooltipProperty${capitalProperty}Value`].appendChild(
-      this[`tooltipProperty${capitalProperty}ValueHistogram`].element,
-    );
+    if (this.showHistogram(property)) {
+      const histogram =
+        this.model.get(`${property}_histogram`) ||
+        this.model.get('tooltip_properties_non_visual_info')[property]
+          ?.histogram;
+      const scale =
+        this.model.get(`${property}_scale`) ||
+        this.model.get('tooltip_properties_non_visual_info')[property]?.scale;
 
-    const histogram =
-      this.model.get(`${property}_histogram`) ||
-      this.model.get('tooltip_properties_non_visual_info')[property]?.histogram;
-    const scale =
-      this.model.get(`${property}_scale`) ||
-      this.model.get('tooltip_properties_non_visual_info')[property]?.scale;
+      this[`tooltipProperty${capitalProperty}ValueHistogram`] = createHistogram(
+        TOOLTIP_HISTOGRAM_WIDTH[this.model.get('tooltip_histograms_size')] ||
+          TOOLTIP_HISTOGRAM_WIDTH.small,
+        TOOLTIP_HISTOGRAM_HEIGHT[this.model.get('tooltip_histograms_size')] ||
+          TOOLTIP_HISTOGRAM_HEIGHT.small,
+      );
+      this[`tooltipProperty${capitalProperty}Value`].appendChild(
+        this[`tooltipProperty${capitalProperty}ValueHistogram`].element,
+      );
 
-    this[`tooltipProperty${capitalProperty}ValueHistogram`].init(
-      histogram,
-      scale === 'categorical',
+      this[`tooltipProperty${capitalProperty}ValueHistogram`].init(
+        histogram,
+        scale === 'categorical',
+      );
+    }
+
+    this[`tooltipProperty${capitalProperty}ValueText`].classList.toggle(
+      'value-only',
+      !this.showHistogram(property),
     );
 
     this[`tooltipProperty${capitalProperty}Title`].textContent = toTitleCase(
@@ -1187,7 +1209,9 @@ class JupyterScatterView {
   }
 
   enableTooltipHistograms() {
-    const display = this.model.get('tooltip_histograms') ? 'block' : 'none';
+    const showHistograms = this.model.get('tooltip_histograms');
+    const display =
+      showHistograms === true || showHistograms.length > 0 ? 'block' : 'none';
     const histograms =
       this.tooltipContentProperties.querySelectorAll('.histogram');
 
@@ -1274,7 +1298,10 @@ class JupyterScatterView {
         this.tooltipPreviewValue.style.backgroundSize = size;
         this.tooltipPreviewValue.style.borderRadius = '0.2rem 0.2rem 0 0';
 
-        this.tooltipPreviewValueHelper.style.paddingTop = '6em';
+        const height = this.model.get('tooltip_preview_image_height');
+        this.tooltipPreviewValueHelper.style.paddingTop = height
+          ? `${height}px`
+          : '6em';
 
         this.tooltipPreviewBorder.style.height = '1px';
         this.tooltipPreviewBorder.style.marginBottom = '0.25em';
@@ -1444,7 +1471,9 @@ class JupyterScatterView {
 
     for (const valueText of valueTexts) {
       valueText.style.flexGrow = '1';
-      valueText.style.maxWidth = '12em';
+      valueText.style.maxWidth = valueText.classList.contains('value-only')
+        ? '16em'
+        : '12em';
       valueText.style.display = '-webkit-box';
       valueText.style.webkitLineClamp = 3;
       valueText.style.webkitBoxOrient = 'vertical';
@@ -1665,7 +1694,7 @@ class JupyterScatterView {
           const [x, text, histogramKey] = get(pointIdx);
           badgeElement.style.transform = `translate(calc(${x}em - 50%), -50%)`;
           textElement.textContent = text;
-          if (this.model.get('tooltip_histograms')) {
+          if (this.showHistogram(property)) {
             histogram.draw(histogramKey);
           }
         };
@@ -1676,7 +1705,7 @@ class JupyterScatterView {
           const [y, text, histogramKey] = get(pointIdx);
           badgeElement.style.transform = `translate(-50%, calc(${1 - y}em - 50%))`;
           textElement.textContent = text;
-          if (this.model.get('tooltip_histograms')) {
+          if (this.showHistogram(property)) {
             histogram.draw(histogramKey);
           }
         };
@@ -1687,7 +1716,7 @@ class JupyterScatterView {
           const [color, text, histogramKey] = get(pointIdx);
           badgeElement.style.background = color;
           textElement.textContent = text;
-          if (this.model.get('tooltip_histograms')) {
+          if (this.showHistogram(property)) {
             histogram.draw(histogramKey);
           }
         };
@@ -1698,7 +1727,7 @@ class JupyterScatterView {
           const [opacity, text, histogramKey] = get(pointIdx);
           badgeElement.style.opacity = opacity;
           textElement.textContent = text;
-          if (this.model.get('tooltip_histograms')) {
+          if (this.showHistogram(property)) {
             histogram.draw(histogramKey);
           }
         };
@@ -1709,7 +1738,7 @@ class JupyterScatterView {
           const [scale, text, histogramKey] = get(pointIdx);
           badgeElement.style.transform = `scale(${scale})`;
           textElement.textContent = text;
-          if (this.model.get('tooltip_histograms')) {
+          if (this.showHistogram(property)) {
             histogram.draw(histogramKey);
           }
         };
@@ -1734,16 +1763,18 @@ class JupyterScatterView {
         textElement,
         histogram,
         getHistogramKey:
-          info.scale === 'categorical'
-            ? (v) => info.domain[v]
-            : createNumericalBinGetter(
-                info.histogram,
-                info.range || info.domain,
-              ),
+          info.scale === null
+            ? undefined
+            : info.scale === 'categorical'
+              ? (v) => info.domain[v]
+              : createNumericalBinGetter(
+                  info.histogram,
+                  info.range || info.domain,
+                ),
         format:
-          info.scale === 'categorical'
-            ? (s) => s
-            : format(getD3FormatSpecifier(info.domain)),
+          info.scale === 'linear'
+            ? format(getD3FormatSpecifier(info.domain))
+            : (s) => s,
       };
     });
 
@@ -1777,7 +1808,10 @@ class JupyterScatterView {
         }
         const value = event.properties[d.property];
         d.textElement.textContent = d.format(value);
-        d.histogram.draw(d.getHistogramKey(value));
+
+        if (this.showHistogram(d.property)) {
+          d.histogram?.draw(d.getHistogramKey(value));
+        }
       }
       if (event.preview) {
         previewUpdater(event.preview);
@@ -2086,6 +2120,15 @@ class JupyterScatterView {
       this.zoomToHandler();
     }
     this.model.set('selection', []);
+    this.model.set('lasso_selection_polygon', []);
+    this.model.save_changes();
+  }
+
+  lassoEndHandler(event) {
+    const dataCoordinates = event.coordinates.map(([x, y]) => {
+      return [this.xScale.invert(x), this.yScale.invert(y)];
+    });
+    this.model.set('lasso_selection_polygon', dataCoordinates);
     this.model.save_changes();
   }
 
@@ -2376,6 +2419,8 @@ class JupyterScatterView {
       this.scatterplot.select(selection, options);
     } else {
       this.scatterplot.deselect(options);
+      this.model.set('lasso_selection_polygon', []);
+      this.model.save_changes();
     }
 
     if (this.model.get('zoom_on_selection')) {
@@ -2446,6 +2491,14 @@ class JupyterScatterView {
 
   lassoMinDistHandler(newValue) {
     this.withPropertyChangeHandler('lassoMinDist', newValue);
+  }
+
+  lassoTypeHandler(newValue) {
+    this.withPropertyChangeHandler('lassoType', newValue);
+  }
+
+  lassoBrushSizeHandler(newValue) {
+    this.withPropertyChangeHandler('lassoBrushSize', newValue);
   }
 
   xTitleHandler(newTitle) {
@@ -2942,8 +2995,10 @@ class JupyterScatterView {
     widthInput.max = `${this.fullscreenWidthMax}`;
     widthInput.style.userSelect = 'auto';
     widthInput.style.color = 'var(--jp-content-font-color3)';
-    widthInput.style.border = 'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
-    widthInput.style.backgroundColor = 'var(--jp-widgets-input-background-color)';
+    widthInput.style.border =
+      'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
+    widthInput.style.backgroundColor =
+      'var(--jp-widgets-input-background-color)';
     widthInput.addEventListener(
       'change',
       this.fullscreenWidthChangeHandlerBound,
@@ -2976,8 +3031,10 @@ class JupyterScatterView {
     heightInput.max = `${this.fullscreenHeightMax}`;
     heightInput.style.userSelect = 'auto';
     heightInput.style.color = 'var(--jp-content-font-color3)';
-    heightInput.style.border = 'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
-    heightInput.style.backgroundColor = 'var(--jp-widgets-input-background-color)';
+    heightInput.style.border =
+      'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
+    heightInput.style.backgroundColor =
+      'var(--jp-widgets-input-background-color)';
     heightInput.addEventListener(
       'change',
       this.fullscreenHeightChangeHandlerBound,
@@ -3004,7 +3061,8 @@ class JupyterScatterView {
     container.append(scale);
 
     const scaleSelect = document.createElement('select');
-    scaleSelect.style.backgroundColor = 'var(--jp-widgets-input-background-color)';
+    scaleSelect.style.backgroundColor =
+      'var(--jp-widgets-input-background-color)';
     scaleSelect.style.color = 'var(--jp-widgets-input-color)';
     this.fullscreenExportScale = 1;
     scaleSelect.addEventListener(
@@ -3041,7 +3099,8 @@ class JupyterScatterView {
     dprInput.value = window.devicePixelRatio;
     dprInput.disabled = true;
     dprInput.style.color = 'var(--jp-content-font-color3)';
-    dprInput.style.border = 'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
+    dprInput.style.border =
+      'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
     dprInput.style.backgroundColor = 'var(--jp-widgets-input-background-color)';
     dpr.append(dprInput);
 
@@ -3176,6 +3235,17 @@ class JupyterScatterView {
     const xLabel = this.model.get('axes_labels')?.[0];
     return xLabel ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
   }
+
+  showHistogram(property) {
+    const histograms = this.model.get('tooltip_histograms');
+    if (histograms === true) {
+      return true;
+    }
+    if (histograms === false) {
+      return false;
+    }
+    return histograms.includes(property);
+  }
 }
 
 function modelWithSerializers(model, serializers) {
@@ -3214,6 +3284,8 @@ async function render({ model, el }) {
       // biome-ignore lint/style/useNamingConvention: coming from Python-land
       zoom_to: Numpy1D('uint32'),
       annotations: Annotations(),
+      // biome-ignore lint/style/useNamingConvention: coming from Python-land
+      lasso_selection_polygon: Numpy2D('float32'),
     }),
   });
   view.render();

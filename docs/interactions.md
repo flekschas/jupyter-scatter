@@ -94,12 +94,66 @@ closed it'll turn blue. At this point the lasso is active.
   <div class="overlay">Hover to play video</div>
 </div>
 
-Alternatively, you can click on the crosshair icon in the top-left of the
-scatter plot to permanently activate the lasso.
+Once the lasso is active, keep holding down your primary mouse button and move
+your mouse cursor around the points you want to select. Finally, release your
+primary mouse key.
 
-To select points once the lasso is active, keep holding down your primary mouse
-button and move your mouse cursor around the points you want to select. Finally,
-release your primary mouse key.
+::: info
+To permanently activate the lasso, you can click on the crosshair icon in the
+top-left of the scatter plot.
+:::
+
+### Add and Remove Selected Points
+
+To add more points to an existing selection, hold down the [_meta_ key](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey) as you
+lasso select the points you want to add. To remove points from a selection, hold
+down the [_alt_ key](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/altKey) as you lasso select the points you want to remove.
+
+<div class="video">
+  <video loop muted playsinline width="1256" data-name="interactions-lasso-add-remove">
+    <source
+      src="/videos/interactions-lasso-add-remove-light.mp4"
+      type="video/mp4"
+    />
+  </video>
+  <div class="overlay">Hover to play video</div>
+</div>
+
+::: info
+On macOS, the meta key is `Command` or `⌘` and the alt key is `Option` or `⌥`.
+:::
+
+### Brush and Rectangle Lasso Selections
+
+Beyond this _freeform_ lasso selection, Jupyter Scatter also offers
+_rectangular_ and _brush_ style lasso selections. You can change the lasso type
+either via the _lasso_ button in the top-left corner of the plot or via
+`scatter.lasso(type=lasso_type)`, where `lasso_type` must be one of
+`'freeform'`, `'brush'`, or `'rectangle'`.
+
+Below is an example of the brush lasso selection.
+
+<div class="video">
+  <video loop muted playsinline width="1256" data-name="interactions-lasso-brush">
+    <source
+      src="/videos/interactions-lasso-brush-light.mp4"
+      type="video/mp4"
+    />
+  </video>
+  <div class="overlay">Hover to play video</div>
+</div>
+
+And finally an example of the classic rectangular lasso selection.
+
+<div class="video">
+  <video loop muted playsinline width="1256" data-name="interactions-lasso-rectangle">
+    <source
+      src="/videos/interactions-lasso-rectangle-light.mp4"
+      type="video/mp4"
+    />
+  </video>
+  <div class="overlay">Hover to play video</div>
+</div>
 
 ## Filter Points
 

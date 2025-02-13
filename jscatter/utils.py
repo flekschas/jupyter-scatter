@@ -89,6 +89,10 @@ def to_scale_type(norm=None):
 
 def get_scale_type_from_df(data):
     if pd.CategoricalDtype.is_dtype(data) or pd.api.types.is_string_dtype(data):
+        if data.nunique() == len(data):
+            # When the number of unique values is the same as the data, then
+            # the data is not nominal
+            return None
         return 'categorical'
 
     return 'linear'
@@ -101,7 +105,7 @@ def get_domain_from_df(data):
         _data = data.copy().astype(str).astype('category')
         return dict(zip(_data, _data.cat.codes))
 
-    return [data.min(), data.max()]
+    return [data.min(skipna=True), data.max(skipna=True)]
 
 
 def create_labeling(partial_labeling, column: Union[str, None] = None) -> Labeling:

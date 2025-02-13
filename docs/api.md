@@ -403,7 +403,7 @@ from jscatter import HLine, VLine
 scatter.annotations([HLine(42), VLine(42)])
 ```
 
-### scatter.tooltip(_enable=Undefined_, _properties=Undefined_, _histograms=Undefined_, _histograms_bins=Undefined_, _histograms_ranges=Undefined_, _histograms_size=Undefined_, _preview=Undefined_, _preview_type=Undefined_, _preview_text_lines=Undefined_, _preview_image_background_color=Undefined_, _preview_image_position=Undefined_, _preview_image_size=Undefined_, _preview_audio_length=Undefined_, _preview_audio_loop=Undefined_, _preview_audio_controls=Undefined_, _size=Undefined_) {#scatter.tooltip}
+### scatter.tooltip(_enable=Undefined_, _properties=Undefined_, _histograms=Undefined_, _histograms_bins=Undefined_, _histograms_ranges=Undefined_, _histograms_size=Undefined_, _preview=Undefined_, _preview_type=Undefined_, _preview_text_lines=Undefined_, _preview_image_background_color=Undefined_, _preview_image_position=Undefined_, _preview_image_size=Undefined_, _preview_image_height=Undefined_, _preview_audio_length=Undefined_, _preview_audio_loop=Undefined_, _preview_audio_controls=Undefined_, _size=Undefined_) {#scatter.tooltip}
 
 Set or get the tooltip settings.
 
@@ -412,7 +412,7 @@ Set or get the tooltip settings.
 
 - `properties` is a list of string specifying for which visual or data properties to show in the tooltip. The visual properties can be some of `x`, `y`, `color`, `opacity`, and `size`. Note that visual properties are only shown if they are actually used to data properties. To reference other data properties, specify a column of the bound DataFrame by its name.
 
-- `histograms` is a Boolean specifying if the tooltip should show histograms of the properties
+- `histograms` is a Boolean or list of property names specifying if histograms should be shown. When set to `True`, the tooltip will show histograms for all properties. Alternatively, you can provide a list of properties for which you want to show a histogram.
 
 - `histograms_bins` is either an Integer specifying the number of bins of all numerical histograms or a dictionary of property-specific number of bins. The default is `20`.
 
@@ -435,6 +435,8 @@ Set or get the tooltip settings.
 - `preview_image_size` is a string specifying the size of the image in the context of the preview area. This can be one of `"cover"` or `"contain"` and is set to `"contain"` by default.
 
   See https://developer.mozilla.org/en-US/docs/Web/CSS/background-size for details on the behavior.
+
+- `preview_image_height` The height of the image container pixels. By default, it is `None`, which makes the height deffault to 6em.
 
 - `preview_audio_length` is an integer specifying the number of seconds of an audio preview that should be played. By default (`None`), the audio file is played from the start to the end.
 
@@ -553,16 +555,18 @@ scatter.mouse(mode='lasso')
 ```
 
 
-### scatter.lasso(_color=Undefined_, _initiator=Undefined_, _min_delay=Undefined_, _min_dist=Undefined_, _on_long_press=Undefined_) {#scatter.lasso}
+### scatter.lasso(_type=Undefined_, _color=Undefined_, _initiator=Undefined_, _min_delay=Undefined_, _min_dist=Undefined_, _on_long_press=Undefined_, _brush_size=Undefined_) {#scatter.lasso}
 
 Get or set the lasso for selecting multiple points.
 
 **Arguments:**
+- `type` is a string specifying the lasso type. Must be one of `'freeform'`, `'brush'`, or `'rectangle'`.
 - `color` is a string referring to a Matplotlib-compatible color.
 - `initiator` is a Boolean value to specify if the click-based lasso initiator should be enabled or not.
 - `min_delay` is an integer specifying the minimal delay in milliseconds before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant. 
 - `min_dist` is an integer specifying the minimal distance in pixels that the mouse has to move before a new lasso point is stored. Higher values will result in more coarse grain lasso polygons but might be more performant.
 - `on_long_press` is a Boolean value specifying if the lasso should be activated upon a long press.
+- `brush_size` is an integer specifying the size of the brush in pixels. This has only an effect if `type` is set to `'brush'`'. Defaults to `24`.
 
 **Returns:** either the lasso properties when all arguments are `Undefined` or `self`.
 
@@ -718,8 +722,8 @@ The widget (`scatter.widget`) has the following properties, which you can think 
 While you can adjust these properties directly, the [`Scatter` methods](#methods) are the idiomatic and recommended way to set widget properties.
 :::
 
-| Name                                     | Type <div style="min-width:250px"/>                                                                                                                                  | Default <div style="min-width:180px"/>   | Allow None | Read Only | Note <div style="min-width:320px"/> |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ---------- | --------- | ------------- |
+| Name                                     | Type <div style="min-width:250px"/>                                                                                                                                  | Default <div style="min-width:180px"/>     | Allow None | Read Only | Note <div style="min-width:320px"/> |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ---------- | --------- | ------------- |
 | `dom_element_id`                         | str                                                                                                                                                                  |                                            |            | `True`    | For debugging |
 | `data`                                   | 2D numerical array                                                                                                                                                   |                                            |            |           |               |
 | `prevent_filter_reset`                   | bool                                                                                                                                                                 | `False`                                    |            |           |               |
@@ -788,6 +792,7 @@ While you can adjust these properties directly, the [`Scatter` methods](#methods
 | `tooltip_preview_image_background_color` | `"auto"` \| str                                                                                                                                                      | `"auto"`                                   |            |           |               |
 | `tooltip_preview_image_position`         | `"top"`<br/>\| `"left"`<br/>\| `"right"`<br/>\| `"bottom"`<br/>\| `"center"`                                                                                         | `"center"`                                 | `True`     |           |               |
 | `tooltip_preview_image_size`             | `"contain"` \| `"cover"`                                                                                                                                             | `"contain"`                                | `True`     |           |               |
+| `tooltip_preview_image_height`           | int                                                                                                                                                                  | `None`                                     | `True`     |           |               |
 | `tooltip_preview_audio_length`           | int                                                                                                                                                                  | `None`                                     | `True`     |           |               |
 | `tooltip_preview_audio_loop`             | bool                                                                                                                                                                 | `False`                                    |            |           |               |
 | `tooltip_preview_audio_controls`         | bool                                                                                                                                                                 | `True`                                     |            |           |               |
