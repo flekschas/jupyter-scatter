@@ -16,6 +16,7 @@ from .annotations_traits import (
     serialization as annotation_serialization,
 )
 from .types import UNDEF, Undefined, WidgetButtons
+from .widgets import Button, ButtonChoice, ButtonIntSlider, Divider
 
 SELECTION_DTYPE = 'uint32'
 EVENT_TYPES = {
@@ -25,16 +26,10 @@ EVENT_TYPES = {
     'VIEW_RESET': 'view_reset',
     'VIEW_SAVE': 'view_save',
 }
+BRUSH_SIZE_MIN = 1
+BRUSH_SIZE_MAX = 128
 
-divider = widgets.Box(
-    children=[],
-    layout=widgets.Layout(
-        margin='10px 0',
-        width='100%',
-        height='0',
-        border='1px solid var(--jp-layout-color2)',
-    ),
-)
+divider = Divider()
 
 
 def component_idx_to_name(idx):
@@ -70,6 +65,8 @@ def array_to_binary(ar, obj=None, force_contiguous=True):
 
 
 def binary_to_array(value, obj=None):
+    if value is None:
+        return None
     return np.frombuffer(value['view'], dtype=value['dtype']).reshape(value['shape'])
 
 
@@ -174,8 +171,17 @@ class JupyterScatter(anywidget.AnyWidget):
     mouse_mode = Enum(['panZoom', 'lasso', 'rotate'], default_value='panZoom').tag(
         sync=True
     )
+    lasso_type = Enum(['freeform', 'brush', 'rectangle'], default_value='freeform').tag(
+        sync=True
+    )
     lasso_initiator = Bool().tag(sync=True)
     lasso_on_long_press = Bool().tag(sync=True)
+    lasso_selection_polygon = Array(
+        default_value=None,
+        allow_none=True,
+        read_only=True,
+    ).tag(sync=True, **ndarray_serialization)
+    lasso_brush_size = Int(24, min=BRUSH_SIZE_MIN, max=BRUSH_SIZE_MAX).tag(sync=True)
 
     # Axes
     axes = Bool().tag(sync=True)
@@ -215,7 +221,7 @@ class JupyterScatter(anywidget.AnyWidget):
         sync=True
     )
     tooltip_properties_non_visual_info = Dict(dict()).tag(sync=True)
-    tooltip_histograms = Bool().tag(sync=True)
+    tooltip_histograms = Union([Bool(), List()]).tag(sync=True)
     tooltip_histograms_ranges = Dict(dict()).tag(sync=True)
     tooltip_histograms_size = Enum(
         ['small', 'medium', 'large'], default_value='small'
@@ -236,6 +242,7 @@ class JupyterScatter(anywidget.AnyWidget):
     tooltip_preview_image_size = Enum(
         ['contain', 'cover'], allow_none=True, default_value=None
     ).tag(sync=True)
+    tooltip_preview_image_height = Int(None, allow_none=True).tag(sync=True)
     tooltip_preview_audio_length = Int(None, allow_none=True).tag(sync=True)
     tooltip_preview_audio_loop = Bool().tag(sync=True)
     tooltip_preview_audio_controls = Bool().tag(sync=True)
@@ -458,31 +465,81 @@ class JupyterScatter(anywidget.AnyWidget):
         button.on_click(click_handler)
         return button
 
-    def create_mouse_mode_toggle_button(
-        self,
-        mouse_mode,
-        icon,
-        tooltip,
-    ):
-        button = widgets.Button(
+    def create_mouse_mode_toggle_button(self, mouse_mode, icon, tooltip, width=36):
+        button = Button(
             description='',
             icon=icon,
             tooltip=tooltip,
-            button_style='primary' if self.mouse_mode == mouse_mode else '',
+            width=width,
+            style='primary' if self.mouse_mode == mouse_mode else '',
         )
 
-        button.layout.width = '36px'
-
         def click_handler(b):
-            button.button_style = 'primary'
+            button.style = 'primary'
             self.mouse_mode = mouse_mode
 
         def change_handler(change):
-            button.button_style = 'primary' if change['new'] == mouse_mode else ''
+            button.style = 'primary' if change['new'] == mouse_mode else ''
 
         self.observe(change_handler, names=['mouse_mode'])
 
         button.on_click(click_handler)
+        return button
+
+    def create_lasso_type_button(self):
+        button = ButtonChoice(
+            icon={
+                'freeform': '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path stroke-width="2px" stroke="currentColor" fill="none" d="m15.99958,27.5687c-1.8418,-0.3359 -3.71385,-1.01143 -5.49959,-2.04243c-6.69178,-3.8635 -9.65985,-11.26864 -6.62435,-16.52628c3.0355,-5.25764 10.93258,-6.38978 17.62435,-2.52628c6.1635,3.5585 9.16819,10.12222 7.23126,15.24508"/><circle stroke-width="2px" stroke="currentColor" fill="none" r="3" cy="25" cx="27"/></svg>',
+                'brush': '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path stroke-width="2px" stroke="currentColor" fill="none" d="m25.985,26.755c-5.345,2.455 -10.786,2.981 -14.455,1.899c-3.449,-1.017 -5.53,-3.338 -5.53,-6.654c0,-3.33 1.705,-4.929 3.835,-6.127c0.894,-0.503 1.88,-0.912 2.738,-1.451c0.786,-0.493 1.427,-1.143 1.427,-2.422c0,-1.692 -1.552,-2.769 -3.177,-3.649c-3.177,-1.722 -7.152,-2.378 -7.152,-2.378l0.658,-3.946c0,0 4.665,0.784 8.4,2.806c2.987,1.618 5.271,4.055 5.271,7.167c0,3.33 -1.705,4.929 -3.835,6.127c-0.894,0.503 -1.88,0.912 -2.738,1.451c-0.786,0.493 -1.427,1.143 -1.427,2.422c0,1.486 1.117,2.362 2.662,2.818c2.897,0.854 7.122,0.332 11.338,-1.551"/><circle stroke-width="2px" stroke="currentColor" fill="none" r="3" cy="24" cx="27"/></svg>',
+                'rectangle': '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle  stroke-width="2px" stroke="currentColor" fill="none" r="3" cy="24" cx="27"/><path stroke-linecap="square" stroke-width="2px" stroke="currentColor" fill="none" d="m24,24l-22,0l0,-19l25,0l0,16"/></svg>',
+            },
+            tooltip='Lasso Type',
+            width=36,
+            value=self.lasso_type,
+            options={
+                'freeform': 'Freeform',
+                'brush': 'Brush',
+                'rectangle': 'Rectangle',
+            },
+        )
+
+        def internal_change_handler(change):
+            self.lasso_type = change['new']
+
+        button.observe(internal_change_handler, names=['value'])
+
+        def change_handler(change):
+            button.value = change['new']
+
+        self.observe(change_handler, names=['lasso_type'])
+
+        return button
+
+    def create_lasso_brush_size_button(self):
+        button = ButtonIntSlider(
+            icon='<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle fill="currentColor" r="3" cx="5" cy="16" /><circle fill="currentColor" r="9" cx="21" cy="16" /><path stroke-dasharray="0.5,1.5,0,0,0,0" stroke-width="1px" stroke="currentColor" fill="none" d="m5,13.717l12.378,-5.38l0.031,15.353l-12.409,-5.363l0,-4.61z"/></svg>',
+            tooltip='Brush Size',
+            width=36,
+            slider_label='Brush Size',
+            slider_label_value_suffix='px',
+            slider_label_width=32,
+            slider_width=128,
+            value=self.lasso_brush_size,
+            value_min=BRUSH_SIZE_MIN,
+            value_max=BRUSH_SIZE_MAX,
+            value_step=1,
+        )
+
+        def internal_change_handler(change):
+            self.lasso_brush_size = change['new']
+
+        button.observe(internal_change_handler, names=['value'])
+
+        def change_handler(change):
+            button.value = change['new']
+
+        self.observe(change_handler, names=['lasso_brush_size'])
+
         return button
 
     def show(
@@ -510,6 +567,14 @@ class JupyterScatter(anywidget.AnyWidget):
         button_view_download = self.create_download_view_button()
         button_view_reset = self.create_reset_view_button()
         button_full_screen = self.create_full_screen_button()
+        button_lasso_type = self.create_lasso_type_button()
+        button_lasso_brush_size = self.create_lasso_brush_size_button()
+        button_lasso_brush_size.visible = self.lasso_type == 'brush'
+
+        def lasso_type_change_handler(change):
+            button_lasso_brush_size.visible = change['new'] == 'brush'
+
+        self.observe(lasso_type_change_handler, names=['lasso_type'])
 
         button_map = {
             'pan_zoom': button_pan_zoom,
@@ -519,6 +584,8 @@ class JupyterScatter(anywidget.AnyWidget):
             'reset': button_view_reset,
             'full_screen': button_full_screen,
             'divider': divider,
+            'lasso_type': button_lasso_type,
+            'lasso_brush_size': button_lasso_brush_size,
         }
 
         if buttons is not UNDEF:
@@ -529,10 +596,12 @@ class JupyterScatter(anywidget.AnyWidget):
             button_widgets = [
                 button_pan_zoom,
                 button_lasso,
+                button_lasso_type,
+                button_lasso_brush_size,
                 # button_rotate,
                 divider,
                 button_full_screen,
-                button_view_save,
+                # button_view_save,
                 button_view_download,
                 button_view_reset,
             ]
@@ -554,98 +623,3 @@ class JupyterScatter(anywidget.AnyWidget):
         self.observe(camera_is_fixed_change_handler, names=['camera_is_fixed'])
 
         return widgets.VBox([widgets.HBox([buttons, plots])])
-
-
-class Button(anywidget.AnyWidget):
-    _esm = """
-    function render({ model, el }) {
-      const button = document.createElement('button');
-
-      button.classList.add('jupyter-widgets');
-      button.classList.add('jupyter-button');
-      button.classList.add('widget-button');
-
-      const update = () => {
-        const description = model.get('description');
-        const icon = model.get('icon');
-        const tooltip = model.get('tooltip');
-        const width = model.get('width');
-
-        button.textContent = '';
-
-        if (icon) {
-          const i = document.createElement('i');
-          i.classList.add('fa', `fa-${icon}`);
-
-          if (!description) {
-            i.classList.add('center');
-          }
-
-          button.appendChild(i);
-        }
-
-        if (description) {
-          button.appendChild(document.createTextNode(description));
-        }
-
-        if (tooltip) {
-          button.title = tooltip;
-        }
-
-        if (width) {
-          button.style.width = `${width}px`;
-        }
-      }
-
-      const createEventHandler = (eventType) => (event) => {
-        model.send({
-          type: eventType,
-          alt_key: event.altKey,
-          shift_key: event.shiftKey,
-          meta_key: event.metaKey,
-        });
-      }
-
-      const clickHandler = createEventHandler('click');
-      const dblclickHandler = createEventHandler('dblclick');
-
-      button.addEventListener('click', clickHandler);
-      button.addEventListener('dblclick', dblclickHandler);
-
-      model.on('change:description', update);
-      model.on('change:icon', update);
-      model.on('change:width', update);
-      model.on('change:tooltip', update);
-
-      update();
-
-      el.appendChild(button);
-
-      return () => {
-        button.removeEventListener('click', clickHandler);
-        button.removeEventListener('dblclick', dblclickHandler);
-      };
-    }
-    export default { render }
-    """
-
-    description = Unicode().tag(sync=True)
-    icon = Unicode().tag(sync=True)
-    width = Int(allow_none=True).tag(sync=True)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._click_handler = None
-        self.on_msg(self._handle_custom_msg)
-
-    def _handle_custom_msg(self, event: dict, buffers):
-        if event['type'] == 'click' and self._click_handler is not None:
-            self._click_handler(event)
-        if event['type'] == 'dblclick' and self._dblclick_handler is not None:
-            self._dblclick_handler(event)
-
-    def on_click(self, callback):
-        self._click_handler = callback
-
-    def on_dblclick(self, callback):
-        self._dblclick_handler = callback

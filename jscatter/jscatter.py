@@ -39,7 +39,6 @@ from .types import (
     Color,
     Scales,
     MouseModes,
-    Auto,
     Reverse,
     Segment,
     Size,
@@ -326,11 +325,13 @@ class Scatter:
         )
 
         self._annotations = None
+        self._lasso_type = 'freeform'
         self._lasso_color = (0, 0.666666667, 1, 1)
         self._lasso_on_long_press = True
         self._lasso_initiator = False
         self._lasso_min_delay = 10
         self._lasso_min_dist = 3
+        self._lasso_brush_size = 24
         self._x_data = None
         self._x_by = None
         self._x_histogram = None
@@ -446,6 +447,7 @@ class Scatter:
         self._tooltip_preview_image_background_color = 'auto'
         self._tooltip_preview_image_position = 'center'
         self._tooltip_preview_image_size = 'contain'
+        self._tooltip_preview_image_height = None
         self._tooltip_preview_audio_length = None
         self._tooltip_preview_audio_loop = False
         self._tooltip_preview_audio_controls = True
@@ -521,11 +523,13 @@ class Scatter:
             kwargs.get('connection_size_labeling', UNDEF),
         )
         self.lasso(
+            kwargs.get('lasso_type', UNDEF),
             kwargs.get('lasso_color', UNDEF),
             kwargs.get('lasso_initiator', UNDEF),
             kwargs.get('lasso_min_delay', UNDEF),
             kwargs.get('lasso_min_dist', UNDEF),
             kwargs.get('lasso_on_long_press', UNDEF),
+            kwargs.get('lasso_brush_size', UNDEF),
         )
         self.reticle(kwargs.get('reticle', UNDEF), kwargs.get('reticle_color', UNDEF))
         self.mouse(kwargs.get('mouse_mode', UNDEF))
@@ -559,6 +563,7 @@ class Scatter:
             kwargs.get('tooltip_preview_image_background_color', UNDEF),
             kwargs.get('tooltip_preview_image_position', UNDEF),
             kwargs.get('tooltip_preview_image_size', UNDEF),
+            kwargs.get('tooltip_preview_image_height', UNDEF),
             kwargs.get('tooltip_preview_audio_length', UNDEF),
             kwargs.get('tooltip_preview_audio_loop', UNDEF),
             kwargs.get('tooltip_preview_audio_controls', UNDEF),
@@ -3215,17 +3220,22 @@ class Scatter:
 
     def lasso(
         self,
+        type: Optional[Union[bool, Undefined]] = UNDEF,
         color: Optional[Union[Color, Undefined]] = UNDEF,
         initiator: Optional[Union[bool, Undefined]] = UNDEF,
         min_delay: Optional[Union[int, Undefined]] = UNDEF,
         min_dist: Optional[Union[float, Undefined]] = UNDEF,
         on_long_press: Optional[Union[bool, Undefined]] = UNDEF,
+        brush_size: Optional[Union[bool, Undefined]] = UNDEF,
     ):
         """
         Set or get the lasso settings.
 
         Parameters
         ----------
+        type : str, optional
+            The lasso type. Must be one of `'freeform'`, `'brush'`, or
+            `'rectangle'`. Defaults to `'freeform'`.
         color : matplotlib compatible color, optional
             The lasso color
         initiator : bool, optional
@@ -3245,6 +3255,9 @@ class Scatter:
             a high-resolution lasso.
         on_long_press : bool, optional
             When set to `True`, the lasso is activated upon a long press.
+        brush_size : int, optional
+            The size of the brush in pixel. This has only an effect if `type` is
+            set to `'brush'`'. Defaults to `24`.
 
         Returns
         -------
@@ -3263,6 +3276,9 @@ class Scatter:
 
         Examples
         --------
+        >>> scatter.lasso(type='brush')
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.lasso(color='red')
         <jscatter.jscatter.Scatter>
 
@@ -3278,13 +3294,25 @@ class Scatter:
         >>> scatter.lasso(on_long_press=False)
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.lasso(brush_size=64)
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.lasso()
-        {'color': (0, 0.666666667, 1, 1),
+        {'type': 'brush',
+         'color': (0, 0.666666667, 1, 1),
          'initiator': False,
          'min_delay': 10,
          'min_dist': 3,
-         'on_long_press': True}
+         'on_long_press': True,
+         'brush_size': 64}
         """
+        if type is not UNDEF:
+            try:
+                self._lasso_type = type
+                self.update_widget('lasso_type', self._lasso_type)
+            except:
+                pass
+
         if color is not UNDEF:
             try:
                 self._lasso_color = to_rgba(color)
@@ -3320,15 +3348,27 @@ class Scatter:
             except:
                 pass
 
-        if any_not([color, initiator, min_delay, min_dist], UNDEF):
+        if brush_size is not UNDEF:
+            try:
+                self._lasso_brush_size = brush_size
+                self.update_widget('lasso_brush_size', self._lasso_brush_size)
+            except:
+                pass
+
+        if any_not(
+            [type, color, initiator, min_delay, min_dist, on_long_press, brush_size],
+            UNDEF,
+        ):
             return self
 
         return dict(
+            type=self._lasso_type,
             color=self._lasso_color,
             initiator=self._lasso_initiator,
             min_delay=self._lasso_min_delay,
             min_dist=self._lasso_min_dist,
             on_long_press=self._lasso_on_long_press,
+            brush_size=self._lasso_brush_size,
         )
 
     def width(self, width: Optional[Union[Auto, int, Undefined]] = UNDEF):
@@ -3695,7 +3735,7 @@ class Scatter:
         self,
         enable: Optional[Union[bool, Undefined]] = UNDEF,
         properties: Optional[Union[List[VisualProperty], Undefined]] = UNDEF,
-        histograms: Optional[Union[bool, Undefined]] = UNDEF,
+        histograms: Optional[Union[bool, List[str], Undefined]] = UNDEF,
         histograms_bins: Optional[Union[int, Dict[str, int], Undefined]] = UNDEF,
         histograms_ranges: Optional[
             Union[Tuple[float], Dict[str, Tuple[float]], Undefined]
@@ -3709,6 +3749,7 @@ class Scatter:
             Union[TooltipPreviewImagePosition, str, Undefined]
         ] = UNDEF,
         preview_image_size: Optional[Union[TooltipPreviewImageSize, Undefined]] = UNDEF,
+        preview_image_height: Optional[Union[int, Undefined]] = UNDEF,
         preview_audio_length: Optional[Union[int, Undefined]] = UNDEF,
         preview_audio_loop: Optional[Union[bool, int, Undefined]] = UNDEF,
         preview_audio_controls: Optional[Union[bool, Undefined]] = UNDEF,
@@ -3728,10 +3769,11 @@ class Scatter:
             actually used to encode data properties. To reference other data
             properties that are not visually encoded, specify a column of the
             bound DataFrame by its name.
-        histograms : bool, optional
-            When set to `True`, the tooltip will show histograms of the
-            properties
-        histograms_bins : int, optional
+        histograms : bool or list, optional
+            When set to `True`, the tooltip will show histograms for all
+            properties. Alternatively, you can provide a list of
+            properties for which you want to show a histogram.
+        histograms_bins : int or dict, optional
             The number of bins for all numerical histograms. Or a dictionary of
             property-specific number of bins. Defaults to 20.
         histograms_ranges : (float, float) or dict of (float, float), optional
@@ -3766,6 +3808,8 @@ class Scatter:
             The size of the image in the context of the preview area. This can
             be one of `"cover"` or `"contain"` and is set to `"contain"` by
             default.
+        preview_image_height : int, optional
+            The height of the image container pixels. This defaults to 6em.
         preview_audio_length : int or None, optional
             The number of seconds that should be played as the audio preview. By
             default (`None`), the audio file is played from the start to the
@@ -3896,6 +3940,10 @@ class Scatter:
             self._tooltip_preview_image_size = preview_image_size
             self.update_widget('tooltip_preview_image_size', preview_image_size)
 
+        if preview_image_height is not UNDEF:
+            self._tooltip_preview_image_height = preview_image_height
+            self.update_widget('tooltip_preview_image_height', preview_image_height)
+
         if preview_audio_length is not UNDEF:
             try:
                 self._tooltip_preview_audio_length = max(0, preview_audio_length)
@@ -3942,7 +3990,7 @@ class Scatter:
 
         if histograms is not UNDEF:
             self._tooltip_histograms = histograms
-            self.update_widget('tooltip_histograms', histograms)
+            self.update_widget('tooltip_histograms', self._tooltip_histograms)
 
         if histograms_size is not UNDEF:
             self._tooltip_histograms_size = histograms_size
@@ -3979,7 +4027,7 @@ class Scatter:
             self.update_widget('y_histogram', self._y_histogram)
 
             if self._color_by is not None and self._color_categories is None:
-                component = self._encodings.data[self._color_by].component
+                component = self._encodings.data[self._color_data_dimension].component
                 self._color_histogram = get_histogram_from_df(
                     self._points[:, component],
                     self.get_histogram_bins('color'),
@@ -3995,7 +4043,7 @@ class Scatter:
                 and self._opacity_by != 'density'
                 and self._opacity_categories is None
             ):
-                component = self._encodings.data[self._opacity_by].component
+                component = self._encodings.data[self._opacity_data_dimension].component
                 self._opacity_histogram = get_histogram_from_df(
                     self._points[:, component],
                     self.get_histogram_bins('opacity'),
@@ -4007,7 +4055,7 @@ class Scatter:
                 self.update_widget('opacity_histogram', self._opacity_histogram)
 
             if self._size_by is not None and self._size_categories is None:
-                component = self._encodings.data[self._size_by].component
+                component = self._encodings.data[self._size_data_dimension].component
                 self._size_histogram = get_histogram_from_df(
                     self._points[:, component],
                     self.get_histogram_bins('size'),
@@ -4029,15 +4077,31 @@ class Scatter:
 
             self._tooltip_properties_non_visual_info = {}
             for property in self._tooltip_properties_non_visual:
-                self._tooltip_properties_non_visual_info[property] = dict(
-                    scale=get_scale_type_from_df(self._data[property]),
-                    domain=get_domain_from_df(self._data[property]),
-                    range=self.get_histogram_range(property),
-                    histogram=get_histogram_from_df(
+                scale = None
+                domain = None
+                range = None
+                histogram = None
+
+                if (
+                    self._tooltip_histograms == True
+                    or property in self._tooltip_histograms
+                ):
+                    scale = get_scale_type_from_df(self._data[property])
+
+                if scale is not None:
+                    domain = get_domain_from_df(self._data[property])
+                    range = self.get_histogram_range(property)
+                    histogram = get_histogram_from_df(
                         self._data[property],
                         self.get_histogram_bins(property),
                         self.get_histogram_range(property),
-                    ),
+                    )
+
+                self._tooltip_properties_non_visual_info[property] = dict(
+                    scale=scale,
+                    domain=domain,
+                    range=range,
+                    histogram=histogram,
                 )
 
             self.update_widget(
@@ -4055,6 +4119,16 @@ class Scatter:
                 histograms_bins,
                 histograms_ranges,
                 histograms_size,
+                preview,
+                preview_type,
+                preview_text_lines,
+                preview_image_background_color,
+                preview_image_position,
+                preview_image_size,
+                preview_image_height,
+                preview_audio_length,
+                preview_audio_loop,
+                preview_audio_controls,
             ],
             UNDEF,
         ):
@@ -4073,6 +4147,7 @@ class Scatter:
             preview_image_background_color=self._tooltip_preview_image_background_color,
             preview_image_position=self._tooltip_preview_image_position,
             preview_image_size=self._tooltip_preview_image_size,
+            preview_image_height=self._tooltip_preview_image_height,
             preview_audio_length=self._tooltip_preview_audio_length,
             preview_audio_loop=self._tooltip_preview_audio_loop,
             preview_audio_controls=self._tooltip_preview_audio_controls,
@@ -4165,10 +4240,10 @@ class Scatter:
         >>> scatter.zoom(target=[0, 1, 2])
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.zoom(target=scatter.selection(), animation=True)
+        >>> scatter.zoom(to=scatter.selection(), animation=True)
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.zoom(target=None, animation=500, padding=0)
+        >>> scatter.zoom(to=None, animation=500, padding=0)
         <jscatter.jscatter.Scatter>
 
         >>> scatter.zoom()
@@ -4507,6 +4582,8 @@ class Scatter:
             lasso_min_delay=self._lasso_min_delay,
             lasso_min_dist=self._lasso_min_dist,
             lasso_on_long_press=self._lasso_on_long_press,
+            lasso_type=self._lasso_type,
+            lasso_brush_size=self._lasso_brush_size,
             legend=self._legend,
             legend_color=self.get_legend_color(),
             legend_encoding=self.get_legend_encoding(),
@@ -4550,6 +4627,7 @@ class Scatter:
             tooltip_preview_image_background_color=self._tooltip_preview_image_background_color,
             tooltip_preview_image_position=self._tooltip_preview_image_position,
             tooltip_preview_image_size=self._tooltip_preview_image_size,
+            tooltip_preview_image_height=self._tooltip_preview_image_height,
             tooltip_preview_audio_length=self._tooltip_preview_audio_length,
             tooltip_preview_audio_loop=self._tooltip_preview_audio_loop,
             tooltip_preview_audio_controls=self._tooltip_preview_audio_controls,

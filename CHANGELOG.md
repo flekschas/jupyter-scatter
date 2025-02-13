@@ -1,3 +1,9 @@
+## v0.21.0
+
+- Feat: add support for brush and rectangle lasso types.
+- Feat: expose lasso selection polygon via `scatter.widget.lasso_polygon_selection`
+- Feat: enable merging of lasso selection upon holding down the [meta key](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey) and deselected points upon holding down the [alt key](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/altKey).
+
 ## v0.20.0
 
 - Feat: add support for showing a scatter plot in full-screen mode. In full-screen mode you can easily customize and up-scale the resolution for better exporting in PNG.

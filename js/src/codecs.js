@@ -84,10 +84,13 @@ export function Numpy2D(dtype) {
      */
     serialize(data) {
       const height = data.length;
-      const width = data[0].length;
+      const width = height > 0 ? data[0].length : 0;
+      if (height === 0 || width === 0) {
+        return null;
+      }
       const arr = new DTYPES[dtype](height * width);
       for (let i = 0; i < data.length; i++) {
-        arr.set(data[i], i * height);
+        arr.set(data[i], i * width);
       }
       return {
         view: new DataView(arr.buffer),
