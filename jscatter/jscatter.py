@@ -1457,6 +1457,8 @@ class Scatter:
                 else:
                     # Assuming `map` is a list of colors
                     self._color_map = [to_rgba(c) for c in map]
+                if self._color_order != 'reverse':
+                    self._color_order = None
             else:
                 self._color_map_order = None
                 if callable(map):
@@ -1724,6 +1726,8 @@ class Scatter:
             if isinstance(map, tuple):
                 # Assuming `map` is a triple specifying a linear space
                 self._opacity_map = np.linspace(*map)
+                if self._opacity_order != 'reverse':
+                    self._opacity_order = None
             elif isinstance(map, dict):
                 # Assuming `map` is a dictionary of opacities
                 self._opacity_map = list(map.values())
@@ -1731,6 +1735,8 @@ class Scatter:
                 self._opacity_order = get_map_order(map, self._opacity_categories)
             else:
                 self._opacity_map = np.asarray(map)
+                if self._opacity_order != 'reverse':
+                    self._opacity_order = None
 
         if (
             self._opacity_map is None or map == 'auto'
@@ -1975,6 +1981,8 @@ class Scatter:
             if isinstance(map, tuple):
                 # Assuming `map` is a triple specifying a linear space
                 self._size_map = np.linspace(*map)
+                if self._size_order != 'reverse':
+                    self._size_order = None
             elif isinstance(map, dict):
                 # Assuming `map` is a dictionary of sizes
                 self._size_map = list(map.values())
@@ -1982,6 +1990,8 @@ class Scatter:
                 self._size_order = get_map_order(map, self._size_categories)
             else:
                 self._size_map = np.asarray(map)
+                if self._size_order != 'reverse':
+                    self._size_order = None
 
         if (self._size_map is None or map == 'auto') and self._size_by is not None:
             # The best we can do is provide a linear size map

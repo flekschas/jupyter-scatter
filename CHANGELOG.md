@@ -7,6 +7,7 @@
 - Fix: background histogram render bug
 - Fix: ensure NAs are skipped for the histogram
 - Fix: ensure that the tooltip is hidden on lasso start
+- Fix: ensure that the color, opacity, and size order is reset when one switches from a categorical to a continuous color map. The reset is skipped when `order == 'reverse'`.
 
 ## v0.20.0
 
