@@ -3,6 +3,10 @@
 - Feat: add support for brush and rectangle lasso types.
 - Feat: expose lasso selection polygon via `scatter.widget.lasso_polygon_selection`
 - Feat: enable merging of lasso selection upon holding down the [meta key](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey) and deselected points upon holding down the [alt key](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/altKey).
+- Feat: allow specifying which properties should feature a histogram via `scatter.tooltip(histograms=['color', 'property_a'])`
+- Fix: background histogram render bug
+- Fix: ensure NAs are skipped for the histogram
+- Fix: ensure that the tooltip is hidden on lasso start
 
 ## v0.20.0
 
