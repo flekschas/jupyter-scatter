@@ -4632,7 +4632,9 @@ class Scatter:
             size_scale_function=self._size_scale_function,
             tooltip_enable=self._tooltip,
             tooltip_color=self.get_tooltip_color(),
-            tooltip_properties=self._tooltip_properties,
+            tooltip_properties=sanitize_tooltip_properties(
+                self._data, visual_properties, self._tooltip_properties
+            ),
             tooltip_properties_non_visual_info=self._tooltip_properties_non_visual_info,
             tooltip_histograms=self._tooltip_histograms,
             tooltip_histograms_ranges=self._tooltip_histograms_ranges,

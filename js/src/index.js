@@ -963,7 +963,7 @@ class JupyterScatterView {
       }
       if (property in TOOLTIP_OPTIONAL_VISUAL_PROPERTIES) {
         const encoding = this.model.get(`${property}_by`);
-        if (property === 'opacity' && encoding !== 'density') {
+        if (property === 'opacity' && encoding && encoding !== 'density') {
           continue;
         }
         if (property !== 'opacity' && encoding) {
