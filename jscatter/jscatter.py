@@ -4092,7 +4092,7 @@ class Scatter:
                 range = None
                 histogram = None
 
-                if (
+                if self._tooltip_histograms != False and (
                     self._tooltip_histograms == True
                     or property in self._tooltip_histograms
                 ):

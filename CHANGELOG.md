@@ -1,3 +1,7 @@
+## v0.21.1
+
+- Fix: ensure `tooltip_histogram == False` works as expected
+
 ## v0.21.0
 
 - Feat: add support for brush and rectangle lasso types.
