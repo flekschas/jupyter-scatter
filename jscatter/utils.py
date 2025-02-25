@@ -167,9 +167,9 @@ def sanitize_tooltip_properties(
 ):
     sanitized_properties = []
 
-    for col in properties:
-        if col in reserved_properties or (df is not None and col in df):
-            sanitized_properties.append(col)
+    for prop in properties:
+        if prop in reserved_properties or (df is not None and prop in df):
+            sanitized_properties.append(prop)
         else:
             continue
 
