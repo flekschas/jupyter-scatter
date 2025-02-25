@@ -1,5 +1,6 @@
 ## v0.21.1
 
+- Fix: tooltip issue with non-existing tooltip ([#187](https://github.com/flekschas/jupyter-scatter/issues/187))
 - Fix: ensure `tooltip_histogram == False` works as expected
 
 ## v0.21.0

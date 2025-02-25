@@ -31,6 +31,7 @@ from .utils import (
     create_default_norm,
     create_labeling,
     get_histogram_from_df,
+    get_is_valid_histogram_data,
     sanitize_tooltip_properties,
     zerofy_missing_values,
 )
@@ -4092,10 +4093,15 @@ class Scatter:
                 range = None
                 histogram = None
 
-                if self._tooltip_histograms != False and (
+                has_histogram = self._tooltip_histograms != False and (
                     self._tooltip_histograms == True
                     or property in self._tooltip_histograms
-                ):
+                )
+                is_valid_histogram_data = get_is_valid_histogram_data(
+                    self._data[property]
+                )
+
+                if has_histogram and is_valid_histogram_data:
                     scale = get_scale_type_from_df(self._data[property])
 
                 if scale is not None:

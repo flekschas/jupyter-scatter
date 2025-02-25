@@ -150,6 +150,16 @@ def get_histogram_from_df(data, bins=20, range=None):
     return list(hist[0] / hist[0].max())
 
 
+def get_is_valid_histogram_data(data):
+    if pd.api.types.is_numeric_dtype(data):
+        return True
+
+    if pd.CategoricalDtype.is_dtype(data):
+        return True
+
+    return False
+
+
 def sanitize_tooltip_properties(
     df,
     reserved_properties: List[str],

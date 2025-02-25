@@ -1810,7 +1810,7 @@ class JupyterScatterView {
         d.textElement.textContent = d.format(value);
 
         if (this.showHistogram(d.property)) {
-          d.histogram?.draw(d.getHistogramKey(value));
+          d.histogram?.draw(d.getHistogramKey?.(value));
         }
       }
       if (event.preview) {
