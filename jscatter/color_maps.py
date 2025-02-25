@@ -1,5 +1,8 @@
 from matplotlib.colors import to_rgba
 
+gray_light = to_rgba('#CCCCCC')
+gray_dark = to_rgba('#333333')
+
 okabe_ito = [
     to_rgba('#56B4E9'),  # sky blue
     to_rgba('#E69F00'),  # orange

@@ -19,7 +19,7 @@ from .annotations import Line, HLine, VLine, Rect
 from .composite_annotations import CompositeAnnotation, Contour
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE
-from .color_maps import okabe_ito, glasbey_light, glasbey_dark
+from .color_maps import okabe_ito, glasbey_light, glasbey_dark, gray_light, gray_dark
 from .utils import (
     any_not,
     to_ndc,
@@ -34,6 +34,7 @@ from .utils import (
     get_is_valid_histogram_data,
     sanitize_tooltip_properties,
     zerofy_missing_values,
+    get_categorical_data,
 )
 from .types import (
     Auto,
@@ -86,21 +87,6 @@ def check_encoding_dtype(series):
         raise ValueError(
             f'{series.name} is of an unsupported data type: {series.dtype}. Must be one of float*, int*, category, or string.'
         )
-
-
-def is_categorical_data(data):
-    return pd.CategoricalDtype.is_dtype(data) or pd.api.types.is_string_dtype(data)
-
-
-def get_categorical_data(data):
-    categorical_data = None
-
-    if pd.CategoricalDtype.is_dtype(data):
-        categorical_data = data
-    elif pd.api.types.is_string_dtype(data):
-        categorical_data = data.copy().astype('category')
-
-    return categorical_data
 
 
 def component_idx_to_name(idx):
@@ -1481,13 +1467,22 @@ class Scatter:
             # Assign default color maps
             if self._color_categories is None:
                 self._color_map = plt.get_cmap('viridis')(range(256)).tolist()
-            elif len(self._color_categories) > 8:
-                if self._background_color_luminance < 0.5:
-                    self._color_map = glasbey_light
-                else:
-                    self._color_map = glasbey_dark
             else:
-                self._color_map = okabe_ito
+                if len(self._color_categories) > 8:
+                    if self._background_color_luminance < 0.5:
+                        self._color_map = glasbey_light
+                    else:
+                        self._color_map = glasbey_dark
+                else:
+                    self._color_map = okabe_ito
+
+                if self.color_data.hasnans:
+                    gray = (
+                        gray_dark
+                        if self._background_color_luminance < 0.5
+                        else gray_light
+                    )
+                    self._color_map = [gray] + self._color_map
 
         if self._color_categories is not None:
             assert len(self._color_categories) <= len(
