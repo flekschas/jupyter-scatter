@@ -3237,14 +3237,24 @@ class JupyterScatterView {
   }
 
   showHistogram(property) {
-    const histograms = this.model.get('tooltip_histograms');
-    if (histograms === true) {
-      return true;
-    }
-    if (histograms === false) {
+    const hasHistogram = (
+      this.model.get(`${property}_histogram`) ||
+      this.model.get('tooltip_properties_non_visual_info')[property]?.histogram
+    );
+
+    if (!hasHistogram) {
       return false;
     }
-    return histograms.includes(property);
+
+    const showHistogram = this.model.get('tooltip_histograms');
+
+    if (showHistogram === true) {
+      return true;
+    }
+    if (showHistogram === false) {
+      return false;
+    }
+    return showHistogram.includes(property);
   }
 }
 
