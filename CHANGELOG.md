@@ -1,5 +1,7 @@
 ## v0.21.1
 
+- Feat: automatically assign gray to undefined/NA values for categorical data ([#186](https://github.com/flekschas/jupyter-scatter/issues/186))
+- Fix: properly undefined/NA values in categorical data ([#185](https://github.com/flekschas/jupyter-scatter/issues/185))
 - Fix: tooltip issue with non-existing tooltip ([#187](https://github.com/flekschas/jupyter-scatter/issues/187))
 - Fix: ensure `tooltip_histogram == False` works as expected
 
