@@ -963,7 +963,7 @@ class JupyterScatterView {
       }
       if (property in TOOLTIP_OPTIONAL_VISUAL_PROPERTIES) {
         const encoding = this.model.get(`${property}_by`);
-        if (property === 'opacity' && encoding !== 'density') {
+        if (property === 'opacity' && encoding && encoding !== 'density') {
           continue;
         }
         if (property !== 'opacity' && encoding) {
@@ -1810,7 +1810,7 @@ class JupyterScatterView {
         d.textElement.textContent = d.format(value);
 
         if (this.showHistogram(d.property)) {
-          d.histogram?.draw(d.getHistogramKey(value));
+          d.histogram?.draw(d.getHistogramKey?.(value));
         }
       }
       if (event.preview) {
@@ -3237,14 +3237,24 @@ class JupyterScatterView {
   }
 
   showHistogram(property) {
-    const histograms = this.model.get('tooltip_histograms');
-    if (histograms === true) {
-      return true;
-    }
-    if (histograms === false) {
+    const hasHistogram = (
+      this.model.get(`${property}_histogram`) ||
+      this.model.get('tooltip_properties_non_visual_info')[property]?.histogram
+    );
+
+    if (!hasHistogram) {
       return false;
     }
-    return histograms.includes(property);
+
+    const showHistogram = this.model.get('tooltip_histograms');
+
+    if (showHistogram === true) {
+      return true;
+    }
+    if (showHistogram === false) {
+      return false;
+    }
+    return showHistogram.includes(property);
   }
 }
 

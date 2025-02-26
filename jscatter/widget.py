@@ -16,6 +16,7 @@ from .annotations_traits import (
     serialization as annotation_serialization,
 )
 from .types import UNDEF, Undefined, WidgetButtons
+from .utils import is_categorical_data
 from .widgets import Button, ButtonChoice, ButtonIntSlider, Divider
 
 SELECTION_DTYPE = 'uint32'
@@ -47,6 +48,12 @@ def sorting_to_dict(sorting):
     for order_idx, original_idx in enumerate(sorting):
         out[original_idx] = order_idx
     return out
+
+
+def get_record(data, index):
+    out = data.iloc[index].copy()
+    fill_na = {c: 'NA' for c in data.columns if is_categorical_data(data[c])}
+    return out.fillna(fill_na)
 
 
 # Code extracted from maartenbreddels ipyvolume
@@ -352,7 +359,8 @@ class JupyterScatter(anywidget.AnyWidget):
         if event['type'] == EVENT_TYPES['TOOLTIP'] and isinstance(
             self.data, pd.DataFrame
         ):
-            data = self.data.iloc[event['index']]
+            # data = self.data.iloc[event['index']]
+            data = get_record(self.data, event['index'])
             self.send(
                 {
                     'type': EVENT_TYPES['TOOLTIP'],
@@ -365,7 +373,8 @@ class JupyterScatter(anywidget.AnyWidget):
             )
 
     def show_tooltip(self, point_idx):
-        data = self.data.iloc[point_idx]
+        # data = self.data.iloc[point_idx]
+        data = get_record(self.data, point_idx)
         self.send(
             {
                 'type': EVENT_TYPES['TOOLTIP'],
