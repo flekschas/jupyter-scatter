@@ -4,6 +4,7 @@
 - Fix: properly undefined/NA values in categorical data ([#185](https://github.com/flekschas/jupyter-scatter/issues/185))
 - Fix: tooltip issue with non-existing tooltip ([#187](https://github.com/flekschas/jupyter-scatter/issues/187))
 - Fix: ensure `tooltip_histogram == False` works as expected
+- Fix: ensure a static opacity is not shown in the tooltip
 
 ## v0.21.0
 
