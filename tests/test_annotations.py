@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from jscatter.annotations import HLine, VLine, Line, Rect
+from jscatter.annotations import HLine, Line, Rect, VLine
 from jscatter.jscatter import Scatter
 
 
@@ -77,6 +77,9 @@ def test_scatter_annotations(df: pd.DataFrame):
     )
 
     assert scatter.annotations()['annotations'] == annotations
+
+    print(scatter.widget.opacity_histogram_range)
+    print(scatter.widget.annotations)
 
     assert scatter.widget.annotations[0].x == 0
     assert scatter.widget.annotations[0].y_start == None

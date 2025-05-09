@@ -1,25 +1,192 @@
+import colorsys
+import math
+import warnings
+from typing import List, Tuple, Union
+from urllib.parse import urlparse
+
 import ipywidgets as widgets
 import pandas as pd
-import warnings
-
-from matplotlib.colors import LogNorm, PowerNorm, Normalize
+from matplotlib.colors import (
+    LogNorm,
+    Normalize,
+    PowerNorm,
+    to_hex,
+    to_rgb,
+    to_rgba,
+)
 from numpy import histogram, isnan, sum
-from urllib.parse import urlparse
-from typing import List, Union
 
-from .types import Labeling
+from .types import Color, Labeling, Undefined
 
 
 def to_uint8(x):
     return int(max(0, min(x * 255, 255)))
 
 
-def to_hex(color):
-    if isinstance(color, list):
-        rgb = [to_uint8(c) for c in color]
-        return f'#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}'
-    else:
-        return color
+def calculate_luminance(color: Color):
+    r, g, b = to_rgb(color)
+    return math.sqrt(0.299 * r**2 + 0.587 * g**2 + 0.114 * b**2)
+
+
+def brighten(color: Color, factor: float):
+    """
+    Brighten a color by a multiplicative factor.
+
+    Parameters
+    ----------
+    color : Color
+        Input color to brighten.
+    factor : float
+        Brightness factor. factor=2 means twice as bright.
+        factor=1 means no change.
+
+    Returns
+    -------
+    tuple
+        Tuple of brightened (R, G, B, A) values in range [0, 1].
+    """
+    # Convert to RGBA
+    r, g, b, a = to_rgba(color)
+
+    # Convert RGB to HSL
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+
+    # Scale the distance to white by the factor
+    # This approach ensures factor=1 is no change and higher values
+    # increase brightness proportionally
+    l = 1.0 - ((1.0 - l) / factor)
+
+    # Ensure lightness stays in [0, 1] range
+    l = max(0.0, min(1.0, l))
+
+    # Convert back to RGB
+    r, g, b = colorsys.hls_to_rgb(h, l, s)
+
+    # Return with original alpha
+    return (r, g, b, a)
+
+
+def darken(color: Color, factor: float):
+    """
+    Darken a color by a multiplicative factor.
+
+    Parameters
+    ----------
+    color : Color
+        Input color to darken.
+    factor : float
+        Darkness factor. factor=2 means twice as dark.
+        factor=1 means no change.
+
+    Returns
+    -------
+    tuple
+        Tuple of darkened (R, G, B, A) values in range [0, 1].
+    """
+    # Convert to RGBA
+    r, g, b, a = to_rgba(color)
+
+    # Convert RGB to HSL
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+
+    # Scale the distance from black by dividing by the factor
+    # This approach ensures factor=1 is no change and higher values
+    # increase darkness proportionally
+    l = l / factor
+
+    # Ensure lightness stays in [0, 1] range
+    l = max(0.0, min(1.0, l))
+
+    # Convert back to RGB
+    r, g, b = colorsys.hls_to_rgb(h, l, s)
+
+    # Return with original alpha
+    return (r, g, b, a)
+
+
+def saturate(color: Color, factor: float):
+    """
+    Increase the saturation of a color by a multiplicative factor.
+
+    Parameters
+    ----------
+    color : Color
+        Input color to saturate.
+    factor : float
+        Saturation factor. factor=2 means twice as saturated.
+        factor=1 means no change.
+
+    Returns
+    -------
+    tuple
+        Tuple of saturated (R, G, B, A) values in range [0, 1].
+    """
+    # Convert to RGBA
+    r, g, b, a = to_rgba(color)
+
+    # Convert RGB to HSL
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+
+    # Scale the saturation by the factor
+    # This approach ensures factor=1 is no change and higher values
+    # increase saturation proportionally
+    s = 1.0 - ((1.0 - s) / factor)
+
+    # Ensure saturation stays in [0, 1] range
+    s = max(0.0, min(1.0, s))
+
+    # Convert back to RGB
+    r, g, b = colorsys.hls_to_rgb(h, l, s)
+
+    # Return with original alpha
+    return (r, g, b, a)
+
+
+def desaturate(color: Color, factor: float):
+    """
+    Decrease the saturation of a color by a multiplicative factor.
+
+    Parameters
+    ----------
+    color : Color
+        Input color to desaturate.
+    factor : float
+        Desaturation factor. factor=2 means twice as desaturated.
+        factor=1 means no change.
+
+    Returns
+    -------
+    tuple
+        Tuple of desaturated (R, G, B, A) values in range [0, 1].
+    """
+    # Convert to RGBA
+    r, g, b, a = to_rgba(color)
+
+    # Convert RGB to HSL
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+
+    # Scale the saturation by dividing by the factor
+    # This approach ensures factor=1 is no change and higher values
+    # increase desaturation proportionally
+    s = s / factor
+
+    # Ensure saturation stays in [0, 1] range
+    s = max(0.0, min(1.0, s))
+
+    # Convert back to RGB
+    r, g, b = colorsys.hls_to_rgb(h, l, s)
+
+    # Return with original alpha
+    return (r, g, b, a)
+
+
+def adjust_color_for_labeling(
+    color: Tuple[float, float, float, float], background_luminance: float
+) -> str:
+    if background_luminance > 0.5:
+        return to_hex(darken(saturate(color, 2), 2))
+
+    return to_hex(brighten(saturate(color, 2), 2))
 
 
 def with_left_label(label_text, widget, label_width: int = 128):
@@ -33,6 +200,18 @@ def with_left_label(label_text, widget, label_width: int = 128):
 
 def any_not(l, value=None):
     return any([x is not value for x in l])
+
+
+def all_undefined[T](l: List[Union[Undefined, T]]) -> bool:
+    return all([isinstance(x, Undefined) for x in l])
+
+
+def any_undefined[T](l: List[Union[Undefined, T]]) -> bool:
+    return any([isinstance(x, Undefined) for x in l])
+
+
+def any_defined[T](l: List[Union[Undefined, T]]) -> bool:
+    return any([not isinstance(x, Undefined) for x in l])
 
 
 def tolist(l):

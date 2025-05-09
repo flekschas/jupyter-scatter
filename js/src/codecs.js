@@ -1,3 +1,5 @@
+import { tableFromIPC, tableToIPC } from '@uwdata/flechette';
+
 import { camelToSnake, snakeToCamel } from './utils.js';
 
 const DTYPES = {
@@ -25,7 +27,7 @@ export function NumpyImage() {
      * @returns {ImageData | null}
      */
     deserialize(data) {
-      if (data == null) {
+      if (data === null) {
         return null;
       }
       // Take full view of data buffer
@@ -65,7 +67,7 @@ export function Numpy2D(dtype) {
      * @returns {number[][] | null}
      */
     deserialize(data) {
-      if (data == null) {
+      if (data === null) {
         return null;
       }
       // Take full view of data buffer
@@ -111,7 +113,7 @@ export function Numpy1D(dtype) {
      * @returns {number[] | null}
      */
     deserialize(data) {
-      if (data == null) {
+      if (data === null) {
         return null;
       }
       // for some reason can't be a typed array
@@ -175,6 +177,28 @@ export function Annotations() {
         );
         return JSON.stringify(pyAnnotation);
       });
+    },
+  };
+}
+
+export function Table() {
+  return {
+    /**
+     * @param {DataView} dataView
+     * @returns {string[]}
+     */
+    deserialize(dataView) {
+      if (dataView === null) {
+        return null;
+      }
+
+      return tableFromIPC(dataView.buffer, { useProxy: true });
+    },
+    serialize(table) {
+      if (table === null) {
+        return null;
+      }
+      return tableToIPC(table);
     },
   };
 }

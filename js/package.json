@@ -12,13 +12,14 @@
     "clean": "rm ../jscatter/bundle.js",
     "prepare": "npm run lint && npm run build",
     "build": "esbuild --bundle --format=esm --outfile=../jscatter/bundle.js src/index.js",
-    "lint": "biome check --write .",
+    "lint": "biome check --write src",
     "watch": "npm run build -- --watch",
     "test": "npm run lint"
   },
   "dependencies": {
     "@flekschas/utils": "^0.32.2",
     "@jupyter-widgets/base": "^1.1 || ^2 || ^3 || ^4 || ^5 || ^6",
+    "@uwdata/flechette": "^2.0.0",
     "d3-axis": "~3.0.0",
     "d3-format": "~3.1.0",
     "d3-hierarchy": "~3.1.2",
@@ -29,7 +30,7 @@
     "gl-matrix": "~3.3.0",
     "pub-sub-es": "~3.0.0",
     "regl": "~2.1.0",
-    "regl-scatterplot": "~1.13.2"
+    "regl-scatterplot": "~1.14.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

@@ -262,3 +262,57 @@ export function imageDataToCanvas(imageData) {
 
   return canvas;
 }
+
+function zoomScaleToZoomLevel(zoomScale) {
+  if (zoomScale <= 1) {
+    return 0;
+  }
+  return Math.floor(Math.log2(zoomScale));
+}
+
+function zoomLevelToZoomScale(zoomLevel) {
+  return 2 ** zoomLevel;
+}
+
+export function createViewToTiles(
+  xDomain,
+  yDomain,
+  baseZoomScale,
+  maxZoomLevel = Number.POSITIVE_INFINITY,
+) {
+  const [xMin, xMax] = xDomain;
+  const xExtent = xMax - xMin;
+
+  const [yMin, yMax] = yDomain;
+  const yExtent = yMax - yMin;
+
+  function toTileZoomLevel(zoomScale) {
+    return Math.min(maxZoomLevel, zoomScaleToZoomLevel(zoomScale));
+  }
+
+  function toTileX(x, tileZoomScale) {
+    return Math.floor((x - xMin) / (xExtent / tileZoomScale));
+  }
+
+  function toTileY(y, tileZoomScale) {
+    return Math.floor((y - yMin) / (yExtent / tileZoomScale));
+  }
+
+  return function viewToTiles(xView, yView, zoomScaleView) {
+    const zoomScale = baseZoomScale * zoomScaleView;
+    const tileZoomLevel = toTileZoomLevel(zoomScale);
+    const tileZoomScale = zoomLevelToZoomScale(tileZoomLevel);
+    const [tileXMin, tileXMax] = xView.map((x) => toTileX(x, tileZoomScale));
+    const [tileYMin, tileYMax] = yView.map((y) => toTileY(y, tileZoomScale));
+
+    const tiles = [];
+
+    for (let y = tileYMin; y <= tileYMax; y++) {
+      for (let x = tileXMin; x <= tileXMax; x++) {
+        tiles.push(`${x},${y},${tileZoomLevel}`);
+      }
+    }
+
+    return tiles;
+  };
+}

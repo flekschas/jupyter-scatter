@@ -1,13 +1,12 @@
 import pytest
 
 from jscatter.utils import (
-    sorting_to_dict,
-    to_hex,
-    to_uint8,
-    to_scale_type,
     any_not,
-    uri_validator,
     create_labeling,
+    sorting_to_dict,
+    to_scale_type,
+    to_uint8,
+    uri_validator,
 )
 
 
@@ -60,19 +59,6 @@ def test_create_labeling(partial_labeling, column, expected):
 )
 def test_to_uint8(input_value, expected_output):
     assert to_uint8(input_value) == expected_output
-
-
-@pytest.mark.parametrize(
-    'color_input,expected_hex',
-    [
-        ([1, 0, 0], '#ff0000'),
-        ([0, 1, 0], '#00ff00'),
-        ([0, 0, 1], '#0000ff'),
-        ('rgba(255,255,255,1)', 'rgba(255,255,255,1)'),
-    ],
-)
-def test_to_hex(color_input, expected_hex):
-    assert to_hex(color_input) == expected_hex
 
 
 @pytest.mark.parametrize(

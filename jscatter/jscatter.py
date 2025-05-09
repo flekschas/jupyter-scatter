@@ -1,60 +1,76 @@
 from __future__ import annotations
-import math
+
+import warnings
+from typing import Dict, List, Mapping, Optional, Tuple, Union, cast
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import warnings
-
 from matplotlib.colors import (
-    to_rgba,
-    Normalize,
-    LogNorm,
-    PowerNorm,
     LinearSegmentedColormap,
     ListedColormap,
+    LogNorm,
+    Normalize,
+    PowerNorm,
+    to_hex,
+    to_rgba,
 )
-from typing import Dict, Optional, Union, List, Tuple
 
-from .annotations import Line, HLine, VLine, Rect
+from .annotations import HLine, Line, Rect, VLine
+from .color_maps import glasbey_dark, glasbey_light, gray_dark, gray_light, okabe_ito
 from .composite_annotations import CompositeAnnotation, Contour
 from .encodings import Encodings
-from .widget import JupyterScatter, SELECTION_DTYPE
-from .color_maps import okabe_ito, glasbey_light, glasbey_dark, gray_light, gray_dark
-from .utils import (
-    any_not,
-    to_ndc,
-    tolist,
-    uri_validator,
-    to_scale_type,
-    get_scale_type_from_df,
-    get_domain_from_df,
-    create_default_norm,
-    create_labeling,
-    get_histogram_from_df,
-    get_is_valid_histogram_data,
-    sanitize_tooltip_properties,
-    zerofy_missing_values,
-    get_categorical_data,
+from .font import Font, arial, font_name_map
+from .label_placement import (
+    DEFAULT_TILE_SIZE,
+    DEFAULT_ZOOM_RANGE,
+    INITIAL_TILE,
+    LabelPlacement,
+    to_js,
 )
+from .type_guards import is_list_of
 from .types import (
+    UNDEF,
     Auto,
     Color,
-    Scales,
+    LabelFont,
+    Labeling,
+    LabelPositioning,
+    LabelScaleFunction,
     MouseModes,
+    Position,
     Reverse,
+    Scales,
     Segment,
     Size,
-    LegendPosition,
-    VisualProperty,
-    Labeling,
-    TooltipPreviewType,
+    SizeScaleFunction,
     TooltipPreviewImagePosition,
     TooltipPreviewImageSize,
-    SizeScaleFunction,
-    UNDEF,
+    TooltipPreviewType,
     Undefined,
+    VisualProperty,
     WidgetButtons,
 )
+from .utils import (
+    adjust_color_for_labeling,
+    any_defined,
+    any_not,
+    calculate_luminance,
+    create_default_norm,
+    create_labeling,
+    get_categorical_data,
+    get_domain_from_df,
+    get_histogram_from_df,
+    get_is_valid_histogram_data,
+    get_scale_type_from_df,
+    sanitize_tooltip_properties,
+    to_ndc,
+    to_scale_type,
+    tolist,
+    uri_validator,
+    zerofy_missing_values,
+)
+from .widget import SELECTION_DTYPE, JupyterScatter
 
 COMPONENT_CONNECT = 4
 COMPONENT_CONNECT_ORDER = 5
@@ -75,6 +91,17 @@ visual_properties = [
     'color',
     'opacity',
     'size',
+]
+
+label_columns = [
+    'label',
+    'x',
+    'y',
+    'zoom_in',
+    'zoom_out',
+    'zoom_fade_extent',
+    'font_color',
+    'font_size',
 ]
 
 
@@ -312,6 +339,27 @@ class Scatter:
         )
 
         self._annotations = None
+        self._label_placement: LabelPlacement | None = None
+        self._label_by: Union[None, str, List[str]] = None
+        self._label_font: Union[Font, List[Font], Dict[str, Font]] = arial.regular
+        self._label_color: Union[Auto, Color, List[Color], Dict[str, Color]] = 'auto'
+        self._label_shadow_color: Union[Auto, Color] = 'auto'
+        self._label_size: Union[int, List[int], Dict[str, int]] = 16
+        self._label_max_number: int = 100
+        self._label_importance: Union[str, None] = None
+        self._label_align: Position = 'center'
+        self._label_offset: Tuple[int, int] = (0, 0)
+        self._label_scale_function: LabelScaleFunction = 'constant'
+        self._label_zoom_range: Union[
+            Tuple[float, float],
+            List[Tuple[float, float]],
+            Dict[str, Tuple[float, float]],
+        ] = DEFAULT_ZOOM_RANGE
+        self._label_hierarchical: bool = False
+        self._label_exclude: List[str] = []
+        self._label_positioning: LabelPositioning = 'highest_density'
+        self._label_target_aspect_ratio: Optional[float] = None
+        self._label_max_lines: Optional[int] = None
         self._lasso_type = 'freeform'
         self._lasso_color = (0, 0.666666667, 1, 1)
         self._lasso_on_long_press = True
@@ -566,6 +614,25 @@ class Scatter:
         self.annotations(
             kwargs.get('annotations', UNDEF),
         )
+        self.label(
+            kwargs.get('label_by', UNDEF),
+            kwargs.get('label_font', UNDEF),
+            kwargs.get('label_color', UNDEF),
+            kwargs.get('label_size', UNDEF),
+            kwargs.get('label_shadow_color', UNDEF),
+            kwargs.get('label_importance', UNDEF),
+            kwargs.get('label_max_number', UNDEF),
+            kwargs.get('label_align', UNDEF),
+            kwargs.get('label_offset', UNDEF),
+            kwargs.get('label_scale_function', UNDEF),
+            kwargs.get('label_zoom_range', UNDEF),
+            kwargs.get('label_hierarchical', UNDEF),
+            kwargs.get('label_exclude', UNDEF),
+            kwargs.get('label_positioning', UNDEF),
+            kwargs.get('label_target_aspect_ratio', UNDEF),
+            kwargs.get('label_max_lines', UNDEF),
+            kwargs.get('label_using', UNDEF),
+        )
         self.options(
             kwargs.get('transition_points', UNDEF),
             kwargs.get('transition_points_duration', UNDEF),
@@ -700,6 +767,7 @@ class Scatter:
             self.connection_size(skip_widget_update=True, **self.connection_size())
 
             if 'skip_widget_update' not in kwargs:
+                self.update_widget('non_spatial_points_update', False)
                 self.update_widget('points', self.get_point_list())
                 self.update_widget('x_domain', self._x_domain)
                 self.update_widget('x_scale_domain', self._x_scale_domain)
@@ -862,6 +930,7 @@ class Scatter:
                 self.update_widget('x_scale_domain', self._x_scale_domain)
                 _animate = self._transition_points if animate is UNDEF else animate
                 self.update_widget('transition_points', _animate != False)
+                self.update_widget('non_spatial_points_update', False)
                 self.update_widget('points', self.get_point_list())
 
         if any_not([x, scale], UNDEF):
@@ -994,6 +1063,7 @@ class Scatter:
                 self.update_widget('y_scale_domain', self._y_scale_domain)
                 _animate = self._transition_points if animate is UNDEF else animate
                 self.update_widget('transition_points', _animate != False)
+                self.update_widget('non_spatial_points_update', False)
                 self.update_widget('points', self.get_point_list())
 
         if any_not([y, scale], UNDEF):
@@ -1080,6 +1150,7 @@ class Scatter:
                 self.update_widget('axes_labels', self.get_axes_labels())
                 _animate = self._transition_points if animate is UNDEF else animate
                 self.update_widget('transition_points', _animate != False)
+                self.update_widget('non_spatial_points_update', False)
                 self.update_widget('points', self.get_point_list())
 
                 if self._annotations is not None:
@@ -1506,6 +1577,7 @@ class Scatter:
                 self._color_norm,
                 self._color_categories,
                 self._color_labeling,
+                data_dimension=self._color_data_dimension,
                 category_order=self._color_map_order,
             )
             self.update_widget('color_scale', get_scale(self, 'color'))
@@ -1520,6 +1592,7 @@ class Scatter:
 
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('prevent_filter_reset', True)
+            self.update_widget('non_spatial_points_update', True)
             self.update_widget('points', self.get_point_list())
 
         if any_not([default, selected, hover, by, map, norm, order, labeling], UNDEF):
@@ -1770,6 +1843,7 @@ class Scatter:
                     self._opacity_norm,
                     self._opacity_categories,
                     self._opacity_labeling,
+                    data_dimension=self._opacity_data_dimension,
                     category_order=self._opacity_map_order,
                 )
             self.update_widget('opacity_scale', get_scale(self, 'opacity'))
@@ -1784,6 +1858,7 @@ class Scatter:
 
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('prevent_filter_reset', True)
+            self.update_widget('non_spatial_points_update', True)
             self.update_widget('points', self.get_point_list())
 
         if any_not([default, unselected, by, map, norm, order, labeling], UNDEF):
@@ -2024,6 +2099,7 @@ class Scatter:
                 self._size_norm,
                 self._size_categories,
                 self._size_labeling,
+                data_dimension=self._size_data_dimension,
                 category_order=self._size_map_order,
             )
             self.update_widget('size_scale', get_scale(self, 'size'))
@@ -2038,6 +2114,7 @@ class Scatter:
 
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('prevent_filter_reset', True)
+            self.update_widget('non_spatial_points_update', True)
             self.update_widget('points', self.get_point_list())
 
         if any_not([default, by, map, norm, order, labeling, scale_function], UNDEF):
@@ -2155,6 +2232,7 @@ class Scatter:
 
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('prevent_filter_reset', True)
+            self.update_widget('non_spatial_points_update', True)
             self.update_widget('points', self.get_point_list())
 
         self.update_widget('connect', bool(self._connect_by))
@@ -2467,6 +2545,7 @@ class Scatter:
                 self._connection_color_norm,
                 self._connection_color_categories,
                 self._connection_color_labeling,
+                data_dimension=self._connection_color_data_dimension,
                 category_order=self._connection_color_map_order,
             )
         else:
@@ -2477,6 +2556,7 @@ class Scatter:
 
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('prevent_filter_reset', True)
+            self.update_widget('non_spatial_points_update', True)
             self.update_widget('points', self.get_point_list())
 
         if any_not([default, selected, hover, by, map, norm, order, labeling], UNDEF):
@@ -2732,6 +2812,7 @@ class Scatter:
                 self._connection_opacity_norm,
                 self._connection_opacity_categories,
                 self._connection_opacity_labeling,
+                data_dimension=self._connection_opacity_data_dimension,
                 category_order=self._connection_opacity_map_order,
             )
         else:
@@ -2742,6 +2823,7 @@ class Scatter:
 
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('prevent_filter_reset', True)
+            self.update_widget('non_spatial_points_update', True)
             self.update_widget('points', self.get_point_list())
 
         if any_not([default, by, map, norm, order, labeling], UNDEF):
@@ -2983,6 +3065,7 @@ class Scatter:
                 self._connection_size_norm,
                 self._connection_size_categories,
                 self._connection_size_labeling,
+                data_dimension=self._connection_size_data_dimension,
                 category_order=self._connection_size_map_order,
             )
         else:
@@ -2993,6 +3076,7 @@ class Scatter:
 
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('prevent_filter_reset', True)
+            self.update_widget('non_spatial_points_update', True)
             self.update_widget('points', self.get_point_list())
 
         if self._connection_size_categories is not None:
@@ -3072,10 +3156,8 @@ class Scatter:
                     self.update_widget('background_color', self._background_color)
                 pass
 
-            self._background_color_luminance = math.sqrt(
-                0.299 * self._background_color[0] ** 2
-                + 0.587 * self._background_color[1] ** 2
-                + 0.114 * self._background_color[2] ** 2
+            self._background_color_luminance = calculate_luminance(
+                self._background_color
             )
 
             self.update_widget('reticle_color', self.get_reticle_color())
@@ -3492,8 +3574,8 @@ class Scatter:
 
     def get_legend_encoding(self):
         return {
-            channel: self._encodings.get_legend(channel)
-            for channel in self._encodings.visual.keys()
+            channel: encoding.legend
+            for [channel, encoding] in self._encodings.visual.items()
         }
 
     def reticle(
@@ -3669,7 +3751,7 @@ class Scatter:
     def legend(
         self,
         legend: Optional[Union[bool, Undefined]] = UNDEF,
-        position: Optional[Union[LegendPosition, Undefined]] = UNDEF,
+        position: Optional[Union[Position, Undefined]] = UNDEF,
         size: Optional[Union[Size, Undefined]] = UNDEF,
     ):
         """
@@ -4298,6 +4380,447 @@ class Scatter:
             on_filter=self._zoom_on_filter,
         )
 
+    def label(
+        self,
+        by: Union[None, str, List[str], Undefined] = UNDEF,
+        font: Union[
+            Font,
+            List[Font],
+            Dict[str, Font],
+            LabelFont,
+            List[LabelFont],
+            Dict[str, LabelFont],
+            Undefined,
+        ] = UNDEF,
+        color: Union[Auto, Color, List[Color], Dict[str, Color], Undefined] = UNDEF,
+        size: Union[int, List[int], Dict[str, int], Undefined] = UNDEF,
+        shadow_color: Union[Auto, Color, Undefined] = UNDEF,
+        importance: Union[None, str, Undefined] = UNDEF,
+        max_number: Union[int, Undefined] = UNDEF,
+        align: Union[Position, Undefined] = UNDEF,
+        offset: Union[Tuple[int, int], Undefined] = UNDEF,
+        scale_function: Union[LabelScaleFunction, Undefined] = UNDEF,
+        zoom_range: Union[
+            Tuple[float, float],
+            List[Tuple[float, float]],
+            Dict[str, Tuple[float, float]],
+            Undefined,
+        ] = UNDEF,
+        hierarchical: Union[bool, Undefined] = UNDEF,
+        exclude: Union[List[str], Undefined] = UNDEF,
+        positioning: Union[LabelPositioning, Undefined] = UNDEF,
+        target_aspect_ratio: Union[float, Undefined] = UNDEF,
+        max_lines: Union[int, Undefined] = UNDEF,
+        using: Union[LabelPlacement, Undefined] = UNDEF,
+        **kwargs,
+    ):
+        """
+        Set or get the label settings
+
+        Parameters
+        ----------
+        by : str or list of str or None, optional
+            A string or list of strings referencing columns in `data`. The
+            columns should define a hierarchy of points by which you want to
+            label these points. When set to `None`, labeling is turned off.
+        font : Font or list of Font, optional
+            A font or list of fonts for rendering the labels. A list of fonts
+            must match `by` in terms of the length.
+        color : 'auto' or Color or list of Color or dict of Color, optional
+            A single, list or dict of colors for rendering the labels. A list of
+            colors must match `by` in terms of the length. A dict of colors must
+            define a color for every unique label. By default, the color is set
+            to `"auto"` meaning a default color is assigned based on the
+            background color.
+        shadow_color : 'auto' or Color, optional
+            The outline color for rendering the labels. By default, the color is
+            set to `"auto"` meaning a default color is assigned based on the
+            background color.
+        size : array_like, optional
+            The labeling of the minimum and maximum value as well as the data
+            variable. If defined, labels are shown with the legend. The labeling
+            can either be a list of strings (`[minValue, maxValue, variable]`)
+            or a dictionary (`{ min: label, max: label, variable: label }`).
+        importance : str or None, optional
+            The labeling of the minimum and maximum value as well as the data
+            variable. If defined, labels are shown with the legend. The labeling
+            can either be a list of strings (`[minValue, maxValue, variable]`)
+            or a dictionary (`{ min: label, max: label, variable: label }`).
+        max_number : int, optional
+            The labeling of the minimum and maximum value as well as the data
+            variable. If defined, labels are shown with the legend. The labeling
+            can either be a list of strings (`[minValue, maxValue, variable]`)
+            or a dictionary (`{ min: label, max: label, variable: label }`).
+        align : array_like, optional
+            The labeling alignment for rendering labels. Can be one of
+            `"center"`, `"top-left"`, `"top"`, `"top-right"`, `"left"`,
+            `"right"`, `"bottom-left"`, `"bottom"`, `"bottom-right"`. Default
+            is `"center"`.
+        offset : tuple of ints, optional
+            The x and y offset of the label from the center of the bounding box
+            of points it's labeling. Note, this only has an effect when `align`
+            is not `"center"`.
+        scale_function : `"asinh"` or `"constant"`, optional
+            The scale function by which the text size is increased upon zooming
+            in. The default setting is `"asinh"`, which scales labels by the
+            inverse hyperbolic sine, which initially increases linearly but
+            quickly plateaus. `"constant"` turns zoom scaling off by using a
+            constant text size.
+        hierarchical : bool, optional
+            If `True` the label types, as defined by `by`, are considered to be
+            hierarchical. This enforces that colliding labels with a lower
+            hierarchy index are displayed before labels with a higher hierarchy
+            index irrespective of their importance.
+        exclude : bool, optional
+            ...
+        kwargs : optional
+            You can optimally time the label placement by passing `timeit=True`.
+
+
+        Returns
+        -------
+        self or dict
+            If no argument was provided the current label settings are returned
+            as a dictionary. Otherwise, `self` is returned.
+
+        See Also
+        --------
+        color : Set or get the color encoding.
+
+        Examples
+        --------
+        >>> scatter.label(by='group')
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.label()
+        {'by': 'group',
+         'font': arial,
+         'color': 'auto',
+         'shadow_color': 'auto',
+         'size': 16,
+         'importance': None,
+         'max_number': 50,
+         'align': 'center',
+         'offset': (0, 0),
+         'scale_function': 'asinh'}
+        """
+
+        # Widget-exposed render properties
+        if not isinstance(shadow_color, Undefined):
+            self._label_shadow_color = shadow_color
+            # Update widget shadow color if needed
+            if self._widget is not None:
+                shadow_color_value = (
+                    to_hex(self._background_color)
+                    if shadow_color == 'auto'
+                    else shadow_color
+                )
+                self.update_widget('label_shadow_color', shadow_color_value)
+
+        if not isinstance(align, Undefined):
+            self._label_align = align
+            self.update_widget('label_align', align)
+
+        if not isinstance(offset, Undefined):
+            self._label_offset = offset
+            self.update_widget('label_offset', offset)
+
+        # Handling using an existing LabelPlacement instance
+        if not isinstance(using, Undefined):
+            self._label_placement = using
+
+            # We need to update the local label properties using the existing
+            # label placement instance
+            self._label_by = self._label_placement.by
+            self._label_font = self._label_placement.font
+            self._label_color = self._label_placement.color
+            self._label_size = self._label_placement.size
+            self._label_importance = self._label_placement.importance
+            self._label_max_number = self._label_placement.max_labels_per_tile
+            self._label_scale_function = self._label_placement.scale_function
+            self._label_zoom_range = self._label_placement.zoom_range
+            self._label_hierarchical = self._label_placement.hierarchical
+            self._label_exclude = self._label_placement.exclude
+            self._label_positioning = self._label_placement.positioning
+            self._label_target_aspect_ratio = self._label_placement.target_aspect_ratio
+            self._label_max_lines = self._label_placement.max_lines
+
+            if (
+                self._label_placement._loaded_from_persistence
+                and self._data is not None
+            ):
+                # We assume that the label placement was created with the data
+                # at hand. Since such instances don't directly store the data
+                # we are going to assign this scatter's data such that later on
+                # we're not recomputing labels unnecessarily
+                self._label_placement._data = self._data
+
+            self.update_widget('label_scale_function', self._label_scale_function)
+
+        # LabelPlacement properties
+        if not isinstance(by, Undefined):
+            self._label_by = by
+
+        if not isinstance(size, Undefined):
+            self._label_size = size
+
+        if not isinstance(font, Undefined):
+            if isinstance(font, list):
+                if len(font) > 1:
+                    if is_list_of(font, Font):
+                        self._label_font = font
+                    else:
+                        self._label_font = [
+                            font_name_map[f]
+                            for f in cast(list[LabelFont], font)
+                            if f in font_name_map
+                        ]
+                else:
+                    warnings.warn(
+                        'The list of label fonts must at least contain one font'
+                    )
+            elif isinstance(font, str):
+                if font in font_name_map:
+                    self._label_font = font_name_map[font]
+                else:
+                    warnings.warn(f'Unknown font: {font}')
+            else:
+                self._label_font = font
+
+        if not isinstance(importance, Undefined):
+            self._label_importance = importance
+
+        if not isinstance(color, Undefined):
+            if isinstance(color, str) and color != 'auto':
+                self._label_color = to_hex(color)
+            else:
+                self._label_color = color
+
+        if not isinstance(shadow_color, Undefined):
+            if isinstance(shadow_color, str) and shadow_color != 'auto':
+                self._label_shadow_color = to_hex(shadow_color)
+            else:
+                self._label_shadow_color = shadow_color
+
+            self.update_widget(
+                'label_shadow_color',
+                to_hex(self._background_color)
+                if self._label_shadow_color == 'auto'
+                else self._label_shadow_color,
+            )
+
+        if not isinstance(scale_function, Undefined):
+            self._label_scale_function = scale_function
+            # This property is an outlier in that it's exposed to the widget and
+            # needed by the label placement class
+            self.update_widget('label_scale_function', scale_function)
+
+        if not isinstance(zoom_range, Undefined):
+            self._label_zoom_range = zoom_range
+
+        if not isinstance(hierarchical, Undefined):
+            self._label_hierarchical = hierarchical
+
+        if not isinstance(exclude, Undefined):
+            self._label_exclude = exclude
+
+        if not isinstance(positioning, Undefined):
+            self._label_positioning = positioning
+
+        if not isinstance(target_aspect_ratio, Undefined):
+            self._label_target_aspect_ratio = target_aspect_ratio
+
+        if not isinstance(max_lines, Undefined):
+            self._label_max_lines = max_lines
+
+        # Check if we have the required data and properties to create labels
+        if (
+            self._data is not None
+            and isinstance(self._x_by, str)
+            and isinstance(self._y_by, str)
+            and self._label_by is not None
+        ):
+            label_by = (
+                self._label_by if isinstance(self._label_by, list) else [self._label_by]
+            )
+
+            # Handle Auto parameters
+            label_color: Union[Auto, Color, List[Color], Dict[str, Color]] = (
+                self._label_color
+            )
+            if (
+                self._label_color == 'auto'
+                and len(label_by) == 1
+                and self._encodings is not None
+                and 'color' in self._encodings.visual
+                and self._encodings.visual['color']
+                .legend['data_dimension']
+                .startswith(by)
+            ):
+                label_color = cast(
+                    Dict[str, Color],
+                    {
+                        v[0]: adjust_color_for_labeling(
+                            v[1], self._background_color_luminance
+                        )
+                        for v in self._encodings.visual['color'].legend['values']
+                    },
+                )
+
+            label_font_size: Union[Auto, int, List[int], Mapping[str, int]] = (
+                self._label_size
+            )
+            if self._label_size == 'auto' and hierarchical:
+                label_font_size = {
+                    by: max(16 - 2 * i, 8) for i, by in enumerate(label_by)
+                }
+
+            tile_size = self._height
+            if 'tile_size' in kwargs:
+                try:
+                    tile_size = int(kwargs['tile_size'])
+                except ValueError:
+                    warnings.warn(
+                        f'Invalid tile size: {tile_size}. Using default tile size.'
+                    )
+                    pass
+
+            label_placement_props = dict(
+                data=self._data,
+                x=self._x_by,
+                y=self._y_by,
+                by=self._label_by,
+                importance=self._label_importance,
+                font=self._label_font,
+                size=label_font_size,
+                color=label_color,
+                scale_function=self._label_scale_function,
+                max_labels_per_tile=self._label_max_number,
+                background=self._background_color,
+                zoom_range=self._label_zoom_range,
+                hierarchical=self._label_hierarchical,
+                exclude=self._label_exclude,
+                positioning=self._label_positioning,
+                tile_size=tile_size,
+                target_aspect_ratio=self._label_target_aspect_ratio,
+                max_lines=self._label_max_lines,
+            )
+
+            if self._label_placement is None:
+                self._label_placement = LabelPlacement(**label_placement_props)
+
+                # Since the label placement class expands certain properties, we
+                # need to update all locally saved setting such that subsequent
+                # `changed_spatial_props` checks don't fail due to expansion
+                self._label_font = self._label_placement.font
+                self._label_color = self._label_placement.color
+                self._label_size = self._label_placement.size
+                self._label_zoom_range = self._label_placement.zoom_range
+
+            else:
+                spatial_props = label_placement_props.copy()
+                spatial_props.pop('color')
+                spatial_props.pop('background')
+
+                def _props_are_equal(prop, current_value, new_value):
+                    if prop == 'data':
+                        return current_value is new_value
+
+                    if prop == exclude:
+                        union = set(current_value) | set(new_value)
+                        return len(current_value) == len(union) and len(
+                            new_value
+                        ) == len(union)
+
+                    return current_value == new_value
+
+                changed_spatial_props = [
+                    prop
+                    for prop, value in spatial_props.items()
+                    if not _props_are_equal(
+                        prop, getattr(self._label_placement, prop), value
+                    )
+                ]
+
+                if len(changed_spatial_props) > 0:
+                    # If spatial properties have changed, we need to recompute
+                    # the label placement
+                    if not isinstance(using, Undefined):
+                        warnings.warn(
+                            f'The existing label placement specified with `using` is going to be re-computed since you adjusted parameters: {changed_spatial_props}'
+                        )
+                    self._label_placement = self._label_placement.clone(
+                        **label_placement_props
+                    )
+
+                if self._label_placement.color != label_placement_props['color']:
+                    self._label_placement.color = label_placement_props['color']
+
+                if to_hex(self._label_placement.background) != to_hex(
+                    label_placement_props['background']
+                ):
+                    self._label_placement.background = label_placement_props[
+                        'background'
+                    ]
+
+            if not self._label_placement.computed:
+                self._label_placement.compute(
+                    show_progress=kwargs.get('show_progress', False)
+                )
+
+        else:
+            self._label_placement = None
+            self.update_widget('labels', None)
+
+        if self._label_placement is not None and self._widget is not None:
+            self._widget.label_tile_size = self._label_placement.tile_size
+            self._widget.labels = to_js(
+                self._label_placement.get_labels_from_tiles(self._widget.label_tiles)
+            )
+            self._widget.label_placement = self._label_placement
+
+        if any_defined(
+            [
+                by,
+                font,
+                color,
+                size,
+                shadow_color,
+                importance,
+                max_number,
+                align,
+                offset,
+                scale_function,
+                zoom_range,
+                hierarchical,
+                exclude,
+                positioning,
+                target_aspect_ratio,
+                max_lines,
+                using,
+            ]
+        ):
+            return self
+
+        return dict(
+            by=self._label_by,
+            font=self._label_font,
+            color=self._label_color,
+            size=self._label_size,
+            shadow_color=self._label_shadow_color,
+            importance=self._label_importance,
+            max_number=self._label_max_number,
+            align=self._label_align,
+            offset=self._label_offset,
+            scale_function=self._label_scale_function,
+            zoom_range=self._label_zoom_range,
+            hierarchical=self._label_hierarchical,
+            exclude=self._label_exclude,
+            positioning=self._label_positioning,
+            target_aspect_ratio=self._label_target_aspect_ratio,
+            max_lines=self._label_max_lines,
+        )
+
     def options(
         self,
         transition_points: Optional[Union[bool, Undefined]] = UNDEF,
@@ -4534,12 +5057,25 @@ class Scatter:
         return None
 
     @property
+    def _labels(self):
+        if self._label_placement is None:
+            return None
+
+        if self._widget is None:
+            tiles = [INITIAL_TILE]
+        else:
+            tiles = self._widget.label_tiles
+
+        return to_js(self._label_placement.get_labels_from_tiles(tiles))
+
+    @property
     def widget(self):
         if self._widget is not None:
             return self._widget
 
         self._widget = JupyterScatter(
             data=self._data,
+            label_placement=self._label_placement,
             annotations=normalize_annotations(
                 self._annotations, self._x_scale, self._y_scale
             ),
@@ -4588,6 +5124,16 @@ class Scatter:
             connection_size_by=self.js_connection_size_by,
             filter=self._filtered_points_idxs,
             height=self._height,
+            labels=self._labels,
+            label_shadow_color=to_hex(self._background_color)
+            if self._label_shadow_color == 'auto'
+            else self._label_shadow_color,
+            label_align=self._label_align,
+            label_offset=self._label_offset,
+            label_scale_function=self._label_scale_function,
+            label_tile_size=self._label_placement.tile_size
+            if self._label_placement
+            else DEFAULT_TILE_SIZE,
             lasso_color=self._lasso_color,
             lasso_initiator=self._lasso_initiator,
             lasso_min_delay=self._lasso_min_delay,
