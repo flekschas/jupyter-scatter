@@ -2503,7 +2503,7 @@ class JupyterScatterView {
         transitionEasing: 'quadInOut',
         preventFilterReset: this.model.get('prevent_filter_reset'),
         spatialIndex: this.model.get('non_spatial_points_update')
-          ? scatterplot.get('spatialIndex')
+          ? this.scatterplot.get('spatialIndex')
           : undefined,
       });
     } else {
