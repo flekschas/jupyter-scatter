@@ -31,6 +31,7 @@ from .label_placement import (
 from .type_guards import is_list_of
 from .types import (
     UNDEF,
+    AggregationMethod,
     Auto,
     Color,
     LabelFont,
@@ -347,6 +348,7 @@ class Scatter:
         self._label_size: Union[int, List[int], Dict[str, int]] = 16
         self._label_max_number: int = 100
         self._label_importance: Union[str, None] = None
+        self._label_importance_aggregation: AggregationMethod = 'mean'
         self._label_align: Position = 'center'
         self._label_offset: Tuple[int, int] = (0, 0)
         self._label_scale_function: LabelScaleFunction = 'constant'
@@ -621,6 +623,7 @@ class Scatter:
             kwargs.get('label_size', UNDEF),
             kwargs.get('label_shadow_color', UNDEF),
             kwargs.get('label_importance', UNDEF),
+            kwargs.get('label_importance_aggregation', UNDEF),
             kwargs.get('label_max_number', UNDEF),
             kwargs.get('label_align', UNDEF),
             kwargs.get('label_offset', UNDEF),
@@ -4396,6 +4399,7 @@ class Scatter:
         size: Union[int, List[int], Dict[str, int], Undefined] = UNDEF,
         shadow_color: Union[Auto, Color, Undefined] = UNDEF,
         importance: Union[None, str, Undefined] = UNDEF,
+        importance_aggregation: Union[AggregationMethod, Undefined] = UNDEF,
         max_number: Union[int, Undefined] = UNDEF,
         align: Union[Position, Undefined] = UNDEF,
         offset: Union[Tuple[int, int], Undefined] = UNDEF,
@@ -4415,7 +4419,7 @@ class Scatter:
         **kwargs,
     ):
         """
-        Set or get the label settings
+        Set or get the label settings.
 
         Parameters
         ----------
@@ -4423,59 +4427,95 @@ class Scatter:
             A string or list of strings referencing columns in `data`. The
             columns should define a hierarchy of points by which you want to
             label these points. When set to `None`, labeling is turned off.
-        font : Font or list of Font, optional
+
+            To display individual point labels (where each row gets its own label),
+            append an exclamation mark to the column name. For instance, `"city!"`
+            would indicate that each value in this column should be treated as a
+            unique label rather than grouping identical values together.
+
+            Note: Currently only one column can be marked with an exclamation mark.
+            If multiple columns are marked, only the first one is treated as
+            containing point labels.
+        font : Font or list of Font or dict of Font, optional
             A font or list of fonts for rendering the labels. A list of fonts
-            must match `by` in terms of the length.
+            must match `by` in terms of the length. A dict can map specific
+            label types or label values to fonts.
         color : 'auto' or Color or list of Color or dict of Color, optional
             A single, list or dict of colors for rendering the labels. A list of
             colors must match `by` in terms of the length. A dict of colors must
             define a color for every unique label. By default, the color is set
             to `"auto"` meaning a default color is assigned based on the
             background color.
+        size : int or list of int or dict of int, optional
+            The font size(s) for label text. Can be a single integer for uniform
+            size, a list matching the length of `by` for hierarchical sizes, or
+            a dictionary mapping specific label types or values to sizes.
         shadow_color : 'auto' or Color, optional
             The outline color for rendering the labels. By default, the color is
             set to `"auto"` meaning a default color is assigned based on the
             background color.
-        size : array_like, optional
-            The labeling of the minimum and maximum value as well as the data
-            variable. If defined, labels are shown with the legend. The labeling
-            can either be a list of strings (`[minValue, maxValue, variable]`)
-            or a dictionary (`{ min: label, max: label, variable: label }`).
         importance : str or None, optional
-            The labeling of the minimum and maximum value as well as the data
-            variable. If defined, labels are shown with the legend. The labeling
-            can either be a list of strings (`[minValue, maxValue, variable]`)
-            or a dictionary (`{ min: label, max: label, variable: label }`).
+            Column name containing importance values that determine which labels
+            to prioritize when there are conflicts. If not specified, all labels
+            have equal importance.
+        importance_aggregation : {'min', 'mean', 'median', 'max', 'sum'}, default='mean'
+            Method used to aggregate importance values when multiple points share
+            the same label. This affects how label importance is calculated for
+            groups of points.
         max_number : int, optional
-            The labeling of the minimum and maximum value as well as the data
-            variable. If defined, labels are shown with the legend. The labeling
-            can either be a list of strings (`[minValue, maxValue, variable]`)
-            or a dictionary (`{ min: label, max: label, variable: label }`).
-        align : array_like, optional
-            The labeling alignment for rendering labels. Can be one of
+            Maximum number of labels per tile. Controls label density by limiting
+            how many labels can appear in a given region. Default is 100.
+        align : str, optional
+            The label alignment relative to the labeled point or group. Can be one of
             `"center"`, `"top-left"`, `"top"`, `"top-right"`, `"left"`,
             `"right"`, `"bottom-left"`, `"bottom"`, `"bottom-right"`. Default
             is `"center"`.
-        offset : tuple of ints, optional
+        offset : tuple of int, optional
             The x and y offset of the label from the center of the bounding box
             of points it's labeling. Note, this only has an effect when `align`
             is not `"center"`.
-        scale_function : `"asinh"` or `"constant"`, optional
-            The scale function by which the text size is increased upon zooming
-            in. The default setting is `"asinh"`, which scales labels by the
-            inverse hyperbolic sine, which initially increases linearly but
-            quickly plateaus. `"constant"` turns zoom scaling off by using a
-            constant text size.
+        scale_function : str, optional
+            The scale function by which the text size is adjusted when
+            zooming in. Can be one of:
+            - `"asinh"`: Scales labels by the inverse hyperbolic sine, initially increasing
+               linearly but quickly plateauing (default).
+            - `"constant"`: No scaling with zoom, labels maintain the same size.
+        zoom_range : tuple of float or list of tuple of float or dict of tuple of float, optional
+            The range at which labels of a specific type (as specified with `by`)
+            are allowed to appear. The zoom range is a tuple of zoom levels,
+            where `zoom_scale == 2 ** zoom_level`. Defaults to (-∞, ∞) for all
+            labels. Can be specified as:
+            - Single tuple: Applied to all label types
+            - List of tuples: One range per label type in `by`
+            - Dict: Maps label types or specific labels to their zoom ranges
         hierarchical : bool, optional
-            If `True` the label types, as defined by `by`, are considered to be
-            hierarchical. This enforces that colliding labels with a lower
-            hierarchy index are displayed before labels with a higher hierarchy
-            index irrespective of their importance.
-        exclude : bool, optional
-            ...
-        kwargs : optional
-            You can optimally time the label placement by passing `timeit=True`.
-
+            If `True`, the label types specified by `by` are treated as hierarchical.
+            This affects label priority, with labels having a lower hierarchical index
+            (earlier in the `by` list) displayed first when there are conflicts.
+            Default is `False`.
+        exclude : list of str, optional
+            Specifies which labels should be excluded. Can contain:
+            - Column names (e.g., `"country"`) to exclude an entire category
+            - Column-value pairs (e.g., `"country:USA"`) to exclude specific labels
+        positioning : str, optional
+            Method for determining label position. Options are:
+            - `"highest_density"` (default): Position label at the highest density point
+            - `"center_of_mass"`: Position label at the center of mass of all points
+            - `"largest_cluster"`: Position label at the center of the largest cluster
+        target_aspect_ratio : float, optional
+            If not `None`, labels will potentially receive line breaks such that
+            their bounding box is as close to the specified aspect ratio as
+            possible. The aspect ratio is width/height. Default is `None`.
+        max_lines : int, optional
+            Maximum number of lines a label can be broken into when
+            `target_aspect_ratio` is set. Default is `None` (no limit).
+        using : LabelPlacement, optional
+            An existing LabelPlacement instance to use for labels. This allows
+            reusing pre-computed label placements instead of calculating them
+            from scratch.
+        **kwargs : optional
+            Additional options can be passed, including `show_progress=True` to
+            display a progress bar during label placement computation.
 
         Returns
         -------
@@ -4492,6 +4532,15 @@ class Scatter:
         >>> scatter.label(by='group')
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.label(by=['state', 'city'], hierarchical=True)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.label(by='city!', color='red', size=12)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.label(by='category', exclude=['category:Other'])
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.label()
         {'by': 'group',
          'font': arial,
@@ -4499,10 +4548,17 @@ class Scatter:
          'shadow_color': 'auto',
          'size': 16,
          'importance': None,
-         'max_number': 50,
+         'importance_aggregation': 'mean',
+         'max_number': 100,
          'align': 'center',
          'offset': (0, 0),
-         'scale_function': 'asinh'}
+         'scale_function': 'asinh',
+         'zoom_range': (-inf, inf),
+         'hierarchical': False,
+         'exclude': [],
+         'positioning': 'highest_density',
+         'target_aspect_ratio': None,
+         'max_lines': None}
         """
 
         # Widget-exposed render properties
@@ -4536,6 +4592,9 @@ class Scatter:
             self._label_color = self._label_placement.color
             self._label_size = self._label_placement.size
             self._label_importance = self._label_placement.importance
+            self._label_importance_aggregation = (
+                self._label_placement.importance_aggregation
+            )
             self._label_max_number = self._label_placement.max_labels_per_tile
             self._label_scale_function = self._label_placement.scale_function
             self._label_zoom_range = self._label_placement.zoom_range
@@ -4589,6 +4648,9 @@ class Scatter:
 
         if not isinstance(importance, Undefined):
             self._label_importance = importance
+
+        if not isinstance(importance_aggregation, Undefined):
+            self._label_importance_aggregation = importance_aggregation
 
         if not isinstance(color, Undefined):
             if isinstance(color, str) and color != 'auto':
@@ -4691,6 +4753,7 @@ class Scatter:
                 y=self._y_by,
                 by=self._label_by,
                 importance=self._label_importance,
+                importance_aggregation=self._label_importance_aggregation,
                 font=self._label_font,
                 size=label_font_size,
                 color=label_color,
