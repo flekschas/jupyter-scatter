@@ -75,6 +75,62 @@ logger = logging.getLogger(__name__)
 class LabelPlacement:
     """
     A class for static label placement with collision resolution.
+
+    This class handles the positioning of labels for data points while managing
+    collisions and optimizing label visibility across different zoom levels.
+
+    Attributes
+    ----------
+    computed : bool
+        Whether labels have been computed.
+    loaded_from_persistence : bool
+        Whether this instance was restored from saved files.
+    background : Color
+        The background color.
+    color : Dict[str, str]
+        A dictionary mapping each label type and specific label to its color.
+    font : Dict[str, Font]
+        A dictionary mapping each label type and specific label to its font face.
+    size : Dict[str, int]
+        A dictionary mapping each label type and specific label to its size.
+    zoom_range : Dict[str, Tuple[np.float64, np.float64]]
+        A dictionary mapping each label type and specific label to its zoom range.
+    exclude : List[str]
+        A list of label types and specific labels to be excluded.
+    data : pd.DataFrame
+        The input data.
+    x : str
+        The name of the x-coordinate column.
+    y : str
+        The name of the y-coordinate column.
+    by : List[str]
+        The column name(s) defining the label hierarchy.
+    hierarchical : bool
+        Whether the labels are hierarchical.
+    importance : Optional[str]
+        The name of the importance column.
+    importance_aggregation : AggregationMethod
+        The importance aggregation method.
+    bbox_percentile_range : Tuple[float, float]
+        The percentile range for bounding box calculation.
+    tile_size : int
+        The tile size.
+    max_labels_per_tile : int
+        The maximum number of labels per tile.
+    scale_function : LabelScaleFunction
+        The label zoom scale function.
+    positioning : LabelPositioning
+        The label positioning method.
+    target_aspect_ratio : Optional[float]
+        The target aspect ratio for line break optimization.
+    max_lines : Optional[int]
+        The maximum number of lines for line break optimization.
+    verbosity : LogLevel
+        The current log level.
+    labels : Optional[pd.DataFrame]
+        The computed labels, if available.
+    tiles : Optional[Dict[str, List[int]]]
+        The tile mapping, if available.
     """
 
     _color: Dict[str, str]
@@ -127,7 +183,7 @@ class LabelPlacement:
         Parameters
         ----------
         data : pd.DataFrame
-            DataFrame with x, y coordinates and categorical columns
+            DataFrame with x, y coordinates and categorical columns.
         by : str or list of str
             Column name(s) used for labeling points. The referenced columns must
             contain either string or categorical values and are treated as
@@ -143,48 +199,79 @@ class LabelPlacement:
             If multiple columns are marked, only the first one is treated as
             containing point labels.
         x : str
-            Name of the x-coordinate column
+            Name of the x-coordinate column.
         y : str
-            Name of the y-coordinate column
-        viewport : tuple of int
-            Width and height of the viewport in pixels
+            Name of the y-coordinate column.
+        tile_size : int, default=DEFAULT_TILE_SIZE
+            Size of the tiles used for label placement in pixels. This determines
+            the granularity of label density control and affects how labels are
+            displayed at different zoom levels.
         importance : str, optional
-            Column name containing importance values
-        hierarchical : bool, optional
-            If true, the label types specified by `by` are expected to be
-            hierarchical, which will effect the priority sorting of labels such
-            that labels with a lower hierarchical index are displayed first
-        zoom_range : tuple of floats or list of tuple of floats or dict of tuple of floats, optional
+            Column name containing importance values. These values determine which
+            labels are prioritized when there are conflicts.
+        importance_aggregation : {'min', 'mean', 'median', 'max', 'sum'}, default='mean'
+            Method used to aggregate importance values when multiple points share
+            the same label. This affects how label importance is calculated for
+            groups of points.
+        hierarchical : bool, default=False
+            If True, the label types specified by `by` are expected to be
+            hierarchical, which will affect the priority sorting of labels such
+            that labels with a lower hierarchical index are displayed first.
+        zoom_range : tuple of floats or list of tuple of floats or dict of tuple of floats, default=DEFAULT_ZOOM_RANGE
             The range at which labels of a specific type (as specified with `by`)
             are allowed to appear. The zoom range is a tuple of zoom levels,
-            where `zoom_scale == 2 ** zoom_level`.
-        font : Font or list of Font or dict of Font, optional
-            Font object(s) for text measurement
-        size : int or list of int or dict of int, optional
-            Font size(s) for each hierarchy level
-        color : color or list of color or dict of color, optional
+            where `zoom_scale == 2 ** zoom_level`. Default is (-∞, ∞) for all labels.
+        font : Font or list of Font or dict of Font, default=DEFAULT_FONT_FACE
+            Font object(s) for text measurement. Can be specified as:
+            - Single Font: Applied to all label types
+            - List of Fonts: One font per label type in `by`
+            - Dict: Maps label types or specific labels to fonts
+        size : int or list of int or dict of int or 'auto', default='auto'
+            Font size(s) for label text. Can be specified as:
+            - 'auto': Automatically assign sizes (hierarchical if hierarchical=True)
+            - Single int: Uniform size for all labels
+            - List of ints: One size per label type in `by`
+            - Dict: Maps label types or specific labels to sizes
+        color : color or list of color or dict of color or 'auto', default='auto'
             Color specification for labels. Can be:
+            - 'auto': Automatically choose based on background
             - str: Named color or hex code
             - tuple: RGB(A) values
-        background : str or tuple, optional
-            Background color. Used for determining colors.
-        percentile_range : tuple of float, default=(5, 95)
-            Range of percentiles to include in calculation
-        max_labels_per_tile : int, default=50
-            Maximum number of labels per tile (0 = unlimited)
-        scale_function : {'asinh', 'constant'}, default='asinh'
-            Label zoom scale function for zoom level calculations
-        exclude : list of str, optional
+            - list: Different colors for different hierarchy levels
+            - dict: Mapping of label types or specific labels to colors
+        background : color, default='white'
+            Background color. Used for determining label colors when color='auto'.
+        bbox_percentile_range : tuple of float, default=(5, 95)
+            Range of percentiles to include when calculating the bounding box
+            of points for label placement. This helps exclude outliers when
+            determining where to place labels.
+        max_labels_per_tile : int, default=DEFAULT_MAX_LABELS_PER_TILE
+            Maximum number of labels per tile. Controls label density by limiting
+            how many labels can appear in a given region. Set to 0 for unlimited.
+        scale_function : {'asinh', 'constant'}, default='constant'
+            Label zoom scale function for zoom level calculations:
+            - 'asinh': Scales labels by the inverse hyperbolic sine, initially
+              increasing linearly but quickly plateauing
+            - 'constant': No scaling with zoom, labels maintain the same size
+        positioning : {'highest_density', 'center_of_mass', 'largest_cluster'}, default='highest_density'
+            Method used to determine the position of each label:
+            - 'highest_density': Position label at the highest density point
+            - 'center_of_mass': Position label at the center of mass of all points
+            - 'largest_cluster': Position label at the center of the largest cluster
+        exclude : list of str, default=[]
             Specifies which labels should be excluded. Can contain:
-            - columns names (e.g., `"country"`)
-            - column-value pairs (e.g., `"country:USA"`)
+            - Column names (e.g., `"country"`) to exclude an entire category
+            - Column-value pairs (e.g., `"country:USA"`) to exclude specific labels
         target_aspect_ratio : float, optional
             If not `None`, labels will potentially receive line breaks such that
             their bounding box is as close to the specified aspect ratio as
-            possible.
+            possible. The aspect ratio is width/height.
         max_lines : int, optional
             Specify the maximum number of lines a label should be broken into if
             `target_aspect_ratio` is not `None`.
+        verbosity : {'debug', 'info', 'warning', 'error', 'critical'}, default='warning'
+            Controls the level of logging information displayed during label placement
+            computation.
         """
         self._data = data
         self._x = x
