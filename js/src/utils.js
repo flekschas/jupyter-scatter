@@ -235,6 +235,39 @@ export function toRgba(color) {
     .map(Number);
 }
 
+export function blend(imageDataBack, imageDataFront) {
+  // Verify dimensions match
+  if (imageDataBack.width !== imageDataFront.width ||
+      imageDataBack.height !== imageDataFront.height) {
+    throw new Error("Image dimensions must match for blending");
+  }
+
+  const width = imageDataBack.width;
+  const height = imageDataBack.height;
+  const newData = new Uint8ClampedArray(width * height * 4);
+
+  for (let i = 0; i < imageDataBack.data.length; i += 4) {
+    const bgR = imageDataBack.data[i];
+    const bgG = imageDataBack.data[i + 1];
+    const bgB = imageDataBack.data[i + 2];
+    const bgA = imageDataBack.data[i + 3] / 255;
+
+    const fgR = imageDataFront.data[i];
+    const fgG = imageDataFront.data[i + 1];
+    const fgB = imageDataFront.data[i + 2];
+    const fgA = imageDataFront.data[i + 3] / 255;
+
+    const outA = fgA + bgA * (1 - fgA);
+
+    newData[i] = Math.round((fgR * fgA + bgR * bgA * (1 - fgA)) / outA);
+    newData[i + 1] = Math.round((fgG * fgA + bgG * bgA * (1 - fgA)) / outA);
+    newData[i + 2] = Math.round((fgB * fgA + bgB * bgA * (1 - fgA)) / outA);
+    newData[i + 3] = Math.round(outA * 255);
+  }
+
+  return new ImageData(newData, width, height);
+}
+
 export function addBackgroundColor(imageData, backgroundColor) {
   const newData = new Uint8ClampedArray(imageData.width * imageData.height * 4);
 

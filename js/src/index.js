@@ -20,6 +20,7 @@ import { createLabelRenderer } from './label-renderer.js';
 import { createLegend } from './legend.js';
 import {
   addBackgroundColor,
+  blend,
   camelToSnake,
   createElementWithClass,
   createNumericalBinGetter,
@@ -2871,15 +2872,26 @@ class JupyterScatterView {
   viewDownload(options) {
     (async () => {
       try {
-        const image = await this.scatterplot.export({
+        const scatterImage = await this.scatterplot.export({
           scale: options?.scale,
           antiAliasing: 1,
           pixelAligned: true,
         });
 
+        const labelImage = this.canvasLabels?.getContext('2d')?.getImageData(
+          0,
+          0,
+          this.canvasLabels.width,
+          this.canvasLabels.height,
+        );
+
+        const blendedImage = labelImage
+          ? blend(scatterImage, labelImage)
+          : scatterImage;
+
         const finalImage = options?.transparentBackgroundColor
-          ? image
-          : addBackgroundColor(image, this.backgroundColor);
+          ? blendedImage
+          : addBackgroundColor(blendedImage, this.backgroundColor);
 
         imageDataToCanvas(finalImage).toBlob((blob) => {
           downloadBlob(blob, 'jupyter-scatter.png');
