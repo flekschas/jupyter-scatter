@@ -489,8 +489,8 @@ class JupyterScatterView {
       this.createSizeGetter();
       this.createTooltip();
 
-      this.canvasLabels.width = this.outerWidth * window.devicePixelRatio;
-      this.canvasLabels.height = this.outerHeight * window.devicePixelRatio;
+      this.canvasLabels.width = this.innerWidth * window.devicePixelRatio;
+      this.canvasLabels.height = this.innerHeight * window.devicePixelRatio;
 
       this.labelTiles = new Set();
       this.createViewToLabelTiles();
@@ -625,6 +625,8 @@ class JupyterScatterView {
     const height = this.getHeight();
     const outerHeight = height === 'auto' ? bBox.height : height + yPadding;
 
+    this.innerWidth = Math.max(1, outerWidth - xPadding);
+    this.innerHeight = Math.max(1, outerHeight - yPadding);
     this.outerWidth = Math.max(1, outerWidth);
     this.outerHeight = Math.max(1, outerHeight);
 
@@ -2051,8 +2053,8 @@ class JupyterScatterView {
   resizeHandler() {
     const [width, height] = this.getOuterDimensions();
 
-    this.canvasLabels.width = width * window.devicePixelRatio;
-    this.canvasLabels.height = height * window.devicePixelRatio;
+    this.canvasLabels.width = this.innerWidth * window.devicePixelRatio;
+    this.canvasLabels.height = this.innerHeight * window.devicePixelRatio;
 
     this.createViewToLabelTiles();
     this.renderLabels();
