@@ -63,8 +63,8 @@ def get_record(data, index):
 class JupyterScatter(anywidget.AnyWidget):
     _esm = pathlib.Path(__file__).parent / 'bundle.js'
 
-    data: pd.DataFrame | None
-    label_placement: LabelPlacement | None
+    data: t.Optional[pd.DataFrame]
+    label_placement: t.Optional[LabelPlacement]
 
     # For debugging
     dom_element_id = Unicode(read_only=True).tag(sync=True)
@@ -368,8 +368,8 @@ class JupyterScatter(anywidget.AnyWidget):
 
     def __init__(
         self,
-        data: pd.DataFrame | None,
-        label_placement: LabelPlacement | None = None,
+        data: t.Optional[pd.DataFrame],
+        label_placement: t.Optional[LabelPlacement] = None,
         *args,
         **kwargs,
     ):

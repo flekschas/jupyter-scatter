@@ -1,7 +1,7 @@
 import colorsys
 import math
 import warnings
-from typing import List, Tuple, Union
+from typing import List, Tuple, TypeVar, Union
 from urllib.parse import urlparse
 
 import ipywidgets as widgets
@@ -17,6 +17,8 @@ from matplotlib.colors import (
 from numpy import histogram, isnan, sum
 
 from .types import Color, Labeling, Undefined
+
+T = TypeVar('T')
 
 
 def to_uint8(x):
@@ -202,15 +204,15 @@ def any_not(l, value=None):
     return any([x is not value for x in l])
 
 
-def all_undefined[T](l: List[Union[Undefined, T]]) -> bool:
+def all_undefined(l: List[Union[Undefined, T]]) -> bool:
     return all([isinstance(x, Undefined) for x in l])
 
 
-def any_undefined[T](l: List[Union[Undefined, T]]) -> bool:
+def any_undefined(l: List[Union[Undefined, T]]) -> bool:
     return any([isinstance(x, Undefined) for x in l])
 
 
-def any_defined[T](l: List[Union[Undefined, T]]) -> bool:
+def any_defined(l: List[Union[Undefined, T]]) -> bool:
     return any([not isinstance(x, Undefined) for x in l])
 
 

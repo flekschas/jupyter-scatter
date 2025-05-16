@@ -3,7 +3,6 @@ from typing import (
     List,
     Sequence,
     Type,
-    TypeGuard,
     TypeVar,
 )
 
