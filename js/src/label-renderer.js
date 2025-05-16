@@ -201,7 +201,6 @@ export const createLabelRenderer = (canvas) => {
    * @param {number} options.backgroundLuminance Background luminance
    */
   const render = (labels, zoom, xScale, yScale, options) => {
-    const t0 = performance.now();
     clear();
 
     const dpr = window.devicePixelRatio;
@@ -278,7 +277,6 @@ export const createLabelRenderer = (canvas) => {
         shadowColor,
       );
     }
-    console.log('Rendering', numLabels, 'took', performance.now() - t0, 'msec');
   };
 
   return { clear, render };
