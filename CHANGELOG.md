@@ -1,3 +1,10 @@
+## v0.22.0
+
+- Feat: add `scatter.label()` function for displaying text labels
+- Feat: add`LabelPlacement` class that allows to statically-resolved label placement and preserve results
+- Feat: add new color helper methods: brighten, darken, saturate, desaturate
+- Feat: add 2D color map support via [pycolormap-2d](https://pypi.org/project/pycolormap-2d/)
+
 ## v0.21.1
 
 - Feat: automatically assign gray to undefined/NA values for categorical data ([#186](https://github.com/flekschas/jupyter-scatter/issues/186))
