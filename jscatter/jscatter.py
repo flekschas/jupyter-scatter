@@ -4784,6 +4784,7 @@ class Scatter:
                 spatial_props = label_placement_props.copy()
                 spatial_props.pop('color')
                 spatial_props.pop('background')
+                spatial_props.pop('tile_size')
 
                 def _props_are_equal(prop, current_value, new_value):
                     if prop == 'data':
@@ -4810,7 +4811,7 @@ class Scatter:
                     # the label placement
                     if not isinstance(using, Undefined):
                         warnings.warn(
-                            f'The existing label placement specified with `using` is going to be re-computed since you adjusted parameters: {changed_spatial_props}'
+                            f'The existing label placement specified with `using` is going to be recomputed since you adjusted parameters: {changed_spatial_props}'
                         )
                     self._label_placement = self._label_placement.clone(
                         **label_placement_props
