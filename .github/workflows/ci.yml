@@ -36,7 +36,19 @@ jobs:
           npm update
           npm ci
 
+      # Install LLVM with version-specific handling
+      - name: Install LLVM dependencies (LLVM 14 for Python 3.13)
+        if: matrix.python-version == '3.13'
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-14 main"
+          sudo apt-get update
+          sudo apt-get install -y llvm-14-dev
+          echo "LLVM_CONFIG=llvm-config-14" >> $GITHUB_ENV
+
+      # Default LLVM installation for other Python versions
       - name: Install LLVM dependencies
+        if: matrix.python-version != '3.13'
         run: |
           sudo apt-get update
           sudo apt-get install -y llvm-dev
