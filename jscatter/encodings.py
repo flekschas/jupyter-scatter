@@ -6,7 +6,13 @@ from typing import List, Tuple, Union, Optional
 
 
 def create_legend(
-    encoding, norm, categories, labeling=None, linspace_num=5, category_order=None
+    encoding,
+    norm,
+    categories,
+    labeling=None,
+    linspace_num=5,
+    category_order=None,
+    data_dimension=None,
 ):
     variable = labeling.get('variable') if labeling else None
     values = []
@@ -36,7 +42,12 @@ def create_legend(
             values[0] = (*values[0][0:2], labeling.get('minValue'))
             values[-1] = (*values[-1][0:2], labeling.get('maxValue'))
 
-    return dict(variable=variable, values=values, categorical=categories is not None)
+    return dict(
+        variable=variable,
+        values=values,
+        categorical=categories is not None,
+        data_dimension=data_dimension,
+    )
 
 
 class Component:
@@ -154,6 +165,7 @@ class Encodings:
         labeling=None,
         linspace_num=5,
         category_order=None,
+        data_dimension=None,
     ):
         if channel in self.visual:
             self.visual[channel].legend = create_legend(
@@ -163,6 +175,7 @@ class Encodings:
                 labeling,
                 linspace_num,
                 category_order,
+                data_dimension,
             )
 
     def delete(self, channel):

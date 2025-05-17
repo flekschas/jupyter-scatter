@@ -8,8 +8,20 @@ try:
 except PackageNotFoundError:
     __version__ = 'uninstalled'
 
-from .jscatter import Scatter, plot
-from .annotations import Line, HLine, VLine, Rect
-from .composite_annotations import CompositeAnnotation, Contour
+from .annotations import HLine, Line, Rect, VLine
+from .color_maps import glasbey_dark, glasbey_light, okabe_ito
 from .compose import compose, link
-from .color_maps import okabe_ito, glasbey_light, glasbey_dark
+from .composite_annotations import CompositeAnnotation, Contour
+from .font import Font, arial
+from .jscatter import Scatter, plot
+from .label_placement import LabelPlacement
+from .pycolormap_2d import (
+    BaseColorMap2D,
+    ColorMap2DBremm,
+    ColorMap2DCubeDiagonal,
+    ColorMap2DSchumann,
+    ColorMap2DSteiger,
+    ColorMap2DTeuling2,
+    ColorMap2DZiegler,
+)
+from .utils import brighten, darken, desaturate, saturate

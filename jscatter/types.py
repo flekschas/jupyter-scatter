@@ -1,18 +1,51 @@
 from enum import Enum
-from typing import Tuple, Union
-from typing_extensions import NotRequired, TypedDict, Literal
+from typing import Callable, Literal, Tuple, TypeVar, Union
+
+import numpy as np
+import numpy.typing as npt
+from typing_extensions import NotRequired, TypedDict
 
 Auto = Literal['auto']
 Rgb = Tuple[float, float, float]
 Rgba = Tuple[float, float, float, float]
 Color = Union[str, Rgb, Rgba]
+Position = Literal[
+    'top',
+    'top-right',
+    'top-left',
+    'bottom',
+    'bottom-right',
+    'bottom-left',
+    'right',
+    'left',
+    'center',
+]
 TooltipPreviewType = Literal['text', 'image', 'audio']
 TooltipPreviewImagePosition = Literal['top', 'bottom', 'left', 'right', 'center']
 TooltipPreviewImageSize = Literal['contain', 'cover']
 SizeScaleFunction = Literal['asinh', 'linear', 'constant']
+LabelFont = Literal[
+    'arial',
+    'arial bold',
+    'arial italic',
+    'arial bold italic',
+    'regular',
+    'bold',
+    'italic',
+    'bold italic',
+]
+LabelScaleFunction = Literal['asinh', 'constant']
+LabelPositioning = Literal['center_of_mass', 'highest_density', 'largest_cluster']
 WidgetButtons = Literal[
     'pan_zoom', 'lasso', 'full_screen', 'screenshot', 'download', 'reset', 'divider'
 ]
+LogLevel = Literal['debug', 'info', 'warning', 'error', 'critical']
+
+NumericType = TypeVar('NumericType', int, float, np.number)
+
+AggregationMethodLiteral = Literal['min', 'mean', 'median', 'max', 'sum']
+AggregationMethodCallable = Callable[[npt.NDArray[np.float64]], NumericType]
+AggregationMethod = Union[AggregationMethodLiteral, AggregationMethodCallable]
 
 # To distinguish between None and an undefined (optional) argument, where None
 # is used for unsetting and Undefined is used for skipping.
@@ -44,28 +77,12 @@ class MouseModes(Enum):
     ROTATE = 'rotate'
 
 
-class Auto(Enum):
-    AUTO = 'auto'
-
-
 class Reverse(Enum):
     REVERSE = 'reverse'
 
 
 class Segment(Enum):
     SEGMENT = 'segment'
-
-
-class LegendPosition(Enum):
-    TOP = 'top'
-    TOP_RIGHT = 'top-right'
-    TOP_LEFT = 'top-left'
-    BOTTOM = 'bottom'
-    BOTTOM_RIGHT = 'bottom-right'
-    BOTTOM_LEFT = 'bottom-left'
-    RIGHT = 'right'
-    LEFT = 'left'
-    CENTER = 'center'
 
 
 class VisualProperty(Enum):
