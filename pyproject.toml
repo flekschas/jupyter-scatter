@@ -41,7 +41,6 @@ dependencies = [
   "pandas",
   "pooch>=1.3.0",
   "pyarrow",
-  "pycolormap-2d",
   "scipy",
   "seaborn",
   "tqdm",
