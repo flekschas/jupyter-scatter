@@ -4,8 +4,6 @@ def test_compute_k_functions():
 
     from jscatter.label_placement.k import (
         ASINH_1,
-        _compute_k_jit,
-        _compute_k_legacy,
         compute_k,
     )
 
@@ -16,15 +14,7 @@ def test_compute_k_functions():
     # Expected result
     expected = (abs(x1 - x2) * ASINH_1) / (w1 + w2)
 
-    # Test JIT version
-    jit_result = _compute_k_jit(x1, w1, x2, w2)
-    assert np.isclose(jit_result, expected)
-
-    # Test legacy version
-    legacy_result = _compute_k_legacy(x1, w1, x2, w2)
-    assert np.isclose(legacy_result, expected)
-
-    # Test wrapper function
+    # Test k computation
     result = compute_k(x1, w1, x2, w2)
     assert np.isclose(result, expected)
 
@@ -40,20 +30,10 @@ def test_compute_k_functions():
 
 def test_compute_k_edge_cases():
     """Test edge cases and error handling in compute_k function."""
-    from unittest.mock import patch
 
     import numpy as np
 
-    from jscatter.label_placement.k import ASINH_1, compute_k
-
-    # Force JIT function to fail and ensure fallback works
-    with patch(
-        'jscatter.label_placement.k._compute_k_jit',
-        side_effect=RuntimeError('Forced error'),
-    ):
-        result = compute_k(10.0, 5.0, 20.0, 3.0)
-        expected = (abs(10.0 - 20.0) * ASINH_1) / (5.0 + 3.0)
-        assert np.isclose(result, expected)
+    from jscatter.label_placement.k import compute_k
 
     # Test with strange inputs that should still work
     result = compute_k(0.0, 1.0, 0.0, 1.0)  # Zero distance

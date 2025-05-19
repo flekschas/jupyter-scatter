@@ -2880,12 +2880,14 @@ class JupyterScatterView {
           pixelAligned: true,
         });
 
-        const labelImage = this.canvasLabels?.getContext('2d')?.getImageData(
-          0,
-          0,
-          this.canvasLabels.width,
-          this.canvasLabels.height,
-        );
+        const labelImage = this.canvasLabels
+          ?.getContext('2d')
+          ?.getImageData(
+            0,
+            0,
+            this.canvasLabels.width,
+            this.canvasLabels.height,
+          );
 
         const blendedImage = labelImage
           ? blend(scatterImage, labelImage)

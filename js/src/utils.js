@@ -237,9 +237,11 @@ export function toRgba(color) {
 
 export function blend(imageDataBack, imageDataFront) {
   // Verify dimensions match
-  if (imageDataBack.width !== imageDataFront.width ||
-      imageDataBack.height !== imageDataFront.height) {
-    throw new Error("Image dimensions must match for blending");
+  if (
+    imageDataBack.width !== imageDataFront.width ||
+    imageDataBack.height !== imageDataFront.height
+  ) {
+    throw new Error('Image dimensions must match for blending');
   }
 
   const width = imageDataBack.width;

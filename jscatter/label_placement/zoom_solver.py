@@ -1,6 +1,5 @@
 import math
 
-from numba import jit
 from scipy.optimize import brentq
 
 # Constants
@@ -27,24 +26,7 @@ SMALLEST_SAFE_K = 1e-10
 MAX_SAFE_ZOOM = 1e9
 
 
-@jit(nopython=True)
 def _f(z: float, k: float):
-    """
-    JIT-compiled inverse hyperbolic zoom scale function for which we need to find the root.
-    The root represents the zoom level at which overlaps are resolved.
-
-    Args:
-        z: Zoom scale between [1, Infinity]
-        k: Constant representing Math.abs(x1 - x2) * 2 * ASINH_1 / (w1 + w2)
-
-    Returns:
-        Function value at point z
-    """
-    return math.asinh(z) / z - k
-
-
-# Non-JIT version for fallback
-def _f_legacy(z: float, k: float):
     """
     Inverse hyperbolic zoom scale function for which we need to find the root.
     The root represents the zoom level at which overlaps are resolved.
@@ -57,15 +39,6 @@ def _f_legacy(z: float, k: float):
         Function value at point z
     """
     return math.asinh(z) / z - k
-
-
-def _safe_brentq(k: float, a: float, b: float, rtol: float):
-    try:
-        # Try with JIT compilation first
-        return brentq(lambda z: _f(z, k), a, b, rtol=rtol)
-    except (TypeError, ValueError, RuntimeError):
-        # If that fails, try the regular method
-        return brentq(lambda z: _f_legacy(z, k), a, b, rtol=rtol)
 
 
 def _find_search_interval_with_grid(
@@ -91,8 +64,8 @@ def _find_search_interval_with_grid(
     for i in range(points - 1):
         a = math.exp(log_min + i * step)
         b = math.exp(log_min + (i + 1) * step)
-        fa = _f_legacy(a, k)
-        fb = _f_legacy(b, k)
+        fa = _f(a, k)
+        fb = _f(b, k)
 
         if fa * fb <= 0:
             return a, b
@@ -116,13 +89,13 @@ def _find_search_interval(
         Tuple containing the bracket [a, b] or None if no bracket is found
     """
     a = start
-    fa = _f_legacy(a, k)
+    fa = _f(a, k)
     step = initial_step
 
     for i in range(max_iterations):
         # Try in positive direction
         b = a + step
-        fb = _f_legacy(b, k)
+        fb = _f(b, k)
 
         if fa * fb <= 0:
             return a, b
@@ -130,7 +103,7 @@ def _find_search_interval(
         # Try in negative direction (if possible without going below 1.0)
         if a - step >= 1.0:
             b = a - step
-            fb = _f_legacy(b, k)
+            fb = f(b, k)
 
             if fa * fb <= 0:
                 return b, a
@@ -217,7 +190,7 @@ def solve_zoom_precisely(k: float, tolerance: float = 1e-10):
     a, b = interval
 
     try:
-        return _safe_brentq(k, a, b, rtol=tolerance)
+        return brentq(lambda z: _f(z, k), a, b, rtol=tolerance)
     except:
         # If the root finding method fails, use the approximation
         return solve_zoom_approximately(k)
@@ -260,7 +233,7 @@ def solve_zoom(k: float, tolerance: float = 1e-10):
     b = approx * 2.0
 
     try:
-        return _safe_brentq(k, a, b, rtol=tolerance)
+        return brentq(lambda z: _f(z, k), a, b, rtol=tolerance)
     except:
         # If the bracket fails, use the more robust interval finding
         interval = _find_search_interval(k)
@@ -272,4 +245,4 @@ def solve_zoom(k: float, tolerance: float = 1e-10):
 
         a, b = interval
 
-        return _safe_brentq(k, a, b, rtol=tolerance)
+        return brentq(lambda z: _f(z, k), a, b, rtol=tolerance)

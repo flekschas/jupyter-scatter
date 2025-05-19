@@ -180,14 +180,20 @@ points in the group:
 
 #### Largest Cluster
 The `'largest_cluster'` method identifies the largest sub-cluster within the
-group using [HDBSCAN](https://github.com/TutteInstitute/fast_hdbscan) and places
-the label at its center of mass:
+group using [HDBSCAN](https://github.com/scikit-learn-contrib/hdbscan) and
+places the label at its center of mass:
 
 - Slowest method
 - Detects clusters within each group
 - Places the label at the center of mass of the largest cluster
 - Works well when points naturally form multiple clusters
 - Typically results in the best label placement overall
+
+::: info
+`"largest_cluster"` is an additional feature that's not included in the default
+installation as it relies on HDBSCAN. To use the feature install Jupyter Scatter
+via `pip install "jupyter-scatter[all]"`.
+:::
 
 ### Line Breaks
 
@@ -360,8 +366,9 @@ labels.compute()
 ```
 
 ::: tip
-For precomputing very large label sets you can show a progress bar via
-`labels.compute(show_progress=True)`.
+For tracking the progress while precomputing very large label sets you can show
+a progress bar via `labels.compute(show_progress=True)`. This feature requires
+the complete installation via `pip install "jupyter-scatter[all]"`.
 :::
 
 Once the labels placement has been precomputed, you can persist them to disk as

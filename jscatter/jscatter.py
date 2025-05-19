@@ -19,6 +19,7 @@ from matplotlib.colors import (
 from .annotations import HLine, Line, Rect, VLine
 from .color_maps import glasbey_dark, glasbey_light, gray_dark, gray_light, okabe_ito
 from .composite_annotations import CompositeAnnotation, Contour
+from .dependencies import check_label_extras_dependencies
 from .encodings import Encodings
 from .font import Font, arial, font_name_map
 from .label_placement import (
@@ -4416,7 +4417,6 @@ class Scatter:
         target_aspect_ratio: Union[float, Undefined] = UNDEF,
         max_lines: Union[int, Undefined] = UNDEF,
         using: Union[LabelPlacement, Undefined] = UNDEF,
-        **kwargs,
     ):
         """
         Set or get the label settings.
@@ -4513,9 +4513,6 @@ class Scatter:
             An existing LabelPlacement instance to use for labels. This allows
             reusing pre-computed label placements instead of calculating them
             from scratch.
-        **kwargs : optional
-            Additional options can be passed, including `show_progress=True` to
-            display a progress bar during label placement computation.
 
         Returns
         -------
@@ -4687,6 +4684,8 @@ class Scatter:
             self._label_exclude = exclude
 
         if not isinstance(positioning, Undefined):
+            if positioning == 'largest_cluster':
+                check_label_extras_dependencies()
             self._label_positioning = positioning
 
         if not isinstance(target_aspect_ratio, Undefined):
@@ -4738,14 +4737,6 @@ class Scatter:
                 }
 
             tile_size = self._height
-            if 'tile_size' in kwargs:
-                try:
-                    tile_size = int(kwargs['tile_size'])
-                except ValueError:
-                    warnings.warn(
-                        f'Invalid tile size: {tile_size}. Using default tile size.'
-                    )
-                    pass
 
             label_placement_props = dict(
                 data=self._data,
@@ -4828,9 +4819,7 @@ class Scatter:
                     ]
 
             if not self._label_placement.computed:
-                self._label_placement.compute(
-                    show_progress=kwargs.get('show_progress', False)
-                )
+                self._label_placement.compute()
 
         else:
             self._label_placement = None

@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
+from scipy.optimize import brentq
 
 from jscatter.label_placement.zoom_solver import (
     ASINH_1,
@@ -10,10 +11,8 @@ from jscatter.label_placement.zoom_solver import (
     REGION_5_INVERSE,
     SMALLEST_SAFE_K,
     _f,
-    _f_legacy,
     _find_search_interval,
     _find_search_interval_with_grid,
-    _safe_brentq,
     solve_zoom,
     solve_zoom_approximately,
     solve_zoom_precisely,
@@ -29,7 +28,6 @@ def test_zoom_solver_functions():
     expected_f = math.asinh(z_value) / z_value - k_value
 
     assert np.isclose(_f(z_value, k_value), expected_f)
-    assert np.isclose(_f_legacy(z_value, k_value), expected_f)
 
     # 1. Test k >= ASINH_1 cases (should return 1.0)
     assert solve_zoom(ASINH_1) == 1.0
@@ -60,7 +58,7 @@ def test_zoom_solver_functions():
         precise_result = solve_zoom_precisely(k)
         assert precise_result >= 1.0
 
-        f_val = abs(_f_legacy(precise_result, k))
+        f_val = abs(_f(precise_result, k))
 
         # Define tolerance based on distance from ASINH_1
         distance_from_asinh1 = ASINH_1 - k
@@ -95,9 +93,9 @@ def test_zoom_solver_functions():
 
     # 5. Test brentq solver
     a, b = 1.0, 10.0
-    result = _safe_brentq(0.5, a, b, 1e-10)
+    result = brentq(lambda z: _f(z, 0.5), a, b, rtol=1e-10)
     assert a <= result <= b
-    assert np.isclose(_f_legacy(result, 0.5), 0.0, atol=1e-8)
+    assert np.isclose(_f(result, 0.5), 0.0, atol=1e-8)
 
     # 6. Test approximate solver for valid range
     approx_k_values = [0.1, 0.3, 0.5, 0.7, 0.8, ASINH_1 - 0.01, ASINH_1 - 0.001]
@@ -105,7 +103,7 @@ def test_zoom_solver_functions():
         approx_result = solve_zoom_approximately(k)
         assert approx_result >= 1.0
         # Verify the result is reasonable
-        f_val = abs(_f_legacy(approx_result, k))
+        f_val = abs(_f(approx_result, k))
         assert f_val < 0.2  # Approximate solution should be reasonably close
 
 
@@ -115,13 +113,13 @@ def test_zoom_solver_edge_cases():
     # Test with k values that require backup strategies
     # Force brentq to fail, should fall back to approximation
     with patch(
-        'jscatter.label_placement.zoom_solver._safe_brentq',
+        'scipy.optimize.brentq',
         side_effect=RuntimeError('Forced error'),
     ):
         result = solve_zoom_precisely(0.5)
         # Should still return a reasonable value
         assert result > 1.0
-        assert abs(_f_legacy(result, 0.5)) < 0.2  # Approximate solution
+        assert abs(_f(result, 0.5)) < 0.2  # Approximate solution
 
     # Test search interval failures and fallbacks
     with patch(

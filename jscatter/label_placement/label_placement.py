@@ -12,6 +12,7 @@ from scipy.spatial import ConvexHull
 from scipy.spatial._qhull import QhullError
 from tqdm.auto import tqdm
 
+from ..dependencies import check_label_extras_dependencies
 from ..font import Font
 from ..types import (
     AggregationMethod,
@@ -1071,6 +1072,9 @@ class LabelPlacement:
                 'Use reset() first or create a new instance.'
             )
 
+        if positioning == 'largest_cluster':
+            check_label_extras_dependencies()
+
         self._positioning = positioning
 
     @property
@@ -1235,6 +1239,9 @@ class LabelPlacement:
         pandas.DataFrame
             Computed labels ready for rendering
         """
+        # Check for extra dependencies
+        if show_progress or self._positioning == 'largest_cluster':
+            check_label_extras_dependencies()
 
         import time
 
@@ -1482,6 +1489,7 @@ class LabelPlacement:
             return bbox, position
 
         if self._positioning == 'largest_cluster':
+            check_label_extras_dependencies()
             points = compute_largest_cluster(points)
 
         if len(points) < 3:

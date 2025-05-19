@@ -1,29 +1,15 @@
-from unittest.mock import patch
-
 import numpy as np
 
-from jscatter.label_placement.center_of_mass import (
-    _compute_center_of_mass_jit,
-    _compute_center_of_mass_legacy,
-    compute_center_of_mass,
-)
+from jscatter.label_placement.center_of_mass import compute_center_of_mass
 
 
 def test_center_of_mass_functions():
-    """Test both JIT and non-JIT versions of center of mass calculation."""
+    """Test center of mass calculation."""
 
     # Simple square test case
     square = np.array([[0, 0], [1, 0], [1, 1], [0, 1]])
 
-    # Test JIT version directly
-    jit_result = _compute_center_of_mass_jit(square)
-    assert np.allclose(jit_result, [0.5, 0.5])
-
-    # Test legacy version
-    legacy_result = _compute_center_of_mass_legacy(square)
-    assert np.allclose(legacy_result, [0.5, 0.5])
-
-    # Test wrapper function
+    # Test center of mass function
     result = compute_center_of_mass(square)
     assert np.allclose(result, [0.5, 0.5])
 
@@ -45,14 +31,6 @@ def test_center_of_mass_functions():
 
 def test_center_of_mass_edge_cases():
     """Test edge cases and error handling in center of mass functions."""
-
-    # Force JIT function to fail and ensure fallback works
-    with patch(
-        'jscatter.label_placement.center_of_mass._compute_center_of_mass_jit',
-        side_effect=RuntimeError('Forced error'),
-    ):
-        result = compute_center_of_mass(np.array([[0, 0], [1, 0], [1, 1], [0, 1]]))
-        assert np.allclose(result, [0.5, 0.5])
 
     # Test with polygon where shoelace formula gives zero area
     collinear_points = np.array([[0, 0], [1, 0], [2, 0], [3, 0]])

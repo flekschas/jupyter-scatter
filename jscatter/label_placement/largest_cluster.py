@@ -1,5 +1,19 @@
+import warnings
+
 import numpy as np
 import numpy.typing as npt
+
+from ..dependencies import check_label_extras_dependencies
+
+# Filter HDBSCAN warnings
+warnings.filterwarnings(
+    'ignore', category=SyntaxWarning, message='invalid escape sequence.*'
+)
+warnings.filterwarnings(
+    'ignore',
+    category=FutureWarning,
+    message="'force_all_finite' was renamed to 'ensure_all_finite'.*",
+)
 
 
 def compute_largest_cluster(points: npt.NDArray[np.float64], max_points: int = 1000):
@@ -18,7 +32,10 @@ def compute_largest_cluster(points: npt.NDArray[np.float64], max_points: int = 1
     largest_cluster_points : numpy.ndarray
         [x, y] coordinates of the points of the largest cluster
     """
-    from fast_hdbscan import HDBSCAN
+    # Ensure required dependencies are installed
+    check_label_extras_dependencies()
+
+    from hdbscan import HDBSCAN
 
     if points.size == 0:
         return np.array([0, 0]).reshape((1, 2))

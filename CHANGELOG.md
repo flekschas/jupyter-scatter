@@ -4,6 +4,7 @@
 - Feat: add`LabelPlacement` class that allows to statically-resolved label placement and preserve results
 - Feat: add new color helper methods: brighten, darken, saturate, desaturate
 - Feat: add 2D color map support via [pycolormap-2d](https://pypi.org/project/pycolormap-2d/)
+- Refactor: Make `seaborn` dependency for contour annotations optional. You can install it via `pip install "jupyter-scatter[annotation-extras]"` or `pip install "jupyter-scatter[all]"`
 
 ## v0.21.1
 
