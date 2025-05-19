@@ -42,7 +42,7 @@ jobs:
 
       - name: Run tests
         run: |
-          uv pip install -e ".[all]"
-          uv run pytest . --color=yes
+          uv pip install --system -e ".[all]"
+          uv run --with ".[all]" pytest . --color=yes
         env:
           UV_PYTHON: ${{ matrix.python-version }}
