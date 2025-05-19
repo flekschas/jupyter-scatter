@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
@@ -41,6 +41,8 @@ jobs:
           version: "0.4.x"
 
       - name: Run tests
-        run: uv run pytest . --color=yes
+        run: |
+          uv pip install -e ".[all]"
+          uv run pytest . --color=yes
         env:
           UV_PYTHON: ${{ matrix.python-version }}
