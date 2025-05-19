@@ -45,6 +45,6 @@ jobs:
           uv venv
           source .venv/bin/activate
           uv pip install -e ".[all]"
-          pytest . --color=yes
+          uv run pytest . --color=yes
         env:
           UV_PYTHON: ${{ matrix.python-version }}
