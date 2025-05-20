@@ -18,7 +18,6 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
 ]
 keywords = [
   "scatter",
@@ -32,19 +31,23 @@ keywords = [
 ]
 dependencies = [
   "anywidget>=0.9.0",
+  "geoindex-rs",
   "ipywidgets>=7.6,<9",
   "ipython",
-  "matplotlib",
+  "matplotlib>=3.9",
   "numpy",
   "pandas",
   "pooch>=1.3.0",
   "pyarrow",
   "scipy",
-  "seaborn",
-  "traittypes>=0.2.1",
   "typing_extensions",
 ]
 dynamic = ["version"]
+
+[project.optional-dependencies]
+label-extras = ["tqdm", "hdbscan"]
+annotation-extras = ["seaborn"]
+all = ["hdbscan", "seaborn", "tqdm"]
 
 [project.urls]
 homepage = "https://jupyter-scatter.dev"
@@ -78,9 +81,8 @@ path = "js"
 
 [tool.pytest.ini_options]
 filterwarnings = [
-  # Ignore unrelated DeprecationWarning from traitlets:
-  # Sentinel is not a public part of the traitlets API.
-  "ignore::DeprecationWarning:traitlets:28",
+  "ignore:invalid escape sequence:SyntaxWarning",
+  "ignore:'force_all_finite' was renamed to 'ensure_all_finite':FutureWarning"
 ]
 
 [tool.uv]
@@ -90,6 +92,7 @@ dev-dependencies = [
   "pre-commit",
   "pyarrow",
   "pytest",
+  "pytest-cov",
   "ruff",
 ]
 

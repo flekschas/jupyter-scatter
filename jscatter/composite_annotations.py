@@ -1,23 +1,24 @@
 from __future__ import annotations
 
 import inspect
+import sys
+from abc import ABCMeta, abstractmethod
+from typing import List, Optional, Union
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-import sys
-
-from abc import ABCMeta, abstractmethod
 from matplotlib.colors import to_rgba
-from typing import List, Optional, Union
 
 from .annotations import (
-    HLine,
-    VLine,
-    Line,
-    Rect,
     DEFAULT_LINE_COLOR,
     DEFAULT_LINE_WIDTH,
+    HLine,
+    Line,
+    Rect,
+    VLine,
 )
+from .dependencies import check_annotation_extras_dependencies
 from .types import Color
 
 
@@ -66,6 +67,7 @@ class Contour(CompositeAnnotation):
         if sys.version_info < (3, 9):
             raise Exception('The contour line annotation requires at least Python v3.9')
 
+        check_annotation_extras_dependencies()
         self.by = by
         self.line_color = line_color
         self.line_width = line_width

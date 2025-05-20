@@ -71,6 +71,10 @@ l = jscatter.Line(
 Beyond basic line-based annotations, Jupyter Scatter also supports composite
 annotations like [contour line](https://en.wikipedia.org/wiki/Contour_line).
 
+::: info
+This feature requires [Seaborn](https://seaborn.pydata.org) which you can install via `pip install "jupyter-scatter[all]"`.
+:::
+
 A contour line estimates the density and is internally computed with
 [Seaborn's kdeplot](https://seaborn.pydata.org/generated/seaborn.kdeplot.html).
 
