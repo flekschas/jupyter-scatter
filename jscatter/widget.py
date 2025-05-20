@@ -1,20 +1,24 @@
-import ipywidgets as widgets
-import numpy as np
-import anywidget
-import pandas as pd
 import pathlib
 import typing as t
 
-from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
-from traittypes import Array
+import anywidget
+import ipywidgets as widgets
+import numpy as np
+import pandas as pd
+from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union, observe
 
 from .annotations_traits import (
-    Line,
     HLine,
-    VLine,
+    Line,
     Rect,
+    VLine,
+)
+from .annotations_traits import (
     serialization as annotation_serialization,
 )
+from .label_placement import DEFAULT_TILE_SIZE, INITIAL_TILE, LabelPlacement, to_js
+from .serializers import df_serialization, ndarray_serialization
+from .traittypes import Array, DataFrame
 from .types import UNDEF, Undefined, WidgetButtons
 from .utils import is_categorical_data
 from .widgets import Button, ButtonChoice, ButtonIntSlider, Divider
@@ -56,32 +60,11 @@ def get_record(data, index):
     return out.fillna(fill_na)
 
 
-# Code extracted from maartenbreddels ipyvolume
-def array_to_binary(ar, obj=None, force_contiguous=True):
-    if ar is None:
-        return None
-    if ar.dtype.kind not in ['u', 'i', 'f']:  # ints and floats
-        raise ValueError('unsupported dtype: %s' % (ar.dtype))
-    if ar.dtype == np.float64:  # WebGL does not support float64, case it here
-        ar = ar.astype(np.float32)
-    if ar.dtype == np.int64:  # JS does not support int64
-        ar = ar.astype(np.int32)
-    if force_contiguous and not ar.flags['C_CONTIGUOUS']:  # make sure it's contiguous
-        ar = np.ascontiguousarray(ar)
-    return {'view': memoryview(ar), 'dtype': str(ar.dtype), 'shape': ar.shape}
-
-
-def binary_to_array(value, obj=None):
-    if value is None:
-        return None
-    return np.frombuffer(value['view'], dtype=value['dtype']).reshape(value['shape'])
-
-
-ndarray_serialization = dict(to_json=array_to_binary, from_json=binary_to_array)
-
-
 class JupyterScatter(anywidget.AnyWidget):
     _esm = pathlib.Path(__file__).parent / 'bundle.js'
+
+    data: t.Optional[pd.DataFrame]
+    label_placement: t.Optional[LabelPlacement]
 
     # For debugging
     dom_element_id = Unicode(read_only=True).tag(sync=True)
@@ -91,6 +74,7 @@ class JupyterScatter(anywidget.AnyWidget):
     transition_points = Bool(False).tag(sync=True)
     transition_points_duration = Int(3000).tag(sync=True)
     prevent_filter_reset = Bool(False).tag(sync=True)
+    non_spatial_points_update = Bool(False).tag(sync=True)
     selection = Array(default_value=None, allow_none=True).tag(
         sync=True, **ndarray_serialization
     )
@@ -157,6 +141,38 @@ class JupyterScatter(anywidget.AnyWidget):
         allow_none=True,
     ).tag(sync=True, **annotation_serialization)
 
+    # Labels
+    labels = DataFrame(default_value=None, allow_none=True).tag(
+        sync=True, **df_serialization
+    )
+    label_shadow_color = Unicode(None, allow_none=True).tag(sync=True)
+    label_align = Enum(
+        [
+            'top',
+            'top-right',
+            'top-left',
+            'bottom',
+            'bottom-right',
+            'bottom-left',
+            'left',
+            'right',
+            'center',
+        ],
+        default_value='center',
+    ).tag(sync=True)
+    label_offset = List([0, 0], minlen=2, maxlen=2).tag(sync=True)
+    label_scale_function = Enum(
+        [
+            'asinh',
+            'constant',
+        ],
+        default_value='asinh',
+    ).tag(sync=True)
+    label_tiles = List(
+        trait=Unicode(), default_value=[INITIAL_TILE], read_only=True
+    ).tag(sync=True)
+    label_tile_size = Int(DEFAULT_TILE_SIZE).tag(sync=True)
+
     # View properties
     camera_target = List([0, 0]).tag(sync=True)
     camera_distance = Float(1).tag(sync=True)
@@ -173,6 +189,7 @@ class JupyterScatter(anywidget.AnyWidget):
     zoom_padding = Float(0.333).tag(sync=True)
     zoom_on_selection = Bool(False).tag(sync=True)
     zoom_on_filter = Bool(False).tag(sync=True)
+    zoom_level = Float(0.0, read_only=True).tag(sync=True)
 
     # Interaction properties
     mouse_mode = Enum(['panZoom', 'lasso', 'rotate'], default_value='panZoom').tag(
@@ -349,17 +366,38 @@ class JupyterScatter(anywidget.AnyWidget):
 
     event_types = Dict(EVENT_TYPES, read_only=True).tag(sync=True)
 
-    def __init__(self, data, *args, **kwargs):
+    def __init__(
+        self,
+        data: t.Optional[pd.DataFrame],
+        label_placement: t.Optional[LabelPlacement] = None,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
 
         self.data = data
+        self.label_placement = label_placement
         self.on_msg(self._handle_custom_msg)
 
+    def _compare(self, a, b):
+        """Compare two values for equality."""
+        if self._is_numpy(a) or self._is_numpy(b):
+            return np.array_equal(a, b)
+
+        if isinstance(a, pd.DataFrame) and isinstance(b, pd.DataFrame):
+            return a.equals(b)
+
+        if isinstance(a, pd.DataFrame) or isinstance(b, pd.DataFrame):
+            return False
+
+        return a == b
+
     def _handle_custom_msg(self, event: dict, buffers):
-        if event['type'] == EVENT_TYPES['TOOLTIP'] and isinstance(
-            self.data, pd.DataFrame
-        ):
-            # data = self.data.iloc[event['index']]
+        if event['type'] == EVENT_TYPES['TOOLTIP']:
+            self._handle_tooltip(event)
+
+    def _handle_tooltip(self, event: dict):
+        if isinstance(self.data, pd.DataFrame):
             data = get_record(self.data, event['index'])
             self.send(
                 {
@@ -373,7 +411,6 @@ class JupyterScatter(anywidget.AnyWidget):
             )
 
     def show_tooltip(self, point_idx):
-        # data = self.data.iloc[point_idx]
         data = get_record(self.data, point_idx)
         self.send(
             {
@@ -390,6 +427,15 @@ class JupyterScatter(anywidget.AnyWidget):
                 else {},
             }
         )
+
+    @observe('label_tiles')
+    def _label_tiles_changed(self, change):
+        if self.label_placement is None:
+            self.labels = None
+        else:
+            self.labels = to_js(
+                self.label_placement.get_labels_from_tiles(change['new'])
+            )
 
     def create_download_view_button(self, icon_only=True, width=36):
         button = Button(

@@ -235,6 +235,41 @@ export function toRgba(color) {
     .map(Number);
 }
 
+export function blend(imageDataBack, imageDataFront) {
+  // Verify dimensions match
+  if (
+    imageDataBack.width !== imageDataFront.width ||
+    imageDataBack.height !== imageDataFront.height
+  ) {
+    throw new Error('Image dimensions must match for blending');
+  }
+
+  const width = imageDataBack.width;
+  const height = imageDataBack.height;
+  const newData = new Uint8ClampedArray(width * height * 4);
+
+  for (let i = 0; i < imageDataBack.data.length; i += 4) {
+    const bgR = imageDataBack.data[i];
+    const bgG = imageDataBack.data[i + 1];
+    const bgB = imageDataBack.data[i + 2];
+    const bgA = imageDataBack.data[i + 3] / 255;
+
+    const fgR = imageDataFront.data[i];
+    const fgG = imageDataFront.data[i + 1];
+    const fgB = imageDataFront.data[i + 2];
+    const fgA = imageDataFront.data[i + 3] / 255;
+
+    const outA = fgA + bgA * (1 - fgA);
+
+    newData[i] = Math.round((fgR * fgA + bgR * bgA * (1 - fgA)) / outA);
+    newData[i + 1] = Math.round((fgG * fgA + bgG * bgA * (1 - fgA)) / outA);
+    newData[i + 2] = Math.round((fgB * fgA + bgB * bgA * (1 - fgA)) / outA);
+    newData[i + 3] = Math.round(outA * 255);
+  }
+
+  return new ImageData(newData, width, height);
+}
+
 export function addBackgroundColor(imageData, backgroundColor) {
   const newData = new Uint8ClampedArray(imageData.width * imageData.height * 4);
 
@@ -261,4 +296,58 @@ export function imageDataToCanvas(imageData) {
   ctx.putImageData(imageData, 0, 0);
 
   return canvas;
+}
+
+function zoomScaleToZoomLevel(zoomScale) {
+  if (zoomScale <= 1) {
+    return 0;
+  }
+  return Math.floor(Math.log2(zoomScale));
+}
+
+function zoomLevelToZoomScale(zoomLevel) {
+  return 2 ** zoomLevel;
+}
+
+export function createViewToTiles(
+  xDomain,
+  yDomain,
+  baseZoomScale,
+  maxZoomLevel = Number.POSITIVE_INFINITY,
+) {
+  const [xMin, xMax] = xDomain;
+  const xExtent = xMax - xMin;
+
+  const [yMin, yMax] = yDomain;
+  const yExtent = yMax - yMin;
+
+  function toTileZoomLevel(zoomScale) {
+    return Math.min(maxZoomLevel, zoomScaleToZoomLevel(zoomScale));
+  }
+
+  function toTileX(x, tileZoomScale) {
+    return Math.floor((x - xMin) / (xExtent / tileZoomScale));
+  }
+
+  function toTileY(y, tileZoomScale) {
+    return Math.floor((y - yMin) / (yExtent / tileZoomScale));
+  }
+
+  return function viewToTiles(xView, yView, zoomScaleView) {
+    const zoomScale = baseZoomScale * zoomScaleView;
+    const tileZoomLevel = toTileZoomLevel(zoomScale);
+    const tileZoomScale = zoomLevelToZoomScale(tileZoomLevel);
+    const [tileXMin, tileXMax] = xView.map((x) => toTileX(x, tileZoomScale));
+    const [tileYMin, tileYMax] = yView.map((y) => toTileY(y, tileZoomScale));
+
+    const tiles = [];
+
+    for (let y = tileYMin; y <= tileYMax; y++) {
+      for (let x = tileXMin; x <= tileXMax; x++) {
+        tiles.push(`${x},${y},${tileZoomLevel}`);
+      }
+    }
+
+    return tiles;
+  };
 }

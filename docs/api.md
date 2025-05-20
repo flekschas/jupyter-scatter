@@ -6,7 +6,7 @@
     - [selection()](#scatter.selection) and [filter()](#scatter.filter)
     - [color()](#scatter.color), [opacity()](#scatter.opacity), and [size()](#scatter.size)
     - [connect()](#scatter.connect), [connection_color()](#scatter.connection_color), [connection_opacity()](#scatter.connection_opacity), and [connection_size()](#scatter.connection_size)
-    - [axes()](#scatter.axes), [legend()](#scatter.legend), and [annotations()](#scatter.annotations)
+    - [axes()](#scatter.axes), [legend()](#scatter.legend), [label()](#scatter.label), and [annotations()](#scatter.annotations)
     - [tooltip()](#scatter.tooltip) and [show_tooltip()](#scatter.show_tooltip)
     - [zoom()](#scatter.zoom) and [camera()](#scatter.camera)
     - [lasso()](#scatter.lasso), [reticle()](#scatter.reticle), and [mouse()](#scatter.mouse),
@@ -16,6 +16,8 @@
 - [Plotting Shorthand](#plotting)
 - [Composing \& Linking](#composing-linking)
 - [Color Maps](#color-maps)
+- [Annotations](#annotations)
+- [LabelPlacement](#labelplacement)
 
 
 ## Scatter
@@ -385,6 +387,99 @@ Set or get the legend settings.
 
 ```python
 scatter.legend(True, 'top-right', 'small')
+```
+
+### scatter.label(_legend=Undefined_, _position=Undefined_, _size=Undefined_) {#scatter.label}
+
+Set or get the label settings.
+
+**Arguments:**
+- `by` is a string or list of strings referencing columns in `data`. The
+  columns should define a hierarchy of points by which you want to
+  label these points. When set to `None`, labeling is turned off.
+
+  To display individual point labels (where each row gets its own label),
+  append an exclamation mark to the column name. For instance, `"city!"`
+  would indicate that each value in this column should be treated as a
+  unique label rather than grouping identical values together.
+
+  Note: Currently only one column can be marked with an exclamation mark.
+  If multiple columns are marked, only the first one is treated as
+  containing point labels.
+- `font` is a font or list of fonts for rendering the labels. A list of fonts
+  must match `by` in terms of the length. A dict can map specific
+  label types or label values to fonts.
+- `color` is a single, list or dict of colors for rendering the labels. A list of
+  colors must match `by` in terms of the length. A dict of colors must
+  define a color for every unique label. By default, the color is set
+  to `"auto"` meaning a default color is assigned based on the
+  background color.
+- `size` is the font size(s) for label text. Can be a single integer for uniform
+  size, a list matching the length of `by` for hierarchical sizes, or
+  a dictionary mapping specific label types or values to sizes.
+- `shadow_color` is The outline color for rendering the labels. By default, the
+  color is set to `"auto"` meaning a default color is assigned based on the
+  background color.
+- `importance` is the column name containing importance values that determine
+  which labels to prioritize when there are conflicts. If not specified, all
+  labels have equal importance.
+- `importance_aggregation` is the method used to aggregate importance values
+  when multiple points share the same label. Can be one of `'min'`, `'mean'`,
+  `'median'`, `'max'`, `'sum'`. Default is `'mean'`.
+- `max_number` is the maximum number of labels per tile. Controls label density
+  by limiting how many labels can appear in a given region. Default is `100`.
+- `align` is the label alignment relative to the labeled point or group. Can be
+  one of `'center'`, `'top-left'`, `'top'`, `'top-right'`, `'left'`, `'right'`,
+  `'bottom-left'`, `'bottom'`, `'bottom-right'`. Default is `'center'`.
+- `offset` is the x and y offset of the label from the center of the bounding
+  box of points it's labeling. Note, this only has an effect when `align`
+  is not `'center'`.
+- `scale_function` is the scale function by which the text size is adjusted when
+  zooming in. Can be one of:
+  - `'asinh'`: Scales labels by the inverse hyperbolic sine, initially
+    increasing linearly but quickly plateauing (default).
+  - `'constant'`: No scaling with zoom, labels maintain the same size.
+- `zoom_range`: The range at which labels of a specific type (as specified with
+  `by`) are allowed to appear. The zoom range is a tuple of zoom levels,
+  where `zoom_scale == 2 ** zoom_level`. Defaults to (-∞, ∞) for all
+  labels. Can be specified as:
+  - Single tuple: Applied to all label types
+  - List of tuples: One range per label type in `by`
+  - Dict: Maps label types or specific labels to their zoom ranges
+- `hierarchical` is a flag. If `True`, the label types specified by `by` are
+  treated as hierarchical. This affects label priority, with labels having a
+  lower hierarchical index (earlier in the `by` list) displayed first when there
+  are conflicts. Default is `False`.
+- `exclude` is a list of string that specifies which labels should be excluded.
+  Can contain:
+  - Column names (e.g., `'country'`) to exclude an entire category
+  - Column-value pairs (e.g., `'country:Germany'`) to exclude specific labels
+- `positioning` is the method for determining label position. Options are:
+  - `'highest_density'` (default): Position label at the highest density point
+  - `'center_of_mass'`: Position label at the center of mass of all points
+  - `'largest_cluster'`: Position label at the center of the largest cluster
+- `target_aspect_ratio` is a float in `]0, ∞[`. If not `None`, labels will
+  potentially receive line breaks such that their bounding box is as close to
+  the specified aspect ratio as possible. The aspect ratio is width/height.
+  Default is `None`.
+- `max_lines` is the maximum number of lines a label can be broken into when
+  `target_aspect_ratio` is set. Default is `None` (no limit).
+- `using` is an en existing `LabelPlacement` instance to use for labels. This
+  allows reusing pre-computed label placements instead of calculating them
+  from scratch.
+
+**Returns:** either the label settings when all arguments are `Undefined` or `self`.
+
+**Example:**
+
+```python
+scatter.label(by='group')
+
+scatter.label(by=['state', 'city'], hierarchical=True)
+
+scatter.label(by='city!', color='red', size=12)
+
+scatter.label(by='category', exclude=['category:Other'])
 ```
 
 ### scatter.annotations(_annotations=Undefined_) {#scatter.annotations}
@@ -903,22 +998,90 @@ link([Scatter(x=rand(500), y=rand(500)) for i in range(4)], rows=2)
 
 A colorblind safe categorical color map consisting of eight colors created by Okabe & Ito.
 
-- ![#56B4E9](https://via.placeholder.com/15/56B4E9/000000?text=+) `Sky blue (#56B4E9)`
-- ![#E69F00](https://via.placeholder.com/15/E69F00/000000?text=+) `Orange (#E69F00)`
-- ![#009E73](https://via.placeholder.com/15/009E73/000000?text=+) `Bluish green (#009E73)`
-- ![#F0E442](https://via.placeholder.com/15/F0E442/000000?text=+) `Yellow (#F0E442)`
-- ![#0072B2](https://via.placeholder.com/15/0072B2/000000?text=+) `Blue (#0072B2)`
-- ![#D55E00](https://via.placeholder.com/15/D55E00/000000?text=+) `Vermillion (#D55E00)`
-- ![#CC79A7](https://via.placeholder.com/15/CC79A7/000000?text=+) `Reddish Purple (#CC79A7)`
-- ![#000000](https://via.placeholder.com/15/000000/000000?text=+) `Black (#000000)`
+- ![#56B4E9](https://placehold.co/16x16/56B4E9/56B4E9) `Sky blue (#56B4E9)`
+- ![#E69F00](https://placehold.co/16x16/E69F00/E69F00) `Orange (#E69F00)`
+- ![#009E73](https://placehold.co/16x16/009E73/009E73) `Bluish green (#009E73)`
+- ![#F0E442](https://placehold.co/16x16/F0E442/F0E442) `Yellow (#F0E442)`
+- ![#0072B2](https://placehold.co/16x16/0072B2/0072B2) `Blue (#0072B2)`
+- ![#D55E00](https://placehold.co/16x16/D55E00/D55E00) `Vermillion (#D55E00)`
+- ![#CC79A7](https://placehold.co/16x16/CC79A7/CC79A7) `Reddish Purple (#CC79A7)`
+- ![#000000](https://placehold.co/16x16/000000/000000) `Black (#000000)`
+
+**Example:**
+
+```py
+from jscatter import Scatter, okabe_ito
+```
 
 ### glasbey_light {#glasbey-light}
 
 A categorical color map consisting of 256 maximally distinct colors optimized for a _bright_ background. The colors were generated with the fantastic [Colorcet](https://colorcet.holoviz.org) package, which employs an algorithm developed by [Glasbey et al., 2007](https://strathprints.strath.ac.uk/30312/1/colorpaper_2006.pdf).
 
+**Example:**
+
+```py
+from jscatter import Scatter, glasbey_light
+```
+
 ### glasbey_dark {#glasbey-dark}
 
 A categorical color map consisting of 256 maximally distinct colors optimized for a _dark_ background. The colors were generated with the fantastic [Colorcet](https://colorcet.holoviz.org) package, which employs an algorithm developed by [Glasbey et al., 2007](https://strathprints.strath.ac.uk/30312/1/colorpaper_2006.pdf).
+
+**Example:**
+
+```py
+from jscatter import Scatter, glasbey_dark
+```
+
+### 2D Color Maps
+
+We provide 2D colormaps from [pycolormap-2d](https://pypi.org/project/pycolormap-2d/).
+
+- `ColorMap2DBremm`
+- `ColorMap2DCubeDiagonal`
+- `ColorMap2DSchumann`
+- `ColorMap2DSteiger`
+- `ColorMap2DTeuling2`
+- `ColorMap2DZiegler`
+
+**Example:**
+
+```py
+from jscatter import Scatter, ColorMap2DBremm
+from matplotlib.colors import to_hex
+
+cmap = ColorMap2DBremm(
+    range_x=(df.x.min(), df.x.max()),
+    range_y=(df.y.min(), df.y.max()),
+)
+
+group_cmap = {}
+
+for group in df.groups.unique():
+    mask = df.groups == group
+    
+    # Determine the median center of the group
+    cx = df[mask].x.median()
+    cy = df[mask].y.median()
+
+    # Get color from Brenn's 2D color map
+    color = cmap(cx, cy)
+
+    # Convert to HEX
+    group_cmap[group] = to_hex(color / 255)
+
+scatter = Scatter(data=df, x='x', y='y', color_by='groups', color_map=group_cmap)
+scatter.show()
+```
+
+### Utility Functions
+
+Jupyter Scatter exposes the following utility functions for coloring points:
+
+- `brighten(color: Color, factor: float)`
+- `darken(color: Color, factor: float)`
+- `saurate(color: Color, factor: float)`
+- `desaturate(color: Color, factor: float)`
 
 ## Annotations
 
@@ -1041,3 +1204,415 @@ plot(
   annotations=[Contour()]
 )
 ```
+
+## LabelPlacement
+
+The `LabelPlacement` class handles the positioning of labels for data points
+while managing collisions and optimizing label density using a tiling approach.
+
+- [LabelPlacement](#LabelPlacement)
+  - [Methods](#labelplacement.methods)
+    - [compute()](#labelplacement.compute), [reset()](#labelplacement.reset), and [clone()](#labelplacement.clone)
+    - [to_parquet()](#labelplacement.to_parquet) and [from_parquet()](#labelplacement.from_parquet)
+    - [get_labels_from_tiles()](#labelplacement.get_labels_from_tiles)
+  - [Properties](#labelplacement.properties)
+
+### LabelPlacement(_data_, _by_, _x_, _y_, _\*\*kwargs_) {#LabelPlacement}
+
+Creates a new label placement instance that positions labels based on data
+coordinates while handling label collisions.
+
+**Arguments:**
+
+- `data` : pandas.DataFrame
+  - DataFrame with x, y coordinates and categorical columns.
+  
+- `by` : str or list of str
+  - Column name(s) used for labeling points. The referenced columns must contain either string or categorical values and are treated as categorical internally such that each category marks a group of points to be labeled as the category.
+  
+  - To display individual point labels (where each row gets its own label), append an exclamation mark to the column name. For instance, `"city!"` would indicate that each value in this column should be treated as a unique label rather than grouping identical values together.
+  
+  - Note: Currently only one column can be marked with an exclamation mark. If multiple columns are marked, only the first one is treated as containing point labels.
+
+- `x` : str
+  - Name of the x-coordinate column.
+  
+- `y` : str
+  - Name of the y-coordinate column.
+  
+- `tile_size` : int, default=256
+  - Size of the tiles used for label placement in pixels. This determines the granularity of label density control and affects how labels are displayed at different zoom levels.
+  
+- `importance` : str, optional
+  - Column name containing importance values. These values determine which labels are prioritized when there are conflicts.
+  
+- `importance_aggregation` : {'min', 'mean', 'median', 'max', 'sum'}, default='mean'
+  - Method used to aggregate importance values when multiple points share the same label. This affects how label importance is calculated for groups of points.
+  
+- `hierarchical` : bool, default=False
+  - If True, the label types specified by `by` are expected to be hierarchical, which will affect the priority sorting of labels such that labels with a lower hierarchical index are displayed first.
+  
+- `zoom_range` : tuple of floats or list of tuple of floats or dict of tuple of floats, default=(-∞, ∞)
+  - The range at which labels of a specific type (as specified with `by`) are allowed to appear. The zoom range is a tuple of zoom levels, where `zoom_scale == 2 ** zoom_level`. Default is (-∞, ∞) for all labels.
+  
+- `font` : Font or list of Font or dict of Font, default=DEFAULT_FONT_FACE
+  - Font object(s) for text measurement. Can be specified as:
+    - Single Font: Applied to all label types
+    - List of Fonts: One font per label type in `by`
+    - Dict: Maps label types or specific labels to fonts
+  
+- `size` : int or list of int or dict of int or 'auto', default='auto'
+  - Font size(s) for label text. Can be specified as:
+    - 'auto': Automatically assign sizes (hierarchical if hierarchical=True)
+    - Single int: Uniform size for all labels
+    - List of ints: One size per label type in `by`
+    - Dict: Maps label types or specific labels to sizes
+  
+- `color` : color or list of color or dict of color or 'auto', default='auto'
+  - Color specification for labels. Can be:
+    - 'auto': Automatically choose based on background
+    - str: Named color or hex code
+    - tuple: RGB(A) values
+    - list: Different colors for different hierarchy levels
+    - dict: Mapping of label types or specific labels to colors
+  
+- `background` : color, default='white'
+  - Background color. Used for determining label colors when color='auto'.
+  
+- `bbox_percentile_range` : tuple of float, default=(5, 95)
+  - Range of percentiles to include when calculating the bounding box of points for label placement. This helps exclude outliers when determining where to place labels.
+  
+- `max_labels_per_tile` : int, default=100
+  - Maximum number of labels per tile. Controls label density by limiting how many labels can appear in a given region. Set to 0 for unlimited.
+  
+- `scale_function` : {'asinh', 'constant'}, default='constant'
+  - Label zoom scale function for zoom level calculations:
+    - 'asinh': Scales labels by the inverse hyperbolic sine, initially increasing linearly but quickly plateauing
+    - 'constant': No scaling with zoom, labels maintain the same size
+  
+- `positioning` : {'highest_density', 'center_of_mass', 'largest_cluster'}, default='highest_density'
+  - Method used to determine the position of each label:
+    - 'highest_density': Position label at the highest density point
+    - 'center_of_mass': Position label at the center of mass of all points
+    - 'largest_cluster': Position label at the center of the largest cluster
+  
+- `exclude` : list of str, default=[]
+  - Specifies which labels should be excluded. Can contain:
+    - Column names (e.g., `"country"`) to exclude an entire category
+    - Column-value pairs (e.g., `"country:USA"`) to exclude specific labels
+  
+- `target_aspect_ratio` : float, optional
+  - If not `None`, labels will potentially receive line breaks such that their bounding box is as close to the specified aspect ratio as possible. The aspect ratio is width/height.
+  
+- `max_lines` : int, optional
+  - Specify the maximum number of lines a label should be broken into if `target_aspect_ratio` is not `None`.
+  
+- `verbosity` : {'debug', 'info', 'warning', 'error', 'critical'}, default='warning'
+  - Controls the level of logging information displayed during label placement computation.
+
+**Returns:** A new `LabelPlacement` instance.
+
+**Examples:**
+
+```python
+from jscatter import LabelPlacement
+
+# Basic usage
+label_placement = LabelPlacement(
+    data=df,
+    by='country',
+    x='longitude',
+    y='latitude'
+)
+
+# Computing the labels
+label_placement.compute()
+
+# Use in a scatter plot
+scatter.label(using=label_placement)
+```
+
+### Methods  {#labelplacement.methods}
+
+#### compute(_show_progress=False_, _chunk_size=1024_) {#labelplacement.compute}
+
+Compute the labels with full collision detection and density control.
+
+**Arguments:**
+- `show_progress` : bool, default=False
+  - Whether to show a progress bar during computation.
+- `chunk_size` : int, default=1024
+  - The chunk size for parallel processing.
+
+**Returns:**
+- pandas.DataFrame - Computed labels ready for rendering
+
+**Example:**
+```python
+label_placement = LabelPlacement(data=df, by='country', x='x', y='y')
+labels = label_placement.compute(show_progress=True)
+```
+
+#### reset() {#labelplacement.reset}
+
+Reset the computed labels, allowing spatial properties to be modified before recomputing labels.
+
+**Note:** This method clears existing labels and tiles to allow spatial properties to be changed. Call compute() again after modifying properties.
+
+**Example:**
+```python
+label_placement.reset()
+label_placement.color = {'country': 'red'}
+label_placement.compute()
+```
+
+#### clone(_\*\*kwargs_) {#labelplacement.clone}
+
+Create a new LabelPlacement instance with the same configuration, optionally overriding specific parameters.
+
+**Arguments:**
+- `**kwargs` - Any parameters to override from the current instance
+
+**Returns:**
+- LabelPlacement - A new instance with the specified configuration
+
+**Example:**
+```python
+# Clone the current instance but with different positioning
+new_label_placement = label_placement.clone(positioning='center_of_mass')
+```
+
+#### to_parquet(_path_, _format='parquet'_) {#labelplacement.to_parquet}
+
+Export label placement data to storage.
+
+**Arguments:**
+- `path` : str
+  - Path where the data will be stored. For parquet format, this should be a directory.
+  - For arrow_ipc format, this should be a file path.
+- `format` : str, default="parquet"
+  - Format to use for persistence. Options are "parquet" or "arrow_ipc".
+
+**Example:**
+```python
+label_placement.to_parquet('my_dataset')
+```
+
+#### from_parquet(_path_, _format=None_) {#labelplacement.from_parquet}
+
+Load label placement data from storage.
+
+**Arguments:**
+- `path` : str
+  - Path where the data is stored. For parquet format, this should be a directory.
+  - For "arrow_ipc" format, this should be a file path.
+- `format` : "parquet" or "arrow_ipc", optional
+  - Format to use for loading. Options are "parquet" or "arrow_ipc".
+  - If None, will be determined from the path.
+
+**Returns:**
+- LabelPlacement - Loaded label placement object
+
+**Example:**
+```python
+label_placement = LabelPlacement.from_parquet('my_dataset')
+```
+
+#### get_labels_from_tiles(_tile_ids_) {#labelplacement.get_labels_from_tiles}
+
+Get labels from data tiles.
+
+**Arguments:**
+- `tile_ids` : list of str
+  - Tile IDs
+
+**Returns:**
+- pandas.DataFrame - Labels from the data tiles
+
+**Example:**
+```python
+tile_labels = labels.get_labels_from_tiles(['0,0,0', '1,0,0'])
+```
+
+### Properties {#labelplacement.properties}
+
+#### computed {#labelplacement.computed}
+
+Get whether labels have been computed or not.
+
+**Returns:** 
+- bool - If `True` the labels have been computed
+
+#### loaded_from_persistence {#labelplacement.loaded_from_persistence}
+
+Get whether this is a restored instance.
+
+**Returns:** 
+- bool - If `True` the labels have been restored from files.
+
+#### background {#labelplacement.background}
+
+Get or set the current background color.
+
+**Returns:** 
+- Color - The background color
+
+#### color {#labelplacement.color}
+
+Get or set the current font color mapping.
+
+**Returns:** 
+- Dict[str, str] - A dictionary mapping each label type and specific label to its color.
+
+#### font {#labelplacement.font}
+
+Get the current font face mapping.
+
+**Returns:** 
+- Dict[str, Font] - A dictionary mapping each label type and specific label to its font face.
+
+**Note:** This property is read-only after labels have been computed as changing font faces may affect spatial placement.
+
+#### size {#labelplacement.size}
+
+Get the current font size mapping.
+
+**Returns:** 
+- Dict[str, int] - A dictionary mapping each label type and specific label to its size.
+
+**Note:** This property is read-only after labels have been computed as changing font sizes may affect spatial placement.
+
+#### zoom_range {#labelplacement.zoom_range}
+
+Get the current zoom range mapping.
+
+**Returns:** 
+- Dict[str, Tuple[np.float64, np.float64]] - A dictionary mapping each label type and specific label to its zoom range.
+
+**Note:** This property is read-only after labels have been computed as changing zoom ranges affects spatial placement.
+
+#### exclude {#labelplacement.exclude}
+
+Get or set the current exclude mapping.
+
+**Returns:** 
+- List[str] - A list of label types and specific labels to be excluded.
+
+#### data {#labelplacement.data}
+
+Get the input data.
+
+**Returns:**
+- pandas.DataFrame - The input data
+
+#### x {#labelplacement.x}
+
+Get the name of the x-coordinate column.
+
+**Returns:**
+- str - Column name
+
+#### y {#labelplacement.y}
+
+Get the name of the y-coordinate column.
+
+**Returns:**
+- str - Column name
+
+#### by {#labelplacement.by}
+
+Get the column name(s) defining the label hierarchy.
+
+**Returns:**
+- List[str] - Column names
+
+#### hierarchical {#labelplacement.hierarchical}
+
+Get whether the labels are hierarchical.
+
+**Returns:**
+- bool - True if labels are hierarchical
+
+#### importance {#labelplacement.importance}
+
+Get the name of the importance column.
+
+**Returns:**
+- Optional[str] - Column name or None
+
+#### importance_aggregation {#labelplacement.importance_aggregation}
+
+Get the importance aggregation method.
+
+**Returns:**
+- str - The aggregation method ('min', 'mean', 'median', 'max', or 'sum')
+
+#### bbox_percentile_range {#labelplacement.bbox_percentile_range}
+
+Get the percentile range for bounding box calculation.
+
+**Returns:**
+- Tuple[float, float] - The percentile range
+
+#### tile_size {#labelplacement.tile_size}
+
+Get the tile size.
+
+**Returns:**
+- int - Tile size in pixels
+
+#### max_labels_per_tile {#labelplacement.max_labels_per_tile}
+
+Get the maximum number of labels per tile.
+
+**Returns:**
+- int - Maximum number of labels per tile
+
+#### scale_function {#labelplacement.scale_function}
+
+Get the label zoom scale function.
+
+**Returns:**
+- str - The scale function ('asinh' or 'constant')
+
+#### positioning {#labelplacement.positioning}
+
+Get the label positioning method.
+
+**Returns:**
+- str - The positioning method ('highest_density', 'center_of_mass', or 'largest_cluster')
+
+#### target_aspect_ratio {#labelplacement.target_aspect_ratio}
+
+Get the target aspect ratio for line break optimization.
+
+**Returns:**
+- Optional[float] - The target aspect ratio or None
+
+#### max_lines {#labelplacement.max_lines}
+
+Get the maximum number of lines for line break optimization.
+
+**Returns:**
+- Optional[int] - The maximum number of lines or None
+
+#### verbosity {#labelplacement.verbosity}
+
+Get or set the current log level.
+
+**Returns:**
+- str - The current log level
+
+#### labels {#labelplacement.labels}
+
+Get the computed labels, if available.
+
+**Returns:**
+- Optional[pandas.DataFrame] - The computed labels or None
+
+#### tiles {#labelplacement.tiles}
+
+Get the tile mapping, if available.
+
+**Returns:**
+- Optional[Dict[str, List[int]]] - The tile mapping or None

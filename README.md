@@ -78,6 +78,18 @@ Visit [https://jupyter-scatter.dev](https://jupyter-scatter.dev) for detailed do
 pip install jupyter-scatter
 ```
 
+The default installation includes 99% of features. If you want all additional
+features install Jupyter Scatter as follows:
+
+```bash
+pip install "jupyter-scatter[all]"
+```
+
+This includes the following additional features:
+1. Contour annotation with [Seaborn](https://seaborn.pydata.org/)
+2. Label positioning `"largest_cluster"` with [HDBSCAN](https://github.com/scikit-learn-contrib/hdbscan)
+3. Progress showing with [tqdm](https://github.com/tqdm/tqdm) when precomputing labels via `label_placement.compute(show_progress=True)`
+
 If you want to use Jupyter Scatter in JupyterLab <=2 you need to manually
 install it as an extension as follows:
 
@@ -240,8 +252,9 @@ While jscatter is primarily developed for Jupyter Lab and Notebook, it also runs
 **Installation:**
 
 ```bash
-git clone https://github.com/flekschas/jupyter-scatter/ jscatter && cd jscatter
-uv run jupyter lab
+git clone https://github.com/flekschas/jupyter-scatter/ jupyter-scatter && cd jupyter-scatter
+uv pip install -e ".[all]"
+uv run jupyter-lab
 ```
 
 **After Changing Python code:** restart the kernel.
