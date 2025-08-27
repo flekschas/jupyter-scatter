@@ -10,9 +10,8 @@ from geoindex_rs import kdtree, rtree
 from matplotlib.colors import to_hex
 from scipy.spatial import ConvexHull
 from scipy.spatial._qhull import QhullError
-from tqdm.auto import tqdm
 
-from ..dependencies import check_label_extras_dependencies
+from ..dependencies import check_label_extras_dependencies, MissingCallable
 from ..font import Font
 from ..types import (
     AggregationMethod,
@@ -57,6 +56,11 @@ from .utils import (
     noop,
     remove_line_breaks,
 )
+
+try:
+    from tqdm.auto import tqdm
+except ImportError:
+    tqdm = MissingCallable.class_("tqdm", "tqdm.auto", "label-extras")
 
 
 def is_default_zoom_range(zoom_range):

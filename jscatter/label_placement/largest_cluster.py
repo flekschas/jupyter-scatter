@@ -3,7 +3,8 @@ import warnings
 import numpy as np
 import numpy.typing as npt
 
-from ..dependencies import check_label_extras_dependencies
+from ..dependencies import check_label_extras_dependencies, MissingCallable
+
 
 # Filter HDBSCAN warnings
 warnings.filterwarnings(
@@ -34,8 +35,14 @@ def compute_largest_cluster(points: npt.NDArray[np.float64], max_points: int = 1
     """
     # Ensure required dependencies are installed
     check_label_extras_dependencies()
-
-    from hdbscan import HDBSCAN
+    try:
+        from hdbscan import HDBSCAN
+    except ImportError:
+        HDBSCAN = MissingCallable.class_(
+            "HDBSCAN",
+            "hdbscan",
+            "label-extras"
+        )
 
     if points.size == 0:
         return np.array([0, 0]).reshape((1, 2))

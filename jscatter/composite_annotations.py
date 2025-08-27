@@ -7,7 +7,6 @@ from typing import List, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 from matplotlib.colors import to_rgba
 
 from .annotations import (
@@ -18,8 +17,13 @@ from .annotations import (
     Rect,
     VLine,
 )
-from .dependencies import check_annotation_extras_dependencies
+from .dependencies import check_annotation_extras_dependencies, MissingPackage
 from .types import Color
+
+try:
+    import seaborn as sns
+except ImportError:
+    sns = MissingPackage("seaborn", "annotation-extras")
 
 
 class CompositeAnnotation(metaclass=ABCMeta):

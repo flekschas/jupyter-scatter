@@ -4,15 +4,20 @@ from typing import Any, Optional
 import numpy as np
 import numpy.typing as npt
 from geoindex_rs import rtree
-from tqdm.auto import tqdm
 
 from .constants import (
     NUM_LABELS_SOLVE_ZOOM_LEVELS_APPROXIMATELY,
     NUM_LABELS_SOLVE_ZOOM_LEVELS_PRECISELY,
 )
+from ..dependencies import MissingCallable
 from .k import compute_k
 from .utils import noop
 from .zoom_solver import solve_zoom, solve_zoom_approximately, solve_zoom_precisely
+
+try:
+    from tqdm.auto import tqdm
+except ImportError:
+    tqdm = MissingCallable.class_("tqdm", "tqdm.auto", "label-extras")
 
 
 def resolve_static_zoom_in_collisions(
