@@ -1,3 +1,7 @@
+## v0.22.1
+
+- Fix: make optional package imaport more robust ([#199](https://github.com/flekschas/jupyter-scatter/pull/199))
+
 ## v0.22.0
 
 - Feat: add `scatter.label()` function for displaying text labels
