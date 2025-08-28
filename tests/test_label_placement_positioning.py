@@ -106,9 +106,9 @@ def test_label_positioning_options():
     label_position = labels.iloc[0][['x', 'y']].values
 
     # Verify center_of_mass position
-    assert np.allclose(
-        label_position, [5, 5], atol=1e-10
-    ), f'Center of mass label position does not match [5, 5]'
+    assert np.allclose(label_position, [5, 5], atol=1e-10), (
+        f'Center of mass label position does not match [5, 5]'
+    )
 
     # Test highest_density positioning
     label_placer = LabelPlacement(
@@ -131,9 +131,9 @@ def test_label_positioning_options():
     # grid to determine the densities, the first grid goes from
     # [0, 10/50] = [0, 0.2]. The final position is the center of this bin, which
     # is [0.1, 0.1].
-    assert np.allclose(
-        label_position, [0.1, 0.1], atol=1e-10
-    ), f'Highest density label position does not match [0.1, 0.1]'
+    assert np.allclose(label_position, [0.1, 0.1], atol=1e-10), (
+        f'Highest density label position does not match [0.1, 0.1]'
+    )
 
     # Test largest_cluster positioning
     label_placer = LabelPlacement(

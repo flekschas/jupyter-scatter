@@ -18,9 +18,9 @@ def create_legend(
     values = []
 
     if categories:
-        assert len(categories) <= len(
-            encoding
-        ), 'There need as many or more encodings than categories'
+        assert len(categories) <= len(encoding), (
+            'There need as many or more encodings than categories'
+        )
         cat_by_idx = {cat_idx: cat for cat, cat_idx in categories.items()}
         idxs = (
             sorted(cat_by_idx.keys())  # category codes
@@ -139,9 +139,9 @@ class Encodings:
             self.delete(channel)
 
         if dimension not in self.data:
-            assert (
-                not self.components.full
-            ), f'Only {self.max} data encodings are supported'
+            assert not self.components.full, (
+                f'Only {self.max} data encodings are supported'
+            )
             # The first value specifies the component
             # The second value
             self.data[dimension] = self.components.add(dimension)

@@ -1560,9 +1560,9 @@ class Scatter:
                     self._color_map = [gray] + self._color_map
 
         if self._color_categories is not None:
-            assert len(self._color_categories) <= len(
-                self._color_map
-            ), 'More categories than colors'
+            assert len(self._color_categories) <= len(self._color_map), (
+                'More categories than colors'
+            )
 
         if labeling is not UNDEF:
             if labeling is None:
@@ -1705,9 +1705,9 @@ class Scatter:
         if default is not UNDEF:
             try:
                 self._opacity = float(default)
-                assert (
-                    self._opacity >= 0 and self._opacity <= 1
-                ), 'Opacity must be in [0,1]'
+                assert self._opacity >= 0 and self._opacity <= 1, (
+                    'Opacity must be in [0,1]'
+                )
             except ValueError:
                 pass
 
@@ -1825,9 +1825,9 @@ class Scatter:
         self._opacity_map = tolist(self._opacity_map)
 
         if self._opacity_categories is not None:
-            assert len(self._opacity_categories) <= len(
-                self._opacity_map
-            ), 'More categories than opacities'
+            assert len(self._opacity_categories) <= len(self._opacity_map), (
+                'More categories than opacities'
+            )
 
         if labeling is not UNDEF:
             if labeling is None:
@@ -2078,9 +2078,9 @@ class Scatter:
         self._size_map = tolist(self._size_map)
 
         if self._size_categories is not None:
-            assert len(self._size_categories) <= len(
-                self._size_map
-            ), 'More categories than sizes'
+            assert len(self._size_categories) <= len(self._size_map), (
+                'More categories than sizes'
+            )
 
         if labeling is not UNDEF:
             if labeling is None:
@@ -2930,9 +2930,9 @@ class Scatter:
         if default is not UNDEF:
             try:
                 self._connection_size = int(default)
-                assert (
-                    self._connection_size > 0
-                ), 'Connection size must be a positive integer'
+                assert self._connection_size > 0, (
+                    'Connection size must be a positive integer'
+                )
             except ValueError:
                 pass
 

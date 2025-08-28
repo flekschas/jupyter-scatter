@@ -69,9 +69,9 @@ def compose(
         rows = 1
 
     if isinstance(match_by, list):
-        assert len(scatters) == len(
-            match_by
-        ), 'The number of scatters and match_bys need to be the same'
+        assert len(scatters) == len(match_by), (
+            'The number of scatters and match_bys need to be the same'
+        )
     elif match_by != 'index':
         match_by = [match_by] * len(scatters)
 
