@@ -787,15 +787,15 @@ def test_zoom_ranges():
         min_zoom_scale, max_zoom_scale = zoom_scales[category]
 
         # Check zoom_in respects minimum zoom constraint
-        assert (
-            row['zoom_in'] >= min_zoom_scale
-        ), f'Label {category}: zoom_in {row["zoom_in"]} is less than min {min_zoom_scale}'
+        assert row['zoom_in'] >= min_zoom_scale, (
+            f'Label {category}: zoom_in {row["zoom_in"]} is less than min {min_zoom_scale}'
+        )
 
         # Check zoom_out respects maximum zoom constraint
         if not math.isinf(max_zoom_scale):
-            assert (
-                row['zoom_out'] <= max_zoom_scale
-            ), f'Category {category}: zoom_out {row["zoom_out"]} is greater than max {max_zoom_scale}'
+            assert row['zoom_out'] <= max_zoom_scale, (
+                f'Category {category}: zoom_out {row["zoom_out"]} is greater than max {max_zoom_scale}'
+            )
 
     # Test 2: Test collision resolution with zoom ranges
     # Create a dataset with overlapping labels but different zoom ranges
@@ -836,12 +836,12 @@ def test_zoom_ranges():
         min_level, max_level = non_overlapping_ranges[category]
         min_scale, max_scale = 2**min_level, 2**max_level
 
-        assert (
-            row['zoom_in'] == min_scale
-        ), f'Category {category}: zoom_in was modified despite non-overlapping ranges'
-        assert (
-            row['zoom_out'] == max_scale
-        ), f'Category {category}: zoom_out was modified despite non-overlapping ranges'
+        assert row['zoom_in'] == min_scale, (
+            f'Category {category}: zoom_in was modified despite non-overlapping ranges'
+        )
+        assert row['zoom_out'] == max_scale, (
+            f'Category {category}: zoom_out was modified despite non-overlapping ranges'
+        )
 
     label_placer3 = label_placer2.clone(scale_function='asinh')
 
@@ -854,12 +854,12 @@ def test_zoom_ranges():
         min_level, max_level = non_overlapping_ranges[category]
         min_scale, max_scale = 2**min_level, 2**max_level
 
-        assert (
-            row['zoom_in'] == min_scale
-        ), f'Category {category}: zoom_in was modified despite non-overlapping ranges'
-        assert (
-            row['zoom_out'] == max_scale
-        ), f'Category {category}: zoom_out was modified despite non-overlapping ranges'
+        assert row['zoom_in'] == min_scale, (
+            f'Category {category}: zoom_in was modified despite non-overlapping ranges'
+        )
+        assert row['zoom_out'] == max_scale, (
+            f'Category {category}: zoom_out was modified despite non-overlapping ranges'
+        )
 
     # Test 3: Test overlapping zoom ranges with collision
     df4 = pd.DataFrame(
@@ -904,21 +904,21 @@ def test_zoom_ranges():
     # K should have zoom_in adjusted due to collision with J
     k_row = result4[result4['label'] == 'K'].iloc[0]
 
-    assert (
-        k_row['zoom_in'] > 2 ** overlapping_ranges['K'][0]
-    ), "K's zoom_in should be adjusted upward due to collision with J"
-    assert (
-        k_row['zoom_in'] <= 2 ** overlapping_ranges['K'][1]
-    ), "K's zoom_in should still be within its max zoom range"
+    assert k_row['zoom_in'] > 2 ** overlapping_ranges['K'][0], (
+        "K's zoom_in should be adjusted upward due to collision with J"
+    )
+    assert k_row['zoom_in'] <= 2 ** overlapping_ranges['K'][1], (
+        "K's zoom_in should still be within its max zoom range"
+    )
 
     # Similar checks for L and M
     l_row = result4[result4['label'] == 'L'].iloc[0]
     assert l_row['zoom_in'] == 2 ** overlapping_ranges['L'][0]
 
     m_row = result4[result4['label'] == 'M'].iloc[0]
-    assert math.isinf(
-        m_row['zoom_in']
-    ), "M's zoom_in should be infinite due to the inability of resolving the collision in the zoom range"
+    assert math.isinf(m_row['zoom_in']), (
+        "M's zoom_in should be infinite due to the inability of resolving the collision in the zoom range"
+    )
 
 
 def test_hierarchical_zoom_ranges(sample_data):
@@ -953,14 +953,14 @@ def test_hierarchical_zoom_ranges(sample_data):
         min_zoom_scale, max_zoom_scale = type_zoom_scales[label_type]
 
         # Check zoom_in respects minimum zoom constraint
-        assert (
-            row['zoom_in'] >= min_zoom_scale
-        ), f'Label type "{label_type}": zoom_in {row["zoom_in"]} is less than min {min_zoom_scale}'
+        assert row['zoom_in'] >= min_zoom_scale, (
+            f'Label type "{label_type}": zoom_in {row["zoom_in"]} is less than min {min_zoom_scale}'
+        )
 
         # Check zoom_out respects maximum zoom constraint
-        assert (
-            row['zoom_out'] <= max_zoom_scale
-        ), f'Label type "{label_type}": zoom_out {row["zoom_out"]} is greater than max {max_zoom_scale}'
+        assert row['zoom_out'] <= max_zoom_scale, (
+            f'Label type "{label_type}": zoom_out {row["zoom_out"]} is greater than max {max_zoom_scale}'
+        )
 
     # Verify that categories and subcategories don't interfere with each other
     # since they have non-overlapping zoom ranges
@@ -968,16 +968,16 @@ def test_hierarchical_zoom_ranges(sample_data):
     # All categories should be visible only up to zoom level 2
     category_rows = labels[labels['label_type'] == 'category']
     for _, row in category_rows.iterrows():
-        assert (
-            row['zoom_out'] <= type_zoom_scales['category'][1]
-        ), f'Category "{row["label"]}" has zoom_out {row["zoom_out"]} exceeding max {type_zoom_scales["category"][1]}'
+        assert row['zoom_out'] <= type_zoom_scales['category'][1], (
+            f'Category "{row["label"]}" has zoom_out {row["zoom_out"]} exceeding max {type_zoom_scales["category"][1]}'
+        )
 
     # All subcategories should be visible only from zoom level 2 and up
     subcategory_rows = labels[labels['label_type'] == 'subcategory']
     for _, row in subcategory_rows.iterrows():
-        assert (
-            row['zoom_in'] >= type_zoom_scales['subcategory'][0]
-        ), f'Subcategory {row["label"]} has zoom_in {row["zoom_in"]} less than min {type_zoom_scales["subcategory"][0]}'
+        assert row['zoom_in'] >= type_zoom_scales['subcategory'][0], (
+            f'Subcategory {row["label"]} has zoom_in {row["zoom_in"]} less than min {type_zoom_scales["subcategory"][0]}'
+        )
 
     # Test for the transition between categories and subcategories
     # There should be a smooth transition at zoom level 2
@@ -985,9 +985,9 @@ def test_hierarchical_zoom_ranges(sample_data):
     category_max_visible = max(category_rows['zoom_out'])
     subcategory_min_visible = min(subcategory_rows['zoom_in'])
 
-    assert (
-        abs(category_max_visible - subcategory_min_visible) < 1e-6
-    ), f'There should be a smooth transition between categories and subcategories at zoom level 2'
+    assert abs(category_max_visible - subcategory_min_visible) < 1e-6, (
+        f'There should be a smooth transition between categories and subcategories at zoom level 2'
+    )
 
     # Test combining label type zoom ranges with label-specific zoom ranges
     combined_zoom_ranges = {
@@ -1013,9 +1013,9 @@ def test_hierarchical_zoom_ranges(sample_data):
     cat_a_row = labels2[
         (labels2['label_type'] == 'category') & (labels2['label'] == 'A')
     ].iloc[0]
-    assert (
-        cat_a_row['zoom_out'] <= 2 ** combined_zoom_ranges['category:A'][1]
-    ), f'Category A should have max zoom of 2**{combined_zoom_ranges["category:A"][1]}'
+    assert cat_a_row['zoom_out'] <= 2 ** combined_zoom_ranges['category:A'][1], (
+        f'Category A should have max zoom of 2**{combined_zoom_ranges["category:A"][1]}'
+    )
 
     # Find subcategory A1 if it exists
     a1_rows = labels2[
@@ -1023,12 +1023,12 @@ def test_hierarchical_zoom_ranges(sample_data):
         & (labels2['label'].str.startswith('A1'))
     ]
     a1_row = a1_rows.iloc[0]
-    assert (
-        a1_row['zoom_in'] >= 2 ** combined_zoom_ranges['subcategory:A1'][0]
-    ), f'Subcategory A1 should have min zoom of 2**{combined_zoom_ranges["subcategory:A1"][0]}'
-    assert (
-        a1_row['zoom_out'] <= 2 ** combined_zoom_ranges['subcategory:A1'][1]
-    ), f'Subcategory A1 should have max zoom of 2**{combined_zoom_ranges["subcategory:A1"][1]}'
+    assert a1_row['zoom_in'] >= 2 ** combined_zoom_ranges['subcategory:A1'][0], (
+        f'Subcategory A1 should have min zoom of 2**{combined_zoom_ranges["subcategory:A1"][0]}'
+    )
+    assert a1_row['zoom_out'] <= 2 ** combined_zoom_ranges['subcategory:A1'][1], (
+        f'Subcategory A1 should have max zoom of 2**{combined_zoom_ranges["subcategory:A1"][1]}'
+    )
 
 
 def test_exclude_labels(sample_data):

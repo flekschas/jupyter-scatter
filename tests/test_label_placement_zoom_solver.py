@@ -76,9 +76,9 @@ def test_zoom_solver_functions():
             # Extremely close to ASINH_1
             tolerance = 0.1
 
-        assert (
-            f_val < tolerance
-        ), f'Solution for k = {k} has error {f_val}, allowed tolerance {tolerance}'
+        assert f_val < tolerance, (
+            f'Solution for k = {k} has error {f_val}, allowed tolerance {tolerance}'
+        )
 
     # 4. Test search interval functions
     interval = _find_search_interval(0.5)
