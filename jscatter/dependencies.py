@@ -59,6 +59,7 @@ class MissingPackage:
     an exception. Developers should be sure to guard such accesses with
     properly positioned check_*_dependencies function calls.
     """
+
     name: str
     extra: str
 
@@ -73,8 +74,8 @@ class MissingPackage:
 
 
 class Action(Enum):
-    instantiate_class = "instantiate class"
-    call_function = "call function"
+    instantiate_class = 'instantiate class'
+    call_function = 'call function'
 
 
 @dataclass
@@ -95,7 +96,7 @@ class MissingCallable:
         )
 
     @classmethod
-    def class_(cls, name: str, module: str, extra: str) -> "MissingCallable":
+    def class_(cls, name: str, module: str, extra: str) -> 'MissingCallable':
         return cls(
             action=Action.instantiate_class,
             name=name,
@@ -104,7 +105,7 @@ class MissingCallable:
         )
 
     @classmethod
-    def function(cls, name: str, module: str, extra: str) -> "MissingCallable":
+    def function(cls, name: str, module: str, extra: str) -> 'MissingCallable':
         return cls(
             action=Action.call_function,
             name=name,

@@ -38,11 +38,7 @@ def compute_largest_cluster(points: npt.NDArray[np.float64], max_points: int = 1
     try:
         from hdbscan import HDBSCAN
     except ImportError:
-        HDBSCAN = MissingCallable.class_(
-            "HDBSCAN",
-            "hdbscan",
-            "label-extras"
-        )
+        HDBSCAN = MissingCallable.class_('HDBSCAN', 'hdbscan', 'label-extras')
 
     if points.size == 0:
         return np.array([0, 0]).reshape((1, 2))
