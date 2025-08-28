@@ -60,7 +60,7 @@ from .utils import (
 try:
     from tqdm.auto import tqdm
 except ImportError:
-    tqdm = MissingCallable.class_("tqdm", "tqdm.auto", "label-extras")
+    tqdm = MissingCallable.class_('tqdm', 'tqdm.auto', 'label-extras')
 
 
 def is_default_zoom_range(zoom_range):

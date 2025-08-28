@@ -23,7 +23,7 @@ from .types import Color
 try:
     import seaborn as sns
 except ImportError:
-    sns = MissingPackage("seaborn", "annotation-extras")
+    sns = MissingPackage('seaborn', 'annotation-extras')
 
 
 class CompositeAnnotation(metaclass=ABCMeta):
