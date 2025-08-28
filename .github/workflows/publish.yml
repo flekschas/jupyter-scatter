@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: astral-sh/setup-uv@v6
         with:
-          version: "0.4.x"
+          version: "0.8.x"
       - name: Build and publish
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
