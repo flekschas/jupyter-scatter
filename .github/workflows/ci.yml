@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
         with:
-          version: "0.4.x"
+          version: "0.8.x"
       - run: |
           uv run ruff format --check
 
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "22.x"
+          node-version: "24.x"
       - run: |
           cd js
           npm update
@@ -38,7 +38,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v6
         with:
-          version: "0.4.x"
+          version: "0.8.x"
 
       - name: Run tests
         run: |
