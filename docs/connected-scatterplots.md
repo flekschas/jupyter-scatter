@@ -96,31 +96,31 @@ scatter.connection_color(by='segment', map='coolwarm')
 
   .img.basics {
     width: 460px;
-    background-image: url(/images/connected-scatterplot-basics-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/connected-scatterplot-basics-light.png)
   }
   .img.basics div { padding-top: 56.52173913% }
 
   :root.dark .img.basics {
-    background-image: url(/images/connected-scatterplot-basics-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/connected-scatterplot-basics-dark.png)
   }
 
   .img.styled {
     width: 460px;
-    background-image: url(/images/connected-scatterplot-styled-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/connected-scatterplot-styled-light.png)
   }
   .img.styled div { padding-top: 56.52173913% }
 
   :root.dark .img.styled {
-    background-image: url(/images/connected-scatterplot-styled-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/connected-scatterplot-styled-dark.png)
   }
 
   .img.segments {
     width: 460px;
-    background-image: url(/images/connected-scatterplot-segments-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/connected-scatterplot-segments-light.png)
   }
   .img.segments div { padding-top: 56.52173913% }
 
   :root.dark .img.segments {
-    background-image: url(/images/connected-scatterplot-segments-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/connected-scatterplot-segments-dark.png)
   }
 </style>

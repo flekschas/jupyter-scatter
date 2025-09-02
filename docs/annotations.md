@@ -136,57 +136,57 @@ jscatter.plot(
 
   .img.simple {
     width: 316px;
-    background-image: url(/images/annotations-simple-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/annotations-simple-light.png)
   }
   .img.simple div { padding-top: 83.2278481% }
 
   :root.dark .img.simple {
-    background-image: url(/images/annotations-simple-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/annotations-simple-dark.png)
   }
 
   .img.styles {
     width: 314px;
-    background-image: url(/images/annotations-styles-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/annotations-styles-light.png)
   }
   .img.styles div { padding-top: 83.75796178% }
 
   :root.dark .img.styles {
-    background-image: url(/images/annotations-styles-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/annotations-styles-dark.png)
   }
 
   .img.contour {
     width: 1174px;
-    background-image: url(/images/annotations-contour-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/annotations-contour-light.png)
   }
   .img.contour div { padding-top: 58.77342419% }
 
   :root.dark .img.contour {
     width: 1168px;
-    background-image: url(/images/annotations-contour-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/annotations-contour-dark.png)
   }
   :root.dark .img.contour div { padding-top: 57.70547945% }
 
   .img.contour-by {
     width: 1168px;
-    background-image: url(/images/annotations-contour-by-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/annotations-contour-by-light.png)
   }
   .img.contour-by div { padding-top: 59.07534247% }
 
   :root.dark .img.contour-by {
     width: 1170px;
-    background-image: url(/images/annotations-contour-by-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/annotations-contour-by-dark.png)
   }
   :root.dark .img.contour-by div { padding-top: 57.60683761% }
 
   .img.contour-level-opacity {
     width: 1098px;
-    background-image: url(/images/annotations-contour-level-opacity-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/annotations-contour-level-opacity-light.png)
   }
   .img.contour-level-opacity div { padding-top: 60.29143898% }
 
   :root.dark .img.contour-level-opacity {
     width: 1170px;
-    background-image: url(/images/annotations-contour-level-opacity-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/annotations-contour-level-opacity-dark.png)
   }
   :root.dark .img.contour-level-opacity div { padding-top: 57.77777778% }
 </style>

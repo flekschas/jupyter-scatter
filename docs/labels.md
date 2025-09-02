@@ -6,7 +6,7 @@ scatterplot.
 <div class="video">
   <video loop playsinline width="1280" data-name="labels">
     <source
-      src="/videos/labels-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/labels-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -124,7 +124,7 @@ label_scale = asinh(zoom_scale) / asinh(1)
 <div class="video">
   <video loop playsinline width="1474" data-name="labels-asinh-zoom-scale">
     <source
-      src="/videos/labels-asinh-zoom-scale-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/labels-asinh-zoom-scale-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -425,56 +425,56 @@ the `'constant'` scale function is recommended.
 
   .img.labels {
     width: 842px;
-    background-image: url(/images/labels-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/labels-light.png)
   }
   .img.labels div { padding-top: 56.29453682% }
   :root.dark .img.labels {
-    background-image: url(/images/labels-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/labels-dark.png)
   }
 
   .img.labels-font {
     width: 848px;
-    background-image: url(/images/labels-font-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/labels-font-light.png)
   }
   .img.labels-font div { padding-top: 55.89622642% }
   :root.dark .img.labels-font {
-    background-image: url(/images/labels-font-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/labels-font-dark.png)
   }
 
   .img.labels-positioning {
     width: 1919px;
-    background-image: url(/images/labels-positioning-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/labels-positioning-light.png)
   }
   .img.labels-positioning div { padding-top: 31.57894737% }
   :root.dark .img.labels-positioning {
-    background-image: url(/images/labels-positioning-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/labels-positioning-dark.png)
   }
 
   .img.labels-aspect-ratio {
     width: 846px;
-    background-image: url(/images/labels-aspect-ratio-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/labels-aspect-ratio-light.png)
   }
   .img.labels-aspect-ratio div { padding-top: 57.21040189% }
   :root.dark .img.labels-aspect-ratio {
-    background-image: url(/images/labels-aspect-ratio-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/labels-aspect-ratio-dark.png)
   }
 
   .img.labels-point-labels {
     width: 848px;
-    background-image: url(/images/labels-point-labels-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/labels-point-labels-light.png)
   }
   .img.labels-point-labels div { padding-top: 55.66037736% }
   :root.dark .img.labels-point-labels {
-    background-image: url(/images/labels-point-labels-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/labels-point-labels-dark.png)
   }
 
   .img.labels-multiple {
     width: 960px;
-    background-image: url(/images/labels-multiple-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/labels-multiple-light.png)
   }
   .img.labels-multiple div { padding-top: 49.58333333% }
   :root.dark .img.labels-multiple {
-    background-image: url(/images/labels-multiple-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/labels-multiple-dark.png)
   }
 
   .video {

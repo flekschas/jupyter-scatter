@@ -18,7 +18,7 @@
         poster="/images/teaser-dark.jpg"
       >
         <source
-          src="/videos/teaser-dark.mp4"
+          src="https://storage.googleapis.com/jupyter-scatter/dev/videos/teaser-dark.mp4"
           type="video/mp4"
         />
       </video>

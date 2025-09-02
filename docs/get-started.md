@@ -211,7 +211,7 @@ you will see how the points are mirrored along the diagonal.
 
 <video autoplay loop muted playsinline width="458" data-name="get-started-xy-animation">
   <source
-    src="/videos/get-started-xy-animation-light.mp4"
+    src="https://storage.googleapis.com/jupyter-scatter/dev/videos/get-started-xy-animation-light.mp4"
     type="video/mp4"
   />
 </video>
@@ -249,82 +249,82 @@ For example, `scatter.color()` will return the current coloring settings.
 
   .img.get-started-simple {
     width: 459px;
-    background-image: url(/images/get-started-simple-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-simple-light.png)
   }
   .img.get-started-simple div { padding-top: 57.95207% }
 
   :root.dark .img.get-started-simple {
-    background-image: url(/images/get-started-simple-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-simple-dark.png)
   }
 
   .img.get-started-static-encoding {
     width: 459px;
-    background-image: url(/images/get-started-static-encoding-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-static-encoding-light.png)
   }
   .img.get-started-static-encoding div { padding-top: 57.51634% }
 
   :root.dark .img.get-started-static-encoding {
-    background-image: url(/images/get-started-static-encoding-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-static-encoding-dark.png)
   }
 
   .img.get-started-default-encoding-1 {
     width: 459px;
-    background-image: url(/images/get-started-default-encoding-1-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-default-encoding-1-light.png)
   }
   .img.get-started-default-encoding-1 div { padding-top: 56.862745% }
 
   :root.dark .img.get-started-default-encoding-1 {
-    background-image: url(/images/get-started-default-encoding-1-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-default-encoding-1-dark.png)
   }
 
   .img.get-started-default-encoding-2 {
     width: 459px;
-    background-image: url(/images/get-started-default-encoding-2-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-default-encoding-2-light.png)
   }
   .img.get-started-default-encoding-2 div { padding-top: 56.64488% }
 
   :root.dark .img.get-started-default-encoding-2 {
-    background-image: url(/images/get-started-default-encoding-2-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-default-encoding-2-dark.png)
   }
 
   .img.get-started-custom-encoding {
     width: 459px;
-    background-image: url(/images/get-started-custom-encoding-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-custom-encoding-light.png)
   }
   .img.get-started-custom-encoding div { padding-top: 57.51634% }
 
   :root.dark .img.get-started-custom-encoding {
-    background-image: url(/images/get-started-custom-encoding-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-custom-encoding-dark.png)
   }
 
   .img.get-started-functional-api-1 {
     width: 459px;
-    background-image: url(/images/get-started-functional-api-1-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-functional-api-1-light.png)
   }
   .img.get-started-functional-api-1 div { padding-top: 57.51634% }
 
   :root.dark .img.get-started-functional-api-1 {
-    background-image: url(/images/get-started-functional-api-1-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-functional-api-1-dark.png)
   }
 
   .img.get-started-functional-api-2 {
     width: 459px;
-    background-image: url(/images/get-started-functional-api-2-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-functional-api-2-light.png)
   }
   .img.get-started-functional-api-2 div { padding-top: 57.51634% }
 
   :root.dark .img.get-started-functional-api-2 {
-    background-image: url(/images/get-started-functional-api-2-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-functional-api-2-dark.png)
   }
 
   .img.get-started-functional-api-3 {
     width: 461px;
-    background-image: url(/images/get-started-functional-api-3-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-functional-api-3-light.png)
   }
   .img.get-started-functional-api-3 div { padding-top: 53.594771% }
 
   :root.dark .img.get-started-functional-api-3 {
-    background-image: url(/images/get-started-functional-api-3-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/get-started-functional-api-3-dark.png)
   }
 </style>
 
