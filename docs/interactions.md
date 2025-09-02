@@ -14,7 +14,7 @@ To pan, click and hold the primary mouse button and drag your mouse.
 <div class="video">
   <video loop muted playsinline width="1256" data-name="interactions-pan">
     <source
-      src="/videos/interactions-pan-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/interactions-pan-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -26,7 +26,7 @@ To zoom, simply engage your mouse's scroll wheel.
 <div class="video">
   <video loop muted playsinline width="1256" data-name="interactions-zoom">
     <source
-      src="/videos/interactions-zoom-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/interactions-zoom-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -41,7 +41,7 @@ reticle will appear.
 <div class="video">
   <video loop muted playsinline width="1256" data-name="interactions-hover">
     <source
-      src="/videos/interactions-hover-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/interactions-hover-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -55,7 +55,7 @@ In order to select a point you can click on it.
 <div class="video">
   <video loop muted playsinline width="1256" data-name="interactions-click">
     <source
-      src="/videos/interactions-click-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/interactions-click-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -69,7 +69,7 @@ To deselect points, simply double click into the background.
 <div class="video">
   <video loop muted playsinline width="1256" data-name="interactions-double-click">
     <source
-      src="/videos/interactions-double-click-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/interactions-double-click-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -87,7 +87,7 @@ closed it'll turn blue. At this point the lasso is active.
 <div class="video">
   <video loop muted playsinline width="1256" data-name="interactions-lasso">
     <source
-      src="/videos/interactions-lasso-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/interactions-lasso-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -112,7 +112,7 @@ down the [_alt_ key](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEv
 <div class="video">
   <video loop muted playsinline width="1256" data-name="interactions-lasso-add-remove">
     <source
-      src="/videos/interactions-lasso-add-remove-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/interactions-lasso-add-remove-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -136,7 +136,7 @@ Below is an example of the brush lasso selection.
 <div class="video">
   <video loop muted playsinline width="1256" data-name="interactions-lasso-brush">
     <source
-      src="/videos/interactions-lasso-brush-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/interactions-lasso-brush-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -148,7 +148,7 @@ And finally an example of the classic rectangular lasso selection.
 <div class="video">
   <video loop muted playsinline width="1256" data-name="interactions-lasso-rectangle">
     <source
-      src="/videos/interactions-lasso-rectangle-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/interactions-lasso-rectangle-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -174,7 +174,7 @@ scatter.filter(None)
 <div class="video">
   <video loop muted playsinline width="1256" data-name="interactions-filter">
     <source
-      src="/videos/interactions-filter-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/interactions-filter-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -194,7 +194,7 @@ scatter.zoom([0, 1, 2])
 <div class="video">
   <video loop muted playsinline width="1256" data-name="interactions-zoom-to-points">
     <source
-      src="/videos/interactions-zoom-to-points-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/interactions-zoom-to-points-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -251,7 +251,7 @@ compose(
 <div class="video">
   <video loop muted playsinline width="826" data-name="interactions-overview-and-details">
     <source
-      src="/videos/interactions-overview-and-details-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/interactions-overview-and-details-light.mp4"
       type="video/mp4"
     />
   </video>

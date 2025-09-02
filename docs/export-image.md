@@ -100,51 +100,51 @@ plt.show()
 
   .img.export-download {
     width: 1108px;
-    background-image: url(/images/export-download-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/export-download-light.png)
   }
   .img.export-download div { padding-top: 48.55595668% }
 
   :root.dark .img.export-download {
-    background-image: url(/images/export-download-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/export-download-dark.png)
   }
 
   .img.export-download-png {
     width: 900px;
-    background-image: url(/images/export-download-png-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/export-download-png-light.png)
   }
   .img.export-download-png div { padding-top: 53.33333333% }
 
   :root.dark .img.export-download-png {
-    background-image: url(/images/export-download-png-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/export-download-png-dark.png)
   }
 
   .img.export-download-png-advanced {
     width: 3024px;
-    background-image: url(/images/full-screen-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/full-screen-light.png)
   }
   .img.export-download-png-advanced div { padding-top: 62.5% }
 
   :root.dark .img.export-download-png-advanced {
-    background-image: url(/images/full-screen-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/full-screen-dark.png)
   }
 
   .img.export-save {
     width: 1108px;
-    background-image: url(/images/export-save-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/export-save-light.png)
   }
   .img.export-save div { padding-top: 48.55595668% }
 
   :root.dark .img.export-save {
-    background-image: url(/images/export-save-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/export-save-dark.png)
   }
 
   .img.export-save-matplotlib {
     width: 552px;
-    background-image: url(/images/export-save-matplotlib-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/export-save-matplotlib-light.png)
   }
   .img.export-save-matplotlib div { padding-top: 56.70289855% }
 
   :root.dark .img.export-save-matplotlib {
-    background-image: url(/images/export-save-matplotlib-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/export-save-matplotlib-dark.png)
   }
 </style>

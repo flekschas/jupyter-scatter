@@ -174,7 +174,7 @@ scatter.tooltip(
 <div class="video">
   <video loop playsinline width="1256" data-name="tooltip-preview-audio">
     <source
-      src="/videos/tooltip-preview-audio-light.mp4"
+      src="https://storage.googleapis.com/jupyter-scatter/dev/videos/tooltip-preview-audio-light.mp4"
       type="video/mp4"
     />
   </video>
@@ -194,139 +194,139 @@ For more details on how to customize the tooltip preview, see the API docs for
 
   .img.tooltip-1 {
     width: 596px;
-    background-image: url(/images/tooltip-1-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-1-light.png)
   }
   .img.tooltip-1 div { padding-top: 48.489933% }
 
   :root.dark .img.tooltip-1 {
-    background-image: url(/images/tooltip-1-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-1-dark.png)
   }
 
   .img.tooltip-2 {
     width: 960px;
-    background-image: url(/images/tooltip-2-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-2-light.png)
   }
   .img.tooltip-2 div { padding-top: 47.916667% }
 
   :root.dark .img.tooltip-2 {
-    background-image: url(/images/tooltip-2-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-2-dark.png)
   }
 
   .img.tooltip-treemap {
     width: 1064px;
-    background-image: url(/images/tooltip-treemap-light.jpg)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-treemap-light.jpg)
   }
   .img.tooltip-treemap div { padding-top: 40.225564% }
 
   :root.dark .img.tooltip-treemap {
     width: 1050px;
-    background-image: url(/images/tooltip-treemap-dark.jpg)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-treemap-dark.jpg)
   }
   :root.dark .img.tooltip-treemap div { padding-top: 41.333333% }
 
   .img.tooltip-3 {
     width: 596px;
-    background-image: url(/images/tooltip-3-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-3-light.png)
   }
   .img.tooltip-3 div { padding-top: 48.489933% }
 
   :root.dark .img.tooltip-3 {
-    background-image: url(/images/tooltip-3-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-3-dark.png)
   }
 
   .img.tooltip-4 {
     width: 606px;
-    background-image: url(/images/tooltip-4-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-4-light.png)
   }
   .img.tooltip-4 div { padding-top: 38.283828% }
 
   :root.dark .img.tooltip-4 {
-    background-image: url(/images/tooltip-4-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-4-dark.png)
   }
 
   .img.tooltip-5 {
     width: 616px;
-    background-image: url(/images/tooltip-5-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-5-light.png)
   }
   .img.tooltip-5 div { padding-top: 39.61039% }
 
   :root.dark .img.tooltip-5 {
-    background-image: url(/images/tooltip-5-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-5-dark.png)
   }
 
   .img.tooltip-6 {
     width: 678px;
-    background-image: url(/images/tooltip-6-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-6-light.png)
   }
   .img.tooltip-6 div { padding-top: 33.628319% }
 
   :root.dark .img.tooltip-6 {
-    background-image: url(/images/tooltip-6-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-6-dark.png)
   }
 
   .img.tooltip-7 {
     width: 678px;
-    background-image: url(/images/tooltip-7-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-7-light.png)
   }
   .img.tooltip-7 div { padding-top: 33.628319% }
 
   :root.dark .img.tooltip-7 {
-    background-image: url(/images/tooltip-7-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-7-dark.png)
   }
 
   .img.tooltip-8 {
     width: 674px;
-    background-image: url(/images/tooltip-8-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-8-light.png)
   }
   .img.tooltip-8 div { padding-top: 34.124629% }
 
   :root.dark .img.tooltip-8 {
-    background-image: url(/images/tooltip-8-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-8-dark.png)
   }
 
   .img.tooltip-9 {
     width: 692px;
-    background-image: url(/images/tooltip-9-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-9-light.png)
   }
   .img.tooltip-9 div { padding-top: 33.526012% }
 
   :root.dark .img.tooltip-9 {
-    background-image: url(/images/tooltip-9-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-9-dark.png)
   }
 
   .img.tooltip-10 {
     width: 696px;
-    background-image: url(/images/tooltip-10-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-10-light.png)
   }
   .img.tooltip-10 div { padding-top: 17.816092% }
 
   :root.dark .img.tooltip-10 {
     width: 684px;
-    background-image: url(/images/tooltip-10-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-10-dark.png)
   }
   :root.dark .img.tooltip-10 div { padding-top: 15.789474% }
 
   .img.tooltip-11 {
     width: 814px;
-    background-image: url(/images/tooltip-11-light.jpg)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-11-light.jpg)
   }
   .img.tooltip-11 div { padding-top: 35.87223587% }
 
   :root.dark .img.tooltip-11 {
     width: 764px;
-    background-image: url(/images/tooltip-11-dark.jpg)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-11-dark.jpg)
   }
   :root.dark .img.tooltip-11 div { padding-top: 37.17277487% }
 
   .img.tooltip-12 {
     width: 704px;
-    background-image: url(/images/tooltip-12-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-12-light.png)
   }
   .img.tooltip-12 div { padding-top: 46.02272727% }
 
   :root.dark .img.tooltip-12 {
     width: 702px;
-    background-image: url(/images/tooltip-12-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/tooltip-12-dark.png)
   }
   :root.dark .img.tooltip-12 div { padding-top: 49.57264957% }
 

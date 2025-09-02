@@ -73,7 +73,7 @@ can also select points interactively using the lasso tool.
 
 <video autoplay loop muted playsinline width="1256" data-name="interactions-lasso">
   <source
-    src="/videos/interactions-lasso-dark.mp4"
+    src="https://storage.googleapis.com/jupyter-scatter/dev/videos/interactions-lasso-dark.mp4"
     type="video/mp4"
   />
 </video>
@@ -141,7 +141,7 @@ ipywidgets.HBox([scatter.show(), output])
 
 <video autoplay loop muted playsinline width="1258" data-name="selections-observe">
   <source
-    src="/videos/selections-observe-dark.mp4"
+    src="https://storage.googleapis.com/jupyter-scatter/dev/videos/selections-observe-dark.mp4"
     type="video/mp4"
   />
 </video>

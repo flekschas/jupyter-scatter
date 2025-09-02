@@ -16,10 +16,10 @@ export const videoColorModeSrcSwitcher = () => {
 
         video
           .querySelector('source')
-          ?.setAttribute('src', `/videos/${name}-${suffix}.mp4`);
+          ?.setAttribute('src', `https://storage.googleapis.com/jupyter-scatter/dev/videos/${name}-${suffix}.mp4`);
 
         if (video.getAttribute('poster')) {
-          video.setAttribute('poster', `/images/${name}-${suffix}.jpg`);
+          video.setAttribute('poster', `background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/${name}-${suffix}.jpg`);
         }
 
         video.pause();
@@ -34,7 +34,7 @@ export const videoColorModeSrcSwitcher = () => {
         switchSrc();
       });
     });
-    classObserver.observe(document.documentElement, {attributes: true});
+    classObserver.observe(document.documentElement, { attributes: true });
     switchSrc();
   });
 

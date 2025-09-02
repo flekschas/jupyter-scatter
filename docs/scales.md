@@ -79,41 +79,41 @@ jscatter.plot(
 
   .img.linear {
     width: 460px;
-    background-image: url(/images/scale-linear-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/scale-linear-light.png)
   }
   .img.linear div { padding-top: 56.52173913% }
 
   :root.dark .img.linear {
-    background-image: url(/images/scale-linear-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/scale-linear-dark.png)
   }
 
   .img.time {
     width: 460px;
-    background-image: url(/images/scale-time-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/scale-time-light.png)
   }
   .img.time div { padding-top: 56.52173913% }
 
   :root.dark .img.time {
-    background-image: url(/images/scale-time-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/scale-time-dark.png)
   }
 
   .img.log {
     width: 460px;
-    background-image: url(/images/scale-log-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/scale-log-light.png)
   }
   .img.log div { padding-top: 56.52173913% }
 
   :root.dark .img.log {
-    background-image: url(/images/scale-log-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/scale-log-dark.png)
   }
 
   .img.pow {
     width: 460px;
-    background-image: url(/images/scale-pow-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/scale-pow-light.png)
   }
   .img.pow div { padding-top: 56.52173913% }
 
   :root.dark .img.pow {
-    background-image: url(/images/scale-pow-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/scale-pow-dark.png)
   }
 </style>

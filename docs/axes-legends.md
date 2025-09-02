@@ -117,61 +117,61 @@ primarily for collaborators and others to grasp the color mapping.
 
   .img.axes {
     width: 596px;
-    background-image: url(/images/axes-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/axes-light.png)
   }
   .img.axes div { padding-top: 48.489933% }
 
   :root.dark .img.axes {
-    background-image: url(/images/axes-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/axes-dark.png)
   }
 
   .img.axes-grid {
     width: 597px;
-    background-image: url(/images/axes-grid-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/axes-grid-light.png)
   }
   .img.axes-grid div { padding-top: 47.906198% }
 
   :root.dark .img.axes-grid {
-    background-image: url(/images/axes-grid-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/axes-grid-dark.png)
   }
 
   .img.axes-labels {
     width: 597px;
-    background-image: url(/images/axes-labels-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/axes-labels-light.png)
   }
   .img.axes-labels div { padding-top: 50.921273% }
 
   :root.dark .img.axes-labels {
-    background-image: url(/images/axes-labels-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/axes-labels-dark.png)
   }
 
   .img.legend-1 {
     width: 598px;
-    background-image: url(/images/legend-1-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/legend-1-light.png)
   }
   .img.legend-1 div { padding-top: 48.829431% }
 
   :root.dark .img.legend-1 {
-    background-image: url(/images/legend-1-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/legend-1-dark.png)
   }
 
   .img.legend-2 {
     width: 596px;
-    background-image: url(/images/legend-2-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/legend-2-light.png)
   }
   .img.legend-2 div { padding-top: 49.328859% }
 
   :root.dark .img.legend-2 {
-    background-image: url(/images/legend-2-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/legend-2-dark.png)
   }
 
   .img.legend-3 {
     width: 597px;
-    background-image: url(/images/legend-3-light.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/legend-3-light.png)
   }
   .img.legend-3 div { padding-top: 48.911223% }
 
   :root.dark .img.legend-3 {
-    background-image: url(/images/legend-3-dark.png)
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/legend-3-dark.png)
   }
 </style>

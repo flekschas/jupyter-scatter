@@ -64,7 +64,7 @@ jscatter.compose(
 
 <video autoplay loop muted playsinline data-name="link-multiple-plots-synced" width="1000">
   <source
-    src="/videos/link-multiple-plots-synced-light.mp4"
+    src="https://storage.googleapis.com/jupyter-scatter/dev/videos/link-multiple-plots-synced-light.mp4"
     type="video/mp4"
   />
 </video>
@@ -88,35 +88,35 @@ The result is the same as the previous [`compose()`](./api#compose) call.
 
   .img.link-multiple-plots-simple-1 {
     width: 812px;
-    background-image: url(/images/link-multiple-plots-simple-1-light.png);
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/link-multiple-plots-simple-1-light.png);
   }
 
   .img.link-multiple-plots-simple-1 div { padding-top: 40.147783% }
 
   :root.dark .img.link-multiple-plots-simple-1 {
-    background-image: url(/images/link-multiple-plots-simple-1-dark.png);
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/link-multiple-plots-simple-1-dark.png);
   }
 
   .img.link-multiple-plots-simple-2 {
     width: 812px;
-    background-image: url(/images/link-multiple-plots-simple-2-light.png);
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/link-multiple-plots-simple-2-light.png);
   }
 
   .img.link-multiple-plots-simple-2 div { padding-top: 79.310345% }
 
   :root.dark .img.link-multiple-plots-simple-2 {
-    background-image: url(/images/link-multiple-plots-simple-2-dark.png);
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/link-multiple-plots-simple-2-dark.png);
   }
 
   .img.link-multiple-plots-simple-3 {
     width: 812px;
-    background-image: url(/images/link-multiple-plots-simple-3-light.png);
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/link-multiple-plots-simple-3-light.png);
   }
 
   .img.link-multiple-plots-simple-3 div { padding-top: 59.852217% }
 
   :root.dark .img.link-multiple-plots-simple-3 {
-    background-image: url(/images/link-multiple-plots-simple-3-dark.png);
+    background-image: url(https://storage.googleapis.com/jupyter-scatter/dev/images/link-multiple-plots-simple-3-dark.png);
   }
 </style>
 
