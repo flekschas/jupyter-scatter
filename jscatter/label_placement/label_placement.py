@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import hashlib
 import logging
 import math
-from typing import Any, Dict, List, Optional, Set, Tuple, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -57,10 +59,13 @@ from .utils import (
     remove_line_breaks,
 )
 
-try:
+if TYPE_CHECKING:
     from tqdm.auto import tqdm
-except ImportError:
-    tqdm = MissingCallable.class_('tqdm', 'tqdm.auto', 'label-extras')
+else:
+    try:
+        from tqdm.auto import tqdm
+    except ImportError:
+        tqdm = MissingCallable.class_('tqdm', 'tqdm.auto', 'label-extras')
 
 
 def is_default_zoom_range(zoom_range):

@@ -40,3 +40,6 @@ jscatter/bundle.js
 notebooks/data
 
 pyrightconfig.json
+
+CLAUDE.md
+.claude

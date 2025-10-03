@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import math
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -14,10 +16,13 @@ from .k import compute_k
 from .utils import noop
 from .zoom_solver import solve_zoom, solve_zoom_approximately, solve_zoom_precisely
 
-try:
+if TYPE_CHECKING:
     from tqdm.auto import tqdm
-except ImportError:
-    tqdm = MissingCallable.class_('tqdm', 'tqdm.auto', 'label-extras')
+else:
+    try:
+        from tqdm.auto import tqdm
+    except ImportError:
+        tqdm = MissingCallable.class_('tqdm', 'tqdm.auto', 'label-extras')
 
 
 def resolve_static_zoom_in_collisions(
