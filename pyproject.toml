@@ -85,8 +85,8 @@ filterwarnings = [
   "ignore:'force_all_finite' was renamed to 'ensure_all_finite':FutureWarning"
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
   "anywidget[dev]",
   "jupyterlab",
   "pre-commit",
