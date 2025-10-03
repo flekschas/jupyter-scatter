@@ -40,11 +40,38 @@ jobs:
         with:
           version: "0.8.x"
 
-      - name: Run tests
+      - name: Run tests with all dependencies
         run: |
           uv venv
           source .venv/bin/activate
           uv pip install -e ".[all]"
           uv run pytest . --color=yes
+        env:
+          UV_PYTHON: ${{ matrix.python-version }}
+
+      - name: Run tests with default dependencies only
+        run: |
+          uv venv
+          source .venv/bin/activate
+          uv pip install -e .
+          uv run pytest tests/test_optional_dependencies.py --color=yes
+        env:
+          UV_PYTHON: ${{ matrix.python-version }}
+
+      - name: Run tests with default and label-extras dependencies only
+        run: |
+          uv venv
+          source .venv/bin/activate
+          uv pip install -e ".[label-extras]"
+          uv run pytest tests/test_optional_dependencies.py --color=yes
+        env:
+          UV_PYTHON: ${{ matrix.python-version }}
+
+      - name: Run tests with default and annotation-extras dependencies only
+        run: |
+          uv venv
+          source .venv/bin/activate
+          uv pip install -e ".[annotation-extras]"
+          uv run pytest tests/test_optional_dependencies.py --color=yes
         env:
           UV_PYTHON: ${{ matrix.python-version }}
