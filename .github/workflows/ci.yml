@@ -45,6 +45,7 @@ jobs:
           uv venv --clear
           source .venv/bin/activate
           uv pip install -e ".[all]"
+          uv pip install pytest pytest-cov
           pytest . --color=yes
         env:
           UV_PYTHON: ${{ matrix.python-version }}
@@ -54,6 +55,7 @@ jobs:
           uv venv --clear
           source .venv/bin/activate
           uv pip install -e .
+          uv pip install pytest pytest-cov
           pytest tests/test_optional_dependencies.py --color=yes
         env:
           UV_PYTHON: ${{ matrix.python-version }}
@@ -63,6 +65,7 @@ jobs:
           uv venv --clear
           source .venv/bin/activate
           uv pip install -e ".[label-extras]"
+          uv pip install pytest pytest-cov
           pytest tests/test_optional_dependencies.py --color=yes
         env:
           UV_PYTHON: ${{ matrix.python-version }}
@@ -72,6 +75,7 @@ jobs:
           uv venv --clear
           source .venv/bin/activate
           uv pip install -e ".[annotation-extras]"
+          uv pip install pytest pytest-cov
           pytest tests/test_optional_dependencies.py --color=yes
         env:
           UV_PYTHON: ${{ matrix.python-version }}
