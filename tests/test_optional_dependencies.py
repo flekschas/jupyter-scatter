@@ -50,8 +50,8 @@ def test_basic_plot_without_optionals():
     is not None,
     reason='hdbscan is installed',
 )
-def test_largest_cluster_requires_hdbscan():
-    """Test that largest_cluster positioning raises error without hdbscan."""
+def test_largest_cluster_requires_label_extras():
+    """Test that largest_cluster positioning raises error without label-extras."""
     import jscatter
 
     df = pd.DataFrame(
@@ -68,8 +68,10 @@ def test_largest_cluster_requires_hdbscan():
             show=False,
         )
 
-    assert 'hdbscan' in str(exc_info.value).lower()
-    assert 'label-extras' in str(exc_info.value) or 'all' in str(exc_info.value)
+    error_msg = str(exc_info.value).lower()
+    # Should error about a missing label-extras dependency (could be tqdm or hdbscan)
+    assert 'tqdm' in error_msg or 'hdbscan' in error_msg
+    assert 'label-extras' in error_msg or 'all' in error_msg
 
 
 @pytest.mark.skipif(
