@@ -1,6 +1,10 @@
+## v0.22.2
+
+- Fix: a bug related to installation with default dependencies ([#204](https://github.com/flekschas/jupyter-scatter/pull/204))
+
 ## v0.22.1
 
-- Fix: make optional package imaport more robust ([#199](https://github.com/flekschas/jupyter-scatter/pull/199))
+- Fix: make optional package import more robust ([#199](https://github.com/flekschas/jupyter-scatter/pull/199))
 
 ## v0.22.0
 
