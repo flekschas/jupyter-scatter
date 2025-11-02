@@ -17,13 +17,13 @@ export default defineConfig({
     ['meta', { name: 'og:site_name', content: 'Jupyter Scatter' }],
     [
       'meta',
-      { name: 'og:image', content: 'https://jupyter-scatter.dev/images/jupyter-scatter-og.jpg' }
+      { name: 'og:image', content: 'https://storage.googleapis.com/jupyter-scatter/dev/images/jupyter-scatter-og.jpg' }
     ],
     [
       'meta',
       {
         name: 'twitter:image',
-        content: 'https://jupyter-scatter.dev/images/jupyter-scatter-twitter.jpg'
+        content: 'https://storage.googleapis.com/jupyter-scatter/dev/images/jupyter-scatter-twitter.jpg'
       }
     ],
     [
@@ -38,8 +38,8 @@ export default defineConfig({
   ],
   themeConfig: {
     logo: {
-      light: '/images/logo-light.svg',
-      dark: '/images/logo-dark.svg',
+      light: 'https://storage.googleapis.com/jupyter-scatter/dev/images/logo-light.svg',
+      dark: 'https://storage.googleapis.com/jupyter-scatter/dev/images/logo-dark.svg',
     },
 
     nav: [

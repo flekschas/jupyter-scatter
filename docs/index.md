@@ -10,7 +10,8 @@ hero:
   text: "An Interactive Scatter Plot Widget"
   tagline: "Explore datasets with millions of data points with ease in Jupyter Notebook, Lab, and Google Colab."
   image:
-    src: /teaser.jpg
+    dark: https://storage.googleapis.com/jupyter-scatter/dev/images/teaser-dark.jpg
+    light: https://storage.googleapis.com/jupyter-scatter/dev/images/teaser-dark.jpg
     alt: Jupyter Scatter
   actions:
     - theme: brand
@@ -27,20 +28,20 @@ features:
   - title: Interactive
     details: Pan, zoom, and select data points interactively with your mouse or through the Python API.
     icon:
-      dark: /images/icon-feature-interactive-dark.svg
-      light: /images/icon-feature-interactive-light.svg
+      dark: https://storage.googleapis.com/jupyter-scatter/dev/images/icon-feature-interactive-dark.svg
+      light: https://storage.googleapis.com/jupyter-scatter/dev/images/icon-feature-interactive-light.svg
     
   - title: Scalable
     details: Plot up to several millions data points smoothly thanks to WebGL rendering.
     icon:
-      dark: /images/icon-feature-scalable-dark.svg
-      light: /images/icon-feature-scalable-light.svg
+      dark: https://storage.googleapis.com/jupyter-scatter/dev/images/icon-feature-scalable-dark.svg
+      light: https://storage.googleapis.com/jupyter-scatter/dev/images/icon-feature-scalable-light.svg
     
   - title: Interlinked
     details: Synchronize the view, hover, and selection across multiple scatter plot instances.
     icon:
-      dark: /images/icon-feature-interlinked-dark.svg
-      light: /images/icon-feature-interlinked-light.svg
+      dark: https://storage.googleapis.com/jupyter-scatter/dev/images/icon-feature-interlinked-dark.svg
+      light: https://storage.googleapis.com/jupyter-scatter/dev/images/icon-feature-interlinked-light.svg
     
   - title: Effective Defaults
     details: Rely on Jupyter Scatter to choose perceptually effective point colors and opacity by default.
