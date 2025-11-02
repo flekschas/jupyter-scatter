@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="https://jupyter-scatter.dev/images/logo-dark.svg" height="24"></img> Jupyter Scatter
+  <img src="https://storage.googleapis.com/jupyter-scatter/dev/images/logo-dark.svg" height="24"></img> Jupyter Scatter
 </h1>
 
 <div align="center">
