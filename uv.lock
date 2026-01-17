@@ -1100,13 +1100,17 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c1/84/6b010387b795f774e1ec695df3c8660c15abd041783647d5e7e4076bfc6b/hdbscan-0.8.40.tar.gz", hash = "sha256:c9e383ff17beee0591075ff65d524bda5b5a35dfb01d218245a7ba30c8d48a17", size = 6904096, upload-time = "2024-11-18T16:14:05.384Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2c/ce/489bb941c77e67f6bdc7b47f28318780fd478db655113a073cf7c89cd8f5/hdbscan-0.8.40-cp310-cp310-macosx_12_0_x86_64.whl", hash = "sha256:811a248e57353a4aa815019176879fd16bace55ed633583a6b47734edcb5397c", size = 813672, upload-time = "2024-11-18T16:14:59.129Z" },
+    { url = "https://files.pythonhosted.org/packages/ff/5b/5fb2f22a3b4dd77ae6115e2530c01712b7a00c62bc24bbae743c060a80f0/hdbscan-0.8.40-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:0a1b062cdee7f847c1a49e343b1cf0d0c7d570f60aca961c7f5ff3bdd6fe4be7", size = 4219260, upload-time = "2025-10-11T11:47:02.481Z" },
     { url = "https://files.pythonhosted.org/packages/8a/d9/11564d3ebfe7429fb2e54356b07b2e44ac3dca668c47401d98170809a2f6/hdbscan-0.8.40-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cda06a6f4e65c6c34bed083bb8cdf29fdb1ffcb15580829d79b2906c7bdc6dbc", size = 4244270, upload-time = "2024-11-18T16:14:10.512Z" },
     { url = "https://files.pythonhosted.org/packages/97/eb/fd2093176b439d6741e92996f6d1d7273ddb0819de59934bc64fe2b1c308/hdbscan-0.8.40-cp310-cp310-win_amd64.whl", hash = "sha256:9ba82e510508921e0b30a234b639f5d84a7d475746e7db814517c5c4d1589016", size = 730887, upload-time = "2024-11-18T16:18:28.006Z" },
     { url = "https://files.pythonhosted.org/packages/26/6b/88b8c8023c0c0b27589ad83c82084a1b751917a3e09bdf7fcacf7e6bd523/hdbscan-0.8.40-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:5e958f0d7a33cd2b5e8e927b47f7360bf8a3e7d72355dd65a701e8aabe407b27", size = 1491349, upload-time = "2024-11-18T16:16:10.666Z" },
+    { url = "https://files.pythonhosted.org/packages/e5/72/84bc7b6ea9eb59ca6c5e4d3f32313cdfa8f4ab5cfece6fb6dfef4c9149fc/hdbscan-0.8.40-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:b95447c9c2cf6c95f98210c0edee3dc463d0a237e5531076855d9776495c96fc", size = 4459927, upload-time = "2025-10-11T11:55:49.958Z" },
     { url = "https://files.pythonhosted.org/packages/a3/ef/32c8a0b3dc6e6c4e433b85b30c3723d8eb48d115c0185b82ab89e1a0ef89/hdbscan-0.8.40-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6e0d6197ee045b173e1f16e6884386f335a56091e373a839dd24f7331a8fa9ed", size = 4576215, upload-time = "2024-11-18T16:14:11.241Z" },
     { url = "https://files.pythonhosted.org/packages/64/b1/96c347c7740efa1ac803be64155159284f92fafcff88c1077344e64eead5/hdbscan-0.8.40-cp311-cp311-win_amd64.whl", hash = "sha256:127cbe8c858dc77adfde33a3e1ce4f3bea810f78b01d2bd47b1147d4b5a50472", size = 732173, upload-time = "2024-11-18T16:18:40.361Z" },
     { url = "https://files.pythonhosted.org/packages/33/ff/4739886abb990dc6feb7b02eafb38a7eaf090fffef6336e70a03d693f433/hdbscan-0.8.40-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:353eaa22e42bee69df095744dbb8b29360e516bd9dcb84580dceeeb755f004cc", size = 1497291, upload-time = "2024-11-18T16:16:54.731Z" },
+    { url = "https://files.pythonhosted.org/packages/f0/0f/97a315772abf99b3c230e3d57f3fa426d163ce4d6070241d68a3f0241ea9/hdbscan-0.8.40-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:991e745aa51abfb8abfb0e1525b9309df03a2f67fdd8df96e18f91fe7fe06806", size = 4362227, upload-time = "2025-10-11T11:53:16.452Z" },
     { url = "https://files.pythonhosted.org/packages/c0/cb/6b4254f8a33e075118512e55acf3485c155ea52c6c35d69a985bdc59297c/hdbscan-0.8.40-cp312-cp312-win_amd64.whl", hash = "sha256:1b55a935ed7b329adac52072e1c4028979dfc54312ca08de2deece9c97d6ebb1", size = 726198, upload-time = "2024-11-18T16:18:09.99Z" },
+    { url = "https://files.pythonhosted.org/packages/80/2d/ca4d81a5aa5b8ccde1d41b892a2f480c2df238c58f113eee4df50473a3b0/hdbscan-0.8.40-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:32ea7bc4ce8854b5549d341edc841a29766feb62f8c399520e6e0940a41c5e39", size = 4336968, upload-time = "2025-10-11T11:53:10.417Z" },
     { url = "https://files.pythonhosted.org/packages/9a/af/acf0a9fd7ed549ced9186fb754a0a28fb17116618a78195ab20321f77052/hdbscan-0.8.40-cp39-cp39-macosx_12_0_x86_64.whl", hash = "sha256:cf094aeea4df4513644333b9dda408ef8ef385d0ab5f3f8681e239a9008cbeb5", size = 814923, upload-time = "2024-11-18T16:16:02.133Z" },
     { url = "https://files.pythonhosted.org/packages/a9/f4/91149998cd0dbc32b5db911dd13ac490b1801b255830d68c474acaa0827e/hdbscan-0.8.40-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:05668ae7a17479a9061676290a66a810a62f2a4ec577ba18f561088b726ab01d", size = 4250145, upload-time = "2024-11-18T16:14:04.935Z" },
     { url = "https://files.pythonhosted.org/packages/a0/32/96299e30b21476c5c3073b1be85a5d12a078d21cd5e1b97b37ecd8ae1b30/hdbscan-0.8.40-cp39-cp39-win_amd64.whl", hash = "sha256:56d3057d483d112ff8e0f0a49f0d59df8c078d444dbd5dea7b987faab0c6fb49", size = 811222, upload-time = "2024-11-18T16:17:24.332Z" },
@@ -3846,11 +3850,11 @@ wheels = [
 
 [[package]]
 name = "urllib3"
-version = "2.5.0"
+version = "2.6.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/15/22/9ee70a2574a4f4599c47dd506532914ce044817c7752a79b6a51286319bc/urllib3-2.5.0.tar.gz", hash = "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760", size = 393185, upload-time = "2025-06-18T14:07:41.644Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c7/24/5f1b3bdffd70275f6661c76461e25f024d5a38a46f04aaca912426a2b1d3/urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed", size = 435556, upload-time = "2026-01-07T16:24:43.925Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a7/c2/fe1e52489ae3122415c51f387e221dd0773709bad6c6cdaa599e8a2c5185/urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc", size = 129795, upload-time = "2025-06-18T14:07:40.39Z" },
+    { url = "https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4", size = 131584, upload-time = "2026-01-07T16:24:42.685Z" },
 ]
 
 [[package]]
