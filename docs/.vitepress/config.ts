@@ -109,7 +109,7 @@ export default defineConfig({
         apiKey: '585e0739e4dae8250121d172b8a9959f',
         indexName: 'Jupyter Scatter Docs',
       }
-    }
+    },
 
     footer: {
       message: 'Released under the <a href="https://github.com/flekschas/jupyter-scatter/blob/main/LICENSE">Apache License Version 2.0</a>.',
