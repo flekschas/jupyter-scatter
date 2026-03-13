@@ -8,7 +8,10 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union, 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-from geoindex_rs import kdtree, rtree
+try:
+    from geoindex_rs import kdtree, rtree
+except ImportError:
+    from geoindex_rs import KDTree as kdtree, RTree as rtree
 from matplotlib.colors import to_hex
 from scipy.spatial import ConvexHull
 from scipy.spatial._qhull import QhullError
