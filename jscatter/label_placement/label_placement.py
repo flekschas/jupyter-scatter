@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union, 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+
 try:
     from geoindex_rs import kdtree, rtree
 except ImportError:
