@@ -1325,7 +1325,9 @@ def test_reset_and_multiple_property_changes(sample_data):
         if not ':' in color or not color.endswith(':A')
     )
 
-    category_labels = new_labels[new_labels['label_type'] == 'category']['label'].values
+    category_labels = new_labels[new_labels['label_type'] == 'category'][
+        'label'
+    ].to_numpy()
 
     assert isinstance(category_labels, np.ndarray)
     assert all(isinstance(label, str) for label in category_labels)

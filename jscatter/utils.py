@@ -388,5 +388,6 @@ def zerofy_missing_values(values, dtype):
             f'{dtype} data contains missing values. Those missing values will be replaced with zeros.',
             UserWarning,
         )
+        values = values.copy()
         values[isnan(values)] = 0
     return values

@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union, 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+
 try:
     from geoindex_rs import kdtree, rtree
 except ImportError:
@@ -1696,8 +1697,8 @@ class LabelPlacement:
         center_ys = cast(npt.NDArray[np.float64], labels['y'].values)
         half_widths = cast(npt.NDArray[np.float64], labels['width'].values) / 2.0
         half_heights = cast(npt.NDArray[np.float64], labels['height'].values) / 2.0
-        zoom_ins = cast(npt.NDArray[np.float64], labels['zoom_in'].values)
-        zoom_outs = cast(npt.NDArray[np.float64], labels['zoom_out'].values)
+        zoom_ins = cast(npt.NDArray[np.float64], labels['zoom_in'].values.copy())
+        zoom_outs = cast(npt.NDArray[np.float64], labels['zoom_out'].values.copy())
 
         # Resolve conflicts when zooming out (zoom scale < 1)
         label_idxs_zoom_in_smaller_one = np.where(zoom_ins < 1)[0]
@@ -1823,8 +1824,8 @@ class LabelPlacement:
         center_ys = cast(npt.NDArray[np.float64], labels['y'].values)
         half_widths = cast(npt.NDArray[np.float64], labels['width'].values) / 2.0
         half_heights = cast(npt.NDArray[np.float64], labels['height'].values) / 2.0
-        zoom_ins = cast(npt.NDArray[np.float64], labels['zoom_in'].values)
-        zoom_outs = cast(npt.NDArray[np.float64], labels['zoom_out'].values)
+        zoom_ins = cast(npt.NDArray[np.float64], labels['zoom_in'].values.copy())
+        zoom_outs = cast(npt.NDArray[np.float64], labels['zoom_out'].values.copy())
         min_zoom_ins = cast(npt.NDArray[np.float64], labels['min_zoom_in'].values)
         max_zoom_outs = cast(npt.NDArray[np.float64], labels['max_zoom_out'].values)
 
@@ -2062,8 +2063,8 @@ class LabelPlacement:
         # Now that we have a precomputed tile tree, assign labels
         sorted_indices = labels.index.tolist()
 
-        zoom_ins = np.asarray(labels['zoom_in'].values)
-        zoom_outs = np.asarray(labels['zoom_out'].values)
+        zoom_ins = np.array(labels['zoom_in'].values, copy=True)
+        zoom_outs = np.array(labels['zoom_out'].values, copy=True)
 
         t1 = time.perf_counter()
         logger.info(f'Creating the tile tree took {t1 - t0} seconds')

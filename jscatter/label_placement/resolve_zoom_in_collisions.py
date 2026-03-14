@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import numpy as np
 import numpy.typing as npt
+
 try:
     from geoindex_rs import rtree
 except ImportError:
