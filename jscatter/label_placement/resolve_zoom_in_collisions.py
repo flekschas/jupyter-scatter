@@ -5,7 +5,10 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import numpy as np
 import numpy.typing as npt
-from geoindex_rs import rtree
+try:
+    from geoindex_rs import rtree
+except ImportError:
+    from geoindex_rs import RTree as rtree
 
 from .constants import (
     NUM_LABELS_SOLVE_ZOOM_LEVELS_APPROXIMATELY,

@@ -103,7 +103,12 @@ export default defineConfig({
     ],
 
     search: {
-      provider: 'local'
+      provider: 'algolia',
+      options: {
+        appId: 'IF366M9E80',
+        apiKey: '585e0739e4dae8250121d172b8a9959f',
+        indexName: 'Jupyter Scatter Docs',
+      }
     },
 
     footer: {
