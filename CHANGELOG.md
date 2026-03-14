@@ -1,3 +1,7 @@
+## v0.22.3
+
+- Fix: geoindex-rs import compatibility ([#222](https://github.com/flekschas/jupyter-scatter/pull/222))
+
 ## v0.22.2
 
 - Fix: a bug related to installation with default dependencies ([#204](https://github.com/flekschas/jupyter-scatter/pull/204))
