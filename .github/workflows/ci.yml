@@ -45,7 +45,7 @@ jobs:
           uv venv --clear
           source .venv/bin/activate
           uv pip install -e ".[all]"
-          uv pip install pytest pytest-cov
+          uv pip install pytest pytest-cov polars
           pytest . --color=yes
         env:
           UV_PYTHON: ${{ matrix.python-version }}

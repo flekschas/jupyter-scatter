@@ -28,7 +28,7 @@
 
 - `x` is either an array-like list of coordinates or a string referencing a column in `data`.
 - `y` is either an array-like list of coordinates or a string referencing a column in `data`.
-- `data` is a Pandas DataFrame. [optional]
+- `data` is a Pandas or Polars DataFrame, or any object implementing the [Arrow PyCapsule Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html). [optional]
 - `kwargs` is a dictionary of additional [properties](#properties). [optional]
 
 **Returns:** a new scatter instance.
@@ -134,11 +134,11 @@ scatter.xy('size', 'speed') # Mirror plot along the diagonal
 
 ### scatter.data(_data=Undefined_, _use_index=Undefined_, _reset_scales=False_, _zoom_view=False_, _animate=False_, _\*\*kwargs_) {#scatter.data}
 
-Get or set the referenced Pandas DataFrame.
+Get or set the referenced DataFrame.
 
 **Arguments:**
 
-- `data` is a Pandas DataFrame.
+- `data` is a Pandas or Polars DataFrame, or any object implementing the [Arrow PyCapsule Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
 - `use_index` is a Boolean value indicating if the data frame's index should be used for referencing point by the `selection()` and `filter()` methods instead of the row index.
 - `reset_scales` is a Boolean value indicating whether all scales (and norms) will be reset to the extend of the the new data.
 - `zoom_view` is a Boolean value indicating if the view will zoom to the data extent.
@@ -736,7 +736,7 @@ You can define those property when creating a `Scatter` instance. For example,
 
 | Name                       | Type                                                                                     | Default                                        |
 | -------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| `data`                     | pandas.DataFrame                                                                         | `None`                                         |
+| `data`                     | pandas.DataFrame \| polars.DataFrame \| ArrowPyCapsule                                   | `None`                                         |
 | `x`                        | str \| list[float] \| ndarray                                                            | `None`                                         |
 | `x_scale`                  | 'linear' \| 'log' \| 'pow' \| tuple[float] \| [LogNorm][lognorm] \| [PowerNorm][pownorm] | `linear`                                       |
 | `y`                        | str \| list[float] \| ndarray                                                            | `None`                                         |

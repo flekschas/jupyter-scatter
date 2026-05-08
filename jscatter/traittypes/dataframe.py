@@ -19,7 +19,15 @@ class PandasType(SciType):
         if value is None or value is Undefined:
             return super(PandasType, self).validate(obj, value)
         try:
-            value = self.klass(value)
+            # Convert non-Pandas DataFrames (e.g. Polars) via Arrow PyCapsule
+            if not isinstance(value, self.klass) and hasattr(
+                value, '__arrow_c_stream__'
+            ):
+                from ..dataframe_utils import ensure_pandas
+
+                value = ensure_pandas(value)
+            else:
+                value = self.klass(value)
         except (ValueError, TypeError) as e:
             raise TraitError(e)
         return super(PandasType, self).validate(obj, value)

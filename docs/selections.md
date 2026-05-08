@@ -59,11 +59,12 @@ category `A`.
 ::: info
 By default, Jupyter Scatter references points by their range index. Meaning,
 `scatter.selection([0, 1, 2])` will select the first, second, and third point.
+This works consistently across Pandas, Polars, and other supported DataFrames.
 
-Alternatively, if you're binding a DataFrame to a `Scatter` instance via
-`Scatter(data=df)` and your DataFrame has a custom index, you can make the
-`Scatter` instance reference data points by the DataFrame's index via
-`Scatter(data=df, data_use_index=True)`.
+Alternatively, if you're binding a Pandas DataFrame with a custom index, you can
+make the `Scatter` instance reference data points by the DataFrame's label index
+via `Scatter(data=df, data_use_index=True)`. Note that `data_use_index` is only
+supported for Pandas DataFrames.
 :::
 
 ## Lasso Select Points {#set-interactive}
