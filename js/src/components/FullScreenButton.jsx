@@ -1,4 +1,4 @@
-import { ArrowsInIcon, ResizeIcon } from '@phosphor-icons/react';
+import { FrameCornersIcon, ResizeIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 
 import { useScatterView } from '../hooks/use-widget.js';
@@ -19,9 +19,7 @@ export function FullScreenButton() {
 
   return (
     <Button
-      icon={
-        isFullscreen ? <ArrowsInIcon size={18} /> : <ResizeIcon size={18} />
-      }
+      icon={isFullscreen ? <ResizeIcon size={18} /> : <FrameCornersIcon size={18} />}
       tooltip="Full Screen"
       onClick={() => scatterView.toggleFullscreen()}
     />
