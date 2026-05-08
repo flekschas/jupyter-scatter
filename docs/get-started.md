@@ -15,7 +15,7 @@ selections.
 - 🚀 **Scalable**: Plot up to several millions data points smoothly.
 - 🔗 **Interlinked**: Synchronize the view, hover, and selection across multiple plots.
 - ✨ **Effective Defaults**: Perceptually effective point colors and opacity by default.
-- 📚 **Friendly API:** A readable API that integrates deeply with Pandas DataFrames.
+- 📚 **Friendly API:** A readable API that integrates with Pandas, Polars, and any Arrow-compatible DataFrame.
 - 🛠️ **Integratable**: Use Jupyter Scatter in your own widgets by observing its traitlets.
 
 ## Simplest Example
@@ -35,10 +35,12 @@ jscatter.plot(x, y)
 <div class="img get-started-simple"><div /></div>
 
 
-## Bind a Pandas DataFrame
+## Bind a DataFrame
 
-In most cases, however, it's more convenient to work with a `DataFrame` and
-reference the x/y columns via their names.
+In most cases, however, it's more convenient to work with a DataFrame and
+reference the x/y columns via their names. Jupyter Scatter supports Pandas,
+Polars, and any DataFrame implementing the [Arrow PyCapsule Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html)
+(e.g., DuckDB, cuDF).
 
 ```python
 import jscatter
@@ -46,6 +48,16 @@ import numpy as np
 import pandas as pd
 
 df = pd.DataFrame(np.random.rand(500, 2), columns=['mass', 'speed'])
+
+jscatter.plot(data=df, x='mass', y='speed')
+```
+
+The same works with Polars:
+
+```python
+import polars as pl
+
+df = pl.DataFrame(np.random.rand(500, 2), schema=['mass', 'speed'])
 
 jscatter.plot(data=df, x='mass', y='speed')
 ```

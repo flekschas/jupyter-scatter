@@ -33,7 +33,7 @@
 - 🚀 **Scalable**: Plot up to several millions data points smoothly thanks to WebGL rendering.
 - 🔗 **Interlinked**: Synchronize the view, hover, and selection across multiple scatter plot instances.
 - ✨ **Effective Defaults**: Rely on Jupyter Scatter to choose perceptually effective point colors and opacity by default.
-- 📚 **Friendly API:** Enjoy a readable API that integrates deeply with Pandas DataFrames.
+- 📚 **Friendly API:** Enjoy a readable API that integrates with Pandas, Polars, and any Arrow-compatible DataFrame.
 - 🛠️ **Integratable**: Use Jupyter Scatter in your own widgets by observing its traitlets.
 
 **Why?**
@@ -63,7 +63,7 @@ Visit [https://jupyter-scatter.dev](https://jupyter-scatter.dev) for detailed do
 1. [Install](#install)
 2. [Get Started](#get-started)
    1. [Simplest Example](#simplest-example)
-   2. [Pandas DataFrame Example](#pandas-dataframe-example)
+   2. [DataFrame Example](#dataframe-example)
    3. [Advanced Example](#advanced-example)
    4. [Functional API Example](#functional-api-example)
    5. [Linking Scatter Plots](#linking-scatter-plots)
@@ -122,9 +122,11 @@ jscatter.plot(x, y)
 
 <img width="448" alt="Simplest scatter plotexample" src="https://user-images.githubusercontent.com/932103/116143120-bc5f2280-a6a8-11eb-8614-51def74d692e.png">
 
-### Pandas DataFrame Example
+### DataFrame Example
 
-Say your data is stored in a Pandas dataframe like the following:
+You can pass a DataFrame and reference columns by name. Jupyter Scatter supports
+Pandas, Polars, and any DataFrame implementing the [Arrow PyCapsule Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html)
+(e.g., DuckDB, cuDF).
 
 ```python
 import pandas as pd
@@ -149,6 +151,15 @@ You can then visualize this data by referencing column names:
 
 ```python
 jscatter.plot(data=df, x='mass', y='speed')
+```
+
+The same works with Polars:
+
+```python
+import polars as pl
+
+df_polars = pl.DataFrame(data, schema=['mass', 'speed', 'pval', 'group'])
+jscatter.plot(data=df_polars, x='mass', y='speed')
 ```
 
 <details><summary>Show the resulting scatter plot</summary>
