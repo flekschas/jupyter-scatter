@@ -638,3 +638,112 @@ def test_toolbar_buttons(df: pd.DataFrame):
     # Test show() returns the widget
     result = scatter.show()
     assert result is scatter.widget
+
+
+def test_order_by_column(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    # Order by a numeric column ascending (default)
+    scatter.order(by='c')
+    point_order = scatter.widget.point_order
+    assert point_order is not None
+    assert len(point_order) == len(df)
+    # Verify it's a valid permutation
+    assert set(point_order) == set(range(len(df)))
+
+    # The order should correspond to sorting by column 'c'
+    sorted_idx = df['c'].sort_values(ascending=True, kind='mergesort').index
+    expected = np.empty(len(sorted_idx), dtype=np.uint32)
+    expected[sorted_idx] = np.arange(len(sorted_idx), dtype=np.uint32)
+    assert np.array_equal(point_order, expected)
+
+
+def test_order_by_column_desc(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    scatter.order(by='c', direction='desc')
+    point_order = scatter.widget.point_order
+    assert point_order is not None
+
+    sorted_idx = df['c'].sort_values(ascending=False, kind='mergesort').index
+    expected = np.empty(len(sorted_idx), dtype=np.uint32)
+    expected[sorted_idx] = np.arange(len(sorted_idx), dtype=np.uint32)
+    assert np.array_equal(point_order, expected)
+
+
+def test_order_by_custom_array(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    custom_order = np.arange(len(df), dtype=np.uint32)[::-1].copy()
+    scatter.order(by=custom_order)
+    assert np.array_equal(scatter.widget.point_order, custom_order)
+
+
+def test_order_reset(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    scatter.order(by='c')
+    assert scatter.widget.point_order is not None
+
+    scatter.order(by=None)
+    assert scatter.widget.point_order is None
+
+
+def test_order_getter(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    result = scatter.order()
+    assert result == {'by': None, 'direction': 'asc', 'na_values': 'last'}
+
+    scatter.order(by='c', direction='desc', na_values='first')
+    result = scatter.order()
+    assert result == {'by': 'c', 'direction': 'desc', 'na_values': 'first'}
+
+
+def test_order_fluent_api(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    # Should return self for chaining
+    result = scatter.order(by='c')
+    assert result is scatter
+
+
+def test_order_with_na_values():
+    df = pd.DataFrame(
+        {
+            'x': [0.0, 1.0, 2.0, 3.0, 4.0],
+            'y': [0.0, 1.0, 2.0, 3.0, 4.0],
+            'val': [3.0, np.nan, 1.0, np.nan, 2.0],
+        }
+    )
+    scatter = Scatter(data=df, x='x', y='y')
+
+    # na_values='last' (default): NaN points drawn on top (last)
+    scatter.order(by='val', na_values='last')
+    order_last = scatter.widget.point_order
+    # Points with NaN (indices 1, 3) should have the highest order values
+    assert order_last[1] > order_last[0]
+    assert order_last[1] > order_last[2]
+    assert order_last[1] > order_last[4]
+    assert order_last[3] > order_last[0]
+    assert order_last[3] > order_last[2]
+    assert order_last[3] > order_last[4]
+
+    # na_values='first': NaN points drawn first (behind)
+    scatter.order(by='val', na_values='first')
+    order_first = scatter.widget.point_order
+    # Points with NaN (indices 1, 3) should have the lowest order values
+    assert order_first[1] < order_first[0]
+    assert order_first[1] < order_first[2]
+    assert order_first[1] < order_first[4]
+    assert order_first[3] < order_first[0]
+    assert order_first[3] < order_first[2]
+    assert order_first[3] < order_first[4]
+
+
+def test_order_via_constructor(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b', order_by='c', order_direction='desc')
+    assert scatter.widget.point_order is not None
+    result = scatter.order()
+    assert result['by'] == 'c'
+    assert result['direction'] == 'desc'

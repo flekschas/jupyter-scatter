@@ -42,6 +42,8 @@ from .types import (
     LabelPositioning,
     LabelScaleFunction,
     MouseModes,
+    OrderDirection,
+    OrderNaValues,
     Position,
     Reverse,
     Scales,
@@ -500,6 +502,10 @@ class Scatter:
         self._zoom_padding = 0.33
         self._zoom_on_selection = False
         self._zoom_on_filter = False
+        self._point_order = None
+        self._order_by = None
+        self._order_direction = 'asc'
+        self._order_na_values = 'last'
         self._regl_scatterplot_options = {}
 
         self.x(x, kwargs.get('x_scale', UNDEF))
@@ -613,6 +619,11 @@ class Scatter:
             kwargs.get('tooltip_preview_audio_loop', UNDEF),
             kwargs.get('tooltip_preview_audio_controls', UNDEF),
             kwargs.get('tooltip_size', UNDEF),
+        )
+        self.order(
+            kwargs.get('order_by', UNDEF),
+            kwargs.get('order_direction', UNDEF),
+            kwargs.get('order_na_values', UNDEF),
         )
         self.zoom(
             kwargs.get('zoom_to', UNDEF),
@@ -1308,6 +1319,107 @@ class Scatter:
             return row_idxs
 
         return self._filtered_points_ids
+
+    def _compute_point_order(self):
+        if self._order_by is None:
+            return None
+
+        if isinstance(self._order_by, str):
+            if self._data is None:
+                raise ValueError(
+                    'Cannot order by column name without a DataFrame. '
+                    'Use `data` to set a DataFrame first.'
+                )
+            series = self._data[self._order_by]
+            na_position = self._order_na_values or 'last'
+            ascending = self._order_direction != 'desc'
+            sorted_idx = series.sort_values(
+                ascending=ascending,
+                na_position=na_position,
+                kind='mergesort',
+            ).index
+            order = np.empty(len(sorted_idx), dtype=np.uint32)
+            order[sorted_idx] = np.arange(len(sorted_idx), dtype=np.uint32)
+            return order
+
+        return np.asarray(self._order_by, dtype=np.uint32)
+
+    def order(
+        self,
+        by: Optional[Union[str, List[int], np.ndarray, None, Undefined]] = UNDEF,
+        direction: Optional[Union[OrderDirection, Undefined]] = UNDEF,
+        na_values: Optional[Union[OrderNaValues, None, Undefined]] = UNDEF,
+    ) -> Union[Scatter, dict]:
+        """
+        Set or get the draw order of points.
+
+        Points drawn later appear on top of earlier points. By default, points
+        are drawn in the order they appear in the data. This method allows you
+        to control the draw order without reordering the underlying data.
+
+        Parameters
+        ----------
+        by : str, array_like, or None, optional
+            When set to a string, points are ordered by the values of the
+            corresponding column in the DataFrame using lexicographic (natural)
+            ordering. When set to an integer array, it is used directly as the
+            draw order (must be a permutation of point indices). When set to
+            ``None``, the order is reset to the default input order.
+        direction : {'asc', 'desc'}, optional
+            The sort direction when ``by`` is a column name. ``'asc'`` means
+            points with smaller values are drawn first (behind). ``'desc'``
+            means points with larger values are drawn first. Defaults to
+            ``'asc'``.
+        na_values : {'first', 'last'} or None, optional
+            Where to place NaN/missing values in the sort order when ``by`` is
+            a column name. ``'first'`` draws them behind all other points,
+            ``'last'`` draws them on top. Defaults to ``'last'``.
+
+        Returns
+        -------
+        self or dict
+            If no arguments were provided, a dictionary with the current
+            settings is returned. Otherwise, ``self`` is returned.
+
+        Examples
+        --------
+        >>> scatter.order(by='price')
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.order(by='price', direction='desc', na_values='first')
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.order(by=[2, 0, 1, 4, 3])
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.order(by=None)
+        <jscatter.jscatter.Scatter>
+
+        >>> scatter.order()
+        {'by': 'price', 'direction': 'desc', 'na_values': 'first'}
+        """
+        if by is not UNDEF:
+            if by is None:
+                self._order_by = None
+            else:
+                self._order_by = by
+
+        if direction is not UNDEF:
+            self._order_direction = direction
+
+        if na_values is not UNDEF:
+            self._order_na_values = na_values
+
+        if any_not([by, direction, na_values], UNDEF):
+            self._point_order = self._compute_point_order()
+            self.update_widget('point_order', self._point_order)
+            return self
+
+        return dict(
+            by=self._order_by,
+            direction=self._order_direction,
+            na_values=self._order_na_values,
+        )
 
     @property
     def color_data(self):
@@ -5292,6 +5404,7 @@ class Scatter:
             opacity_scale=get_scale(self, 'opacity'),
             opacity_title=self._opacity_by,
             opacity_unselected=self._opacity_unselected,
+            point_order=self._point_order,
             points=self.get_point_list(),
             reticle=self._reticle,
             reticle_color=self.get_reticle_color(),

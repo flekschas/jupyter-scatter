@@ -109,6 +109,7 @@ const properties = {
   opacityBy: 'opacityBy',
   opacityUnselected: 'opacityInactiveScale',
   reglScatterplotOptions: 'reglScatterplotOptions',
+  pointOrder: 'pointOrder',
   points: 'points',
   reticle: 'showReticle',
   reticleColor: 'reticleColor',
@@ -2522,6 +2523,10 @@ class JupyterScatterView {
   }
 
   // Event handlers for Python-triggered events
+  pointOrderHandler(newPointOrder) {
+    this.scatterplot.set({ pointOrder: newPointOrder });
+  }
+
   pointsHandler(newPoints) {
     if (newPoints.length === this.scatterplot.get('points').length) {
       // We assume point correspondence

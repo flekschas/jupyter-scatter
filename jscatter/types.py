@@ -40,6 +40,8 @@ WidgetButtons = Literal[
     'pan_zoom', 'lasso', 'full_screen', 'screenshot', 'download', 'reset', 'divider'
 ]
 LogLevel = Literal['debug', 'info', 'warning', 'error', 'critical']
+OrderDirection = Literal['asc', 'desc']
+OrderNaValues = Literal['first', 'last']
 
 NumericType = TypeVar('NumericType', int, float, np.number)
 
