@@ -80,8 +80,9 @@ export function BrushSizeSlider() {
 
       {open && (
         <>
-          {/* biome-ignore lint/a11y/useKeyWithClickEvents: backdrop is mouse-only dismiss */}
+          {/* biome-ignore lint/a11y/noStaticElementInteractions: backdrop is mouse-only dismiss */}
           <div
+            role="presentation"
             className="jss:fixed jss:inset-0 jss:z-40"
             onClick={() => setOpen(false)}
           />

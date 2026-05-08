@@ -6,23 +6,21 @@ import {
   nextAnimationFrame,
   throttleAndDebounce,
 } from '@flekschas/utils';
-import { globalPubSub } from 'pub-sub-es';
-import createScatterplot, { createRenderer } from 'regl-scatterplot';
-
 import { axisBottom, axisRight } from 'd3-axis';
 import { format } from 'd3-format';
 import { scaleLinear } from 'd3-scale';
 import { select } from 'd3-selection';
-
+import { globalPubSub } from 'pub-sub-es';
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
+import createScatterplot, { createRenderer } from 'regl-scatterplot';
+import { version } from '../package.json';
 import { Annotations, Numpy1D, Numpy2D, NumpyImage, Table } from './codecs.js';
+import { FullscreenPanel } from './components/FullscreenPanel.tsx';
+import { Toolbar } from './components/Toolbar.tsx';
 import { createHistogram } from './histogram.js';
 import { createLabelRenderer } from './label-renderer.js';
 import { createLegend } from './legend.js';
-
-import { FullscreenPanel } from './components/FullscreenPanel.tsx';
-import { Toolbar } from './components/Toolbar.tsx';
 import {
   addBackgroundColor,
   blend,
@@ -41,8 +39,6 @@ import {
   toHtmlClass,
   toTitleCase,
 } from './utils.js';
-
-import { version } from '../package.json';
 
 const AXES_LABEL_SIZE = 12;
 const AXES_PADDING_X = 60;
@@ -333,7 +329,6 @@ class JupyterScatterView {
       this.fullscreenChangeHandlerBound,
     );
 
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Will refactor this later
     window.requestAnimationFrame(() => {
       const initialOptions = {
         renderer: window.jupyterScatter.renderer,
@@ -368,7 +363,6 @@ class JupyterScatterView {
       this.scatterplot = createScatterplot(initialOptions);
 
       if (!window.jupyterScatter.versionLog) {
-        // biome-ignore lint/suspicious/noConsole: We want to log the version once
         console.info(
           `jupyter-scatter v${version} with regl-scatterplot v${this.scatterplot.get('version')}`,
         );
@@ -573,7 +567,6 @@ class JupyterScatterView {
     }
   }
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: simple data extent loop
   resetView(animation = 0, dataExtent = false) {
     if (!this.scatterplot) {
       return;
@@ -1303,7 +1296,6 @@ class JupyterScatterView {
     }
   }
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Will refactor this later
   styleTooltip() {
     if (!this.tooltip) {
       this.createTooltip();
@@ -2930,7 +2922,6 @@ class JupyterScatterView {
           downloadBlob(blob, 'jupyter-scatter.png');
         });
       } catch (e) {
-        // biome-ignore lint/suspicious/noConsole: We want to inform the knowledgeable user of the failure
         console.error('Failed to export image', e);
       }
     })();
@@ -3159,5 +3150,4 @@ async function render({ model, el }) {
   return () => view.destroy();
 }
 
-// biome-ignore lint/style/noDefaultExport: coming from anywidget
 export default { render };

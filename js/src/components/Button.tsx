@@ -1,4 +1,4 @@
-import { type ReactNode, type Ref, forwardRef } from 'react';
+import { forwardRef, type ReactNode, type Ref } from 'react';
 
 import type { ButtonClickHandler } from '../types';
 
