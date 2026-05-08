@@ -1452,6 +1452,7 @@ class Scatter:
                     pass
 
         data_updated = False
+        was_categorical = self._color_categories is not None
         if by is not UNDEF:
             self._color_by = by
 
@@ -1501,6 +1502,14 @@ class Scatter:
             self._color_histogram = None
             self._encodings.delete('color')
 
+        # Reset the color map when the encoding type changes between
+        # categorical and continuous (unless the user explicitly provided a map)
+        is_categorical = self._color_categories is not None
+        if was_categorical != is_categorical and map is UNDEF:
+            self._color_map = None
+            self._color_map_order = None
+            self._color_order = None
+
         if order is not UNDEF:
             if order is None or order == 'reverse':
                 self._color_order = order
@@ -1538,6 +1547,16 @@ class Scatter:
                     # Assuming `map` is a list of colors
                     self._color_map = [to_rgba(c) for c in map]
 
+        # Fall back to auto-assignment if there are more categories than colors
+        # (e.g., when updating data with new categories while a custom map is set)
+        if (
+            self._color_categories is not None
+            and self._color_map is not None
+            and len(self._color_categories) > len(self._color_map)
+        ):
+            self._color_map = None
+            self._color_map_order = None
+
         if (self._color_map is None or map == 'auto') and self._color_by is not None:
             # Assign default color maps
             if self._color_categories is None:
@@ -1558,11 +1577,6 @@ class Scatter:
                         else gray_light
                     )
                     self._color_map = [gray] + self._color_map
-
-        if self._color_categories is not None:
-            assert len(self._color_categories) <= len(self._color_map), (
-                'More categories than colors'
-            )
 
         if labeling is not UNDEF:
             if labeling is None:
@@ -1738,6 +1752,7 @@ class Scatter:
                     pass
 
         data_updated = False
+        was_categorical = self._opacity_categories is not None
         if by is not UNDEF:
             self._opacity_by = by
 
@@ -1787,6 +1802,14 @@ class Scatter:
             self._opacity_histogram = None
             self._encodings.delete('opacity')
 
+        # Reset the opacity map when the encoding type changes between
+        # categorical and continuous (unless the user explicitly provided a map)
+        is_categorical = self._opacity_categories is not None
+        if was_categorical != is_categorical and map is UNDEF:
+            self._opacity_map = None
+            self._opacity_map_order = None
+            self._opacity_order = None
+
         if order is not UNDEF:
             if order is None or order == 'reverse':
                 self._opacity_order = order
@@ -1811,6 +1834,15 @@ class Scatter:
                 if self._opacity_order != 'reverse':
                     self._opacity_order = None
 
+        # Fall back to auto-assignment if there are more categories than opacities
+        if (
+            self._opacity_categories is not None
+            and self._opacity_map is not None
+            and len(self._opacity_categories) > len(tolist(self._opacity_map))
+        ):
+            self._opacity_map = None
+            self._opacity_map_order = None
+
         if (
             self._opacity_map is None or map == 'auto'
         ) and self._opacity_by is not None:
@@ -1823,11 +1855,6 @@ class Scatter:
                 self._opacity_map = np.linspace(1 / 256, 1, 256)
 
         self._opacity_map = tolist(self._opacity_map)
-
-        if self._opacity_categories is not None:
-            assert len(self._opacity_categories) <= len(self._opacity_map), (
-                'More categories than opacities'
-            )
 
         if labeling is not UNDEF:
             if labeling is None:
@@ -1993,6 +2020,7 @@ class Scatter:
                     pass
 
         data_updated = False
+        was_categorical = self._size_categories is not None
         if by is not UNDEF:
             self._size_by = by
 
@@ -2042,6 +2070,14 @@ class Scatter:
             self._size_histogram = None
             self._encodings.delete('size')
 
+        # Reset the size map when the encoding type changes between
+        # categorical and continuous (unless the user explicitly provided a map)
+        is_categorical = self._size_categories is not None
+        if was_categorical != is_categorical and map is UNDEF:
+            self._size_map = None
+            self._size_map_order = None
+            self._size_order = None
+
         if order is not UNDEF:
             if order is None or order == 'reverse':
                 self._size_order = order
@@ -2068,6 +2104,15 @@ class Scatter:
                 if self._size_order != 'reverse':
                     self._size_order = None
 
+        # Fall back to auto-assignment if there are more categories than sizes
+        if (
+            self._size_categories is not None
+            and self._size_map is not None
+            and len(self._size_categories) > len(tolist(self._size_map))
+        ):
+            self._size_map = None
+            self._size_map_order = None
+
         if (self._size_map is None or map == 'auto') and self._size_by is not None:
             # The best we can do is provide a linear size map
             if self._size_categories is None:
@@ -2076,11 +2121,6 @@ class Scatter:
                 self._size_map = np.arange(1, len(self._size_categories) + 1)
 
         self._size_map = tolist(self._size_map)
-
-        if self._size_categories is not None:
-            assert len(self._size_categories) <= len(self._size_map), (
-                'More categories than sizes'
-            )
 
         if labeling is not UNDEF:
             if labeling is None:
@@ -2501,6 +2541,15 @@ class Scatter:
                     # Assuming `map` is a list of colors
                     self._connection_color_map = [to_rgba(c) for c in map]
 
+        # Fall back to auto-assignment if there are more categories than colors
+        if (
+            self._connection_color_categories is not None
+            and self._connection_color_map is not None
+            and len(self._connection_color_categories) > len(self._connection_color_map)
+        ):
+            self._connection_color_map = None
+            self._connection_color_map_order = None
+
         if (
             self._connection_color_map is None or map == 'auto'
         ) and self._connection_color_by is not None:
@@ -2516,11 +2565,6 @@ class Scatter:
                     self._connection_color_map = glasbey_dark
             else:
                 self._connection_color_map = okabe_ito
-
-        if self._connection_color_categories is not None:
-            assert len(self._connection_color_categories) <= len(
-                self._connection_color_map
-            ), 'More categories than connection colors'
 
         if labeling is not UNDEF:
             if labeling is None:
@@ -2769,6 +2813,16 @@ class Scatter:
             else:
                 self._connection_opacity_map = np.asarray(map)
 
+        # Fall back to auto-assignment if there are more categories than opacities
+        if (
+            self._connection_opacity_categories is not None
+            and self._connection_opacity_map is not None
+            and len(self._connection_opacity_categories)
+            > len(tolist(self._connection_opacity_map))
+        ):
+            self._connection_opacity_map = None
+            self._connection_opacity_map_order = None
+
         if (
             self._connection_opacity_map is None or map == 'auto'
         ) and self._connection_opacity_by is not None:
@@ -2783,11 +2837,6 @@ class Scatter:
                 self._connection_opacity_map = np.linspace(1 / 256, 1, 256)
 
         self._connection_opacity_map = tolist(self._connection_opacity_map)
-
-        if self._connection_opacity_categories is not None:
-            assert len(self._connection_opacity_categories) <= len(
-                self._connection_opacity_map
-            ), 'More categories than connection opacities'
 
         if labeling is not UNDEF:
             if labeling is None:
@@ -3030,6 +3079,16 @@ class Scatter:
             else:
                 self._connection_size_map = np.asarray(map)
 
+        # Fall back to auto-assignment if there are more categories than sizes
+        if (
+            self._connection_size_categories is not None
+            and self._connection_size_map is not None
+            and len(self._connection_size_categories)
+            > len(tolist(self._connection_size_map))
+        ):
+            self._connection_size_map = None
+            self._connection_size_map_order = None
+
         if (
             self._connection_size_map is None or map == 'auto'
         ) and self._connection_size_by is not None:
@@ -3082,11 +3141,6 @@ class Scatter:
             self.update_widget('prevent_filter_reset', True)
             self.update_widget('non_spatial_points_update', True)
             self.update_widget('points', self.get_point_list())
-
-        if self._connection_size_categories is not None:
-            assert len(self._connection_size_categories) <= len(
-                self._connection_size_map
-            ), 'More categories than connection sizes'
 
         if any_not([default, by, map, norm, order, labeling], UNDEF):
             return self

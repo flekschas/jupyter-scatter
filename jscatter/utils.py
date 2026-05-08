@@ -304,7 +304,7 @@ def get_categorical_data(data):
     categorical_data = None
 
     if pd.CategoricalDtype.is_dtype(data):
-        categorical_data = data.copy()
+        categorical_data = data.copy().cat.remove_unused_categories()
 
     elif pd.api.types.is_string_dtype(data):
         categorical_data = data.copy().astype('category')
