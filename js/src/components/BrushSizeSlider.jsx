@@ -104,7 +104,7 @@ export function BrushSizeSlider() {
             'jss:absolute jss:left-full jss:top-0 jss:ml-1 jss:z-50',
             'jss:bg-bg jss:border jss:border-solid jss:border-border',
             'jss:rounded-sm! jss:shadow-md',
-            'jss:h-8 jss:px-2 jss:flex jss:items-center jss:gap-2',
+            'jss:h-7 jss:px-2 jss:flex jss:items-center jss:gap-2',
           ].join(' ')}
         >
           <label class="jss:text-sm jss:text-fg jss:whitespace-nowrap jss:flex jss:items-center jss:gap-2">

@@ -274,7 +274,7 @@ class JupyterScatterView {
     this.outerWrapper = document.createElement('div');
     this.outerWrapper.style.display = 'flex';
     this.outerWrapper.style.width = '100%';
-    this.outerWrapper.style.background = 'var(--jp-layout-color0)';
+    this.outerWrapper.style.background = 'transparent';
     this.el.appendChild(this.outerWrapper);
 
     // Toolbar container (React root)

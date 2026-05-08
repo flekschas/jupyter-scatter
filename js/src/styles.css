@@ -2,20 +2,34 @@
 @source "./components";
 
 @layer base {
-  :root {
+  /* Light theme (default) */
+  [data-jss-theme="light"] {
+    --jss-primary: #0086e3;
+    --jss-primary-hover: #0076d2;
+    --jss-secondary: #004280;
+    --jss-bg: #f3f4f6;
+    --jss-bg-hover: #e5e7eb;
+    --jss-bg-input: #ffffff;
+    --jss-text: #1a1a1a;
+    --jss-text-secondary: #6b7280;
+    --jss-text-disabled: #9ca3af;
+    --jss-border: #d1d5db;
+    --jss-input-border: #d1d5db;
+  }
+
+  /* Dark theme */
+  [data-jss-theme="dark"] {
     --jss-primary: #2196F4;
-    --jss-primary-hover: light-dark(#0086e3, #38a6ff);
-    --jss-secondary: #FEC20D;
-    --jss-secondary-hover: light-dark(#edb200, #ffd347);
-    --jss-bg: light-dark(#ffffff, #1e1e1e);
-    --jss-bg-hover: light-dark(#f0f0f0, #2a2a2a);
-    --jss-bg-input: light-dark(#ffffff, #2a2a2a);
-    --jss-text: light-dark(#1a1a1a, #e0e0e0);
-    --jss-text-secondary: light-dark(#6b7280, #9ca3af);
-    --jss-text-disabled: light-dark(#9ca3af, #6b7280);
-    --jss-border: light-dark(#d1d5db, #404040);
-    --jss-border-strong: light-dark(#9ca3af, #525252);
-    --jss-input-border: light-dark(#d1d5db, #404040);
+    --jss-primary-hover: #38a6ff;
+    --jss-secondary: #4aacff;
+    --jss-bg: #1e1e1e;
+    --jss-bg-hover: #2a2a2a;
+    --jss-bg-input: #2a2a2a;
+    --jss-text: #e0e0e0;
+    --jss-text-secondary: #9ca3af;
+    --jss-text-disabled: #6b7280;
+    --jss-border: #404040;
+    --jss-input-border: #404040;
   }
 }
 
@@ -23,7 +37,6 @@
   --color-brand: var(--jss-primary);
   --color-brand-hover: var(--jss-primary-hover);
   --color-accent: var(--jss-secondary);
-  --color-accent-hover: var(--jss-secondary-hover);
   --color-bg: var(--jss-bg);
   --color-bg-hover: var(--jss-bg-hover);
   --color-bg-input: var(--jss-bg-input);
@@ -31,7 +44,6 @@
   --color-fg-secondary: var(--jss-text-secondary);
   --color-fg-disabled: var(--jss-text-disabled);
   --color-border: var(--jss-border);
-  --color-border-strong: var(--jss-border-strong);
   --color-input-border: var(--jss-input-border);
 }
 

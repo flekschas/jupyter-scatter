@@ -47,6 +47,7 @@ export function createWidgetStore(model, scatterView) {
       lassoType: atomWithModel(model, 'lasso_type'),
       lassoBrushSize: atomWithModel(model, 'lasso_brush_size'),
       toolbarButtons: atomWithModel(model, 'toolbar_buttons'),
+      backgroundColor: atomWithModel(model, 'background_color'),
     },
   };
 }

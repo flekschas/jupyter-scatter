@@ -22,7 +22,7 @@ export const Button = forwardRef(function Button(
         disabled
           ? 'jss:opacity-40 jss:pointer-events-none'
           : 'jss:active:scale-95',
-        className ?? 'jss:w-8 jss:h-8 jss:p-1',
+        className ?? 'jss:w-7 jss:h-7 jss:p-1',
       ]
         .filter(Boolean)
         .join(' ')}

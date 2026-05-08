@@ -117,7 +117,7 @@ export function FullscreenPanel() {
         class={[
           'jss:relative jss:flex jss:items-center',
           'jss:gap-x-4 jss:px-0.5 jss:py-2',
-          'jss:border-t-2 jss:border-solid jss:border-border-strong',
+          'jss:border-t-2 jss:border-solid jss:border-border',
           'jss:select-none',
         ].join(' ')}
       >
@@ -179,8 +179,8 @@ export function FullscreenPanel() {
 
         {/* Divider */}
         <div
-          class="jss:w-0.5 jss:h-8"
-          style={{ background: 'var(--jss-border-strong)' }}
+          class="jss:w-0.5 jss:h-7"
+          style={{ background: 'var(--jss-border)' }}
         />
 
         {/* Scale */}
