@@ -1,3 +1,7 @@
+## v0.23.0
+
+- Feat: use categorical color encoding in histogram bars ([#97](https://github.com/flekschas/jupyter-scatter/issues/97))
+
 ## v0.22.3
 
 - Fix: geoindex-rs import compatibility ([#222](https://github.com/flekschas/jupyter-scatter/pull/222))
