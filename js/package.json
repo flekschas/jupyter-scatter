@@ -22,9 +22,9 @@
     "@flekschas/utils": "^0.32.2",
     "@jupyter-widgets/base": "^1.1 || ^2 || ^3 || ^4 || ^5 || ^6",
     "@phosphor-icons/react": "^2.1.7",
-    "@uwdata/flechette": "^2.0.0",
+    "@uwdata/flechette": "^2.5.0",
     "d3-axis": "~3.0.0",
-    "d3-format": "~3.1.0",
+    "d3-format": "~3.1.2",
     "d3-hierarchy": "~3.1.2",
     "d3-scale": "~4.0.2",
     "d3-selection": "~3.0.0",
@@ -42,7 +42,7 @@
     "@biomejs/biome": "2.4.14",
     "@tailwindcss/cli": "^4.1.5",
     "@types/react": "^19.2.14",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.0",
     "tailwindcss": "^4.1.5",
     "typescript": "^6.0.3"
   }
