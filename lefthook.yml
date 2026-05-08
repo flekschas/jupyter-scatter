@@ -3,10 +3,12 @@ pre-commit:
   commands:
     ruff-format:
       glob: "*.py"
-      run: uv run ruff format --check {staged_files}
+      run: uv run ruff format {staged_files}
+      stage_fixed: true
     ruff-lint:
       glob: "*.py"
-      run: uv run ruff check {staged_files}
+      run: uv run ruff check --fix {staged_files}
+      stage_fixed: true
     biome-lint:
       glob: "js/src/**/*.{js,ts,jsx,tsx}"
       run: cd js && npm run lint
