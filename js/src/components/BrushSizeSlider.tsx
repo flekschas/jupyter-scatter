@@ -1,9 +1,9 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useCallback, useRef, useState } from 'react';
 
-import { useAtoms } from '../hooks/use-widget.js';
-import { Button } from './Button.jsx';
-import { BrushSizeIcon } from './icons.jsx';
+import { useAtoms } from '../hooks/use-widget';
+import { Button } from './Button';
+import { BrushSizeIcon } from './icons';
 
 const BRUSH_SIZE_MIN = 1;
 const BRUSH_SIZE_MAX = 128;
@@ -16,10 +16,10 @@ export function BrushSizeSlider() {
   const [open, setOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [circlePos, setCirclePos] = useState({ top: 0, left: 0 });
-  const buttonRef = useRef(null);
-  const sliderRef = useRef(null);
-  const containerRef = useRef(null);
-  const dialogRef = useRef(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const sliderRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   const updateCircle = useCallback(() => {
     if (!sliderRef.current || !dialogRef.current || !containerRef.current) {
@@ -46,8 +46,8 @@ export function BrushSizeSlider() {
   }, []);
 
   const handleInput = useCallback(
-    (e) => {
-      setBrushSize(Number(e.target.value));
+    (e: React.SyntheticEvent<HTMLInputElement>) => {
+      setBrushSize(Number(e.currentTarget.value));
       updateCircle();
     },
     [setBrushSize, updateCircle],

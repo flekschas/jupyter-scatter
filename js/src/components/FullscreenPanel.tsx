@@ -1,7 +1,7 @@
 import { CaretDown, CaretUp } from '@phosphor-icons/react';
-import { useCallback, useEffect, useState } from 'react';
+import { type ChangeEvent, useCallback, useEffect, useState } from 'react';
 
-import { useScatterView } from '../hooks/use-widget.js';
+import { useScatterView } from '../hooks/use-widget';
 
 export function FullscreenPanel() {
   const scatterView = useScatterView();
@@ -55,21 +55,21 @@ export function FullscreenPanel() {
     }
   }
 
-  function handleFullWidthHeightChange(e) {
+  function handleFullWidthHeightChange(e: ChangeEvent<HTMLInputElement>) {
     setFullWidthHeight(e.target.checked);
   }
 
-  function handleWidthChange(e) {
+  function handleWidthChange(e: ChangeEvent<HTMLInputElement>) {
     const v = Math.max(1, Math.min(widthMax, Number(e.target.value)));
     setWidth(v);
   }
 
-  function handleHeightChange(e) {
+  function handleHeightChange(e: ChangeEvent<HTMLInputElement>) {
     const v = Math.max(1, Math.min(heightMax, Number(e.target.value)));
     setHeight(v);
   }
 
-  function handleScaleChange(e) {
+  function handleScaleChange(e: ChangeEvent<HTMLSelectElement>) {
     setExportScale(Number(e.target.value));
   }
 
@@ -77,7 +77,7 @@ export function FullscreenPanel() {
     scatterView.viewDownload({ scale: exportScale });
   }
 
-  const inputStyle = {
+  const inputStyle: React.CSSProperties = {
     userSelect: 'auto',
     border: '1px solid var(--jss-input-border)',
     backgroundColor: 'var(--jss-bg-input)',

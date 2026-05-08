@@ -1,8 +1,8 @@
 import { FrameCornersIcon, ResizeIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 
-import { useScatterView } from '../hooks/use-widget.js';
-import { Button } from './Button.jsx';
+import { useScatterView } from '../hooks/use-widget';
+import { Button } from './Button';
 
 export function FullScreenButton() {
   const scatterView = useScatterView();

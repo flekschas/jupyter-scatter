@@ -1,7 +1,7 @@
 import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
 
-import { useScatterView } from '../hooks/use-widget.js';
-import { Button } from './Button.jsx';
+import { useScatterView } from '../hooks/use-widget';
+import { Button } from './Button';
 
 export function ResetButton() {
   const scatterView = useScatterView();

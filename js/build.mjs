@@ -27,7 +27,7 @@ const options = {
   bundle: true,
   format: 'esm',
   jsx: 'automatic',
-  loader: { '.jsx': 'jsx' },
+  loader: { '.jsx': 'jsx', '.tsx': 'tsx', '.ts': 'ts' },
   outfile: '../jscatter/bundle.js',
   plugins: [tailwindPlugin],
 };

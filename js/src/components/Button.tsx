@@ -1,8 +1,28 @@
-import { forwardRef } from 'react';
+import { type ReactNode, type Ref, forwardRef } from 'react';
+
+import type { ButtonClickHandler } from '../types';
+
+interface ButtonProps {
+  icon?: ReactNode;
+  children?: ReactNode;
+  tooltip?: string;
+  active?: boolean;
+  disabled?: boolean;
+  onClick?: ButtonClickHandler;
+  className?: string;
+}
 
 export const Button = forwardRef(function Button(
-  { icon, children, tooltip, active, disabled, onClick, className },
-  ref,
+  {
+    icon,
+    children,
+    tooltip,
+    active,
+    disabled,
+    onClick,
+    className,
+  }: ButtonProps,
+  ref: Ref<HTMLButtonElement>,
 ) {
   return (
     <button

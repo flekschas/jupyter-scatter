@@ -1,4 +1,6 @@
-export function FreeformLassoIcon(props) {
+import type { IconProps } from '../types';
+
+export function FreeformLassoIcon(props: IconProps) {
   return (
     <svg
       viewBox="0 0 32 32"
@@ -24,7 +26,7 @@ export function FreeformLassoIcon(props) {
   );
 }
 
-export function BrushLassoIcon(props) {
+export function BrushLassoIcon(props: IconProps) {
   return (
     <svg
       viewBox="0 0 32 32"
@@ -50,7 +52,7 @@ export function BrushLassoIcon(props) {
   );
 }
 
-export function RectangleLassoIcon(props) {
+export function RectangleLassoIcon(props: IconProps) {
   return (
     <svg
       viewBox="0 0 32 32"
@@ -77,7 +79,7 @@ export function RectangleLassoIcon(props) {
   );
 }
 
-export function BrushSizeIcon(props) {
+export function BrushSizeIcon(props: IconProps) {
   return (
     <svg
       viewBox="0 0 32 32"

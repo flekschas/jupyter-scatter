@@ -15,7 +15,8 @@
     "lint": "biome check --write src",
     "watch": "node build.mjs --watch",
     "dev": "npm run watch",
-    "test": "npm run lint"
+    "typecheck": "tsc --noEmit",
+    "test": "npm run lint && npm run typecheck"
   },
   "dependencies": {
     "@flekschas/utils": "^0.32.2",
@@ -40,7 +41,9 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@tailwindcss/cli": "^4.1.5",
+    "@types/react": "^19.2.14",
     "esbuild": "^0.25.0",
-    "tailwindcss": "^4.1.5"
+    "tailwindcss": "^4.1.5",
+    "typescript": "^6.0.3"
   }
 }

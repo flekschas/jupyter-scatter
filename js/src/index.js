@@ -21,8 +21,8 @@ import { createHistogram } from './histogram.js';
 import { createLabelRenderer } from './label-renderer.js';
 import { createLegend } from './legend.js';
 
-import { FullscreenPanel } from './components/FullscreenPanel.jsx';
-import { Toolbar } from './components/Toolbar.jsx';
+import { FullscreenPanel } from './components/FullscreenPanel.tsx';
+import { Toolbar } from './components/Toolbar.tsx';
 import {
   addBackgroundColor,
   blend,

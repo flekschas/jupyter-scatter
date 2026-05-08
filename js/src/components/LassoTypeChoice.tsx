@@ -1,20 +1,22 @@
 import { useAtomValue, useSetAtom } from 'jotai';
+import type { ComponentType } from 'react';
 import { useRef, useState } from 'react';
 
-import { useAtoms } from '../hooks/use-widget.js';
-import { Button } from './Button.jsx';
-import {
-  BrushLassoIcon,
-  FreeformLassoIcon,
-  RectangleLassoIcon,
-} from './icons.jsx';
+import { useAtoms } from '../hooks/use-widget';
+import type { IconProps } from '../types';
+import { Button } from './Button';
+import { BrushLassoIcon, FreeformLassoIcon, RectangleLassoIcon } from './icons';
 
-const OPTIONS = [
+interface LassoOption {
+  value: string;
+  label: string;
   // biome-ignore lint/style/useNamingConvention: Icon is a React component
+  Icon: ComponentType<IconProps>;
+}
+
+const OPTIONS: LassoOption[] = [
   { value: 'freeform', label: 'Freeform', Icon: FreeformLassoIcon },
-  // biome-ignore lint/style/useNamingConvention: Icon is a React component
   { value: 'brush', label: 'Brush', Icon: BrushLassoIcon },
-  // biome-ignore lint/style/useNamingConvention: Icon is a React component
   { value: 'rectangle', label: 'Rectangle', Icon: RectangleLassoIcon },
 ];
 
@@ -23,7 +25,7 @@ export function LassoTypeChoice() {
   const lassoType = useAtomValue(atoms.lassoType);
   const setLassoType = useSetAtom(atoms.lassoType);
   const [open, setOpen] = useState(false);
-  const buttonRef = useRef(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const CurrentIcon =
     OPTIONS.find((o) => o.value === lassoType)?.Icon ?? FreeformLassoIcon;

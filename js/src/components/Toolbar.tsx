@@ -1,52 +1,66 @@
 import { Provider, useAtomValue } from 'jotai';
 import { Fragment, useMemo } from 'react';
 
-import { AtomsContext } from '../hooks/use-widget.js';
-import { createWidgetStore } from '../store.js';
+import { AtomsContext } from '../hooks/use-widget';
+import { createWidgetStore } from '../store';
+import type {
+  BackgroundColor,
+  ScatterView,
+  WidgetAtoms,
+  WidgetModel,
+} from '../types';
+import { BrushSizeSlider } from './BrushSizeSlider';
+import { Divider } from './Divider';
+import { DownloadButton } from './DownloadButton';
+import { FullScreenButton } from './FullScreenButton';
+import { LassoTypeChoice } from './LassoTypeChoice';
+import { MouseModeToggle } from './MouseModeToggle';
+import { ResetButton } from './ResetButton';
+import { SaveButton } from './SaveButton';
+
+import '../styles.built.css';
 
 /**
  * Compute relative luminance from a background color value.
  * Returns 'dark' if the background is dark, 'light' otherwise.
  */
-function getTheme(bgColor) {
-  let r;
-  let g;
-  let b;
+function getTheme(bgColor: BackgroundColor): 'light' | 'dark' {
+  let r: number;
+  let g: number;
+  let b: number;
 
   if (Array.isArray(bgColor)) {
-    // Float array [0-1] from regl-scatterplot
     [r, g, b] = bgColor.map((c) => c * 255);
   } else if (typeof bgColor === 'string') {
-    // Try to parse hex or rgb string
     const hex = bgColor.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
     if (hex) {
       r = Number.parseInt(hex[1], 16);
       g = Number.parseInt(hex[2], 16);
       b = Number.parseInt(hex[3], 16);
     } else {
-      // Default to light if we can't parse
       return 'light';
     }
   } else {
     return 'light';
   }
 
-  // Relative luminance (ITU-R BT.709)
   const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
   return luminance < 0.5 ? 'dark' : 'light';
 }
-import { BrushSizeSlider } from './BrushSizeSlider.jsx';
-import { Divider } from './Divider.jsx';
-import { DownloadButton } from './DownloadButton.jsx';
-import { FullScreenButton } from './FullScreenButton.jsx';
-import { LassoTypeChoice } from './LassoTypeChoice.jsx';
-import { MouseModeToggle } from './MouseModeToggle.jsx';
-import { ResetButton } from './ResetButton.jsx';
-import { SaveButton } from './SaveButton.jsx';
 
-import '../styles.built.css';
+function toBgCss(bgColor: BackgroundColor): string | undefined {
+  if (Array.isArray(bgColor)) {
+    return bgColor.length === 4
+      ? `rgba(${bgColor
+          .slice(0, 3)
+          .map((c) => c * 255)
+          .join(',')}, ${bgColor[3]})`
+      : `rgb(${bgColor.map((c) => c * 255).join(',')})`;
+  }
+  return bgColor || undefined;
+}
 
-const BUTTON_MAP = {
+const BUTTON_MAP: Record<string, () => React.ReactNode> = {
   // biome-ignore lint/style/useNamingConvention: matches Python traitlet value
   pan_zoom: () => <MouseModeToggle mode="panZoom" />,
   lasso: () => <MouseModeToggle mode="lasso" />,
@@ -62,19 +76,11 @@ const BUTTON_MAP = {
   reset: () => <ResetButton />,
 };
 
-function ToolbarInner({ atoms }) {
+function ToolbarInner({ atoms }: { atoms: WidgetAtoms }) {
   const buttons = useAtomValue(atoms.toolbarButtons);
   const bgColor = useAtomValue(atoms.backgroundColor);
   const theme = useMemo(() => getTheme(bgColor), [bgColor]);
-
-  const bgCss = Array.isArray(bgColor)
-    ? bgColor.length === 4
-      ? `rgba(${bgColor
-          .slice(0, 3)
-          .map((c) => c * 255)
-          .join(',')}, ${bgColor[3]})`
-      : `rgb(${bgColor.map((c) => c * 255).join(',')})`
-    : bgColor || undefined;
+  const bgCss = useMemo(() => toBgCss(bgColor), [bgColor]);
 
   return (
     <div
@@ -93,7 +99,12 @@ function ToolbarInner({ atoms }) {
   );
 }
 
-export function Toolbar({ model, scatterView }) {
+interface ToolbarProps {
+  model: WidgetModel;
+  scatterView: ScatterView;
+}
+
+export function Toolbar({ model, scatterView }: ToolbarProps) {
   const { store, atoms } = createWidgetStore(model, scatterView);
 
   return (
