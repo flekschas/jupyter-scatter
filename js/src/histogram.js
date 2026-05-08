@@ -47,10 +47,12 @@ const createCategoricalHistogramBackground = (canvas, data) => {
 
   const draw = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.globalAlpha = state.categoryColors ? 0.33 : 1;
     for (const rect of state.rects) {
       ctx.fillStyle = state.categoryColors?.[rect.key] ?? state.color;
       ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
     }
+    ctx.globalAlpha = 1;
   };
 
   const resize = (width, height) => {
@@ -90,9 +92,9 @@ const createCategoricalHistogramHighlight = (canvas, data) => {
     useBorder: false,
   };
 
-  const style = (newColor, useBorder) => {
+  const style = (newColor, categoryColors) => {
     state.color = newColor;
-    state.useBorder = useBorder;
+    state.categoryColors = categoryColors || null;
   };
 
   const draw = (key) => {
@@ -102,23 +104,10 @@ const createCategoricalHistogramHighlight = (canvas, data) => {
       return;
     }
 
-    const dpr = window.devicePixelRatio;
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (state.useBorder) {
-      ctx.lineWidth = 2 * dpr;
-      ctx.strokeStyle = state.color;
-      ctx.strokeRect(
-        rect.x + dpr,
-        rect.y + dpr,
-        rect.width - 2 * dpr,
-        rect.height - 2 * dpr,
-      );
-    } else {
-      ctx.fillStyle = state.color;
-      ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
-    }
+    ctx.fillStyle = state.categoryColors?.[key] ?? state.color;
+    ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
   };
 
   const resize = (width, height) => {
@@ -311,7 +300,7 @@ export const createHistogram = (width, height) => {
       return;
     }
     histogramBackground.style(background, categoryColors);
-    histogramHighlight.style(color, Boolean(categoryColors));
+    histogramHighlight.style(color, categoryColors);
   };
 
   const resize = () => {
