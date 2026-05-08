@@ -1,3 +1,9 @@
+## v0.22.4
+
+- Fix: Unused categories cause wrong colors/legend ([#189](https://github.com/flekschas/jupyter-scatter/issues/189) via [#233](https://github.com/flekschas/jupyter-scatter/pull/233))
+- Fix: Wrong coloring when switching color_by between categorical/continuous ([#191](https://github.com/flekschas/jupyter-scatter/issues/191) via [#233](https://github.com/flekschas/jupyter-scatter/pull/233))
+- Fix: Exception when updating data with changed categories ([#197](https://github.com/flekschas/jupyter-scatter/issues/197) via [#233](https://github.com/flekschas/jupyter-scatter/pull/233))
+
 ## v0.22.3
 
 - Fix: geoindex-rs import compatibility ([#222](https://github.com/flekschas/jupyter-scatter/pull/222))
