@@ -35,20 +35,10 @@ def ensure_pandas(data):
         return data
 
     if hasattr(data, '__arrow_c_stream__'):
+        from .serializers.dataframe import _cast_unsigned_dict_indices
+
         table = pa.RecordBatchReader.from_stream(data).read_all()
-
-        # Polars exports categoricals as Arrow dictionary arrays with uint32
-        # indices. Older PyArrow versions (<14) can't convert unsigned
-        # dictionary indices to Pandas, so we cast them to signed int32.
-        for i, field in enumerate(table.schema):
-            if pa.types.is_dictionary(field.type) and not pa.types.is_signed_integer(
-                field.type.index_type
-            ):
-                signed_type = pa.dictionary(pa.int32(), field.type.value_type)
-                table = table.set_column(
-                    i, field.name, table.column(i).cast(signed_type)
-                )
-
+        table = _cast_unsigned_dict_indices(table)
         df = table.to_pandas()
 
         # Arrow dictionary columns (from Polars Categorical, etc.) become
