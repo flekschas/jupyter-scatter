@@ -1,3 +1,7 @@
+## v0.23.0
+
+- Refactor: move toolbar UI from Python ipywidgets to TS React. This enables full Marimo support 🎉
+
 ## v0.22.3
 
 - Fix: geoindex-rs import compatibility ([#222](https://github.com/flekschas/jupyter-scatter/pull/222))
