@@ -37,18 +37,22 @@ const createCategoricalHistogramBackground = (canvas, data) => {
     height: 10,
     lastI,
     color: DEFAULT_BACKGROUND_COLOR,
+    categoryColors: null,
   };
 
-  const style = (newColor) => {
+  const style = (newColor, categoryColors) => {
     state.color = newColor;
+    state.categoryColors = categoryColors || null;
   };
 
   const draw = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = state.color;
+    ctx.globalAlpha = state.categoryColors ? 0.33 : 1;
     for (const rect of state.rects) {
+      ctx.fillStyle = state.categoryColors?.[rect.key] ?? state.color;
       ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
     }
+    ctx.globalAlpha = 1;
   };
 
   const resize = (width, height) => {
@@ -63,6 +67,7 @@ const createCategoricalHistogramBackground = (canvas, data) => {
     const tree = createTreemap(data, state.width, state.height);
 
     state.rects = tree.leaves().map((leaf) => ({
+      key: leaf.data.key,
       x: leaf.x0 + padding,
       y: leaf.y0,
       width: leaf.x1 - leaf.x0,
@@ -84,10 +89,12 @@ const createCategoricalHistogramHighlight = (canvas, data) => {
     height: 10,
     lastI,
     color: DEFAULT_HIGHLIGHT_COLOR,
+    useBorder: false,
   };
 
-  const style = (newColor) => {
+  const style = (newColor, categoryColors) => {
     state.color = newColor;
+    state.categoryColors = categoryColors || null;
   };
 
   const draw = (key) => {
@@ -98,7 +105,8 @@ const createCategoricalHistogramHighlight = (canvas, data) => {
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = state.color;
+
+    ctx.fillStyle = state.categoryColors?.[key] ?? state.color;
     ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
   };
 
@@ -287,12 +295,12 @@ export const createHistogram = (width, height) => {
     histogramHighlight.draw(key);
   };
 
-  const style = (color, background) => {
+  const style = (color, background, categoryColors) => {
     if (!isInit) {
       return;
     }
-    histogramBackground.style(background);
-    histogramHighlight.style(color);
+    histogramBackground.style(background, categoryColors);
+    histogramHighlight.style(color, categoryColors);
   };
 
   const resize = () => {

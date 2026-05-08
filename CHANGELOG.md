@@ -1,5 +1,6 @@
 ## v0.23.0
 
+- Feat: use categorical color encoding in histogram bars ([#97](https://github.com/flekschas/jupyter-scatter/issues/97))
 - Chore: add `straight` option to connect() for straight line connections ([#130](https://github.com/flekschas/jupyter-scatter/pull/130))
 - Fix: Unused categories cause wrong colors/legend ([#189](https://github.com/flekschas/jupyter-scatter/issues/189) via [#233](https://github.com/flekschas/jupyter-scatter/pull/233))
 - Fix: Wrong coloring when switching color_by between categorical/continuous ([#191](https://github.com/flekschas/jupyter-scatter/issues/191) via [#233](https://github.com/flekschas/jupyter-scatter/pull/233))
