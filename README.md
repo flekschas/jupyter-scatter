@@ -14,8 +14,8 @@
 </div>
 
 <div align="center">
-  
-  <strong>An interactive scatter plot widget for Jupyter Notebook, Lab, and Google Colab</strong><br/>that can handle [millions of points](#visualize-millions-of-data-points) and supports [view linking](#linking-scatter-plots).
+
+  <strong>An interactive scatter plot widget for Jupyter, Marimo, and Colab</strong><br/>that can handle [millions of points](#visualize-millions-of-data-points) and supports [view linking](#linking-scatter-plots).
   
 </div>
 
@@ -238,6 +238,10 @@ See [notebooks/examples.ipynb](notebooks/examples.ipynb) for more details.
 ### Google Colab
 
 While jscatter is primarily developed for Jupyter Lab and Notebook, it also runs just fine in Google Colab. See [jupyter-scatter-colab-test.ipynb](https://colab.research.google.com/drive/195z6h6LsYpC25IIB3fSZIVUbqVlhtnQo?usp=sharing) for an example.
+
+### Marimo
+
+Jupyter Scatter works in [Marimo](https://marimo.io) notebooks too, including `compose()` and `link()` for multi-plot layouts. See [notebooks/marimo.py](notebooks/marimo.py) for an example.
 
 ## Development
 

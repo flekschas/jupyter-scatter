@@ -1,0 +1,55 @@
+@import "tailwindcss" prefix(jss);
+@source "./components";
+
+@layer base {
+  /* Light theme (default) */
+  [data-jss-theme="light"] {
+    --jss-primary: #0086e3;
+    --jss-primary-hover: #0076d2;
+    --jss-secondary: #004280;
+    --jss-bg: #f3f4f6;
+    --jss-bg-hover: #e5e7eb;
+    --jss-bg-input: #ffffff;
+    --jss-text: #1a1a1a;
+    --jss-text-secondary: #6b7280;
+    --jss-text-disabled: #9ca3af;
+    --jss-border: #d1d5db;
+    --jss-input-border: #d1d5db;
+  }
+
+  /* Dark theme */
+  [data-jss-theme="dark"] {
+    --jss-primary: #2196F4;
+    --jss-primary-hover: #38a6ff;
+    --jss-secondary: #4aacff;
+    --jss-bg: #1e1e1e;
+    --jss-bg-hover: #2a2a2a;
+    --jss-bg-input: #2a2a2a;
+    --jss-text: #e0e0e0;
+    --jss-text-secondary: #9ca3af;
+    --jss-text-disabled: #6b7280;
+    --jss-border: #404040;
+    --jss-input-border: #404040;
+  }
+}
+
+@theme inline {
+  --color-brand: var(--jss-primary);
+  --color-brand-hover: var(--jss-primary-hover);
+  --color-accent: var(--jss-secondary);
+  --color-bg: var(--jss-bg);
+  --color-bg-hover: var(--jss-bg-hover);
+  --color-bg-input: var(--jss-bg-input);
+  --color-fg: var(--jss-text);
+  --color-fg-secondary: var(--jss-text-secondary);
+  --color-fg-disabled: var(--jss-text-disabled);
+  --color-border: var(--jss-border);
+  --color-input-border: var(--jss-input-border);
+}
+
+@utility focus-ring {
+  &:focus-visible {
+    outline: 1px solid var(--jss-secondary) !important;
+    outline-offset: 1px !important;
+  }
+}

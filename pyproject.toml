@@ -90,7 +90,7 @@ filterwarnings = [
 dev = [
   "anywidget[dev]",
   "jupyterlab",
-  "pre-commit",
+  "marimo",
   "pyarrow",
   "pytest",
   "pytest-cov",

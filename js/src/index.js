@@ -6,15 +6,18 @@ import {
   nextAnimationFrame,
   throttleAndDebounce,
 } from '@flekschas/utils';
-import { globalPubSub } from 'pub-sub-es';
-import createScatterplot, { createRenderer } from 'regl-scatterplot';
-
 import { axisBottom, axisRight } from 'd3-axis';
 import { format } from 'd3-format';
 import { scaleLinear } from 'd3-scale';
 import { select } from 'd3-selection';
-
+import { globalPubSub } from 'pub-sub-es';
+import { createElement } from 'react';
+import { createRoot } from 'react-dom/client';
+import createScatterplot, { createRenderer } from 'regl-scatterplot';
+import { version } from '../package.json';
 import { Annotations, Numpy1D, Numpy2D, NumpyImage, Table } from './codecs.js';
+import { FullscreenPanel } from './components/FullscreenPanel.tsx';
+import { Toolbar } from './components/Toolbar.tsx';
 import { createHistogram } from './histogram.js';
 import { createLabelRenderer } from './label-renderer.js';
 import { createLegend } from './legend.js';
@@ -36,8 +39,6 @@ import {
   toHtmlClass,
   toTitleCase,
 } from './utils.js';
-
-import { version } from '../package.json';
 
 const AXES_LABEL_SIZE = 12;
 const AXES_PADDING_X = 60;
@@ -265,6 +266,17 @@ class JupyterScatterView {
       Math.random().toString(36).substring(2, 5);
     this.model.set('dom_element_id', this.randomStr);
 
+    // Outer wrapper: toolbar + scatter side by side
+    this.outerWrapper = document.createElement('div');
+    this.outerWrapper.style.display = 'flex';
+    this.outerWrapper.style.width = '100%';
+    this.outerWrapper.style.background = 'transparent';
+    this.el.appendChild(this.outerWrapper);
+
+    // Toolbar container (React root)
+    this.toolbarContainer = document.createElement('div');
+    this.outerWrapper.appendChild(this.toolbarContainer);
+
     this.fullscreenContainer = document.createElement('div');
     this.fullscreenContainer.setAttribute('id', this.randomStr);
     this.fullscreenContainer.style.position = 'relative';
@@ -272,11 +284,15 @@ class JupyterScatterView {
     this.fullscreenContainer.style.flexDirection = 'column';
     this.fullscreenContainer.style.justifyContent = 'center';
     this.fullscreenContainer.style.alignItems = 'center';
+    this.fullscreenContainer.style.flex = '1';
     this.fullscreenContainer.style.width =
       this.width === 'auto' ? '100%' : `${this.width}px`;
     this.fullscreenContainer.style.height = `${this.model.get('height')}px`;
-    this.fullscreenContainer.style.background = 'var(--jp-layout-color0)';
-    this.el.appendChild(this.fullscreenContainer);
+    this.outerWrapper.appendChild(this.fullscreenContainer);
+
+    // Fullscreen panel container (React root, appended to fullscreenContainer)
+    this.fullscreenPanelContainer = document.createElement('div');
+    this.fullscreenContainer.appendChild(this.fullscreenPanelContainer);
 
     this.container = document.createElement('div');
     this.container.setAttribute('id', this.randomStr);
@@ -307,19 +323,12 @@ class JupyterScatterView {
 
     this.labelRenderer = createLabelRenderer(this.canvasLabels);
 
-    this.grandParentElement = this.el.parentElement?.parentElement;
-    this.greatGrandParentElement = this.grandParentElement?.parentElement;
-    this.fullscreenButtonIcon =
-      this.grandParentElement?.children?.[0].querySelector(
-        '[title="Full Screen"]',
-      )?.children?.[0]?.children?.[0];
     this.fullscreenChangeHandlerBound = this.fullscreenChangeHandler.bind(this);
-    this.greatGrandParentElement?.addEventListener(
+    this.outerWrapper.addEventListener(
       'fullscreenchange',
       this.fullscreenChangeHandlerBound,
     );
 
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Will refactor this later
     window.requestAnimationFrame(() => {
       const initialOptions = {
         renderer: window.jupyterScatter.renderer,
@@ -354,7 +363,6 @@ class JupyterScatterView {
       this.scatterplot = createScatterplot(initialOptions);
 
       if (!window.jupyterScatter.versionLog) {
-        // biome-ignore lint/suspicious/noConsole: We want to log the version once
         console.info(
           `jupyter-scatter v${version} with regl-scatterplot v${this.scatterplot.get('version')}`,
         );
@@ -384,25 +392,6 @@ class JupyterScatterView {
         this.externalViewChangeHandler.bind(this);
       this.viewChangeHandlerBound = this.viewChangeHandler.bind(this);
       this.resizeHandlerBound = this.resizeHandler.bind(this);
-      this.fullscreenFullWidthHeightChangeHandlerBound =
-        this.fullscreenFullWidthHeightChangeHandler.bind(this);
-      this.fullscreenWidthChangeHandlerBound =
-        this.fullscreenWidthChangeHandler.bind(this);
-      this.fullscreenHeightChangeHandlerBound =
-        this.fullscreenHeightChangeHandler.bind(this);
-      this.fullscreenExportScaleChangeHandlerBound =
-        this.fullscreenExportScaleChangeHandler.bind(this);
-      this.fullscreenDownloadBound = this.fullscreenDownload.bind(this);
-      this.fullscreenWidthChangeHandlerDebounced = debounce(
-        this.fullscreenWidthChangeHandlerBound,
-        500,
-      );
-      this.fullscreenHeightChangeHandlerDebounced = debounce(
-        this.fullscreenHeightChangeHandlerBound,
-        500,
-      );
-      this.fullscreenSizePanelToggleBound =
-        this.fullscreenSizePanelToggle.bind(this);
       this.drawingHandlerBound = this.drawingHandler.bind(this);
       this.updateLabelTilesBound = this.updateLabelTiles.bind(this);
       this.updateLabelTilesDebounced = throttleAndDebounce(
@@ -531,6 +520,15 @@ class JupyterScatterView {
       }
     });
 
+    // Mount React toolbar
+    this.toolbarRoot = createRoot(this.toolbarContainer);
+    this.toolbarRoot.render(
+      createElement(Toolbar, { model: this.model, scatterView: this }),
+    );
+
+    // Mount React fullscreen panel (renders conditionally when fullscreen)
+    this.fullscreenPanelRoot = createRoot(this.fullscreenPanelContainer);
+
     this.model.save_changes();
   }
 
@@ -546,29 +544,19 @@ class JupyterScatterView {
       return;
     }
 
-    if (event.type === this.eventTypes.VIEW_DOWNLOAD) {
-      this.viewDownload({
-        transparentBackgroundColor: event.transparentBackgroundColor,
-      });
-      return;
-    }
-
     if (event.type === this.eventTypes.VIEW_RESET) {
       if (!this.scatterplot) {
         return;
       }
+      const options = {
+        transition: event.animation > 0,
+        transitionDuration: event.animation,
+        transitionEasing: 'quadInOut',
+      };
       if (event.area) {
-        this.scatterplot.zoomToArea(event.area, {
-          transition: event.animation > 0,
-          transitionDuration: event.animation,
-          transitionEasing: 'quadInOut',
-        });
+        this.scatterplot.zoomToArea(event.area, options);
       } else {
-        this.scatterplot.zoomToOrigin({
-          transition: event.animation > 0,
-          transitionDuration: event.animation,
-          transitionEasing: 'quadInOut',
-        });
+        this.scatterplot.zoomToOrigin(options);
       }
       return;
     }
@@ -577,10 +565,48 @@ class JupyterScatterView {
       this.viewSave(event.transparentBackgroundColor);
       return;
     }
+  }
 
-    if (event.type === this.eventTypes.FULL_SCREEN) {
-      this.toggleFullscreen();
+  resetView(animation = 0, dataExtent = false) {
+    if (!this.scatterplot) {
       return;
+    }
+    if (dataExtent) {
+      const points = this.model.get('points');
+      if (points?.length > 0) {
+        let xMin = Number.POSITIVE_INFINITY;
+        let xMax = Number.NEGATIVE_INFINITY;
+        let yMin = Number.POSITIVE_INFINITY;
+        let yMax = Number.NEGATIVE_INFINITY;
+        for (const point of points) {
+          if (point[0] < xMin) {
+            xMin = point[0];
+          }
+          if (point[0] > xMax) {
+            xMax = point[0];
+          }
+          if (point[1] < yMin) {
+            yMin = point[1];
+          }
+          if (point[1] > yMax) {
+            yMax = point[1];
+          }
+        }
+        this.scatterplot.zoomToArea(
+          { x: xMin, width: xMax - xMin, y: yMin, height: yMax - yMin },
+          {
+            transition: animation > 0,
+            transitionDuration: animation,
+            transitionEasing: 'quadInOut',
+          },
+        );
+      }
+    } else {
+      this.scatterplot.zoomToOrigin({
+        transition: animation > 0,
+        transitionDuration: animation,
+        transitionEasing: 'quadInOut',
+      });
     }
   }
 
@@ -651,9 +677,7 @@ class JupyterScatterView {
 
     const [width, height] = this.getOuterDimensions();
 
-    // biome-ignore lint/style/useNamingConvention: XScale stands for x scale
     const currentXScaleRegl = this.scatterplot.get('xScale');
-    // biome-ignore lint/style/useNamingConvention: YScale stands for y scale
     const currentYScaleRegl = this.scatterplot.get('yScale');
 
     const [xLabel, yLabel] = this.model.get('axes_labels') || [];
@@ -1272,7 +1296,6 @@ class JupyterScatterView {
     }
   }
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Will refactor this later
   styleTooltip() {
     if (!this.tooltip) {
       this.createTooltip();
@@ -1557,7 +1580,6 @@ class JupyterScatterView {
     return this.scatterplot.get('points');
   }
 
-  // biome-ignore lint/style/useNamingConvention: XGetter stands for X Getter
   createXGetter() {
     if (!this.xScale) {
       this.createXScale();
@@ -1579,7 +1601,6 @@ class JupyterScatterView {
     };
   }
 
-  // biome-ignore lint/style/useNamingConvention: YGetter stands for Y Getter
   createYGetter() {
     if (!this.yScale) {
       this.createYScale();
@@ -2132,11 +2153,13 @@ class JupyterScatterView {
     this.scatterplot.unsubscribe('view', this.viewChangeHandlerBound);
     this.showTooltipDebounced.cancel();
     this.scatterplot.destroy();
-    this.greatGrandParentElement?.removeEventListener(
+    this.outerWrapper?.removeEventListener(
       'fullscreenchange',
       this.fullscreenChangeHandlerBound,
     );
     this.fullscreenObserver?.disconnect();
+    this.toolbarRoot?.unmount();
+    this.fullscreenPanelRoot?.unmount();
   }
 
   // Helper
@@ -2314,7 +2337,6 @@ class JupyterScatterView {
     }
   }
 
-  // biome-ignore lint/style/useNamingConvention: XScale stands for X Scale
   createXScale() {
     const domain = this.model.get('x_scale_domain');
     const scale = this.model.get('x_scale');
@@ -2327,7 +2349,6 @@ class JupyterScatterView {
         : format(getD3FormatSpecifier(domain));
   }
 
-  // biome-ignore lint/style/useNamingConvention: YScale stands for Y Scale
   createYScale() {
     const domain = this.model.get('y_scale_domain');
     const scale = this.model.get('y_scale');
@@ -2906,7 +2927,6 @@ class JupyterScatterView {
           downloadBlob(blob, 'jupyter-scatter.png');
         });
       } catch (e) {
-        // biome-ignore lint/suspicious/noConsole: We want to inform the knowledgeable user of the failure
         console.error('Failed to export image', e);
       }
     })();
@@ -2924,16 +2944,8 @@ class JupyterScatterView {
   toggleFullscreen() {
     if (document.fullscreenElement) {
       document.exitFullscreen();
-    } else if (this.greatGrandParentElement) {
-      this.greatGrandParentElement.requestFullscreen();
     } else {
-      this.grandParentElement = this.el.parentElement?.parentElement;
-      this.greatGrandParentElement = this.grandParentElement?.parentElement;
-      this.greatGrandParentElement?.addEventListener(
-        'fullscreenchange',
-        this.fullscreenChangeHandlerBound,
-      );
-      this.greatGrandParentElement?.requestFullscreen();
+      this.outerWrapper.requestFullscreen();
     }
   }
 
@@ -2947,390 +2959,45 @@ class JupyterScatterView {
     }
   }
 
-  fullscreenFullWidthHeightChangeHandler(event) {
-    this.fullscreenFullWidthHeight = event.target.checked;
-    this.fullscreenWidthInput.disabled = this.fullscreenFullWidthHeight;
-    this.fullscreenHeightInput.disabled = this.fullscreenFullWidthHeight;
-    this.updateContainerDimensions();
-    this.fullscreenContainerStyle();
-    this.fullscreenSizePanelUpdateDownloadLabel();
-
-    if (this.fullscreenFullWidthHeight) {
-      this.fullscreenWidthLabel.style.color = 'var(--jp-content-font-color2)';
-      this.fullscreenHeightLabel.style.color = 'var(--jp-content-font-color2)';
-      this.fullscreenWidthInput.style.color = 'var(--jp-content-font-color3)';
-      this.fullscreenHeightInput.style.color = 'var(--jp-content-font-color3)';
-    } else {
-      this.fullscreenWidthLabel.style.color = 'var(--jp-content-font-color)';
-      this.fullscreenHeightLabel.style.color = 'var(--jp-content-font-color)';
-      this.fullscreenWidthInput.style.color = 'var(--jp-content-font-color)';
-      this.fullscreenHeightInput.style.color = 'var(--jp-content-font-color)';
-    }
-
-    if (!this.fullscreenFullWidthHeight) {
-      this.fullscreenWidthInput.focus();
-    }
-  }
-
-  fullscreenWidthChangeHandler(event) {
-    const newWidth = Number(event.target.value);
-    this.fullscreenWidth = Math.max(
-      1,
-      Math.min(this.fullscreenWidthMax, newWidth),
-    );
-    this.fullscreenWidthInput.value = this.fullscreenWidth;
-    this.updateContainerDimensions();
-    this.fullscreenSizePanelUpdateDownloadLabel();
-  }
-
-  fullscreenHeightChangeHandler(event) {
-    const newHeight = Number(event.target.value);
-    this.fullscreenHeight = Math.max(
-      1,
-      Math.min(this.fullscreenHeightMax, newHeight),
-    );
-    this.fullscreenHeightInput.value = this.fullscreenHeight;
-    this.updateContainerDimensions();
-    this.fullscreenSizePanelUpdateDownloadLabel();
-  }
-
-  fullscreenExportScaleChangeHandler(event) {
-    const newScale = Number(event.target.value);
-    this.fullscreenExportScale = newScale;
-    this.fullscreenSizePanelUpdateDownloadLabel();
-  }
-
-  fullscreenSizePanelToggle() {
-    this.fullscreenSizePanelVisible = !this.fullscreenSizePanelVisible;
-
-    if (this.fullscreenSizePanelVisible) {
-      this.fullscreenSizePanelToggleButtonIcon.classList.remove('fa-angle-up');
-      this.fullscreenSizePanelToggleButtonIcon.classList.add('fa-angle-down');
-      this.fullscreenSizePanel.style.height = '3rem';
-    } else {
-      this.fullscreenSizePanelToggleButtonIcon.classList.remove(
-        'fa-angle-down',
-      );
-      this.fullscreenSizePanelToggleButtonIcon.classList.add('fa-angle-up');
-      this.fullscreenSizePanel.style.height = '0';
-      if (!this.fullscreenFullWidthHeight) {
-        this.fullscreenFullWidthHeightInput.click();
-      }
-    }
-  }
-
-  fullscreenSizePanelUpdateDownloadLabel() {
-    const { width, height } = this.canvas;
-    const w = width * this.fullscreenExportScale;
-    const h = height * this.fullscreenExportScale;
-    this.fullscreenDownload.textContent = `Download as PNG at ${w}×${h} px`;
-    this.fullscreenDownload.title = `Download as PNG at ${w}×${h} pixels`;
-  }
-
-  fullscreenDownload() {
-    this.viewDownload({ scale: this.fullscreenExportScale });
-  }
-
-  createFullscreenSizePanel() {
-    if (this.fullscreenSizePanel) {
-      this.destroyFullscreenResizePanel();
-    }
-
-    const panel = document.createElement('div');
-    panel.id = 'jscatter-fullscreen-size-panel';
-    panel.style.position = 'relative';
-    panel.style.height = '0';
-    panel.style.transition = 'height 250ms ease';
-    this.fullscreenSizePanel = panel;
-
-    const toggleButton = document.createElement('button');
-    toggleButton.classList.add(
-      'jupyter-widgets',
-      'jupyter-button',
-      'widget-button',
-    );
-    toggleButton.style.position = 'absolute';
-    toggleButton.style.left = '0';
-    toggleButton.style.bottom = '100%';
-    toggleButton.style.width = '36px';
-    toggleButton.style.height = '18px';
-    toggleButton.style.margin = '0 2px';
-    toggleButton.style.display = 'flex';
-    toggleButton.style.justifyContent = 'center';
-    toggleButton.style.alignItems = 'center';
-    toggleButton.style.borderBottomLeftRadius = '0';
-    toggleButton.style.borderBottomRightRadius = '0';
-    toggleButton.addEventListener('click', this.fullscreenSizePanelToggleBound);
-    panel.append(toggleButton);
-    this.fullscreenSizePanelToggleButton = toggleButton;
-
-    const toggleButtonIcon = document.createElement('i');
-    toggleButtonIcon.classList.add('fa', 'fa-angle-up');
-    toggleButtonIcon.ariaHidden = 'true';
-    toggleButton.append(toggleButtonIcon);
-    this.fullscreenSizePanelToggleButtonIcon = toggleButtonIcon;
-
-    const container = document.createElement('div');
-    container.style.position = 'relative';
-    container.style.display = 'flex';
-    container.style.alignItems = 'center';
-    container.style.gap = '0 1rem';
-    container.style.padding = '0.5rem 2px';
-    container.style.borderTop = '2px solid var(--jp-layout-color2)';
-    panel.append(container);
-
-    const bBox = this.el.getBoundingClientRect();
-
-    const hasAxes = this.model.get('axes');
-    const xPadding = hasAxes ? this.getXPadding() : 0;
-    const yPadding = hasAxes ? this.getYPadding() : 0;
-
-    const fullWidthHeight = document.createElement('label');
-    fullWidthHeight.textContent = 'Full Width & Height';
-    fullWidthHeight.style.display = 'flex';
-    fullWidthHeight.style.alignItems = 'center';
-    fullWidthHeight.style.gap = '0 0.25rem';
-    fullWidthHeight.style.userSelect = 'none';
-    container.append(fullWidthHeight);
-
-    this.fullscreenFullWidthHeight = true;
-    const fullWidthHeightInput = document.createElement('input');
-    fullWidthHeightInput.type = 'checkbox';
-    fullWidthHeightInput.checked = this.fullscreenFullWidthHeight;
-    fullWidthHeightInput.addEventListener(
-      'change',
-      this.fullscreenFullWidthHeightChangeHandlerBound,
-    );
-    this.fullscreenFullWidthHeightInput = fullWidthHeightInput;
-    fullWidthHeight.append(fullWidthHeightInput);
-
-    const width = document.createElement('label');
-    width.textContent = 'Width';
-    width.style.display = 'flex';
-    width.style.alignItems = 'center';
-    width.style.gap = '0 0.25rem';
-    width.style.userSelect = 'none';
-    width.style.color = 'var(--jp-content-font-color2)';
-    this.fullscreenWidthLabel = width;
-    container.append(width);
-
-    this.fullscreenWidthMax = bBox.width - xPadding;
-    this.fullscreenWidth = this.fullscreenWidthMax;
-    const widthInput = document.createElement('input');
-    widthInput.type = 'number';
-    widthInput.value = `${this.fullscreenWidth}`;
-    widthInput.disabled = true;
-    widthInput.step = '1';
-    widthInput.min = '1';
-    widthInput.max = `${this.fullscreenWidthMax}`;
-    widthInput.style.userSelect = 'auto';
-    widthInput.style.color = 'var(--jp-content-font-color3)';
-    widthInput.style.border =
-      'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
-    widthInput.style.backgroundColor =
-      'var(--jp-widgets-input-background-color)';
-    widthInput.addEventListener(
-      'change',
-      this.fullscreenWidthChangeHandlerBound,
-    );
-    widthInput.addEventListener(
-      'input',
-      this.fullscreenWidthChangeHandlerDebounced,
-    );
-    this.fullscreenWidthInput = widthInput;
-    width.append(widthInput);
-
-    const height = document.createElement('label');
-    height.textContent = 'Height';
-    height.style.display = 'flex';
-    height.style.alignItems = 'center';
-    height.style.gap = '0 0.25rem';
-    height.style.userSelect = 'none';
-    height.style.color = 'var(--jp-content-font-color2)';
-    this.fullscreenHeightLabel = height;
-    container.append(height);
-
-    this.fullscreenHeightMax = bBox.height - yPadding - remToPx(3);
-    this.fullscreenHeight = this.fullscreenHeightMax;
-    const heightInput = document.createElement('input');
-    heightInput.type = 'number';
-    heightInput.value = `${this.fullscreenHeight}`;
-    heightInput.disabled = true;
-    heightInput.step = '1';
-    heightInput.min = '1';
-    heightInput.max = `${this.fullscreenHeightMax}`;
-    heightInput.style.userSelect = 'auto';
-    heightInput.style.color = 'var(--jp-content-font-color3)';
-    heightInput.style.border =
-      'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
-    heightInput.style.backgroundColor =
-      'var(--jp-widgets-input-background-color)';
-    heightInput.addEventListener(
-      'change',
-      this.fullscreenHeightChangeHandlerBound,
-    );
-    heightInput.addEventListener(
-      'input',
-      this.fullscreenHeightChangeHandlerDebounced,
-    );
-    this.fullscreenHeightInput = heightInput;
-    height.append(heightInput);
-
-    const divider = document.createElement('div');
-    divider.style.width = '2px';
-    divider.style.height = '2rem';
-    divider.style.background = 'var(--jp-border-color2)';
-    container.append(divider);
-
-    const scale = document.createElement('label');
-    scale.textContent = 'Scale';
-    scale.style.display = 'flex';
-    scale.style.alignItems = 'center';
-    scale.style.gap = '0 0.25rem';
-    scale.style.userSelect = 'none';
-    container.append(scale);
-
-    const scaleSelect = document.createElement('select');
-    scaleSelect.style.backgroundColor =
-      'var(--jp-widgets-input-background-color)';
-    scaleSelect.style.color = 'var(--jp-widgets-input-color)';
-    this.fullscreenExportScale = 1;
-    scaleSelect.addEventListener(
-      'change',
-      this.fullscreenExportScaleChangeHandlerBound,
-    );
-    this.fullscreenScaleSelect = scaleSelect;
-    scale.append(scaleSelect);
-
-    const scales = Array.from({ length: 3 }, (_, i) => i + 1);
-    for (const s of scales) {
-      const scaleOption = document.createElement('option');
-      scaleOption.textContent = s;
-      scaleOption.value = s;
-      scaleOption.selected = s === this.fullscreenExportScale;
-      scaleSelect.append(scaleOption);
-    }
-
-    const dpr = document.createElement('label');
-    dpr.textContent = 'DPR';
-    dpr.title = 'Device Pixel Ratio';
-    dpr.style.display = 'flex';
-    dpr.style.alignItems = 'center';
-    dpr.style.gap = '0 0.25rem';
-    dpr.style.userSelect = 'none';
-    dpr.style.color = 'var(--jp-content-font-color2)';
-    container.append(dpr);
-
-    const dprInput = document.createElement('input');
-    dprInput.type = 'number';
-    dprInput.min = '1';
-    dprInput.max = '10';
-    dprInput.step = '1';
-    dprInput.value = window.devicePixelRatio;
-    dprInput.disabled = true;
-    dprInput.style.color = 'var(--jp-content-font-color3)';
-    dprInput.style.border =
-      'var(--jp-widgets-input-border-width) solid var(--jp-widgets-input-border-color)';
-    dprInput.style.backgroundColor = 'var(--jp-widgets-input-background-color)';
-    dpr.append(dprInput);
-
-    const download = document.createElement('button');
-    download.classList.add(
-      'jupyter-widgets',
-      'jupyter-button',
-      'widget-button',
-    );
-    download.textContent = 'Download as PNG';
-    download.style.width = 'auto';
-    download.addEventListener('click', this.fullscreenDownloadBound);
-    this.fullscreenDownload = download;
-    this.fullscreenSizePanelUpdateDownloadLabel();
-    container.append(download);
-
-    this.greatGrandParentElement.append(panel);
-  }
-
-  destroyFullscreenResizePanel() {
-    this.fullscreenFullWidthHeightInput.removeEventListener(
-      'change',
-      this.fullscreenFullWidthHeightChangeHandlerBound,
-    );
-    this.fullscreenWidthInput.removeEventListener(
-      'change',
-      this.fullscreenWidthChangeHandlerBound,
-    );
-    this.fullscreenWidthInput.removeEventListener(
-      'input',
-      this.fullscreenWidthChangeHandlerDebounced,
-    );
-    this.fullscreenHeightInput.removeEventListener(
-      'change',
-      this.fullscreenHeightChangeHandlerBound,
-    );
-    this.fullscreenHeightInput.removeEventListener(
-      'input',
-      this.fullscreenHeightChangeHandlerDebounced,
-    );
-    this.fullscreenSizePanelToggleButton.removeEventListener(
-      'click',
-      this.fullscreenSizePanelToggleBound,
-    );
-    this.fullscreenScaleSelect.removeEventListener(
-      'change',
-      this.fullscreenExportScaleChangeHandlerBound,
-    );
-    this.fullscreenDownload.removeEventListener(
-      'click',
-      this.fullscreenDownloadBound,
-    );
-    if (this.fullscreenSizePanel) {
-      this.greatGrandParentElement.removeChild(this.fullscreenSizePanel);
-      this.fullscreenSizePanel = undefined;
-    }
-  }
-
   fullscreenChangeHandler() {
     if (document.fullscreenElement) {
       this.fullscreenObserver = new ResizeObserver(() => {
         nextAnimationFrame(2).then(() => {
           setTimeout(() => {
-            this.createFullscreenSizePanel();
             this.updateContainerDimensions();
           }, 0);
         });
       });
       this.fullscreenObserver.observe(document.fullscreenElement);
 
-      this.grandParentElementFlexGrow = this.grandParentElement.style.flexGrow;
-      this.grandParentElement.style.flexGrow = 1;
-      this.greatGrandParentElementBackground =
-        this.greatGrandParentElement.style.background;
-      this.greatGrandParentElement.style.background = 'var(--jp-layout-color0)';
       this.el.style.height = '100%';
-      this.fullscreenButtonIcon?.classList.remove('fa-expand');
-      this.fullscreenButtonIcon?.classList.add('fa-compress');
+      this.outerWrapper.style.height = '100%';
       this.scatterplot.set({
         lassoInitiatorParentElement: document.fullscreenElement,
         lassoLongPressIndicatorParentElement: document.fullscreenElement,
       });
       this.fullscreenFullWidthHeight = true;
+
+      // Mount fullscreen panel
+      this.fullscreenPanelRoot.render(
+        createElement(FullscreenPanel, { scatterView: this }),
+      );
     } else {
       this.fullscreenObserver?.disconnect();
       this.fullscreenObserver = undefined;
 
-      this.grandParentElement.style.flexGrow = this.grandParentElementFlexGrow;
-      this.greatGrandParentElement.style.background =
-        this.greatGrandParentElementBackground;
-      this.fullscreenButtonIcon?.classList.add('fa-expand');
-      this.fullscreenButtonIcon?.classList.remove('fa-compress');
       this.el.style.height = null;
+      this.outerWrapper.style.height = null;
       this.container.style.outline = null;
       this.container.style.boxShadow = null;
       this.scatterplot.set({
         lassoInitiatorParentElement: document.body,
         lassoLongPressIndicatorParentElement: document.body,
       });
-      this.destroyFullscreenResizePanel();
+
+      // Unmount fullscreen panel
+      this.fullscreenPanelRoot.render(null);
+
       nextAnimationFrame(2).then(() => {
         setTimeout(() => {
           this.updateContainerDimensions();
@@ -3416,13 +3083,11 @@ class JupyterScatterView {
     this.scatterplot.set(p);
   }
 
-  // biome-ignore lint/style/useNamingConvention: XPadding stands for X Padding
   getXPadding() {
     const yLabel = this.model.get('axes_labels')?.[1];
     return yLabel ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
   }
 
-  // biome-ignore lint/style/useNamingConvention: YPadding stands for Y Padding
   getYPadding() {
     const xLabel = this.model.get('axes_labels')?.[0];
     return xLabel ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
@@ -3505,7 +3170,6 @@ function modelWithSerializers(model, serializers) {
       }
     },
     on: model.on.bind(model),
-    // biome-ignore lint/style/useNamingConvention: coming from Python-land
     save_changes: model.save_changes.bind(model),
     send: model.send.bind(model),
   };
@@ -3518,14 +3182,10 @@ async function render({ model, el }) {
       points: Numpy2D('float32'),
       selection: Numpy1D('uint32'),
       filter: Numpy1D('uint32'),
-      // biome-ignore lint/style/useNamingConvention: coming from Python-land
       view_data: NumpyImage(),
-      // biome-ignore lint/style/useNamingConvention: coming from Python-land
       zoom_to: Numpy1D('uint32'),
       annotations: Annotations(),
-      // biome-ignore lint/style/useNamingConvention: coming from Python-land
       lasso_selection_polygon: Numpy2D('float32'),
-      // biome-ignore lint/style/useNamingConvention: coming from Python-land
       labels: Table(),
     }),
   });
@@ -3533,5 +3193,4 @@ async function render({ model, el }) {
   return () => view.destroy();
 }
 
-// biome-ignore lint/style/noDefaultExport: coming from anywidget
 export default { render };

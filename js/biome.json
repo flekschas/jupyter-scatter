@@ -1,8 +1,6 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "formatter": {
     "indentStyle": "space",
     "indentWidth": 2,
@@ -16,10 +14,27 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "all": true
+      "correctness": {
+        "useImportExtensions": "off",
+        "noUndeclaredVariables": "off"
+      },
+      "style": {
+        "useNamingConvention": "off"
+      },
+      "complexity": {
+        "useSimplifiedLogicExpression": "off"
+      },
+      "suspicious": {
+        "noReactSpecificProps": "off"
+      }
     }
   },
   "files": {
-    "include": ["src/*.js"]
+    "includes": [
+      "**/src/**/*.js",
+      "**/src/**/*.jsx",
+      "**/src/**/*.ts",
+      "**/src/**/*.tsx"
+    ]
   }
 }

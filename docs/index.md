@@ -8,7 +8,7 @@ titleTemplate: An Interactive Scatter Plot Widget
 hero:
   name: "Jupyter Scatter"
   text: "An Interactive Scatter Plot Widget"
-  tagline: "Explore datasets with millions of data points with ease in Jupyter Notebook, Lab, and Google Colab."
+  tagline: "Explore datasets with millions of data points with ease in Jupyter, Marimo, and Colab."
   image:
     dark: https://storage.googleapis.com/jupyter-scatter/dev/images/teaser-dark.jpg
     light: https://storage.googleapis.com/jupyter-scatter/dev/images/teaser-dark.jpg

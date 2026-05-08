@@ -5381,13 +5381,16 @@ class Scatter:
         Returns
         -------
         widget
-            The widget that is being rendering by Jupyter
+            The widget that is being rendered by Jupyter
 
         Examples
         --------
         >>> scatter.show()
         """
         return self.widget.show(buttons)
+
+    def _repr_mimebundle_(self, **kwargs):
+        return self.widget._repr_mimebundle_(**kwargs)
 
     def show_tooltip(self, pointIdx: int):
         """

@@ -27,6 +27,7 @@ dist.zip
 js/npm-debug.log
 js/node_modules
 js/dist
+js/src/styles.built.css
 
 docs/npm-debug.log
 docs/node_modules
@@ -36,6 +37,7 @@ docs/.vitepress/dist
 jscatter/labextension
 jscatter/nbextension
 jscatter/bundle.js
+jscatter/bundle.css
 
 notebooks/data
 

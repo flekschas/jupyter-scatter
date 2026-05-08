@@ -1,0 +1,20 @@
+pre-commit:
+  parallel: true
+  commands:
+    ruff-format:
+      glob: "*.py"
+      run: uv run ruff format --check {staged_files}
+    ruff-lint:
+      glob: "*.py"
+      run: uv run ruff check {staged_files}
+    biome-lint:
+      glob: "js/src/**/*.{js,ts,jsx,tsx}"
+      run: cd js && npm run lint
+
+pre-push:
+  parallel: true
+  commands:
+    pytest:
+      run: uv run pytest
+    js-test:
+      run: cd js && npm run test

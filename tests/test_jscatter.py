@@ -569,24 +569,20 @@ def test_point_size_scale(df: pd.DataFrame):
 
 def test_camera_is_fixed(df: pd.DataFrame):
     scatter = Scatter(data=df, x='a', y='b')
-    pan_zoom_button = scatter.show().children[0].children[0].children[0]
 
     # Check that by default, the camera is not fixed
     assert scatter.widget.camera_is_fixed == False
     assert scatter.widget.mouse_mode == 'panZoom'
-    assert pan_zoom_button.disabled == False
 
     # Test fixing the camera
     scatter.camera(is_fixed=True)
     assert scatter.widget.camera_is_fixed == True
     assert scatter.widget.mouse_mode == 'lasso'
-    assert pan_zoom_button.disabled == True
 
     # Test unfixing the camera
     scatter.camera(is_fixed=False)
     assert scatter.widget.camera_is_fixed == False
     assert scatter.widget.mouse_mode == 'panZoom'
-    assert pan_zoom_button.disabled == False
 
     scatter.mouse(mode='lasso')
     scatter.camera(is_fixed=True)
@@ -598,3 +594,47 @@ def test_camera_is_fixed(df: pd.DataFrame):
     # Test initializing a Scatter with a fixed camera
     assert scatter_b.widget.camera_is_fixed == True
     assert scatter_b.widget.mouse_mode == 'lasso'
+
+
+def test_toolbar_buttons(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    default_buttons = [
+        'pan_zoom',
+        'lasso',
+        'lasso_type',
+        'lasso_brush_size',
+        'divider',
+        'full_screen',
+        'download',
+        'reset',
+    ]
+
+    # Check default toolbar buttons
+    assert scatter.widget.toolbar_buttons == default_buttons
+
+    # Test show() with custom buttons
+    scatter.show(buttons=['pan_zoom', 'download'])
+    assert scatter.widget.toolbar_buttons == ['pan_zoom', 'download']
+
+    # Test show() without buttons resets to default
+    scatter.show()
+    assert scatter.widget.toolbar_buttons == default_buttons
+
+    # Test show() supports 'save' button
+    scatter.show(buttons=['pan_zoom', 'save', 'download'])
+    assert scatter.widget.toolbar_buttons == ['pan_zoom', 'save', 'download']
+
+    # Test show() warns on unknown buttons and filters them
+    import warnings
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        scatter.show(buttons=['pan_zoom', 'bogus'])
+        assert len(w) == 1
+        assert 'bogus' in str(w[0].message)
+    assert scatter.widget.toolbar_buttons == ['pan_zoom']
+
+    # Test show() returns the widget
+    result = scatter.show()
+    assert result is scatter.widget
