@@ -1,0 +1,43 @@
+@import "tailwindcss" prefix(jss);
+@source "./components";
+
+@layer base {
+  :root {
+    --jss-primary: #2196F4;
+    --jss-primary-hover: light-dark(#0086e3, #38a6ff);
+    --jss-secondary: #FEC20D;
+    --jss-secondary-hover: light-dark(#edb200, #ffd347);
+    --jss-bg: light-dark(#ffffff, #1e1e1e);
+    --jss-bg-hover: light-dark(#f0f0f0, #2a2a2a);
+    --jss-bg-input: light-dark(#ffffff, #2a2a2a);
+    --jss-text: light-dark(#1a1a1a, #e0e0e0);
+    --jss-text-secondary: light-dark(#6b7280, #9ca3af);
+    --jss-text-disabled: light-dark(#9ca3af, #6b7280);
+    --jss-border: light-dark(#d1d5db, #404040);
+    --jss-border-strong: light-dark(#9ca3af, #525252);
+    --jss-input-border: light-dark(#d1d5db, #404040);
+  }
+}
+
+@theme inline {
+  --color-brand: var(--jss-primary);
+  --color-brand-hover: var(--jss-primary-hover);
+  --color-accent: var(--jss-secondary);
+  --color-accent-hover: var(--jss-secondary-hover);
+  --color-bg: var(--jss-bg);
+  --color-bg-hover: var(--jss-bg-hover);
+  --color-bg-input: var(--jss-bg-input);
+  --color-fg: var(--jss-text);
+  --color-fg-secondary: var(--jss-text-secondary);
+  --color-fg-disabled: var(--jss-text-disabled);
+  --color-border: var(--jss-border);
+  --color-border-strong: var(--jss-border-strong);
+  --color-input-border: var(--jss-input-border);
+}
+
+@utility focus-ring {
+  &:focus-visible {
+    outline: 1px solid var(--jss-secondary) !important;
+    outline-offset: 1px !important;
+  }
+}

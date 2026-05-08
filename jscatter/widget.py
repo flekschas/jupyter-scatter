@@ -2,7 +2,6 @@ import pathlib
 import typing as t
 
 import anywidget
-import ipywidgets as widgets
 import numpy as np
 import pandas as pd
 from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union, observe
@@ -19,22 +18,31 @@ from .annotations_traits import (
 from .label_placement import DEFAULT_TILE_SIZE, INITIAL_TILE, LabelPlacement, to_js
 from .serializers import df_serialization, ndarray_serialization
 from .traittypes import Array, DataFrame
-from .types import UNDEF, Undefined, WidgetButtons
+from .types import UNDEF, Undefined
 from .utils import is_categorical_data
-from .widgets import Button, ButtonChoice, ButtonIntSlider, Divider
 
 SELECTION_DTYPE = 'uint32'
 EVENT_TYPES = {
-    'FULL_SCREEN': 'full_screen',
     'TOOLTIP': 'tooltip',
-    'VIEW_DOWNLOAD': 'view_download',
     'VIEW_RESET': 'view_reset',
     'VIEW_SAVE': 'view_save',
 }
 BRUSH_SIZE_MIN = 1
 BRUSH_SIZE_MAX = 128
-
-divider = Divider()
+TOOLBAR_BUTTONS_DEFAULT = [
+    'pan_zoom',
+    'lasso',
+    'lasso_type',
+    'lasso_brush_size',
+    'divider',
+    'full_screen',
+    'download',
+    'reset',
+]
+TOOLBAR_BUTTONS_VALID = {
+    *TOOLBAR_BUTTONS_DEFAULT,
+    'save',
+}
 
 
 def component_idx_to_name(idx):
@@ -62,6 +70,7 @@ def get_record(data, index):
 
 class JupyterScatter(anywidget.AnyWidget):
     _esm = pathlib.Path(__file__).parent / 'bundle.js'
+    _css = pathlib.Path(__file__).parent / 'bundle.css'
 
     data: t.Optional[pd.DataFrame]
     label_placement: t.Optional[LabelPlacement]
@@ -198,6 +207,10 @@ class JupyterScatter(anywidget.AnyWidget):
     lasso_type = Enum(['freeform', 'brush', 'rectangle'], default_value='freeform').tag(
         sync=True
     )
+    toolbar_buttons = List(
+        Unicode(),
+        default_value=TOOLBAR_BUTTONS_DEFAULT,
+    ).tag(sync=True)
     lasso_initiator = Bool().tag(sync=True)
     lasso_on_long_press = Bool().tag(sync=True)
     lasso_selection_polygon = Array(
@@ -437,44 +450,6 @@ class JupyterScatter(anywidget.AnyWidget):
                 self.label_placement.get_labels_from_tiles(change['new'])
             )
 
-    def create_download_view_button(self, icon_only=True, width=36):
-        button = Button(
-            description='' if icon_only else 'Download View',
-            tooltip='Download View as PNG',
-            icon='download',
-            width=width,
-        )
-
-        def click_handler(event):
-            self.send(
-                {
-                    'type': EVENT_TYPES['VIEW_DOWNLOAD'],
-                    'transparentBackgroundColor': bool(event['alt_key']),
-                }
-            )
-
-        button.on_click(click_handler)
-        return button
-
-    def create_save_view_button(self, icon_only=True, width=36):
-        button = Button(
-            description='' if icon_only else 'Save View',
-            tooltip='Save View to Widget Property',
-            icon='camera',
-            width=width,
-        )
-
-        def click_handler(event):
-            self.send(
-                {
-                    'type': EVENT_TYPES['VIEW_SAVE'],
-                    'transparentBackgroundColor': bool(event['alt_key']),
-                }
-            )
-
-        button.on_click(click_handler)
-        return button
-
     def reset_view(self, animation: int = 0, data_extent: bool = False):
         if data_extent:
             self.send(
@@ -492,189 +467,18 @@ class JupyterScatter(anywidget.AnyWidget):
         else:
             self.send({'type': EVENT_TYPES['VIEW_RESET'], 'animation': animation})
 
-    def create_reset_view_button(self, icon_only=True, width=36):
-        button = Button(
-            description='' if icon_only else 'Reset View',
-            icon='refresh',
-            tooltip='Reset View',
-            width=width,
-        )
-
-        def click_handler(event):
-            self.reset_view(500, event['alt_key'])
-
-        button.on_click(click_handler)
-        return button
-
-    def create_full_screen_button(self, icon_only=True, width=36):
-        button = Button(
-            description='' if icon_only else 'Full Screen',
-            icon='expand',
-            tooltip='Full Screen',
-            width=width,
-        )
-
-        def click_handler(event):
-            self.send({'type': EVENT_TYPES['FULL_SCREEN']})
-
-        button.on_click(click_handler)
-        return button
-
-    def create_mouse_mode_toggle_button(self, mouse_mode, icon, tooltip, width=36):
-        button = Button(
-            description='',
-            icon=icon,
-            tooltip=tooltip,
-            width=width,
-            style='primary' if self.mouse_mode == mouse_mode else '',
-        )
-
-        def click_handler(b):
-            button.style = 'primary'
-            self.mouse_mode = mouse_mode
-
-        def change_handler(change):
-            button.style = 'primary' if change['new'] == mouse_mode else ''
-
-        self.observe(change_handler, names=['mouse_mode'])
-
-        button.on_click(click_handler)
-        return button
-
-    def create_lasso_type_button(self):
-        button = ButtonChoice(
-            icon={
-                'freeform': '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path stroke-width="2px" stroke="currentColor" fill="none" d="m15.99958,27.5687c-1.8418,-0.3359 -3.71385,-1.01143 -5.49959,-2.04243c-6.69178,-3.8635 -9.65985,-11.26864 -6.62435,-16.52628c3.0355,-5.25764 10.93258,-6.38978 17.62435,-2.52628c6.1635,3.5585 9.16819,10.12222 7.23126,15.24508"/><circle stroke-width="2px" stroke="currentColor" fill="none" r="3" cy="25" cx="27"/></svg>',
-                'brush': '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path stroke-width="2px" stroke="currentColor" fill="none" d="m25.985,26.755c-5.345,2.455 -10.786,2.981 -14.455,1.899c-3.449,-1.017 -5.53,-3.338 -5.53,-6.654c0,-3.33 1.705,-4.929 3.835,-6.127c0.894,-0.503 1.88,-0.912 2.738,-1.451c0.786,-0.493 1.427,-1.143 1.427,-2.422c0,-1.692 -1.552,-2.769 -3.177,-3.649c-3.177,-1.722 -7.152,-2.378 -7.152,-2.378l0.658,-3.946c0,0 4.665,0.784 8.4,2.806c2.987,1.618 5.271,4.055 5.271,7.167c0,3.33 -1.705,4.929 -3.835,6.127c-0.894,0.503 -1.88,0.912 -2.738,1.451c-0.786,0.493 -1.427,1.143 -1.427,2.422c0,1.486 1.117,2.362 2.662,2.818c2.897,0.854 7.122,0.332 11.338,-1.551"/><circle stroke-width="2px" stroke="currentColor" fill="none" r="3" cy="24" cx="27"/></svg>',
-                'rectangle': '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle  stroke-width="2px" stroke="currentColor" fill="none" r="3" cy="24" cx="27"/><path stroke-linecap="square" stroke-width="2px" stroke="currentColor" fill="none" d="m24,24l-22,0l0,-19l25,0l0,16"/></svg>',
-            },
-            tooltip='Lasso Type',
-            width=36,
-            value=self.lasso_type,
-            options={
-                'freeform': 'Freeform',
-                'brush': 'Brush',
-                'rectangle': 'Rectangle',
-            },
-        )
-
-        def internal_change_handler(change):
-            self.lasso_type = change['new']
-
-        button.observe(internal_change_handler, names=['value'])
-
-        def change_handler(change):
-            button.value = change['new']
-
-        self.observe(change_handler, names=['lasso_type'])
-
-        return button
-
-    def create_lasso_brush_size_button(self):
-        button = ButtonIntSlider(
-            icon='<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle fill="currentColor" r="3" cx="5" cy="16" /><circle fill="currentColor" r="9" cx="21" cy="16" /><path stroke-dasharray="0.5,1.5,0,0,0,0" stroke-width="1px" stroke="currentColor" fill="none" d="m5,13.717l12.378,-5.38l0.031,15.353l-12.409,-5.363l0,-4.61z"/></svg>',
-            tooltip='Brush Size',
-            width=36,
-            slider_label='Brush Size',
-            slider_label_value_suffix='px',
-            slider_label_width=32,
-            slider_width=128,
-            value=self.lasso_brush_size,
-            value_min=BRUSH_SIZE_MIN,
-            value_max=BRUSH_SIZE_MAX,
-            value_step=1,
-        )
-
-        def internal_change_handler(change):
-            self.lasso_brush_size = change['new']
-
-        button.observe(internal_change_handler, names=['value'])
-
-        def change_handler(change):
-            button.value = change['new']
-
-        self.observe(change_handler, names=['lasso_brush_size'])
-
-        return button
-
-    def show(
-        self, buttons: t.Optional[t.Union[t.List[WidgetButtons], Undefined]] = UNDEF
-    ):
-        button_pan_zoom = self.create_mouse_mode_toggle_button(
-            mouse_mode='panZoom',
-            icon='arrows',
-            tooltip='Activate pan & zoom',
-        )
-        button_pan_zoom.disabled = self.camera_is_fixed
-        button_lasso = self.create_mouse_mode_toggle_button(
-            mouse_mode='lasso',
-            icon='crosshairs',
-            tooltip='Activate lasso selection',
-        )
-        # Hide the rotate button for now until we find a robust way to only use
-        # it while axes are hidden.
-        # button_rotate = self.create_mouse_mode_toggle_button(
-        #     mouse_mode='rotate',
-        #     icon='undo',
-        #     tooltip='Activate rotation',
-        # )
-        button_view_save = self.create_save_view_button()
-        button_view_download = self.create_download_view_button()
-        button_view_reset = self.create_reset_view_button()
-        button_full_screen = self.create_full_screen_button()
-        button_lasso_type = self.create_lasso_type_button()
-        button_lasso_brush_size = self.create_lasso_brush_size_button()
-        button_lasso_brush_size.visible = self.lasso_type == 'brush'
-
-        def lasso_type_change_handler(change):
-            button_lasso_brush_size.visible = change['new'] == 'brush'
-
-        self.observe(lasso_type_change_handler, names=['lasso_type'])
-
-        button_map = {
-            'pan_zoom': button_pan_zoom,
-            'lasso': button_lasso,
-            'save': button_view_save,
-            'download': button_view_download,
-            'reset': button_view_reset,
-            'full_screen': button_full_screen,
-            'divider': divider,
-            'lasso_type': button_lasso_type,
-            'lasso_brush_size': button_lasso_brush_size,
-        }
-
+    def show(self, buttons=UNDEF):
         if buttons is not UNDEF:
-            button_widgets = [
-                button_map[button] for button in buttons if button in button_map
-            ]
+            unknown = set(buttons) - TOOLBAR_BUTTONS_VALID
+            if unknown:
+                import warnings
+
+                warnings.warn(
+                    f'Unknown toolbar button(s): {unknown}. '
+                    f'Valid options: {sorted(TOOLBAR_BUTTONS_VALID)}',
+                    stacklevel=2,
+                )
+            self.toolbar_buttons = [b for b in buttons if b in TOOLBAR_BUTTONS_VALID]
         else:
-            button_widgets = [
-                button_pan_zoom,
-                button_lasso,
-                button_lasso_type,
-                button_lasso_brush_size,
-                # button_rotate,
-                divider,
-                button_full_screen,
-                # button_view_save,
-                button_view_download,
-                button_view_reset,
-            ]
-
-        buttons = widgets.VBox(
-            children=button_widgets,
-            layout=widgets.Layout(
-                display='flex', flex_flow='column', align_items='stretch', width='40px'
-            ),
-        )
-
-        plots = widgets.VBox(
-            children=[self], layout=widgets.Layout(flex='1', width='auto')
-        )
-
-        def camera_is_fixed_change_handler(change):
-            button_pan_zoom.disabled = change['new']
-
-        self.observe(camera_is_fixed_change_handler, names=['camera_is_fixed'])
-
-        return widgets.VBox([widgets.HBox([buttons, plots])])
+            self.toolbar_buttons = list(TOOLBAR_BUTTONS_DEFAULT)
+        return self

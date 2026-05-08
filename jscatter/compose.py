@@ -251,10 +251,10 @@ def compose(
             get_scatter(i).widget.view_sync = uuid
 
     def get_scatter_widget(i):
-        scatter_widget = get_scatter(i).widget.show()
+        scatter_widget = get_scatter(i).widget
         if has_titles:
             title = HTML(
-                value=f'<b style="display: flex; justify-content: center; margin: 0 0 0 38px;">{get_title(i)}</b>',
+                value=f'<b style="display: flex; justify-content: center;">{get_title(i)}</b>',
             )
             return VBox([title, scatter_widget])
         return scatter_widget

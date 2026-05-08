@@ -11,14 +11,16 @@
   "scripts": {
     "clean": "rm ../jscatter/bundle.js",
     "prepare": "npm run lint && npm run build",
-    "build": "esbuild --bundle --format=esm --outfile=../jscatter/bundle.js src/index.js",
+    "build": "node build.mjs",
     "lint": "biome check --write src",
-    "watch": "npm run build -- --watch",
+    "watch": "node build.mjs --watch",
+    "dev": "npm run watch",
     "test": "npm run lint"
   },
   "dependencies": {
     "@flekschas/utils": "^0.32.2",
     "@jupyter-widgets/base": "^1.1 || ^2 || ^3 || ^4 || ^5 || ^6",
+    "@phosphor-icons/react": "^2.1.7",
     "@uwdata/flechette": "^2.0.0",
     "d3-axis": "~3.0.0",
     "d3-format": "~3.1.0",
@@ -28,12 +30,17 @@
     "d3-time": "~3.1.0",
     "d3-time-format": "~4.1.0",
     "gl-matrix": "~3.3.0",
+    "jotai": "^2.12.3",
     "pub-sub-es": "~3.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "regl": "~2.1.0",
     "regl-scatterplot": "~1.14.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "esbuild": "^0.25.0"
+    "@tailwindcss/cli": "^4.1.5",
+    "esbuild": "^0.25.0",
+    "tailwindcss": "^4.1.5"
   }
 }

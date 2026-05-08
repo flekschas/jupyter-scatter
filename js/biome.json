@@ -20,6 +20,6 @@
     }
   },
   "files": {
-    "include": ["src/*.js"]
+    "include": ["src/**/*.js", "src/**/*.jsx"]
   }
 }
