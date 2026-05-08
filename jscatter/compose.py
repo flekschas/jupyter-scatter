@@ -1,5 +1,4 @@
 from uuid import uuid4
-from ipywidgets.widgets import GridBox, HTML, Layout, VBox
 from typing import List, Optional, Union, Tuple
 
 from .jscatter import Scatter
@@ -7,6 +6,72 @@ from .jscatter import Scatter
 TITLE_HEIGHT = 28
 AXES_LABEL_SIZE = 16
 AXES_PADDING_Y = 20
+
+
+def _is_marimo():
+    try:
+        import marimo as mo
+
+        return mo.running_in_notebook()
+    except (ImportError, AttributeError):
+        return False
+
+
+def _marimo_html(value=''):
+    import marimo as mo
+
+    return mo.Html(value)
+
+
+def _marimo_vstack(children):
+    import marimo as mo
+
+    return mo.vstack(children, gap=0)
+
+
+def _marimo_grid(children, cols, rows, row_height):
+    import marimo as mo
+
+    items = ''.join(
+        f'<div style="min-height:{row_height}px">{child.text}</div>'
+        if hasattr(child, 'text')
+        else f'<div style="min-height:{row_height}px">{child}</div>'
+        for child in children
+    )
+
+    return mo.Html(
+        f'<div style="'
+        f'display:grid;'
+        f'grid-template-columns:{" ".join(["1fr"] * cols)};'
+        f'grid-template-rows:{" ".join([f"{row_height}px"] * rows)};'
+        f'gap:2px'
+        f'">{items}</div>'
+    )
+
+
+def _ipywidgets_html(value=''):
+    from ipywidgets.widgets import HTML
+
+    return HTML(value=value)
+
+
+def _ipywidgets_vstack(children):
+    from ipywidgets.widgets import VBox
+
+    return VBox(children)
+
+
+def _ipywidgets_grid(children, cols, rows, row_height):
+    from ipywidgets.widgets import GridBox, Layout
+
+    return GridBox(
+        children=children,
+        layout=Layout(
+            grid_template_columns=' '.join(['1fr' for _ in range(cols)]),
+            grid_template_rows=' '.join([f'{row_height}px' for _ in range(rows)]),
+            grid_gap='2px',
+        ),
+    )
 
 
 def compose(
@@ -45,8 +110,8 @@ def compose(
 
     Returns
     -------
-    GridBox
-        An `ipywidget.GridBox` widget
+    widget
+        A grid layout widget (ipywidgets GridBox or marimo Html)
 
     See Also
     --------
@@ -55,8 +120,12 @@ def compose(
     Examples
     --------
     >>> compose([scatter_a, scatter_b], cols=1, sync_selection=True)
-    <ipywidget.ipywidget.GridBox>
     """
+    use_marimo = _is_marimo()
+    html = _marimo_html if use_marimo else _ipywidgets_html
+    vstack = _marimo_vstack if use_marimo else _ipywidgets_vstack
+    grid = _marimo_grid if use_marimo else _ipywidgets_grid
+
     if rows is not None and cols is not None:
         assert len(scatters) <= rows * cols
     elif cols is not None:
@@ -252,19 +321,17 @@ def compose(
     def get_scatter_widget(i):
         scatter_widget = get_scatter(i).widget
         if has_titles:
-            title = HTML(
-                value=f'<b style="display: flex; justify-content: center;">{get_title(i)}</b>',
+            title = html(
+                f'<b style="display: flex; justify-content: center;">{get_title(i)}</b>',
             )
-            return VBox([title, scatter_widget])
+            return vstack([title, scatter_widget])
         return scatter_widget
 
-    return GridBox(
-        children=[get_scatter_widget(i) for i, _ in enumerate(scatters)],
-        layout=Layout(
-            grid_template_columns=' '.join(['1fr' for x in range(cols)]),
-            grid_template_rows=' '.join([f'{row_height}px' for x in range(rows)]),
-            grid_gap='2px',
-        ),
+    return grid(
+        [get_scatter_widget(i) for i, _ in enumerate(scatters)],
+        cols,
+        rows,
+        row_height,
     )
 
 
@@ -296,8 +363,8 @@ def link(
 
     Returns
     -------
-    GridBox
-        An `ipywidget.GridBox` widget
+    widget
+        A grid layout widget
 
     See Also
     --------
@@ -306,7 +373,6 @@ def link(
     Examples
     --------
     >>> link([Scatter(data=df_a, x='x', y='y'), Scatter(data=df_a, x='x', y='y')])
-    <ipywidget.ipywidget.GridBox>
     """
     return compose(
         scatters,
