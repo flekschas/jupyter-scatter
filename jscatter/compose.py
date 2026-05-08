@@ -1,6 +1,5 @@
 from uuid import uuid4
 from ipywidgets.widgets import GridBox, HTML, Layout, VBox
-from itertools import zip_longest
 from typing import List, Optional, Union, Tuple
 
 from .jscatter import Scatter
