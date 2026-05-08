@@ -1,6 +1,11 @@
 ## v0.23.0
 
+- Feat: use categorical color encoding in histogram bars ([#97](https://github.com/flekschas/jupyter-scatter/issues/97))
 - Refactor: move toolbar UI from Python ipywidgets to TS React. This enables full Marimo support 🎉
+- Chore: add `straight` option to connect() for straight line connections ([#130](https://github.com/flekschas/jupyter-scatter/pull/130))
+- Fix: Unused categories cause wrong colors/legend ([#189](https://github.com/flekschas/jupyter-scatter/issues/189) via [#233](https://github.com/flekschas/jupyter-scatter/pull/233))
+- Fix: Wrong coloring when switching color_by between categorical/continuous ([#191](https://github.com/flekschas/jupyter-scatter/issues/191) via [#233](https://github.com/flekschas/jupyter-scatter/pull/233))
+- Fix: Exception when updating data with changed categories ([#197](https://github.com/flekschas/jupyter-scatter/issues/197) via [#233](https://github.com/flekschas/jupyter-scatter/pull/233))
 
 ## v0.22.3
 

@@ -1313,6 +1313,9 @@ class JupyterScatterView {
       this[`tooltipProperty${toCapitalCase(property)}ValueHistogram`]?.style(
         fg,
         `rgb(${contrast}, ${contrast}, ${contrast}, 0.2)`,
+        property === 'color'
+          ? this.getCategoricalColorHistogramColors()
+          : undefined,
       );
     }
 
@@ -2486,6 +2489,7 @@ class JupyterScatterView {
       this.model.get('color_histogram'),
       this.model.get('color_scale') === 'categorical',
     );
+    this.styleTooltipColorHistogram();
     this.createColorGetter();
   }
 
@@ -2649,6 +2653,7 @@ class JupyterScatterView {
   colorHandler(newValue) {
     this.createColorScale();
     this.createColorGetter();
+    this.styleTooltipColorHistogram();
     this.withPropertyChangeHandler('pointColor', newValue);
   }
 
@@ -3086,6 +3091,44 @@ class JupyterScatterView {
   getYPadding() {
     const xLabel = this.model.get('axes_labels')?.[0];
     return xLabel ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
+  }
+
+  styleTooltipColorHistogram() {
+    const histogram = this.tooltipPropertyColorValueHistogram;
+    if (!histogram) {
+      return;
+    }
+
+    const color = this.model
+      .get('tooltip_color')
+      .map((c) => Math.round(c * 255));
+    const contrast = color[0] <= 127 ? 255 : 0;
+    const fg = `rgb(${contrast}, ${contrast}, ${contrast})`;
+
+    histogram.style(
+      fg,
+      `rgb(${contrast}, ${contrast}, ${contrast}, 0.2)`,
+      this.getCategoricalColorHistogramColors(),
+    );
+  }
+
+  getCategoricalColorHistogramColors() {
+    if (this.model.get('color_scale') !== 'categorical') {
+      return undefined;
+    }
+    const colors = this.model.get('color');
+    if (!colors) {
+      return undefined;
+    }
+    return Object.fromEntries(
+      colors.map((color, i) => [
+        i,
+        `rgb(${color
+          .slice(0, 3)
+          .map((v) => Math.round(v * 255))
+          .join(', ')})`,
+      ]),
+    );
   }
 
   showHistogram(property) {
