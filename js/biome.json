@@ -17,6 +17,16 @@
     "enabled": true,
     "rules": {
       "all": true,
+      "correctness": {
+        "useImportExtensions": "off",
+        "noUndeclaredVariables": "off"
+      },
+      "style": {
+        "useNamingConvention": "off"
+      },
+      "complexity": {
+        "useSimplifiedLogicExpression": "off"
+      },
       "suspicious": {
         "noReactSpecificProps": "off"
       }

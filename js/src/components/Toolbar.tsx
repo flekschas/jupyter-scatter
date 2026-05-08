@@ -61,15 +61,11 @@ function toBgCss(bgColor: BackgroundColor): string | undefined {
 }
 
 const BUTTON_MAP: Record<string, () => React.ReactNode> = {
-  // biome-ignore lint/style/useNamingConvention: matches Python traitlet value
   pan_zoom: () => <MouseModeToggle mode="panZoom" />,
   lasso: () => <MouseModeToggle mode="lasso" />,
-  // biome-ignore lint/style/useNamingConvention: matches Python traitlet value
   lasso_type: () => <LassoTypeChoice />,
-  // biome-ignore lint/style/useNamingConvention: matches Python traitlet value
   lasso_brush_size: () => <BrushSizeSlider />,
   divider: () => <Divider />,
-  // biome-ignore lint/style/useNamingConvention: matches Python traitlet value
   full_screen: () => <FullScreenButton />,
   save: () => <SaveButton />,
   download: () => <DownloadButton />,

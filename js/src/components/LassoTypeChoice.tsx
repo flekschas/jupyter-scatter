@@ -10,7 +10,6 @@ import { BrushLassoIcon, FreeformLassoIcon, RectangleLassoIcon } from './icons';
 interface LassoOption {
   value: string;
   label: string;
-  // biome-ignore lint/style/useNamingConvention: Icon is a React component
   Icon: ComponentType<IconProps>;
 }
 

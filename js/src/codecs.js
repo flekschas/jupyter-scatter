@@ -135,7 +135,6 @@ export function Numpy1D(dtype) {
 }
 
 export function Annotations() {
-  // biome-ignore lint/style/useNamingConvention: the whole point here is to convert Python-based snake_case props to JavaScript-based camelCase
   const pyToJsKey = { x_start: 'x1', x_end: 'x2', y_start: 'y1', y_end: 'y2' };
   const jsToPyKey = { x1: 'x_start', x2: 'x_end', y1: 'y_start', y2: 'y_end' };
   return {

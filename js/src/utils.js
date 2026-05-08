@@ -204,12 +204,10 @@ export function createTimeFormat(points, accessor) {
   return formatMillisecond;
 }
 
-// biome-ignore lint/style/useNamingConvention: XTime stands for x time
 export function createXTimeFormat(points) {
   return createTimeFormat(points, (point) => point[0]);
 }
 
-// biome-ignore lint/style/useNamingConvention: YTime stands for y time
 export function createYTimeFormat(points) {
   return createTimeFormat(points, (point) => point[1]);
 }

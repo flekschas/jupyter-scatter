@@ -5,11 +5,8 @@ const sortOrder = {
   color: 0,
   opacity: 1,
   size: 2,
-  // biome-ignore lint/style/useNamingConvention: Coming from Python land
   connection_color: 3,
-  // biome-ignore lint/style/useNamingConvention: Coming from Python land
   connection_opacity: 4,
-  // biome-ignore lint/style/useNamingConvention: Coming from Python land
   connection_size: 5,
 };
 

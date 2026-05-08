@@ -684,9 +684,7 @@ class JupyterScatterView {
 
     const [width, height] = this.getOuterDimensions();
 
-    // biome-ignore lint/style/useNamingConvention: XScale stands for x scale
     const currentXScaleRegl = this.scatterplot.get('xScale');
-    // biome-ignore lint/style/useNamingConvention: YScale stands for y scale
     const currentYScaleRegl = this.scatterplot.get('yScale');
 
     const [xLabel, yLabel] = this.model.get('axes_labels') || [];
@@ -1587,7 +1585,6 @@ class JupyterScatterView {
     return this.scatterplot.get('points');
   }
 
-  // biome-ignore lint/style/useNamingConvention: XGetter stands for X Getter
   createXGetter() {
     if (!this.xScale) {
       this.createXScale();
@@ -1609,7 +1606,6 @@ class JupyterScatterView {
     };
   }
 
-  // biome-ignore lint/style/useNamingConvention: YGetter stands for Y Getter
   createYGetter() {
     if (!this.yScale) {
       this.createYScale();
@@ -2346,7 +2342,6 @@ class JupyterScatterView {
     }
   }
 
-  // biome-ignore lint/style/useNamingConvention: XScale stands for X Scale
   createXScale() {
     const domain = this.model.get('x_scale_domain');
     const scale = this.model.get('x_scale');
@@ -2359,7 +2354,6 @@ class JupyterScatterView {
         : format(getD3FormatSpecifier(domain));
   }
 
-  // biome-ignore lint/style/useNamingConvention: YScale stands for Y Scale
   createYScale() {
     const domain = this.model.get('y_scale_domain');
     const scale = this.model.get('y_scale');
@@ -3093,13 +3087,11 @@ class JupyterScatterView {
     this.scatterplot.set(p);
   }
 
-  // biome-ignore lint/style/useNamingConvention: XPadding stands for X Padding
   getXPadding() {
     const yLabel = this.model.get('axes_labels')?.[1];
     return yLabel ? AXES_PADDING_X_WITH_LABEL : AXES_PADDING_X;
   }
 
-  // biome-ignore lint/style/useNamingConvention: YPadding stands for Y Padding
   getYPadding() {
     const xLabel = this.model.get('axes_labels')?.[0];
     return xLabel ? AXES_PADDING_Y_WITH_LABEL : AXES_PADDING_Y;
@@ -3144,7 +3136,6 @@ function modelWithSerializers(model, serializers) {
       }
     },
     on: model.on.bind(model),
-    // biome-ignore lint/style/useNamingConvention: coming from Python-land
     save_changes: model.save_changes.bind(model),
     send: model.send.bind(model),
   };
@@ -3157,12 +3148,9 @@ async function render({ model, el }) {
       points: Numpy2D('float32'),
       selection: Numpy1D('uint32'),
       filter: Numpy1D('uint32'),
-      // biome-ignore lint/style/useNamingConvention: coming from Python-land
       view_data: NumpyImage(),
-      // biome-ignore lint/style/useNamingConvention: coming from Python-land
       zoom_to: Numpy1D('uint32'),
       annotations: Annotations(),
-      // biome-ignore lint/style/useNamingConvention: coming from Python-land
       lasso_selection_polygon: Numpy2D('float32'),
       labels: Table(),
     }),

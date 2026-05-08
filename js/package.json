@@ -15,7 +15,7 @@
     "lint": "biome check --write src",
     "watch": "node build.mjs --watch",
     "dev": "npm run watch",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "npx tsc --noEmit",
     "test": "npm run lint && npm run typecheck"
   },
   "dependencies": {
