@@ -91,7 +91,6 @@ dev = [
   "anywidget[dev]",
   "jupyterlab",
   "marimo",
-  "pre-commit",
   "pyarrow",
   "pytest",
   "pytest-cov",
