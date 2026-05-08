@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
-import polars as pl
 import pyarrow as pa
 import pytest
+
+pl = pytest.importorskip('polars')
 
 from jscatter.jscatter import Scatter, check_encoding_dtype
 from jscatter.dataframe_utils import ensure_pandas, _natural_sort_key
