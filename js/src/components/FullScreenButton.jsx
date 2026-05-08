@@ -19,7 +19,9 @@ export function FullScreenButton() {
 
   return (
     <Button
-      icon={isFullscreen ? <ResizeIcon size={18} /> : <FrameCornersIcon size={18} />}
+      icon={
+        isFullscreen ? <ResizeIcon size={18} /> : <FrameCornersIcon size={18} />
+      }
       tooltip="Full Screen"
       onClick={() => scatterView.toggleFullscreen()}
     />

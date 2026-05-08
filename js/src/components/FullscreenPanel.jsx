@@ -89,7 +89,7 @@ export function FullscreenPanel() {
 
   return (
     <div
-      class="jss:relative"
+      className="jss:relative"
       style={{
         height: expanded ? '3rem' : '0',
         transition: 'height 250ms ease',
@@ -99,7 +99,7 @@ export function FullscreenPanel() {
       <button
         type="button"
         onClick={handleToggle}
-        class={[
+        className={[
           'jss:absolute jss:left-0 jss:bottom-full',
           'jss:w-9 jss:h-[18px] jss:mx-0.5',
           'jss:flex jss:items-center jss:justify-center',
@@ -114,7 +114,7 @@ export function FullscreenPanel() {
 
       {/* Panel content */}
       <div
-        class={[
+        className={[
           'jss:relative jss:flex jss:items-center',
           'jss:gap-x-4 jss:px-0.5 jss:py-2',
           'jss:border-t-2 jss:border-solid jss:border-border',
@@ -122,7 +122,7 @@ export function FullscreenPanel() {
         ].join(' ')}
       >
         {/* Full Width & Height */}
-        <label class="jss:flex jss:items-center jss:gap-x-1">
+        <label className="jss:flex jss:items-center jss:gap-x-1">
           Full Width &amp; Height
           <input
             type="checkbox"
@@ -133,7 +133,7 @@ export function FullscreenPanel() {
 
         {/* Width */}
         <label
-          class="jss:flex jss:items-center jss:gap-x-1"
+          className="jss:flex jss:items-center jss:gap-x-1"
           style={{ color: disabledColor }}
         >
           Width
@@ -156,7 +156,7 @@ export function FullscreenPanel() {
 
         {/* Height */}
         <label
-          class="jss:flex jss:items-center jss:gap-x-1"
+          className="jss:flex jss:items-center jss:gap-x-1"
           style={{ color: disabledColor }}
         >
           Height
@@ -179,12 +179,12 @@ export function FullscreenPanel() {
 
         {/* Divider */}
         <div
-          class="jss:w-0.5 jss:h-7"
+          className="jss:w-0.5 jss:h-7"
           style={{ background: 'var(--jss-border)' }}
         />
 
         {/* Scale */}
-        <label class="jss:flex jss:items-center jss:gap-x-1">
+        <label className="jss:flex jss:items-center jss:gap-x-1">
           Scale
           <select
             value={exportScale}
@@ -204,7 +204,7 @@ export function FullscreenPanel() {
 
         {/* DPR */}
         <label
-          class="jss:flex jss:items-center jss:gap-x-1"
+          className="jss:flex jss:items-center jss:gap-x-1"
           title="Device Pixel Ratio"
           style={{ color: 'var(--jss-text-secondary)' }}
         >
@@ -224,7 +224,7 @@ export function FullscreenPanel() {
         <button
           type="button"
           onClick={handleDownload}
-          class={[
+          className={[
             'jss:border jss:border-solid jss:border-border',
             'jss:rounded-sm! jss:px-3 jss:py-1',
             'jss:bg-bg jss:text-fg',

@@ -16,7 +16,10 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "all": true
+      "all": true,
+      "suspicious": {
+        "noReactSpecificProps": "off"
+      }
     }
   },
   "files": {

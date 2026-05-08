@@ -69,14 +69,17 @@ function ToolbarInner({ atoms }) {
 
   const bgCss = Array.isArray(bgColor)
     ? bgColor.length === 4
-      ? `rgba(${bgColor.slice(0, 3).map((c) => c * 255).join(',')}, ${bgColor[3]})`
+      ? `rgba(${bgColor
+          .slice(0, 3)
+          .map((c) => c * 255)
+          .join(',')}, ${bgColor[3]})`
       : `rgb(${bgColor.map((c) => c * 255).join(',')})`
     : bgColor || undefined;
 
   return (
     <div
       data-jss-theme={theme}
-      class="jss:flex jss:flex-col jss:items-stretch jss:w-9 jss:h-full jss:gap-0.5 jss:p-1"
+      className="jss:flex jss:flex-col jss:items-stretch jss:w-9 jss:h-full jss:gap-0.5 jss:p-1"
       style={{ backgroundColor: bgCss }}
     >
       {buttons.map((name) => {

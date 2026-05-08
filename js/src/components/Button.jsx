@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 export const Button = forwardRef(function Button(
-  { icon, children, tooltip, active, disabled, onClick, class: className },
+  { icon, children, tooltip, active, disabled, onClick, className },
   ref,
 ) {
   return (
@@ -11,7 +11,7 @@ export const Button = forwardRef(function Button(
       title={tooltip}
       disabled={disabled}
       onClick={onClick}
-      class={[
+      className={[
         'jss:flex jss:items-center jss:justify-center',
         'jss:rounded-sm! jss:focus-ring',
         'jss:cursor-pointer',

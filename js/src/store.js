@@ -6,21 +6,37 @@ import { atom, createStore } from 'jotai';
  */
 export function atomWithModel(model, propertyName) {
   const baseAtom = atom(model.get(propertyName));
+  let writing = false;
 
   const derivedAtom = atom(
     (get) => get(baseAtom),
     (_get, set, newValue) => {
+      writing = true;
       model.set(propertyName, newValue);
       model.save_changes();
       set(baseAtom, newValue);
+      writing = false;
     },
   );
 
-  // Subscribe to model changes (from Python side)
+  // Subscribe to model changes (from Python side only)
   derivedAtom.onMount = (setAtom) => {
-    const handler = () => setAtom(model.get(propertyName));
+    const handler = () => {
+      if (writing) { return; }
+      try {
+        setAtom(model.get(propertyName));
+      } catch {
+        // Model may be disposed during widget teardown
+      }
+    };
     model.on(`change:${propertyName}`, handler);
-    return () => model.off(`change:${propertyName}`, handler);
+    return () => {
+      try {
+        model.off(`change:${propertyName}`, handler);
+      } catch {
+        // Model may already be disposed
+      }
+    };
   };
 
   return derivedAtom;
