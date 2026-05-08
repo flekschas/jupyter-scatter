@@ -1,3 +1,7 @@
+## v0.23.0
+
+- Chore: add `straight` option to connect() for straight line connections ([#130](https://github.com/flekschas/jupyter-scatter/pull/130))
+
 ## v0.22.3
 
 - Fix: geoindex-rs import compatibility ([#222](https://github.com/flekschas/jupyter-scatter/pull/222))

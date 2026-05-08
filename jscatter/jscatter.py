@@ -420,6 +420,7 @@ class Scatter:
         self._connect_by_data = None
         self._connect_order = None
         self._connect_order_data = None
+        self._connection_style_straight = False
         self._connection_color = (
             (0, 0, 0, 0.1) if self._background_color_luminance > 0.5 else (1, 1, 1, 0.1)
         )
@@ -533,7 +534,9 @@ class Scatter:
             kwargs.get('size_scale_function', UNDEF),
         )
         self.connect(
-            kwargs.get('connect_by', UNDEF), kwargs.get('connect_order', UNDEF)
+            kwargs.get('connect_by', UNDEF),
+            kwargs.get('connect_order', UNDEF),
+            kwargs.get('connect_straight', UNDEF),
         )
         self.connection_color(
             kwargs.get('connection_color', UNDEF),
@@ -2150,6 +2153,7 @@ class Scatter:
         self,
         by: Optional[Union[str, List[int], np.ndarray[int], None, Undefined]] = UNDEF,
         order: Optional[Union[List[int], np.ndarray[int], None, Undefined]] = UNDEF,
+        straight: Optional[Union[bool, Undefined]] = UNDEF,
         **kwargs,
     ):
         """
@@ -2167,6 +2171,9 @@ class Scatter:
             connected in the order they appear in data. The ordering overrides
             this behavior by providing a per-connection relative ordering. It
             must be specified as an array-like list of ints.
+        straight : bool, optional
+            If ``True``, points are connected by straight lines instead of the
+            default curved (spline-interpolated) lines.
         kwargs : optional
             Options which can be used to skip updating the widget when
             `skip_widget_update` is set to `True`
@@ -2188,8 +2195,11 @@ class Scatter:
         >>> scatter.connect(by='group')
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.connect(by='group', straight=True)
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.connect()
-        {'by': 'group', 'order': None}
+        {'by': 'group', 'order': None, 'straight': False}
         """
         data_updated = False
         if by is not UNDEF:
@@ -2234,6 +2244,16 @@ class Scatter:
 
                 data_updated = True
 
+        if straight is not UNDEF:
+            self._connection_style_straight = bool(straight)
+            opts = {**self._regl_scatterplot_options}
+            if self._connection_style_straight:
+                opts['pointConnectionTolerance'] = 1
+            else:
+                opts.pop('pointConnectionTolerance', None)
+            self._regl_scatterplot_options = opts
+            self.update_widget('regl_scatterplot_options', opts)
+
         if data_updated and 'skip_widget_update' not in kwargs:
             self.update_widget('prevent_filter_reset', True)
             self.update_widget('non_spatial_points_update', True)
@@ -2241,12 +2261,13 @@ class Scatter:
 
         self.update_widget('connect', bool(self._connect_by))
 
-        if any_not([by, order], UNDEF):
+        if any_not([by, order, straight], UNDEF):
             return self
 
         return dict(
             by=self._connect_by,
             order=self._connect_order,
+            straight=self._connection_style_straight,
         )
 
     @property
