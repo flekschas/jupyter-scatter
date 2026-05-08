@@ -9,8 +9,11 @@ def df_to_arrow_ipc_buffer(df, obj=None, force_contiguous=True):
     if df is None:
         return None
 
-    # Convert pandas DataFrame to Arrow Table
-    table = pa.Table.from_pandas(df)
+    # Convert to Arrow Table, supporting PyCapsule Interface (Polars, etc.)
+    if hasattr(df, '__arrow_c_stream__') and not isinstance(df, pd.DataFrame):
+        table = pa.RecordBatchReader.from_stream(df).read_all()
+    else:
+        table = pa.Table.from_pandas(df)
 
     # Create an in-memory buffer
     buf = io.BytesIO()

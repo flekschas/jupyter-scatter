@@ -16,6 +16,8 @@ from matplotlib.colors import (
     to_rgba,
 )
 
+from .dataframe_utils import ensure_pandas
+
 from .annotations import HLine, Line, Rect, VLine
 from .color_maps import glasbey_dark, glasbey_light, gray_dark, gray_light, okabe_ito
 from .composite_annotations import CompositeAnnotation, Contour
@@ -264,7 +266,7 @@ class Scatter:
         self,
         x: Union[str, List[float], np.ndarray],
         y: Union[str, List[float], np.ndarray],
-        data: Optional[pd.DataFrame] = None,
+        data=None,
         **kwargs,
     ):
         """
@@ -278,10 +280,12 @@ class Scatter:
         y : str, array_like
             The y coordinates given as either an array-like list of coordinates
             or a string referencing a column in `data`.
-        data : pd.DataFrame, optional
+        data : DataFrame, optional
             The data frame that holds the x and y coordinates as well as other
             possible dimensions that can be used for color, size, or opacity
-            encoding.
+            encoding. Supports Pandas and Polars DataFrames as well as any
+            object implementing the Arrow PyCapsule Interface
+            (``__arrow_c_stream__``).
         kwargs : optional
             Options to customize the scatter instance and the visual encoding.
             See https://jupyter-scatter.dev/api#properties
@@ -307,7 +311,7 @@ class Scatter:
         >>> scatter.x(data=df, x='weight', y='speed', color_by='length')
         <jscatter.jscatter.Scatter>
         """
-        self._data = data
+        self._data = ensure_pandas(data)
         self._data_use_index = kwargs.get('data_use_index', False)
 
         try:
@@ -664,7 +668,7 @@ class Scatter:
 
     def data(
         self,
-        data: Optional[pd.DataFrame] = None,
+        data=None,
         use_index: Optional[Union[bool, Undefined]] = UNDEF,
         reset_scales: Optional[bool] = False,
         zoom_view: Optional[bool] = False,
@@ -672,14 +676,16 @@ class Scatter:
         **kwargs,
     ) -> Union[Scatter, dict]:
         """
-        Set or get the referenced Pandas DataFrame
+        Set or get the referenced DataFrame
 
         Parameters
         ----------
-        data : pd.DataFrame, optional
+        data : DataFrame, optional
             The new data frame that holds the x and y coordinates as well as
             other possible dimensions that can be used for color, size, or
-            opacity encoding.
+            opacity encoding. Supports Pandas and Polars DataFrames as well as
+            any object implementing the Arrow PyCapsule Interface
+            (``__arrow_c_stream__``).
         label_index : bool, optional
             If `True` and if the data frame's index is not an instance of
             `RangeIndex` then the selection and filter methods will reference
@@ -720,6 +726,7 @@ class Scatter:
         """
         if data is not None:
             old_n = self._n
+            data = ensure_pandas(data)
 
             try:
                 self._n = len(data)
@@ -5418,7 +5425,7 @@ class Scatter:
 def plot(
     x: Union[str, List[float], np.ndarray],
     y: Union[str, List[float], np.ndarray],
-    data: Optional[pd.DataFrame] = None,
+    data=None,
     **kwargs,
 ):
     """
@@ -5432,10 +5439,12 @@ def plot(
     y : str, array_like
         The y coordinates given as either an array-like list of coordinates
         or a string referencing a column in `data`.
-    data : pd.DataFrame, optional
+    data : DataFrame, optional
         The data frame that holds the x and y coordinates as well as other
         possible dimensions that can be used for color, size, or opacity
-        encoding.
+        encoding. Supports Pandas and Polars DataFrames as well as any
+        object implementing the Arrow PyCapsule Interface
+        (``__arrow_c_stream__``).
     kwargs : optional
         Options to customize the scatter instance and the visual encoding.
         See https://jupyter-scatter.dev/api#properties
