@@ -3,7 +3,7 @@
 - [Scatter](#scatter)
   - [Methods](#methods)
     - [x()](#scatter.x), [y()](#scatter.x), [xy()](#scatter.xy), and [data()](#scatter.data)
-    - [selection()](#scatter.selection) and [filter()](#scatter.filter)
+    - [selection()](#scatter.selection), [filter()](#scatter.filter), and [order()](#scatter.order)
     - [color()](#scatter.color), [opacity()](#scatter.opacity), and [size()](#scatter.size)
     - [connect()](#scatter.connect), [connection_color()](#scatter.connection_color), [connection_opacity()](#scatter.connection_opacity), and [connection_size()](#scatter.connection_size)
     - [axes()](#scatter.axes), [legend()](#scatter.legend), [label()](#scatter.label), and [annotations()](#scatter.annotations)
@@ -195,6 +195,43 @@ Get or set the filtered points. When filtering down to a set of points, all othe
 ```python
 scatter.filter(cars.query('speed < 50').index)
 scatter.filter(None) # To unset filter
+```
+
+
+### scatter.order(_by=Undefined_, _map=Undefined_, _direction=Undefined_, _na\_values=Undefined_) {#scatter.order}
+
+Get or set the draw order of points. Points drawn later appear on top of earlier points. By default, points are drawn in the order they appear in the data. This method allows you to control the draw order without reordering the underlying data.
+
+**Arguments:**
+
+- `by` is either a string referencing a column in `data` (for sorting by column values), an array-like list of integers (used directly as the draw order), or `None` (to reset to the default input order).
+- `map` is a list of category values defining a custom draw sequence. Values earlier in the list are drawn first (behind), values later are drawn last (on top). When set, `direction` is ignored. Missing values (NaN) are still controlled by `na_values`.
+- `direction` is either `'asc'` or `'desc'`. Controls the sort direction when `by` is a column name. `'asc'` draws points with smaller values first (behind). Defaults to `'asc'`.
+- `na_values` is either `'first'`, `'last'`, or `None`. Controls where NaN/missing values are placed in the sort order. `'first'` draws them behind all other points, `'last'` draws them on top. Defaults to `'last'`.
+
+**Returns:** either the current order settings when all arguments are `Undefined` or `self`.
+
+**Examples:**
+
+```python
+# Order by a column (ascending: small values behind, large on top)
+scatter.order(by='price')
+
+# Descending order with NaN behind everything
+scatter.order(by='price', direction='desc', na_values='first')
+
+# Custom category order: B drawn on top
+scatter.order(by='cluster', map=['A', 'C', 'B'])
+
+# Provide a custom draw order directly
+scatter.order(by=[2, 0, 1, 4, 3])
+
+# Reset to default input order
+scatter.order(by=None)
+
+# Get the current order settings
+scatter.order()
+# => {'by': 'price', 'map': None, 'direction': 'desc', 'na_values': 'first'}
 ```
 
 
@@ -742,6 +779,10 @@ You can define those property when creating a `Scatter` instance. For example,
 | `y`                        | str \| list[float] \| ndarray                                                            | `None`                                         |
 | `y_scale`                  | 'linear' \| 'log' \| 'pow' \| tuple[float] \| [LogNorm][lognorm] \| [PowerNorm][pownorm] | `linear`                                       |
 | `selection`                | list[int]                                                                                | `[]`                                           |
+| `order_by`                 | str \| list[int] \| None                                                                 | `None`                                         |
+| `order_map`                | list[str] \| None                                                                        | `None`                                         |
+| `order_direction`          | 'asc' \| 'desc'                                                                          | `'asc'`                                        |
+| `order_na_values`          | 'first' \| 'last' \| None                                                                | `'last'`                                       |
 | `width`                    | int \| 'auto'                                                                            | `'auto'`                                       |
 | `height`                   | int                                                                                      | `240`                                          |
 | `color`                    | str \| tuple[float] \| list[float]                                                       | `(0, 0, 0, 0.66)`                              |
