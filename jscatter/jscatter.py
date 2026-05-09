@@ -504,6 +504,7 @@ class Scatter:
         self._zoom_on_filter = False
         self._point_order = None
         self._order_by = None
+        self._order_map = None
         self._order_direction = 'asc'
         self._order_na_values = 'last'
         self._regl_scatterplot_options = {}
@@ -622,6 +623,7 @@ class Scatter:
         )
         self.order(
             kwargs.get('order_by', UNDEF),
+            kwargs.get('order_map', UNDEF),
             kwargs.get('order_direction', UNDEF),
             kwargs.get('order_na_values', UNDEF),
         )
@@ -1332,7 +1334,20 @@ class Scatter:
                 )
             series = self._data[self._order_by]
             na_position = self._order_na_values or 'last'
-            ascending = self._order_direction != 'desc'
+
+            if self._order_map is not None:
+                # Custom category order: convert to an ordered categorical
+                # so sort_values respects the provided sequence.
+                # Use cat codes directly to avoid deprecation warnings
+                # when the series contains values not in the map.
+                cat_order = {v: i for i, v in enumerate(self._order_map)}
+                # Cast to object first so .map() returns a numeric series
+                # instead of a categorical (which would sort by category order)
+                series = series.astype(object).map(cat_order)
+                ascending = True
+            else:
+                ascending = self._order_direction != 'desc'
+
             sorted_idx = series.sort_values(
                 ascending=ascending,
                 na_position=na_position,
@@ -1345,6 +1360,7 @@ class Scatter:
     def order(
         self,
         by: Optional[Union[str, List[int], np.ndarray, None, Undefined]] = UNDEF,
+        map: Optional[Union[List[str], None, Undefined]] = UNDEF,
         direction: Optional[Union[OrderDirection, Undefined]] = UNDEF,
         na_values: Optional[Union[OrderNaValues, None, Undefined]] = UNDEF,
     ) -> Union[Scatter, dict]:
@@ -1363,11 +1379,16 @@ class Scatter:
             ordering. When set to an integer array, it is used directly as the
             draw order (must be a permutation of point indices). When set to
             ``None``, the order is reset to the default input order.
+        map : list of str or None, optional
+            A custom category order for the column specified by ``by``. Values
+            earlier in the list are drawn first (behind), values later are drawn
+            last (on top). When set, ``direction`` is ignored. Missing values
+            (NaN) are still controlled by ``na_values``.
         direction : {'asc', 'desc'}, optional
             The sort direction when ``by`` is a column name. ``'asc'`` means
             points with smaller values are drawn first (behind). ``'desc'``
-            means points with larger values are drawn first. Defaults to
-            ``'asc'``.
+            means points with larger values are drawn first. Ignored when
+            ``map`` is set. Defaults to ``'asc'``.
         na_values : {'first', 'last'} or None, optional
             Where to place NaN/missing values in the sort order when ``by`` is
             a column name. ``'first'`` draws them behind all other points,
@@ -1387,6 +1408,9 @@ class Scatter:
         >>> scatter.order(by='price', direction='desc', na_values='first')
         <jscatter.jscatter.Scatter>
 
+        >>> scatter.order(by='cluster', map=['A', 'C', 'B'])
+        <jscatter.jscatter.Scatter>
+
         >>> scatter.order(by=[2, 0, 1, 4, 3])
         <jscatter.jscatter.Scatter>
 
@@ -1394,7 +1418,7 @@ class Scatter:
         <jscatter.jscatter.Scatter>
 
         >>> scatter.order()
-        {'by': 'price', 'direction': 'desc', 'na_values': 'first'}
+        {'by': 'price', 'map': None, 'direction': 'desc', 'na_values': 'first'}
         """
         if by is not UNDEF:
             if by is None:
@@ -1402,19 +1426,23 @@ class Scatter:
             else:
                 self._order_by = by
 
+        if map is not UNDEF:
+            self._order_map = map
+
         if direction is not UNDEF:
             self._order_direction = direction
 
         if na_values is not UNDEF:
             self._order_na_values = na_values
 
-        if any_not([by, direction, na_values], UNDEF):
+        if any_not([by, map, direction, na_values], UNDEF):
             self._point_order = self._compute_point_order()
             self.update_widget('point_order', self._point_order)
             return self
 
         return dict(
             by=self._order_by,
+            map=self._order_map,
             direction=self._order_direction,
             na_values=self._order_na_values,
         )

@@ -691,11 +691,11 @@ def test_order_getter(df: pd.DataFrame):
     scatter = Scatter(data=df, x='a', y='b')
 
     result = scatter.order()
-    assert result == {'by': None, 'direction': 'asc', 'na_values': 'last'}
+    assert result == {'by': None, 'map': None, 'direction': 'asc', 'na_values': 'last'}
 
     scatter.order(by='c', direction='desc', na_values='first')
     result = scatter.order()
-    assert result == {'by': 'c', 'direction': 'desc', 'na_values': 'first'}
+    assert result == {'by': 'c', 'map': None, 'direction': 'desc', 'na_values': 'first'}
 
 
 def test_order_fluent_api(df: pd.DataFrame):
@@ -728,6 +728,47 @@ def test_order_with_na_values():
     order_first = scatter.widget.point_order
     # The first two entries in the draw sequence should be the NaN points
     assert set(order_first[:2]) == nan_indices
+
+
+def test_order_map(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    # Custom category order: B drawn last (on top)
+    scatter.order(by='group', map=['A', 'C', 'B'])
+    point_order = scatter.widget.point_order
+    assert point_order is not None
+
+    # Points in the draw sequence should follow the map order:
+    # all A points, then all C points, then all B points
+    groups = df['group'].iloc[point_order].values
+    # Find the last position of each group in the draw sequence
+    last_a = max(i for i, g in enumerate(groups) if g == 'A')
+    first_c = min(i for i, g in enumerate(groups) if g == 'C')
+    last_c = max(i for i, g in enumerate(groups) if g == 'C')
+    first_b = min(i for i, g in enumerate(groups) if g == 'B')
+    assert last_a < first_c
+    assert last_c < first_b
+
+
+def test_order_map_with_na():
+    df = pd.DataFrame(
+        {
+            'x': [0.0, 1.0, 2.0, 3.0, 4.0],
+            'y': [0.0, 1.0, 2.0, 3.0, 4.0],
+            'cat': pd.Categorical(['A', None, 'B', None, 'A']),
+        }
+    )
+    scatter = Scatter(data=df, x='x', y='y')
+
+    # B on top, NaN behind everything
+    scatter.order(by='cat', map=['A', 'B'], na_values='first')
+    order = scatter.widget.point_order
+    # NaN indices (1, 3) should be drawn first
+    assert set(order[:2]) == {1, 3}
+    # Then A, then B
+    cats = df['cat'].iloc[order[2:]].values
+    assert all(c == 'A' for c in cats[: sum(df['cat'] == 'A')])
+    assert all(c == 'B' for c in cats[sum(df['cat'] == 'A') :])
 
 
 def test_order_via_constructor(df: pd.DataFrame):

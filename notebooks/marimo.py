@@ -136,16 +136,23 @@ def _(df_blobs, jscatter):
     scatter_a_top = jscatter.Scatter(
         **_kw, order_by='cluster', order_direction='desc', order_na_values='first'
     )
+    scatter_b_top = jscatter.Scatter(
+        **_kw,
+        order_by='cluster',
+        order_map=['A', 'C', 'B'],
+        order_na_values='first',
+    )
     scatter_na_behind = jscatter.Scatter(
         **_kw, order_by='cluster', order_na_values='last'
     )
 
     jscatter.compose(
         [
-            (scatter_default, 'Default Order'),
-            (scatter_c_top, 'Asc (C on top)'),
-            (scatter_a_top, 'Desc (A on top)'),
-            (scatter_na_behind, 'NaN Behind'),
+            (scatter_default, 'Default'),
+            (scatter_c_top, 'C on top'),
+            (scatter_a_top, 'A on top'),
+            (scatter_b_top, 'B on top'),
+            (scatter_na_behind, 'NaN on top'),
         ],
         sync_selection=True,
         sync_view=True,
