@@ -638,3 +638,142 @@ def test_toolbar_buttons(df: pd.DataFrame):
     # Test show() returns the widget
     result = scatter.show()
     assert result is scatter.widget
+
+
+def test_order_by_column(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    # Order by a numeric column ascending (default)
+    scatter.order(by='c')
+    point_order = scatter.widget.point_order
+    assert point_order is not None
+    assert len(point_order) == len(df)
+    # Verify it's a valid permutation
+    assert set(point_order) == set(range(len(df)))
+
+    # point_order is a draw sequence: point_order[draw_pos] = point_index
+    # So df['c'].iloc[point_order] should be non-decreasing (ascending sort)
+    ordered_values = df['c'].iloc[point_order].values
+    assert np.all(ordered_values[:-1] <= ordered_values[1:])
+
+
+def test_order_by_column_desc(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    scatter.order(by='c', direction='desc')
+    point_order = scatter.widget.point_order
+    assert point_order is not None
+
+    # df['c'].iloc[point_order] should be non-increasing (descending sort)
+    ordered_values = df['c'].iloc[point_order].values
+    assert np.all(ordered_values[:-1] >= ordered_values[1:])
+
+
+def test_order_by_custom_array(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    custom_order = np.arange(len(df), dtype=np.uint32)[::-1].copy()
+    scatter.order(by=custom_order)
+    assert np.array_equal(scatter.widget.point_order, custom_order)
+
+
+def test_order_reset(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    scatter.order(by='c')
+    assert scatter.widget.point_order is not None
+
+    scatter.order(by=None)
+    assert scatter.widget.point_order is None
+
+
+def test_order_getter(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    result = scatter.order()
+    assert result == {'by': None, 'map': None, 'direction': 'asc', 'na_values': 'last'}
+
+    scatter.order(by='c', direction='desc', na_values='first')
+    result = scatter.order()
+    assert result == {'by': 'c', 'map': None, 'direction': 'desc', 'na_values': 'first'}
+
+
+def test_order_fluent_api(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    # Should return self for chaining
+    result = scatter.order(by='c')
+    assert result is scatter
+
+
+def test_order_with_na_values():
+    df = pd.DataFrame(
+        {
+            'x': [0.0, 1.0, 2.0, 3.0, 4.0],
+            'y': [0.0, 1.0, 2.0, 3.0, 4.0],
+            'val': [3.0, np.nan, 1.0, np.nan, 2.0],
+        }
+    )
+    scatter = Scatter(data=df, x='x', y='y')
+    nan_indices = {1, 3}
+
+    # na_values='last' (default): NaN points drawn last (on top)
+    scatter.order(by='val', na_values='last')
+    order_last = scatter.widget.point_order
+    # The last two entries in the draw sequence should be the NaN points
+    assert set(order_last[-2:]) == nan_indices
+
+    # na_values='first': NaN points drawn first (behind)
+    scatter.order(by='val', na_values='first')
+    order_first = scatter.widget.point_order
+    # The first two entries in the draw sequence should be the NaN points
+    assert set(order_first[:2]) == nan_indices
+
+
+def test_order_map(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b')
+
+    # Custom category order: B drawn last (on top)
+    scatter.order(by='group', map=['A', 'C', 'B'])
+    point_order = scatter.widget.point_order
+    assert point_order is not None
+
+    # Points in the draw sequence should follow the map order:
+    # all A points, then all C points, then all B points
+    groups = df['group'].iloc[point_order].values
+    # Find the last position of each group in the draw sequence
+    last_a = max(i for i, g in enumerate(groups) if g == 'A')
+    first_c = min(i for i, g in enumerate(groups) if g == 'C')
+    last_c = max(i for i, g in enumerate(groups) if g == 'C')
+    first_b = min(i for i, g in enumerate(groups) if g == 'B')
+    assert last_a < first_c
+    assert last_c < first_b
+
+
+def test_order_map_with_na():
+    df = pd.DataFrame(
+        {
+            'x': [0.0, 1.0, 2.0, 3.0, 4.0],
+            'y': [0.0, 1.0, 2.0, 3.0, 4.0],
+            'cat': pd.Categorical(['A', None, 'B', None, 'A']),
+        }
+    )
+    scatter = Scatter(data=df, x='x', y='y')
+
+    # B on top, NaN behind everything
+    scatter.order(by='cat', map=['A', 'B'], na_values='first')
+    order = scatter.widget.point_order
+    # NaN indices (1, 3) should be drawn first
+    assert set(order[:2]) == {1, 3}
+    # Then A, then B
+    cats = df['cat'].iloc[order[2:]].values
+    assert all(c == 'A' for c in cats[: sum(df['cat'] == 'A')])
+    assert all(c == 'B' for c in cats[sum(df['cat'] == 'A') :])
+
+
+def test_order_via_constructor(df: pd.DataFrame):
+    scatter = Scatter(data=df, x='a', y='b', order_by='c', order_direction='desc')
+    assert scatter.widget.point_order is not None
+    result = scatter.order()
+    assert result['by'] == 'c'
+    assert result['direction'] == 'desc'

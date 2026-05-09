@@ -1,5 +1,6 @@
-## v0.23.0
+## v1.0.0
 
+- Feat: add `order()` for determining the draw order of points ([#190](https://github.com/flekschas/jupyter-scatter/issues/190) via [#237](https://github.com/flekschas/jupyter-scatter/pull/237))
 - Feat: use categorical color encoding in histogram bars ([#97](https://github.com/flekschas/jupyter-scatter/issues/97))
 - Refactor: move toolbar UI from Python ipywidgets to TS React. This enables full Marimo support 🎉
 - Chore: add `straight` option to connect() for straight line connections ([#130](https://github.com/flekschas/jupyter-scatter/pull/130))

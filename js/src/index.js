@@ -109,6 +109,7 @@ const properties = {
   opacityBy: 'opacityBy',
   opacityUnselected: 'opacityInactiveScale',
   reglScatterplotOptions: 'reglScatterplotOptions',
+  pointOrder: 'pointOrder',
   points: 'points',
   reticle: 'showReticle',
   reticleColor: 'reticleColor',
@@ -232,6 +233,7 @@ const reglScatterplotProperty = new Set([
   'pointConnectionOpacityBy',
   'pointConnectionSize',
   'pointConnectionSizeBy',
+  'pointOrder',
 ]);
 
 // Custom View. Renders the widget model.
@@ -2522,6 +2524,10 @@ class JupyterScatterView {
   }
 
   // Event handlers for Python-triggered events
+  pointOrderHandler(newPointOrder) {
+    this.scatterplot.set({ pointOrder: newPointOrder });
+  }
+
   pointsHandler(newPoints) {
     if (newPoints.length === this.scatterplot.get('points').length) {
       // We assume point correspondence
@@ -3180,6 +3186,7 @@ async function render({ model, el }) {
     el: el,
     model: modelWithSerializers(model, {
       points: Numpy2D('float32'),
+      point_order: Numpy1D('uint32'),
       selection: Numpy1D('uint32'),
       filter: Numpy1D('uint32'),
       view_data: NumpyImage(),

@@ -47,7 +47,7 @@ def _():
             'value': np.random.uniform(0, 100, n),
         }
     )
-    return df, duckdb, jscatter, np, pa, pl
+    return df, duckdb, jscatter, np, pa, pd, pl
 
 
 @app.cell
@@ -72,6 +72,92 @@ def _(df, jscatter):
         sync_view=False,
         rows=1,
         row_height=320,
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # Point Ordering
+
+    Use `scatter.order()` to control the draw order of points without
+    reordering the underlying data. Points drawn later appear on top.
+    """)
+    return
+
+
+@app.cell
+def _(np, pd):
+    # Three overlapping gaussian blobs + a wide noise cluster with NaN category
+    rng = np.random.default_rng(42)
+    n_per_blob = 500
+
+    blob_a = rng.normal(loc=[-0.5, 0.5], scale=0.4, size=(n_per_blob, 2))
+    blob_b = rng.normal(loc=[0.5, 0.5], scale=0.4, size=(n_per_blob, 2))
+    blob_c = rng.normal(loc=[0.0, -0.4], scale=0.4, size=(n_per_blob, 2))
+    blob_noise = rng.normal(loc=[0.0, 0.2], scale=1.2, size=(n_per_blob, 2))
+
+    coords = np.vstack([blob_a, blob_b, blob_c, blob_noise])
+    categories = (
+        ['A'] * n_per_blob
+        + ['B'] * n_per_blob
+        + ['C'] * n_per_blob
+        + [None] * n_per_blob
+    )
+
+    df_blobs = pd.DataFrame(
+        {
+            'x': coords[:, 0],
+            'y': coords[:, 1],
+            'cluster': pd.Categorical(categories),
+        }
+    )
+    # Shuffle so the default order is a mix of all clusters
+    df_blobs = df_blobs.sample(frac=1, random_state=42).reset_index(drop=True)
+    return (df_blobs,)
+
+
+@app.cell
+def _(df_blobs, jscatter):
+    _kw = dict(
+        data=df_blobs,
+        x='x',
+        y='y',
+        color_by='cluster',
+        size=4,
+        height=280,
+        legend=True,
+        axes=False,
+    )
+
+    scatter_default = jscatter.Scatter(**_kw)
+    scatter_c_top = jscatter.Scatter(**_kw, order_by='cluster', order_na_values='first')
+    scatter_a_top = jscatter.Scatter(
+        **_kw, order_by='cluster', order_direction='desc', order_na_values='first'
+    )
+    scatter_b_top = jscatter.Scatter(
+        **_kw,
+        order_by='cluster',
+        order_map=['A', 'C', 'B'],
+        order_na_values='first',
+    )
+    scatter_na_behind = jscatter.Scatter(
+        **_kw, order_by='cluster', order_na_values='last'
+    )
+
+    jscatter.compose(
+        [
+            (scatter_default, 'Default'),
+            (scatter_c_top, 'C on top'),
+            (scatter_a_top, 'A on top'),
+            (scatter_b_top, 'B on top'),
+            (scatter_na_behind, 'NaN on top'),
+        ],
+        sync_selection=True,
+        sync_view=True,
+        rows=1,
+        row_height=280,
     )
     return
 

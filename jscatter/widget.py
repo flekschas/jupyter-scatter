@@ -91,6 +91,9 @@ class JupyterScatter(anywidget.AnyWidget):
         sync=True, **ndarray_serialization
     )
     hovering = Int(None, allow_none=True).tag(sync=True)
+    point_order = Array(default_value=None, allow_none=True).tag(
+        sync=True, **ndarray_serialization
+    )
 
     # Channel titles
     x_title = Unicode(None, allow_none=True).tag(sync=True)

@@ -311,7 +311,7 @@ def get_categorical_data(data):
 
     if categorical_data is not None and categorical_data.hasnans:
         # Create categories with your value first
-        cats = ['NA'] + list(categorical_data.cat.categories)
+        cats = list(categorical_data.cat.categories) + ['NA']
 
         # Create Series with ordered categories
         categorical_data = pd.Series(data, dtype=pd.CategoricalDtype(categories=cats))
