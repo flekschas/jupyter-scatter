@@ -1338,9 +1338,7 @@ class Scatter:
                 na_position=na_position,
                 kind='mergesort',
             ).index
-            order = np.empty(len(sorted_idx), dtype=np.uint32)
-            order[sorted_idx] = np.arange(len(sorted_idx), dtype=np.uint32)
-            return order
+            return np.asarray(sorted_idx, dtype=np.uint32)
 
         return np.asarray(self._order_by, dtype=np.uint32)
 
@@ -1698,7 +1696,10 @@ class Scatter:
                         if self._background_color_luminance < 0.5
                         else gray_light
                     )
-                    self._color_map = [gray] + self._color_map
+                    # Clip to the number of non-NA categories so gray
+                    # lands exactly at the NA index
+                    n_cats = len(self._color_categories) - 1
+                    self._color_map = self._color_map[:n_cats] + [gray]
 
         if labeling is not UNDEF:
             if labeling is None:

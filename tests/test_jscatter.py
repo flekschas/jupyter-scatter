@@ -651,11 +651,10 @@ def test_order_by_column(df: pd.DataFrame):
     # Verify it's a valid permutation
     assert set(point_order) == set(range(len(df)))
 
-    # The order should correspond to sorting by column 'c'
-    sorted_idx = df['c'].sort_values(ascending=True, kind='mergesort').index
-    expected = np.empty(len(sorted_idx), dtype=np.uint32)
-    expected[sorted_idx] = np.arange(len(sorted_idx), dtype=np.uint32)
-    assert np.array_equal(point_order, expected)
+    # point_order is a draw sequence: point_order[draw_pos] = point_index
+    # So df['c'].iloc[point_order] should be non-decreasing (ascending sort)
+    ordered_values = df['c'].iloc[point_order].values
+    assert np.all(ordered_values[:-1] <= ordered_values[1:])
 
 
 def test_order_by_column_desc(df: pd.DataFrame):
@@ -665,10 +664,9 @@ def test_order_by_column_desc(df: pd.DataFrame):
     point_order = scatter.widget.point_order
     assert point_order is not None
 
-    sorted_idx = df['c'].sort_values(ascending=False, kind='mergesort').index
-    expected = np.empty(len(sorted_idx), dtype=np.uint32)
-    expected[sorted_idx] = np.arange(len(sorted_idx), dtype=np.uint32)
-    assert np.array_equal(point_order, expected)
+    # df['c'].iloc[point_order] should be non-increasing (descending sort)
+    ordered_values = df['c'].iloc[point_order].values
+    assert np.all(ordered_values[:-1] >= ordered_values[1:])
 
 
 def test_order_by_custom_array(df: pd.DataFrame):
@@ -717,28 +715,19 @@ def test_order_with_na_values():
         }
     )
     scatter = Scatter(data=df, x='x', y='y')
+    nan_indices = {1, 3}
 
-    # na_values='last' (default): NaN points drawn on top (last)
+    # na_values='last' (default): NaN points drawn last (on top)
     scatter.order(by='val', na_values='last')
     order_last = scatter.widget.point_order
-    # Points with NaN (indices 1, 3) should have the highest order values
-    assert order_last[1] > order_last[0]
-    assert order_last[1] > order_last[2]
-    assert order_last[1] > order_last[4]
-    assert order_last[3] > order_last[0]
-    assert order_last[3] > order_last[2]
-    assert order_last[3] > order_last[4]
+    # The last two entries in the draw sequence should be the NaN points
+    assert set(order_last[-2:]) == nan_indices
 
     # na_values='first': NaN points drawn first (behind)
     scatter.order(by='val', na_values='first')
     order_first = scatter.widget.point_order
-    # Points with NaN (indices 1, 3) should have the lowest order values
-    assert order_first[1] < order_first[0]
-    assert order_first[1] < order_first[2]
-    assert order_first[1] < order_first[4]
-    assert order_first[3] < order_first[0]
-    assert order_first[3] < order_first[2]
-    assert order_first[3] < order_first[4]
+    # The first two entries in the draw sequence should be the NaN points
+    assert set(order_first[:2]) == nan_indices
 
 
 def test_order_via_constructor(df: pd.DataFrame):
