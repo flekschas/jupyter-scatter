@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@v6
@@ -41,10 +41,22 @@ jobs:
           version: "0.8.x"
 
       - name: Run tests with all dependencies
+        if: matrix.python-version != '3.14'
         run: |
           uv venv --clear
           source .venv/bin/activate
           uv pip install -e ".[all]"
+          uv pip install pytest pytest-cov polars
+          pytest . --color=yes
+        env:
+          UV_PYTHON: ${{ matrix.python-version }}
+
+      - name: Run tests without label placement (Python 3.14)
+        if: matrix.python-version == '3.14'
+        run: |
+          uv venv --clear
+          source .venv/bin/activate
+          uv pip install -e ".[annotation-extras]"
           uv pip install pytest pytest-cov polars
           pytest . --color=yes
         env:
@@ -61,6 +73,7 @@ jobs:
           UV_PYTHON: ${{ matrix.python-version }}
 
       - name: Run tests with default and label-extras dependencies only
+        if: matrix.python-version != '3.14'
         run: |
           uv venv --clear
           source .venv/bin/activate

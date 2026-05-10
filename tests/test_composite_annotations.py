@@ -3,15 +3,14 @@ import matplotlib
 matplotlib.use('Agg')
 
 import pytest
-import seaborn as sns
-import sys
+
+sns = pytest.importorskip('seaborn')
 
 from jscatter.annotations import Line
 from jscatter.composite_annotations import Contour
 from jscatter.jscatter import Scatter
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason='requires at least Python v3.9')
 def test_contour():
     c = Contour()
 
