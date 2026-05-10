@@ -17,6 +17,6 @@ pre-push:
   parallel: true
   commands:
     pytest:
-      run: uv run pytest
+      run: uv run --extra all pytest
     js-test:
       run: cd js && npm run test

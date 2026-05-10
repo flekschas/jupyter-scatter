@@ -9,7 +9,10 @@ import numpy.typing as npt
 try:
     from geoindex_rs import rtree
 except ImportError:
-    from geoindex_rs import RTree as rtree
+    try:
+        from geoindex_rs import RTree as rtree
+    except ImportError:
+        rtree = None
 
 from .constants import (
     NUM_LABELS_SOLVE_ZOOM_LEVELS_APPROXIMATELY,

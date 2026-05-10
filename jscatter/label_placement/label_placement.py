@@ -12,12 +12,20 @@ import pandas as pd
 try:
     from geoindex_rs import kdtree, rtree
 except ImportError:
-    from geoindex_rs import KDTree as kdtree, RTree as rtree
+    try:
+        from geoindex_rs import KDTree as kdtree, RTree as rtree
+    except ImportError:
+        kdtree = None
+        rtree = None
 from matplotlib.colors import to_hex
 from scipy.spatial import ConvexHull
 from scipy.spatial._qhull import QhullError
 
-from ..dependencies import check_label_extras_dependencies, MissingCallable
+from ..dependencies import (
+    check_label_extras_dependencies,
+    DependencyError,
+    MissingCallable,
+)
 from ..font import Font
 from ..types import (
     AggregationMethod,
@@ -1252,6 +1260,14 @@ class LabelPlacement:
         pandas.DataFrame
             Computed labels ready for rendering
         """
+        # Check for geoindex-rs (unavailable on some Python versions)
+        if kdtree is None or rtree is None:
+            raise DependencyError(
+                "Label placement requires the 'geoindex-rs' package, which is "
+                'not available for your Python version. '
+                'Please use Python 3.9 - 3.13 for label placement support.'
+            )
+
         # Check for extra dependencies
         if show_progress or self._positioning == 'largest_cluster':
             check_label_extras_dependencies()

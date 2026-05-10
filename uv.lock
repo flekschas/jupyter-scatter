@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.9"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -1341,7 +1341,7 @@ name = "geoindex-rs"
 version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "arro3-core" },
+    { name = "arro3-core", marker = "python_full_version < '3.14'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e1/45/8ca54eb995f3af4feaafb6e0438021cffe294ee18803f75be12e50243391/geoindex_rs-0.2.1-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:d8ffe1cb3a8c47ca20a49eb5b37f1b61a21bafc2ea07833095061c5380578695", size = 2321411, upload-time = "2025-09-05T22:51:14.427Z" },
@@ -2030,7 +2030,7 @@ name = "jupyter-scatter"
 source = { editable = "." }
 dependencies = [
     { name = "anywidget" },
-    { name = "geoindex-rs" },
+    { name = "geoindex-rs", marker = "python_full_version < '3.14'" },
     { name = "ipython", version = "8.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "ipython", version = "8.38.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
     { name = "ipython", version = "9.10.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
@@ -2083,7 +2083,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "anywidget", specifier = ">=0.9.0" },
-    { name = "geoindex-rs" },
+    { name = "geoindex-rs", marker = "python_full_version < '3.14'" },
     { name = "hdbscan", marker = "extra == 'all'" },
     { name = "hdbscan", marker = "extra == 'label-extras'" },
     { name = "ipython" },
