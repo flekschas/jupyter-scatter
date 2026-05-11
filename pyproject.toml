@@ -68,12 +68,12 @@ pattern = "\"version\": \"(?P<version>.+?)\""
 
 [tool.hatch.build.targets.wheel]
 packages = ["jscatter"]
-artifacts = ["jscatter/bundle.js"]
+artifacts = ["jscatter/bundle.js", "jscatter/bundle.css"]
 
 [tool.hatch.build.hooks.jupyter-builder]
 build-function = "hatch_jupyter_builder.npm_builder"
-ensured-targets = ["jscatter/bundle.js"]
-skip-if-exists = ["jscatter/bundle.js"]
+ensured-targets = ["jscatter/bundle.js", "jscatter/bundle.css"]
+skip-if-exists = ["jscatter/bundle.js", "jscatter/bundle.css"]
 dependencies = ["hatch-jupyter-builder>=0.5.0"]
 
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
