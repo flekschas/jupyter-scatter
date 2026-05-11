@@ -1,3 +1,7 @@
+## v1.0.1
+
+- Fix: add missing `bundle.css` to wheel
+
 ## v1.0.0
 
 - Feat: add `order()` for determining the draw order of points ([#190](https://github.com/flekschas/jupyter-scatter/issues/190) via [#237](https://github.com/flekschas/jupyter-scatter/pull/237))
