@@ -20,6 +20,22 @@ jobs:
       - run: |
           uv run ruff format --check
 
+  Wheel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24.x"
+      - run: cd js && npm update && npm ci
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.8.x"
+      - name: Build wheel and verify import
+        run: |
+          uv build --wheel
+          uv run --with dist/*.whl --no-project python -c "import jscatter; print('OK')"
+
   Test:
     runs-on: ubuntu-latest
     strategy:
