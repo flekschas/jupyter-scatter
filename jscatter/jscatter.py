@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import Dict, List, Mapping, Optional, Tuple, Union, cast
+from typing import Dict, List, Mapping, Optional, Protocol, Tuple, Union, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,6 +19,12 @@ from matplotlib.colors import (
 from .dataframe_utils import ensure_pandas
 
 from .annotations import HLine, Line, Rect, VLine
+
+
+class ArrowStreamExportable(Protocol):
+    def __arrow_c_stream__(self, requested_schema: object | None = None) -> object: ...
+
+
 from .color_maps import glasbey_dark, glasbey_light, gray_dark, gray_light, okabe_ito
 from .composite_annotations import CompositeAnnotation, Contour
 from .dependencies import check_label_extras_dependencies
@@ -268,7 +274,7 @@ class Scatter:
         self,
         x: Union[str, List[float], np.ndarray],
         y: Union[str, List[float], np.ndarray],
-        data=None,
+        data: Optional[Union[pd.DataFrame, ArrowStreamExportable]] = None,
         **kwargs,
     ):
         """
@@ -5567,7 +5573,7 @@ class Scatter:
 def plot(
     x: Union[str, List[float], np.ndarray],
     y: Union[str, List[float], np.ndarray],
-    data=None,
+    data: Optional[Union[pd.DataFrame, ArrowStreamExportable]] = None,
     **kwargs,
 ):
     """
