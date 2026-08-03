@@ -3742,7 +3742,7 @@ class Scatter:
 
         Parameters
         ----------
-        width : int, optional
+        height : int, optional
             The height of the scatter plot in pixel.
 
         Returns
@@ -3875,7 +3875,7 @@ class Scatter:
 
         Parameters
         ----------
-        show : 'panZoom', 'lasso' or 'rotate', optional
+        mode : 'panZoom', 'lasso' or 'rotate', optional
             The mouse mode. Currently, three modes are supported: pan & zoom,
             lasso selection, or rotating the scatter plot.
 
