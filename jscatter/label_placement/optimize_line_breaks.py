@@ -21,14 +21,16 @@ def optimize_line_breaks(
     ----------
     text : str
         The label text
-    label_type : str
-        The type of the label (used to look up font info)
-    label_value : str
-        The value of the label (used to look up font info)
+    text_measurer : Text
+        Measurer used to determine the rendered width of the text
+    font_size : int
+        The font size the text is rendered at
     target_aspect_ratio : float
         The target aspect ratio to optimize for
     max_lines : Optional[int]
         The maximum number of lines
+    word_break_lookahead : int
+        How many following words to consider when deciding where to break
 
     Notes
     -----
