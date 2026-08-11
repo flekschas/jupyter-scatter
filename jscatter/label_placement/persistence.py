@@ -19,8 +19,8 @@ def _get_path_prefix(path: str) -> str:
     ----------
         path : str
         Path to save data. Can be either:
-        - A directory path where files 'labels.parquet' and 'tiles.parquet' will be stored
-        - A path prefix where files '{prefix}-labels.parquet' and '{prefix}-tiles.parquet' will be stored
+        - A directory path, giving the prefix '<path>/label'
+        - A path prefix, giving the prefix '<path>-label'
 
     Returns
     -------
@@ -76,14 +76,11 @@ def to_parquet(
         Label placement object to export
     path : str
         Path to save data. Can be either:
-        - A directory path where files 'labels.parquet' and 'tiles.parquet' will be stored
-        - A path prefix where files '{prefix}-labels.parquet' and '{prefix}-tiles.parquet' will be stored
-    format : PersistenceFormat, default=PersistenceFormat.PARQUET
-        Format to use for persistence
-    use_prefix : bool, optional
-        If True, treat path as a prefix for output files.
-        If False, treat path as a directory.
-        If None (default), automatically detect based on whether path exists as a directory.
+        - A directory path where files 'label-data.parquet' and 'label-tiles.parquet' will be stored
+        - A path prefix where files '{prefix}-label-data.parquet' and '{prefix}-label-tiles.parquet' will be stored
+    format : PersistenceFormat, default='parquet'
+        Format to use for persistence. With 'arrow_ipc' the files are written
+        with an '.arrow' extension instead.
     """
 
     import pyarrow as pa

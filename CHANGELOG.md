@@ -1,3 +1,7 @@
+## Unreleased
+
+- Fix: docstrings of `height()`, `mouse()` and `to_parquet()` did not match the code ([#265](https://github.com/flekschas/jupyter-scatter/issues/265))
+
 ## v1.0.1
 
 - Fix: add missing `bundle.css` to wheel
