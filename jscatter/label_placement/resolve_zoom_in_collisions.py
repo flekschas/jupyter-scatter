@@ -52,9 +52,18 @@ def resolve_static_zoom_in_collisions(
 
     Parameters
     ----------
-    labels : pandas.DataFrame
-        Label data with coordinates and dimensions
-    spatial_idx : Spatial index for collision detection
+    spatial_index : Any
+        Spatial index used for collision detection
+    center_xs, center_ys : numpy.ndarray
+        Label centers
+    half_widths, half_heights : numpy.ndarray
+        Half extents of each label
+    min_xs, min_ys, max_xs, max_ys : numpy.ndarray
+        Bounding box of each label
+    zoom_ins, zoom_outs : numpy.ndarray
+        Zoom levels at which each label appears and disappears
+    idxs : numpy.ndarray
+        Label indices in priority order
     progress_bar : tqdm.tqdm, optional
         Progress bar for tracking computation
 
@@ -164,9 +173,18 @@ def resolve_asinh_zoom_in_collisions(
 
     Parameters
     ----------
-    labels : pandas.DataFrame
-        Label data with coordinates and dimensions
-    spatial_idx : Spatial index for collision detection
+    spatial_index : Any
+        Spatial index used for collision detection
+    center_xs, center_ys : numpy.ndarray
+        Label centers
+    half_widths, half_heights : numpy.ndarray
+        Half extents of each label
+    min_xs, min_ys, max_xs, max_ys : numpy.ndarray
+        Bounding box of each label
+    zoom_ins, zoom_outs : numpy.ndarray
+        Zoom levels at which each label appears and disappears
+    idxs : numpy.ndarray
+        Label indices in priority order
     progress_bar : tqdm.tqdm, optional
         Progress bar for tracking computation
 

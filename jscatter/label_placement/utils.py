@@ -222,9 +222,9 @@ def map_property(
         All unique labels
     value : T
         The value(s) to assign
-    default_values : T
-        Default values to use if not specified
-    current : Dict[str, T]
+    default_value : T
+        Default value to use if not specified
+    current_value : Dict[str, T]
         The current mapped property. If None, the return value will be
         initialized
 
