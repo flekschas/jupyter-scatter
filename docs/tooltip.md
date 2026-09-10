@@ -1,3 +1,7 @@
+---
+description: How to show and configure a tooltip on point hover.
+---
+
 # Tooltip
 
 To further aid in making sense of the data points and patterns in a scatter

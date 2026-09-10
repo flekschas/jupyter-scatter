@@ -1,3 +1,7 @@
+---
+description: A guide on the supported mouse interactions in Jupyter Scatter.
+---
+
 # Interactions
 
 Jupyter Scatter's scatter plots are interactive by default. You can pan, zoom,

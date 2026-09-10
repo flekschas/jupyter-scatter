@@ -1,3 +1,7 @@
+---
+description: How to link and synchronize multiple Jupyter Scatter instances.
+---
+
 # Link Multiple Scatter Plots
 
 There are many use cases where one wants to create two or more scatter plot and

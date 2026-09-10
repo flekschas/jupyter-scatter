@@ -1,3 +1,7 @@
+---
+description: How to export a view as an image.
+---
+
 # Export View as Image
 
 There are two ways to export a scatter plot as an image. You can either download

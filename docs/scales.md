@@ -1,3 +1,7 @@
+---
+description: How to customize the X and Y scales.
+---
+
 # Scales
 
 In the following we'll go over all supported X/Y scale functions.
