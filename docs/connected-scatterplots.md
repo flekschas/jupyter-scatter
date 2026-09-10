@@ -1,3 +1,7 @@
+---
+description: A guide for connected scatterplots.
+---
+
 # Connected Scatterplot
 
 If your data represents series of variables, it can be useful to visualize the

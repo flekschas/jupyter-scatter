@@ -1,3 +1,7 @@
+---
+description: How to configure axes and legends.
+---
+
 # Axes & Legends
 
 Now that we know how to create, configure, compose, and link scatter plots, it's

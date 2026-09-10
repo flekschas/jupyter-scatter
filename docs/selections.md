@@ -1,3 +1,7 @@
+---
+description: A guide on how to select points and clusters, and extract such selections.
+---
+
 # Selections
 
 A primary way to interact with a scatter plot is through selections.

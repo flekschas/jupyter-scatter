@@ -1,3 +1,7 @@
+---
+description: How to show text labels for points and clusters.
+---
+
 # Labels
 
 When your points are labeled it can be helpful to show these labels in the

@@ -1,3 +1,7 @@
+---
+description: How to use annotations to help relate points and clusters.
+---
+
 # Annotations
 
 To help navigating and relating points and clusters, Jupyter Scatter offers

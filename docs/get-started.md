@@ -1,3 +1,7 @@
+---
+description: An overview of the most important features and functions.
+---
+
 # Get Started
 
 ## What is Jupyter Scatter?

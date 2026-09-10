@@ -1,3 +1,7 @@
+---
+description: Complete API reference.
+---
+
 # API Reference
 
 - [Scatter](#scatter)
