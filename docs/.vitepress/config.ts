@@ -11,7 +11,7 @@ export default defineConfig({
   lastUpdated: true,
   cleanUrls: true,
   vite: {
-    plugins: [llmstxt({ domain: 'https://jupyter-scatter.dev' })],
+    plugins: [llmstxt()],
   },
   head: [
     ['link', { rel: 'icon', href: '/favicon.svg' }],
