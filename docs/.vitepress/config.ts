@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress';
+import llmstxt from 'vitepress-plugin-llms';
 
 import pkg from '../../js/package.json';
 
@@ -9,6 +10,9 @@ export default defineConfig({
   description: 'An interactive scatter plot widget for exploring datasets with millions of data points in Jupyter Notebook, Lab, and Google Colab.',
   lastUpdated: true,
   cleanUrls: true,
+  vite: {
+    plugins: [llmstxt({ domain: 'https://jupyter-scatter.dev' })],
+  },
   head: [
     ['link', { rel: 'icon', href: '/favicon.svg' }],
     ['meta', { name: 'theme-color', content: '#FEC10E' }],
